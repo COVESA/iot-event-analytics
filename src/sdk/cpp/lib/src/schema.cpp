@@ -27,41 +27,6 @@ const char Constraint::SEGMENTS[] = "*";
 const char Constraint::ALL_INSTANCE_FILTERS[] = ".*";
 
 //
-// Opt
-//
-template <typename T>
-Opt<T>::Opt() noexcept
-    : is_set_(false)
-    , value_{T()} {}
-
-template <typename T>
-Opt<T>::Opt(const T& value) noexcept
-    : is_set_{true}
-    , value_{value} {}
-
-// template <typename T>
-// Opt<T>& Opt<T>::operator=(const Opt<T>& other) {
-//     if (this == &other) {
-//         return *this;
-//     }
-
-//     is_set_ = other.is_set_;
-//     value_ = other.value_;
-
-//     return *this;
-// }
-
-template <typename T>
-Opt<T>::operator bool() const noexcept {
-    return is_set_;
-}
-
-template <typename T>
-T Opt<T>::Get() const {
-    return value_;
-}
-
-//
 // ValueType
 //
 ValueType::ValueType(const std::string& type)
