@@ -374,8 +374,36 @@ OpConstraint::OpConstraint(const std::string& feature, std::shared_ptr<SchemaEnt
 ChangeConstraint::ChangeConstraint(const std::string& feature, const std::string& type_selector,
                                    const ValueEncoding value_encoding, const std::string& path,
                                    const std::string& instance_filter, const bool limit_feature_selection)
-    : Constraint(feature, ConstraintType::CHANGE, std::shared_ptr<NullType>(), type_selector, value_encoding, path,
-                 instance_filter, limit_feature_selection) {}
+    : Constraint{feature, ConstraintType::CHANGE, std::shared_ptr<NullType>(), type_selector, value_encoding, path,
+                 instance_filter, limit_feature_selection} {}
+
+//
+// TimeseriesConstraint
+//
+TimeseriesConstraint::TimeseriesConstraint(const std::string& feature, const ConstraintType constraint_type,
+                                           std::shared_ptr<SchemaEntity> value, const std::string& type_selector,
+                                           const ValueEncoding value_encoding, const std::string& path,
+                                           const std::string& instance_filter, const bool limit_feature_selection)
+    : Constraint{feature, constraint_type, value, type_selector, value_encoding, path, instance_filter,
+                 limit_feature_selection} {}
+
+//
+// NelsonConstraint
+//
+NelsonConstraint::NelsonConstraint(const std::string& feature, NelsonConstraint::Type value,
+                                   const std::string& type_selector,
+                                   const std::string& instance_filter,
+                                   const bool limit_feature_selection)
+    : TimeseriesConstraint{feature, ConstraintType::NELSON, nullptr, type_selector, ValueEncoding::ENCODED, "",
+                           instance_filter, limit_feature_selection}
+    , value_{value} {}
+
+json NelsonConstraint::Json() const {
+    auto j = TimeseriesConstraint::Json();
+    j["value"] = value_;
+
+    return j;
+}
 
 //
 // Rule
@@ -771,10 +799,74 @@ schema::rule_ptr RegexMatch(const std::string& feature, const std::string& value
 }
 
 schema::rule_ptr Change(const std::string& feature, const std::string& type_selector,
-                       const schema::ValueEncoding value_encoding, const std::string& path,
-                       const std::string& instance_filter, const bool limit_feature_selection) {
+                        const schema::ValueEncoding value_encoding, const std::string& path,
+                        const std::string& instance_filter, const bool limit_feature_selection) {
     return std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>(feature, type_selector, value_encoding, path,
                                                                           instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonAlter(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::ALTER, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonTrend(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::TREND, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonBias(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::BIAS, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonHighDev(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::HIGH_DEV, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonLowDev(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::LOW_DEV, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonOut1Se(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::OUT1_SE, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonOut2Se(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::OUT2_SE, type_selector, instance_filter, limit_feature_selection));
+}
+
+schema::rule_ptr NelsonOut3Se(const std::string& feature,
+                                const std::string& type_selector,
+                                const std::string& instance_filter,
+                                const bool limit_feature_selection) {
+    return std::make_shared<schema::Rule>(std::make_shared<schema::NelsonConstraint>(
+        feature, schema::NelsonConstraint::Type::OUT3_SE, type_selector, instance_filter, limit_feature_selection));
 }
 
 }  // namespace core

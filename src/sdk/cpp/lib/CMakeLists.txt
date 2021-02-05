@@ -66,7 +66,10 @@ target_compile_options(iotea_sdk_cpp PRIVATE -Wall -Wextra -pedantic -Werror)
 
 include(GoogleTest)
 if(BUILD_TESTING)
-    add_executable(testrunner tests/test_talent.cpp)
+    add_executable(testrunner
+        tests/test_talent.cpp
+        tests/test_schema.cpp
+    )
     target_link_libraries(testrunner
         iotea_sdk_cpp
         gtest
