@@ -13,6 +13,9 @@
  * Starts the IoTea Platform and 2 talents to shows how you can build a multistage processing pipeline for events.
  * Also shows, that work can be distributed to multiple talent instances.
  *
+ * Also test Timeseriespatternconstraint by sending events for feature tsctest of type kuehlschrank
+ * // OK 3, 2, 5, 6 fires
+ * // NOK 3, 2, 4, 6 does not fire
  */
 
 // Remove any given MQTT topic namespace from the environment variables
@@ -34,9 +37,18 @@ const MetadataApi = require('../../../../core/metadataApi');
 const InstanceApi = require('../../../../core/instanceApi');
 
 const {
+    TimeseriesPatternConstraint
+} = require('../../../../core/rules.tseries');
+
+const {
+    Wildcard
+} = require('../../../../core/util/arrayPatternMatcher');
+
+const {
     AndRules,
     Rule,
-    OpConstraint
+    OpConstraint,
+    OrRules
 } = require('../../../../core/rules');
 
 const {
@@ -100,10 +112,18 @@ class MyTalent2 extends Talent {
     }
 
     getRules() {
-        const rules = new AndRules([
+        const rules = new OrRules([
             new Rule(
                 new OpConstraint('my-talent-id.test2', OpConstraint.OPS.GREATER_THAN, -1, DEFAULT_TYPE, VALUE_TYPE_RAW)
-            )
+            ),
+            new Rule(new TimeseriesPatternConstraint(
+                'tsctest',
+                // OK 3, 2, 5, 6
+                // NOK 3, 2, 4, 6
+                [ 3, new Wildcard().accept(2, 5).minValues(1).reject(4), 6 ],
+                'kuehlschrank',
+                VALUE_TYPE_RAW
+            ))
         ]);
 
         return rules;

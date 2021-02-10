@@ -13,7 +13,20 @@
         },
         "types": {
             "kuehlschrank": {
-                "features": {}
+                "features": {
+                    "tsctest": {
+                        "idx": 4,
+                        "history": 10,
+                        "encoding": {
+                            "type": "number",
+                            "encoder": "minmax",
+                            "min": 0,
+                            "max": 20
+                        },
+                        "description": "Test for timeseries constraint",
+                        "unit": "ONE"
+                    }
+                }
             },
             "kuehlschrank0": {
                 "features": {
