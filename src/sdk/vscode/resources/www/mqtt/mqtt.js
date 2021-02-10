@@ -116,6 +116,11 @@ function submitMessage() {
     let msg = getJsonMessage();
 
     if (msg !== undefined) {
+        if (getValue('#messageType') === 'ioteaevent' && getValue('#ioteaUpdateTimestampMs')) {
+            updateJsonMessage('whenMs', Date.now());
+            msg = getJsonMessage();
+        }
+
         msg = JSON.stringify(msg);
     } else {
         msg = getMessage();

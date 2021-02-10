@@ -52,6 +52,10 @@ function getValue(selector) {
         return;
     }
 
+    if (elem.tagName.toUpperCase() === 'INPUT' && getAttribute(elem, 'type') === 'checkbox') {
+        return elem.checked;
+    }
+
     return elem.value;
 }
 
