@@ -25,11 +25,13 @@ class MyTalent extends Talent {
     }
 
     getRules() {
-
+        return new AndRules([
+            new Rule(new OpConstraint('anyfeature', OpConstraint.OPS.ISSET,  null, 'anytype', VALUE_TYPE_RAW))
+        ]);
     }
 
     async onEvent(ev, evtctx) {
-        this.logger.info(`${JSON.stringify(ev.$feature.raw.value)}`, evtctx);
+        this.logger.info(`${JSON.stringify(ev.value)}`, evtctx);
     }
 }
 
