@@ -80,7 +80,22 @@ function createJsonMessage(type) {
 
 function onIoTeaEventTypeChange(type) {
     if (Object.prototype.hasOwnProperty.call(ioteaTypeFeatures, type)) {
-        replaceOptionItems('#ioteaEventFeature', [null, ...Object.keys(ioteaTypeFeatures[type])]);
+        const features = Object.keys(ioteaTypeFeatures[type]);
+
+        // Set features and add description title
+        replaceOptionItems(
+            '#ioteaEventFeature',
+            features,
+            feature => `${feature}&nbsp;[${ioteaTypeFeatures[type][feature].unit}]`,
+            feature => feature,
+            (itemElem, feature) => itemElem.title = ioteaTypeFeatures[type][feature].description
+        );
+
+        // Select first feature
+        setValue('#ioteaEventFeature', features[0]);
+
+        // Update Message
+        updateJsonMessage('feature', features[0]);
     }
 }
 
@@ -105,10 +120,24 @@ function updateIoteaTypeFeatures() {
         })
         .then(typeFeatures => {
             ioteaTypeFeatures = typeFeatures;
+
+            // Clear message
             updateJsonMessage('type', '');
             updateJsonMessage('feature', '');
-            replaceOptionItems('#ioteaEventType', [null, ...Object.keys(ioteaTypeFeatures)]);
-            replaceOptionItems('#ioteaEventFeature', []);
+
+            // Filter types for those, who have features
+            const types = Object.keys(ioteaTypeFeatures).filter(type => Object.keys(ioteaTypeFeatures[type]).length > 0);
+
+            if (types.length === 0) {
+                return;
+            }
+
+            const type = types[0];
+
+            replaceOptionItems('#ioteaEventType', types);
+            updateJsonMessage('type', type);
+            // Update IoTeaEventFeature
+            onIoTeaEventTypeChange(type);
         });
 }
 

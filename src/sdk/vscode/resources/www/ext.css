@@ -82,7 +82,7 @@ textarea {
 
 select {
     background: var(--vscode-settings-dropdownBackground);
-    color: var(--vscode-settings-dropdownForeground);
+    color: var(--vscode-settings-textInputForeground);
     border: 1px solid var(--vscode-settings-dropdownBorder);
     padding: 5px;
     padding-right: 32px;
@@ -128,7 +128,7 @@ textarea:focus {
 .select-wrapper::before {
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid var(--vscode-settings-dropdownForeground);
+    border-top: 6px solid var(--vscode-settings-textInputForeground);
     right: 10px;
 }
 

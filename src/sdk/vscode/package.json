@@ -38,6 +38,14 @@
                 "title": "Bosch IoT Event Analytics: Stop platform using docker-compose"
             },
             {
+                "command": "iotea.startMosquittoBroker",
+                "title": "Bosch IoT Event Analytics: Start mosquitto MQTT Broker using docker-compose"
+            },
+            {
+                "command": "iotea.stopMosquittoBroker",
+                "title": "Bosch IoT Event Analytics: Stop mosquitto MQTT Broker using docker-compose"
+            },
+            {
                 "command": "iotea.publishMqttMessage",
                 "title": "Bosch IoT Event Analytics: Publish an MQTT message"
             }

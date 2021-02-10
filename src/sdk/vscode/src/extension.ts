@@ -27,6 +27,9 @@ import { MqttWebView } from './mqttWebView';
 const IOTEA_PLATFORM_TERMINAL_NAME = 'IoT Event Analytics Platform';
 const START_IOTEA_PLATFORM_COMMAND = 'iotea.startIoTeaPlatform';
 const STOP_IOTEA_PLATFORM_COMMAND = 'iotea.stopIoTeaPlatform';
+const MOSQUITTO_BROKER_TERMINAL_NAME = 'IoT Event Analytics Mosquitto Broker';
+const START_MOSQUITTO_BROKER_COMMAND = 'iotea.startMosquittoBroker';
+const STOP_MOSQUITTO_BROKER_COMMAND = 'iotea.stopMosquittoBroker';
 class TypeFeatureResolver {
     private ttl = -1;
     private typeFeatures: string[] = [];
@@ -142,73 +145,33 @@ export function activate(context: vscode.ExtensionContext) {
     ).register(context, 'javascript');
 
     vscode.window.onDidCloseTerminal(async (terminal: vscode.Terminal) => {
-        if (terminal.name !== IOTEA_PLATFORM_TERMINAL_NAME) {
-            return;
+        if (terminal.name === IOTEA_PLATFORM_TERMINAL_NAME) {
+            await vscode.commands.executeCommand(STOP_IOTEA_PLATFORM_COMMAND, terminal);
         }
 
-        await vscode.commands.executeCommand(STOP_IOTEA_PLATFORM_COMMAND, terminal);
+        if (terminal.name === MOSQUITTO_BROKER_TERMINAL_NAME) {
+            await vscode.commands.executeCommand(STOP_MOSQUITTO_BROKER_COMMAND, terminal);
+        }
     });
-
-    context.subscriptions.push(vscode.commands.registerCommand(STOP_IOTEA_PLATFORM_COMMAND, async (terminal: vscode.Terminal | undefined) => {
-        const terminals = [];
-
-        if (terminal !== undefined) {
-            terminals.push(terminal);
-        } else {
-            for (let terminal of vscode.window.terminals) {
-                if (terminal.name === IOTEA_PLATFORM_TERMINAL_NAME) {
-                    terminals.push(terminal);
-                }
-            }
-        }
-
-        if (terminals.length === 0) {
-            // Ask for the used .env-file, if no terminal is given
-            try {
-                await shutdownIoTeaPlatform(await chooseComposeEnvFile());
-            }
-            catch(err) {
-                vscode.window.showErrorMessage(err.message);
-            }
-
-            return;
-        }
-
-        for (let terminal of terminals) {
-            const envFile = ((terminal.creationOptions as vscode.TerminalOptions).env as any)._ENV_FILE;
-            await shutdownIoTeaPlatform(envFile);
-            terminal.dispose();
-        }
-    }));
 
     context.subscriptions.push(vscode.commands.registerCommand('iotea.publishMqttMessage', async () => {
         MqttWebView.loadOnce(context.extensionPath, await chooseAndUpdateIoTeaProjectDir());
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand(START_IOTEA_PLATFORM_COMMAND, async (envFile: string | undefined) => {
-        const ioteaProjectRootDir: any = getIoTeaRootDir();
+        await startIoTeaPlatform(envFile);6
+    }));
 
-        if (envFile === undefined) {
-            try {
-                envFile = await chooseComposeEnvFile();
-            }
-            catch(err) {
-                vscode.window.showErrorMessage(err.message);
-                return;
-            }
-        }
+    context.subscriptions.push(vscode.commands.registerCommand(STOP_IOTEA_PLATFORM_COMMAND, async (terminal: vscode.Terminal | undefined) => {
+        await stopIoTeaPlatform(terminal);
+    }));
 
-        const terminal = vscode.window.createTerminal({
-            cwd: path.resolve(ioteaProjectRootDir, 'docker-compose'),
-            name: IOTEA_PLATFORM_TERMINAL_NAME,
-            env: {
-                _ENV_FILE: envFile as string
-            }
-        });
+    context.subscriptions.push(vscode.commands.registerCommand(START_MOSQUITTO_BROKER_COMMAND, async (envFile: string | undefined) => {
+        await startIoTeaMqttBroker(envFile);
+    }));
 
-        terminal.sendText(`docker-compose -f docker-compose.platform.yml --project-name vscode-ext --env-file=${envFile} up --build`);
-
-        terminal.show(false);
+    context.subscriptions.push(vscode.commands.registerCommand(STOP_MOSQUITTO_BROKER_COMMAND, async (terminal: vscode.Terminal | undefined) => {
+        await stopIoTeaMqttBroker(terminal);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('iotea.createJsTalentProject', async () => {
@@ -339,15 +302,89 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() { }
 
-async function shutdownIoTeaPlatform(envFile: string): Promise<void> {
+function startIoTeaPlatform(envFile: string | undefined): Promise<void> {
+    return startComposeInTerminal(IOTEA_PLATFORM_TERMINAL_NAME, 'docker-compose.platform.yml', envFile);
+}
+
+function stopIoTeaPlatform(terminal: vscode.Terminal | undefined): Promise<void> {
+    return stopComposeInTerminal(IOTEA_PLATFORM_TERMINAL_NAME, 'docker-compose.platform.yml', terminal);
+}
+
+function startIoTeaMqttBroker(envFile: string | undefined): Promise<void> {
+    return startComposeInTerminal(MOSQUITTO_BROKER_TERMINAL_NAME, 'docker-compose.mosquitto.yml', envFile);
+}
+
+function stopIoTeaMqttBroker(terminal: vscode.Terminal | undefined): Promise<void> {
+    return stopComposeInTerminal(MOSQUITTO_BROKER_TERMINAL_NAME, 'docker-compose.mosquitto.yml', terminal);
+}
+
+async function startComposeInTerminal(terminalName: string, composeFile: string, envFile: string | undefined) {
+    const ioteaProjectRootDir: any = getIoTeaRootDir();
+
+    if (envFile === undefined) {
+        try {
+            envFile = await chooseComposeEnvFile();
+        }
+        catch(err) {
+            vscode.window.showErrorMessage(err.message);
+            return;
+        }
+    }
+
+    const terminal = vscode.window.createTerminal({
+        cwd: path.resolve(ioteaProjectRootDir, 'docker-compose'),
+        name: terminalName,
+        env: {
+            _ENV_FILE: envFile as string
+        }
+    });
+
+    terminal.sendText(`docker-compose -f ${composeFile} --project-name vscode-ext --env-file=${envFile} up --build --remove-orphans`);
+
+    terminal.show(false);
+}
+
+async function stopComposeInTerminal(terminalName: string, composeFile: string, terminal: vscode.Terminal | undefined) {
+    const terminals = [];
+
+    if (terminal !== undefined) {
+        terminals.push(terminal);
+    } else {
+        for (let terminal of vscode.window.terminals) {
+            if (terminal.name === terminalName) {
+                terminals.push(terminal);
+            }
+        }
+    }
+
+    if (terminals.length === 0) {
+        // Ask for the used .env-file, if no terminal is given
+        try {
+            await stopDockerCompose(terminalName, composeFile, await chooseComposeEnvFile());
+        }
+        catch(err) {
+            vscode.window.showErrorMessage(err.message);
+        }
+
+        return;
+    }
+
+    for (let terminal of terminals) {
+        const envFile = ((terminal.creationOptions as vscode.TerminalOptions).env as any)._ENV_FILE;
+        await stopDockerCompose(terminalName, composeFile, envFile);
+        terminal.dispose();
+    }
+}
+
+async function stopDockerCompose(terminalName: string, composeFile: string, envFile: string) {
     const ioteaProjectRootDir: any = getIoTeaRootDir();
 
     const terminal = new Terminal();
 
-    return vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'Stopping IoTea Platform...'}, async p => {
+    return vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: `Stopping ${terminalName}...`}, async p => {
         await terminal.executeCommand(
             'docker-compose',
-            ['-f', 'docker-compose.platform.yml', '--project-name', 'vscode-ext', '--env-file', envFile, 'down'],
+            ['-f', composeFile, '--project-name', 'vscode-ext', '--env-file', envFile, 'down'],
             path.resolve(ioteaProjectRootDir,'docker-compose'),
             message => { p.report({ message }); }
         );
