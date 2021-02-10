@@ -93,7 +93,7 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
   - __Make sure to have the latest certificates matching your installation. You might have to check the commit from the last built of the server.__
 
 - Make sure to copy the `<JSON-Web Token>` from [here](https://github.com/eclipse/kuksa.val/blob/master/certificates/jwt/super-admin.json.token)<br>
-  Insert it into your configuration at `vss.jwt`. This will be needed for any client to authorize against the server.
+  Make sure you update this token in your _vss2iotea configuration file_ and in any other configuration file, which needs to authenticate against the Kuksa.VAL server.
   - If you have to create a new token (e.g. because the old one expired), execute `python createToken.py super-admin.json` to create a newly signed token based on the configuration found in _super-admin.json_
 
 ### Run KUKSA.VAL
