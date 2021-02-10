@@ -288,7 +288,7 @@ export function activate(context: vscode.ExtensionContext) {
                 copyDirContentsSync(path.resolve(ioteaProjectRootDir, 'docker-compose/platform'), platformConfigDir)
 
                 // Copy the demo talent into this directory
-                fs.copyFileSync(path.resolve(__dirname, '../resources/talent.demo.js'), path.resolve(talentProjectDir, 'talent.demo.js'));
+                fs.copyFileSync(path.resolve(__dirname, '../resources/talent.demo.js'), path.resolve(talentProjectDir, 'index.js'));
 
                 // Create the .env file used by docker-compose
 
