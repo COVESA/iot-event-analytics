@@ -9,6 +9,7 @@
  ****************************************************************************/
 
 const express = require('express');
+const cors = require('cors');
 const debug = require('debug');
 const jsonata = require('jsonata');
 const path = require('path');
@@ -30,6 +31,8 @@ module.exports = class MetadataApi extends SwaggerApi {
      */
     createApiV1() {
         const router = express.Router();
+
+        router.use(cors());
 
         this.__setupSwagger(
             router,
