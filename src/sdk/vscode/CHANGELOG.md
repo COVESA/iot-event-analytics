@@ -12,4 +12,9 @@
 
 ## [Unreleased]
 
-- Initial release
+- 0.6.0 [2021-02-10]
+  - Add MQTT Publisher to VSCode Extension
+
+- 0.5.0
+  - Add One-Click Talent project creation using JavaScript SDK
+  - Add IoTea platform controls

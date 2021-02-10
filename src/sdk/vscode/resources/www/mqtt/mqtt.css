@@ -1,0 +1,29 @@
+#result {
+    padding-left: 8px;
+}
+
+.topicns-group-content {
+    display: flex;
+    align-items: baseline;
+}
+
+.topicns-group-content > .topic {
+    flex-grow: 1;
+}
+
+.buttongroup {
+    flex-direction: row;
+    align-items: baseline;
+}
+
+@media only screen and (max-width: 450px) {
+    #result {
+        padding-left: 0;
+        padding-top: 6px;
+    }
+
+    .buttongroup {
+        flex-direction: column;
+        align-items: center;
+    }
+}

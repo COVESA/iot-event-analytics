@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="{{EXT_BASE_SCRIPT}}"></script>
+    <script type="text/javascript" src="{{EXT_SCRIPT}}"></script>
+    <link rel="stylesheet" href="{{EXT_BASE_CSS}}" />
+    <link rel="stylesheet" href="{{EXT_CSS}}" />
+  </head>
+  <body>
+    <div class="panel">
+      <h1>MQTT Publisher</h1>
+      <div class="row">
+        <div class="col1">
+          <div class="group">
+            <h4>Broker: Address</h4>
+            <p class="stretch-vertical">The address of your MQTT broker</p>
+            <input type="text" placeholder="mqtt://localhost:1883" value="mqtt://localhost:1883" id="mqttEndpoint" class="fullwidth"/>
+          </div>
+        </div>
+        <div class="col2">
+          <div class="group">
+            <h4>Broker: Topic Namespace</h4>
+            <p class="stretch-vertical">All topics will be prefixed by this namespace</p>
+            <input type="text" placeholder="iotea/" value="iotea/" id="topicNs" onblur="updateTopicNs(this.value)" class="fullwidth"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="group">
+          <h4>Message: Topic</h4>
+          <div class="topicns-group-content">
+            <span class="topicNs">iotea/&nbsp;</span>
+            <input type="text" placeholder="" value="" id="topic" class="topic"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="group">
+          <h4>Message: Type</h4>
+          <div class="select-wrapper">
+            <select id="messageType" onchange="setMessageType(this.value);">
+              <option value="none">None</option>
+              <option value="ioteaevent" selected>IoTea Event</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="row ioteaevent">
+        <div class="group">
+          <h4>IoTea: MetadataAPI Endpoint Address</h4>
+          <p>Will be automatically loaded, if Message type is set to "IoTea Event". To manually update, click <a href="javascript:void(0);", onclick="updateIoteaTypeFeatures()">here</a></p>
+          <input type="text" placeholder="http://localhost:8080/metadata/api/v1/types" value="http://localhost:8080/metadata/api/v1/types" id="ioteaMetadataApiEndpoint" class="fullwidth"/>
+        </div>
+      </div>
+      <div class="row ioteaevent">
+        <div class="col1">
+          <div class="group">
+            <h4>IoTea: Event Type</h4>
+            <div class="select-wrapper fullwidth">
+              <select id="ioteaEventType" onchange="onIoTeaEventTypeChange(this.value); updateJsonMessage('type', this.value);"></select>
+            </div>
+          </div>
+        </div>
+        <div class="col2">
+          <div class="group">
+            <h4>IoTea: Event Feature</h4>
+            <div class="select-wrapper fullwidth">
+              <select id="ioteaEventFeature" onchange="updateJsonMessage('feature', this.value);"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="group">
+          <h4>Message: Content</h4>
+          <textarea id="content" class="fullwidth" rows="10"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="group buttongroup">
+          <input type="button" value="Submit" onclick="submitMessage()" />
+          <span id="result" class="hidden"></span>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      window.addEventListener('message', ev => {
+        show('#result');
+
+        const data = ev.data;
+        const elem = document.querySelector('#result');
+
+        let vscodeColorClass = '--vscode-foreground';
+
+        if (data.success) {
+          elem.innerHTML = '&nbsp;Success';
+        } else {
+          elem.innerHTML = `&nbsp;${data.error}`;
+          vscodeColorClass = '--vscode-errorForeground';
+        }
+
+        setStyle('#result', 'color', `var(${vscodeColorClass})`);
+
+        setTimeout(() => { hide('#result'); }, 2500);
+      });
+
+      // Set default message type
+      setMessageType(getValue('#messageType'));
+    </script>
+  </body>
+</html>
