@@ -57,16 +57,16 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
       ```json
       {
         "Vehicle": {
-          "uuid": "...",
-          "type": "branch",
-          "children": {
-            "UserId": {                                           // Add this UserId field
-              "description": "UserId",
-              "datatype": "string",
-              "value": "ishouldbethesubject",
-              "uuid": "<choose one>",
-              "type": "attribute"
-            },
+          "Driver": {
+            "Identifier": {
+              "Subject": {
+                "description": "Subject for the authentification of the occupant. E.g. UserID 7331677",
+                "datatype": "string",
+                "type": "sensor",
+                "uuid": "...",
+                "value": "ishouldbetheuserid"                         // Add a default value for the Subject
+              }
+            }
           }
         }
       }

@@ -16,7 +16,7 @@
     },
     "segment": "150000",
     "paths": {
-        "userId": "Vehicle.UserId",
+        "userId": "Vehicle.Driver.Indentifier.Subject",
         "instanceId": "Vehicle.VehicleIdentification.VIN"
     }
 }
