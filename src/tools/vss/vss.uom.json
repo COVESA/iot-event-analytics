@@ -1,5 +1,6 @@
 {
     "m": "M",
+    "m/s^2": "MS2",
     "m/s2": "MS2",
     "l": {
         "fac": 1,
@@ -23,6 +24,13 @@
         "desc": "One inch",
         "ref": "M"
     },
+    "cm": "CM",
+    "cm^3": {
+        "fac": 0.000001,
+        "unit": "cm3",
+        "desc": "Cubic centimeter",
+        "ref": "M3"
+    },
     "cm3": {
         "fac": 0.000001,
         "unit": "cm3",
@@ -39,7 +47,14 @@
         "desc": "Kilopascal",
         "ref": "PA"
     },
+    "kPa": {
+        "fac": 1000,
+        "unit": "kpa",
+        "desc": "Kilopascal",
+        "ref": "PA"
+    },
     "pa": "PA",
+    "Pa": "PA",
     "kW": {
         "fac": 1000,
         "unit": "kW",
@@ -52,6 +67,18 @@
         "desc": "Kilowatt",
         "ref": "W"
     },
+    "kWh": {
+        "fac": 1000,
+        "unit": "kWh",
+        "desc": "Kilowattstunde",
+        "ref": "Wh"
+    },
+    "Wh": {
+        "fac": 1,
+        "unit": "kWh",
+        "desc": "Wattstunde"
+    },
+    "Nm": "N/M",
     "N.m": "N/M",
     "g/s": {
         "fac": 0.001,

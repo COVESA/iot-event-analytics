@@ -48,6 +48,14 @@
             {
                 "command": "iotea.publishMqttMessage",
                 "title": "Bosch IoT Event Analytics: Publish an MQTT message"
+            },
+            {
+                "command": "iotea.createIoTeaTypesFromVssJson",
+                "title": "Bosch IoT Event Analytics: Convert Vehicle Signal Specification to IoT Event Analytics types configuration"
+            },
+            {
+                "command": "iotea.createKuksaValConfiguration",
+                "title": "Bosch IoT Event Analytics: Create configuration files for Kuksa.VAL"
             }
         ],
         "snippets": [
