@@ -18,7 +18,7 @@
 
 ## Build
 
-- Clone the boschio.iotea project from [here](https://sourcecode.socialcoding.bosch.com/projects/DBAO/repos/boschio.iotea/browse)
+- Clone the boschio.iotea project from [here](https://<Github IoTea repo>)
 - Go into the folder, into which you cloned the project. This folder will be referred to as `<iotea project folder>`
 - Look into the _package.json_ file in the `<iotea project folder>` to retrieve the `<version>`
 
