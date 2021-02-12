@@ -80,7 +80,8 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
 }
 
 (async argv => {
-    const broker = new NamedMqttBroker('CLI', argv.connectionString);
+    // Do NOT use any topic namespace
+    const broker = new NamedMqttBroker('CLI', argv.connectionString, null);
 
     try {
         let totalMessageCount = 0;
