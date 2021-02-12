@@ -17,34 +17,25 @@ import { chooseAndUpdateIoTeaProjectDir } from './util';
 const CREATE_IOTEA_TYPES_FROM_VSS_JSON_COMMAND = 'iotea.createIoTeaTypesFromVssJson';
 const CREATE_KUKSA_VAL_CONFIG_COMMAND = 'iotea.createKuksaValConfiguration';
 
+const YES_OPTION = 'yes';
+const NO_OPTION = 'no';
+
 export class VssUtils {
     static register(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand(CREATE_IOTEA_TYPES_FROM_VSS_JSON_COMMAND, async () => {
             const ioteaProjectRootDir = await chooseAndUpdateIoTeaProjectDir();
 
-            await vscode.window.showInformationMessage('Do you want to add the Vehicle Signal Specification to an existing IoT Event Analytics types configuration file?', 'yes', 'no')
-                .then(async (shouldUseExistingTypesJson: string | undefined) => {
-                    if (shouldUseExistingTypesJson === undefined) {
+            await vscode.window.showInformationMessage('Do you want to add the Vehicle Signal Specification to an existing IoT Event Analytics types configuration file?', YES_OPTION, NO_OPTION)
+                .then(async (shouldUseExistingTypesJsonAsInput: string | undefined) => {
+                    if (shouldUseExistingTypesJsonAsInput === undefined) {
                         // Dialog was closed
                         throw new Error('Command was cancelled by user');
                     }
 
-                    if (shouldUseExistingTypesJson === 'no') {
-                        return vscode.window.showOpenDialog({
-                            canSelectFolders: true,
-                            canSelectFiles: false,
-                            canSelectMany: false,
-                            title: 'Select the output directory for the IoT Event Analytics types configuration file'
-                        })
-                            .then((selectedFolders: vscode.Uri[] | undefined) => {
-                                if (selectedFolders === undefined || selectedFolders.length === 0) {
-                                    throw new Error('No output folder for the IoT Event Analytics types configuration file selected');
-                                }
+                    let absTypesJsonInputPath: string | null = null;
 
-                                return path.resolve(selectedFolders[0].fsPath, 'types.json');
-                            });
-                    } else {
-                        return vscode.window.showOpenDialog({
+                    if (shouldUseExistingTypesJsonAsInput === YES_OPTION) {
+                        absTypesJsonInputPath = await vscode.window.showOpenDialog({
                             canSelectFolders: false,
                             canSelectFiles: true,
                             canSelectMany: false,
@@ -61,32 +52,78 @@ export class VssUtils {
                                 return selectedFiles[0].fsPath;
                             });
                     }
-                })
-                .then(async (absTypesJsonOutputPath: string) => {
-                    const ioteaSegment: string | undefined = await vscode.window.showInputBox({
-                        prompt: 'Specify the IoTea segment (eCl@ss) to which the Vehicle Signal Specification belongs e.g. 280101',
-                        value: '280101',
-                        validateInput: (input: string) => {
-                            if (/^[0-9]{6}$/.test(input)) {
-                                return null;
+
+                    const absTypesJsonOutputPath = await vscode.window.showOpenDialog({
+                        canSelectFolders: true,
+                        canSelectFiles: false,
+                        canSelectMany: false,
+                        title: 'Select the output directory for the IoT Event Analytics types configuration file',
+                        defaultUri: absTypesJsonInputPath !== null ? vscode.Uri.file(path.dirname(absTypesJsonInputPath)) : undefined
+                    })
+                        .then((selectedFolders: vscode.Uri[] | undefined) => {
+                            if (selectedFolders === undefined || selectedFolders.length === 0) {
+                                throw new Error('No output folder for the IoT Event Analytics types configuration file selected');
                             }
 
-                            return 'Value has to be 6 digits long e.g. 280101';
-                        }
-                    });
+                            return path.resolve(selectedFolders[0].fsPath, 'types.json');
+                        });
 
-                    if (ioteaSegment === undefined) {
-                        throw new Error('Command was cancelled by user');
+                    return [ absTypesJsonInputPath, absTypesJsonOutputPath ];
+                })
+                .then(async (absTypesJsonIOPaths: (string | null)[]) => {
+                    let ioteaSegment: string = '280101';
+                    let overwriteExistingSegment = false;
+
+                    while(true) {
+                        let userIoteaSegment = await vscode.window.showInputBox({
+                            prompt: 'Specify the IoTea segment (eCl@ss) to which the Vehicle Signal Specification belongs e.g. 280101',
+                            value: ioteaSegment,
+                            validateInput: (input: string) => {
+                                if (/^[0-9]{6}$/.test(input)) {
+                                    return null;
+                                }
+
+                                return 'Value has to be 6 digits long e.g. 280101';
+                            }
+                        });
+
+                        if (userIoteaSegment === undefined) {
+                            throw new Error('Command was cancelled by user');
+                        }
+
+                        ioteaSegment = userIoteaSegment;
+
+                        if (absTypesJsonIOPaths[0] === absTypesJsonIOPaths[1]) {
+                            // Check if segment is already present in input types configuration
+                            const typesJson = JSON.parse(fs.readFileSync(absTypesJsonIOPaths[0] as string).toString('utf-8'));
+
+                            if (Object.prototype.hasOwnProperty.call(typesJson, ioteaSegment)) {
+                                const answer: string | undefined = await vscode.window.showInformationMessage(`Do you want overwrite the existing segment ${ioteaSegment} in ${absTypesJsonIOPaths[1]}?`, YES_OPTION, NO_OPTION);
+
+                                if (answer === undefined) {
+                                    throw new Error('Command was cancelled by user');
+                                }
+
+                                if (answer === NO_OPTION) {
+                                    // Restart segment input
+                                    continue;
+                                }
+
+                                overwriteExistingSegment = true;
+                            }
+                        }
+
+                        break;
                     }
 
-                    return vscode.window.showInformationMessage('Do you want to use an existing Vehicle Signal Specification?', 'yes', 'no')
+                    return vscode.window.showInformationMessage('Do you want to use an existing Vehicle Signal Specification?', YES_OPTION, NO_OPTION)
                         .then(async (shouldUseExistingVssDocument: string | undefined) => {
                             if (shouldUseExistingVssDocument === undefined) {
                                 throw new Error('Command was cancelled by user');
                             }
 
-                            if (shouldUseExistingVssDocument === 'no') {
-                                return VssUtils.createIoTeaTypesFromVssJson(ioteaProjectRootDir, absTypesJsonOutputPath, ioteaSegment, true);
+                            if (shouldUseExistingVssDocument === NO_OPTION) {
+                                return VssUtils.createIoTeaTypesFromVssJson(ioteaProjectRootDir, absTypesJsonIOPaths[1] as string, ioteaSegment, absTypesJsonIOPaths[0], overwriteExistingSegment);
                             }
 
                             const vssDocuments: vscode.Uri[] | undefined = await vscode.window.showOpenDialog({
@@ -103,7 +140,7 @@ export class VssUtils {
                                 throw new Error('Command was cancelled by user');
                             }
 
-                            return VssUtils.createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir, vssDocuments[0].fsPath, absTypesJsonOutputPath, ioteaSegment, true);
+                            return VssUtils.createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir, vssDocuments[0].fsPath, absTypesJsonIOPaths[1] as string, ioteaSegment, absTypesJsonIOPaths[0], overwriteExistingSegment);
                         });
                 })
                 .then(() => {}, err => {
@@ -154,31 +191,37 @@ export class VssUtils {
         }));
     }
 
-    static async createIoTeaTypesFromVssJson(ioteaProjectRootDir: string, absTypesJsonOutputPath: string, ioteaSegment: string, forceOverwriteSegment = false): Promise<void> {
+    static async createIoTeaTypesFromVssJson(ioteaProjectRootDir: string, absTypesJsonOutputPath: string, ioteaSegment: string, absTypesJsonInputPath: string | null, forceOverwriteSegment = false): Promise<void> {
         // Create VSS Json from scratch
         const absTempDir = fs.mkdtempSync('vss-json-');
 
         await VssUtils.createVssJsonAt(absTempDir, '', '');
-        await VssUtils.createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir, path.resolve(absTempDir, 'vss.json'), absTypesJsonOutputPath, ioteaSegment, forceOverwriteSegment);
+        await VssUtils.createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir, path.resolve(absTempDir, 'vss.json'), absTypesJsonOutputPath, ioteaSegment, absTypesJsonInputPath, forceOverwriteSegment);
 
         fs.rmdirSync(absTempDir, {
             recursive: true
         });
     }
 
-    static async createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir: string, absVssJsonInputPath: string, absTypesJsonOutputPath: string, ioteaSegment: string, forceOverwriteSegment = false): Promise<void> {
+    static async createIoTeaTypesFromExistingVssJson(ioteaProjectRootDir: string, absVssJsonInputPath: string, absTypesJsonOutputPath: string, ioteaSegment: string, absTypesJsonInputPath: string | null = null, forceOverwriteSegment = false): Promise<void> {
         await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'Converting Vehicle Signal Specification...'}, async p => {
             const absVssConversionPath = path.resolve(ioteaProjectRootDir, 'src', 'tools', 'vss');
 
             const t = new Terminal();
 
-            const args = [ 'vss2types.js', '-s', ioteaSegment, '-v', absVssJsonInputPath, '-u', 'vss.uom.json', '-o', absTypesJsonOutputPath];
+            const args = [ 'vss2types.js', '-s', ioteaSegment, '-v', `"${absVssJsonInputPath}"`, '-u', 'vss.uom.json', '-o', `"${absTypesJsonOutputPath}"` ];
 
             if (forceOverwriteSegment) {
                 args.push('-f', 'true');
             }
 
-            await t.executeCommand('node', args, absVssConversionPath);
+            if (absTypesJsonInputPath !== null) {
+                args.push('-i', absTypesJsonInputPath);
+            }
+
+            await t.executeCommand('node', args, absVssConversionPath, (message: string) => {
+                p.report({ message });
+            });
         });
     }
 
@@ -221,18 +264,13 @@ export class VssUtils {
 
     private static async createVssJsonAt(absOutPath: string, userId: string, vehicleId: string, vssJsonFilename: string = 'vss.json'): Promise<void> {
         // Clone VSS repository
-        console.log('1');
         const absVssRepositoryPath: string = await VssUtils.cloneVssRepository();
-        console.log('2');
         // Create VSS model as Json
         const absOriginalVssJsonPath: string = await VssUtils.createVssJson(absVssRepositoryPath);
-        console.log('3');
         // Add userId and vehicleId as default values
         const json = VssUtils.getModifiedVssJson(absOriginalVssJsonPath, userId, vehicleId);
-        console.log('4');
         // Write vss.json
         fs.writeFileSync(path.resolve(absOutPath, vssJsonFilename), JSON.stringify(json, null, 4));
-        console.log('5');
         // Remove the temporary repository clone
         return vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: `Cleaning up...`}, async p => {
             fs.rmdirSync(absVssRepositoryPath, {
