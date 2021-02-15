@@ -63,6 +63,11 @@ export class MqttWebView {
                    .replace('{{EXT_SCRIPT}}', this.getExtResourceUriString('www/mqtt/mqtt.js'))
                    .replace('{{EXT_CSS}}', this.getExtResourceUriString('www/mqtt/mqtt.css'));
 
+        // Inject configurations from platform
+        html = html.replace('{{CONSTANTS}}', `
+            const VSS_PATH_SEPARATOR = '${vscode.workspace.getConfiguration('iotea').get('vss.path.separator')}';
+            const VSS_PATH_REPLACER = ${JSON.stringify(vscode.workspace.getConfiguration('iotea').get('vss.path.replacer'))};`);
+
         // Load HTML page
         this.wwPanel.webview.html = html;
     }

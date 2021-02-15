@@ -119,3 +119,26 @@ function hide(selector) {
 function postMessage(msg) {
     vscode.postMessage(msg);
 }
+
+class VssPathTranslator {
+    constructor(vssPathSeparator, vssPathReplacer) {
+        this.vssPathSeparator = vssPathSeparator;
+        this.vssPathReplacer = vssPathReplacer;
+    }
+
+    ioteaFeature2KuksaPartialVssPath(feature) {
+        let kuksaPartialVssPath = feature;
+        for (let replacement in this.vssPathReplacer) {
+            kuksaPartialVssPath = this.replaceAllChars(kuksaPartialVssPath, this.vssPathReplacer[replacement], replacement);
+        }
+        return kuksaPartialVssPath;
+    }
+
+    replaceAllChars(input, searchChar, replaceChar) {
+        const reservedRegexpChars = ['[', ']', '(', ')', '\\', '^', '$', '.', '|', '?', '*', '+', '{', '}'];
+        if (reservedRegexpChars.indexOf(searchChar) === -1) {
+            return input.replace(new RegExp(`${searchChar}`, 'g'), replaceChar);
+        }
+        return input.replace(new RegExp(`\\${searchChar}`, 'g'), replaceChar);
+    }
+}
