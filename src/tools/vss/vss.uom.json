@@ -70,13 +70,7 @@
     "kWh": {
         "fac": 1000,
         "unit": "kWh",
-        "desc": "Kilowattstunde",
-        "ref": "Wh"
-    },
-    "Wh": {
-        "fac": 1,
-        "unit": "kWh",
-        "desc": "Wattstunde"
+        "desc": "Kilowattstunde"
     },
     "Nm": "N/M",
     "N.m": "N/M",
