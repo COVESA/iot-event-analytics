@@ -1,0 +1,1 @@
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "echo_consumer.messageString", "value": "Hello", "whenMs": 1626566400000 }
