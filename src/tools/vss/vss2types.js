@@ -222,7 +222,6 @@ function walkModel(node, featurePath, typeConfig, vss2UomJson, nextIndex = 0) {
 
                 break;
             }
-            case 'uint8[]':
             case 'string[]': {
                 metadata.encoding.type = 'object';
                 metadata.encoding.encoder = null;
