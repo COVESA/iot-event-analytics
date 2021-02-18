@@ -41,6 +41,9 @@ class Instance {
     }
 
     setFeatureAt(idx, encodedValue, rawValue, whenMs, maxHistoryLength = DEFAULT_HISTORY_LENGTH, ttlMs = DEFAULT_FEATURE_TTL_MS) {
+        // Prune outdated values as soon as any value is set
+        this.prune();
+
         if (whenMs === undefined || encodedValue === undefined || rawValue === undefined) {
             // All values need to be defined
             return false;
@@ -156,18 +159,20 @@ class Instance {
         return true;
     }
 
-    prune(now) {
-        let changed = false;
-
-        for (let idx of Object.keys(this.aux)) {
+    prune(now = Date.now()) {
+        for (let idx of Object.keys(this.featureHelper)) {
             if (this.featureHelper[idx].ttlMs > 0 && this.featureHelper[idx].ttlMs < now) {
                 this.features[idx] = null;
-                this.featureHelper[idx].ttlMs = 0;
-                changed = true;
+                // Remove the feature helper for this specific feature
+                // All statistical data and history gets deleted
+                // delete this.featureHelper[idx];
+                // Soft-delete by setting featureHelper[idx].ttlMs to 0
+                // May get slow over time, since no feature within the featureHelper gets actually deleted
+                // even though they might be invalid
+                // TODO: Maybe make this configurable in the metadata
+                this.featureHelper[idx].ttl = 0;
             }
         }
-
-        return changed;
     }
 
     __validateIndex(idx) {

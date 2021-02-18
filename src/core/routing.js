@@ -80,6 +80,11 @@ module.exports = class Routing {
                     continue;
                 }
 
+                // TODO: If ruleset evaluated to true, check if the current event evaluated to true
+                // Only if true, forward it to the talent --> Maybe make that configurable
+                // Currently a current event can evaluate to false, but the circumventing OrRule evaluates to true
+                // So the whole ruleset evaluates to true
+
                 let returnTopic = INGESTION_TOPIC;
 
                 if (ruleset.remote === true) {
