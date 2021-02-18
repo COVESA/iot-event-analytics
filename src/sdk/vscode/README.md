@@ -10,6 +10,17 @@
 
 # IoT Event Analytics VSCode Extension
 
+## Prerequisites
+
+- Docker Desktop / Docker for Windows (may require proxy configuration) >=2.4.0.0
+  - Docker Engine >= v19.03.13
+- docker-compose >= 1.27.4
+- Git
+- NodeJS >= 12.3.0 (+npm and yarn globally installed) (may require proxy configuration) to run the demo Talent
+- VSCode >= 1.51.0
+- Clone of IoTEA repository (develop branch) from socialcoding (Will be OSS on GitHub in near future)
+  - __Install all dependencies in the IoTEA project folder using `yarn`__, since several commands are using tools, which run directly from source
+
 ## Installation
 
 - Go to _View_ > _Extensions_ > _..._ > _Install from VSIX_
@@ -18,14 +29,14 @@
 
 ## Settings
 
-- Go to _File_ > _Preferences_ > _Settings_ and type _iotea_
+- Go to _File_ > _Preferences_ > _Settings_ and type _iotea_ to specify machine-wide settings
+- Open extension page to get an overview over all contribution points and available commands
+
+## Command usage
+
+- `Strg + Shift + p` > type iotea and you will see all available commands
 
 ## Talent
-
-### Create
-
-- `Strg + Shift + p` > _Bosch IoT Event Analytics: Create new JavaScript Talent class_
-- `Strg + Shift + p` > _Bosch IoT Event Analytics: Create new JavaScript Talent project_
 
 ### Code
 
@@ -35,16 +46,3 @@
 - `iotea.rule.or` + `Strg + Space` > Create new Or Rule
 - `iotea.rule.op` + `Strg + Space` > Create a new Rule with an Operation Constraint
 - `iotea.rule.change` + `Strg + Space` > Create a new Rule with a Change Constraint
-
-## IoT Event Analytics Platform
-
-### Controls
-
-- `Strg + Shift + p` > _Bosch IoT Event Analytics: Start platform using docker-compose_
-- `Strg + Shift + p` > _Bosch IoT Event Analytics: Stop platform using docker-compose_
-
-## Tools
-
-### MQTT
-
-- `Strg + Shift + p` > _Bosch IoT Event Analytics: Publish an MQTT message_

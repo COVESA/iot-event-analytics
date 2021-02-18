@@ -12,6 +12,12 @@
 
 ## [Unreleased]
 
+- 0.8.0 [2021-02-18]
+  - Extend configuration to support Python, pip, docker-compose executable and Docker socket (for rootless installations)
+  - Extend configuration for IoT Event Analytics platform to make MQTT- and API-ports configurable
+  - Extend MQTT Publisher to have specialized inputs for IoTEA values based on feature metadata
+  - Fix missing dialog caption
+
 - 0.7.0 [2021-02-12]
   - Add commands to facilitate the integration of Vehicle Signal Specification (VSS) into IoT Event Analytics
     - Create complete Kuksa.VAL configuration
