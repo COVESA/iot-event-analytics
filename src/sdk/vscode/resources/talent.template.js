@@ -33,4 +33,5 @@ class MyTalent extends Talent {
     }
 }
 
+/* Update the port, if you specified a different one in your configuration !!!*/
 new MyTalent('mqtt://localhost:1883').start();

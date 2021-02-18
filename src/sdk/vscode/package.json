@@ -86,7 +86,25 @@
                     "scope": "application",
                     "type": "string",
                     "default": "mqtt://localhost:1883",
-                    "description": "MQTT Endpoint"
+                    "description": "MQTT Endpoint (port has to match given MQTT port)"
+                },
+                "iotea.platform.mqtt.port": {
+                    "scope": "machine-overridable",
+                    "type": "number",
+                    "default": 1883,
+                    "description": "MQTT Port"
+                },
+                "iotea.platform.mqtt.remote-port": {
+                    "scope": "machine-overridable",
+                    "type": "number",
+                    "default": 1884,
+                    "description": "MQTT port for remote-broker"
+                },
+                "iotea.platform.api.port": {
+                    "scope": "machine-overridable",
+                    "type": "number",
+                    "default": 8080,
+                    "description": "Platform API port for REST Swagger UI"
                 },
                 "iotea.project.root.dir": {
                     "scope": "machine-overridable",
