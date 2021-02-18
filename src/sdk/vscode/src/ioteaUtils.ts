@@ -19,7 +19,10 @@ import {
     copyDirContentsSync,
     chooseAndUpdateIoTeaProjectDir,
     getIoTeaRootDir,
-    getAndUpdateDockerProxy
+    getDockerSock,
+    getDockerComposeCmd,
+    getAndUpdateDockerProxy,
+    updateJsonFileAt
 } from './util';
 
 import { MqttWebView } from './mqttWebView';
@@ -285,15 +288,21 @@ export class IoTeaUtils {
             }
         }
 
+        const env: any = {
+            _ENV_FILE: envFile as string
+        };
+
+        if (getDockerSock() !== '') {
+            env.DOCKER_HOST = getDockerSock();
+        }
+
         const terminal = vscode.window.createTerminal({
+            env,
             cwd: path.resolve(ioteaProjectRootDir, 'docker-compose'),
-            name: terminalName,
-            env: {
-                _ENV_FILE: envFile as string
-            }
+            name: terminalName
         });
 
-        terminal.sendText(`docker-compose -f ${composeFile} --project-name vscode-ext --env-file=${envFile} up --build --remove-orphans`);
+        terminal.sendText(`${getDockerComposeCmd()} -f ${composeFile} --project-name vscode-ext --env-file=${envFile} up --build --remove-orphans`);
 
         terminal.show(false);
     }
@@ -335,11 +344,18 @@ export class IoTeaUtils {
 
         const terminal = new Terminal();
 
+        const env: any = {};
+
+        if (getDockerSock() !== '') {
+            env.DOCKER_HOST = getDockerSock();
+        }
+
         return terminal.executeCommand(
-            'docker-compose',
+            getDockerComposeCmd(),
             ['-f', composeFile, '--project-name', 'vscode-ext', '--env-file', envFile, 'down'],
             path.resolve(ioteaProjectRootDir,'docker-compose'),
-            message => { this.reportProgress(message); }
+            message => { this.reportProgress(message); },
+            env
         );
     }
 
@@ -349,7 +365,8 @@ export class IoTeaUtils {
             canSelectMany: false,
             filters: {
                 'docker-compose environment file': ['env']
-            }
+            },
+            title: 'Select docker-compose .env file.'
         });
 
         if (selectedEnvFile === undefined) {

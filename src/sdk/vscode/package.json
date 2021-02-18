@@ -131,6 +131,30 @@
                         ".": "$"
                     },
                     "description": "Character replacements from VSS path to IoT Event Analytics features"
+                },
+                "iotea.terminal.docker-sock": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "",
+                    "description": "Has to be set for rootless docker e.g. unix:///run/user/1001/docker.sock"
+                },
+                "iotea.terminal.docker-compose": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "docker-compose",
+                    "description": "Command to start docker-compose"
+                },
+                "iotea.terminal.python": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "python3",
+                    "description": "Command to start Python 3"
+                },
+                "iotea.terminal.pip": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "pip3",
+                    "description": "Pip module"
                 }
             }
         }

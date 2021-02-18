@@ -43,7 +43,7 @@ export async function getAndUpdateDockerProxy(): Promise<string> {
 
     dockerProxy = (dockerProxy || '').trim();
 
-    await vscode.workspace.getConfiguration('iotea').update('project.docker.proxy', dockerProxy);
+    await vscode.workspace.getConfiguration('iotea').update('project.docker.proxy', dockerProxy, true);
 
     return dockerProxy;
 }
@@ -158,5 +158,5 @@ function updateJsonAt(json: any, updatePaths: any) {
 }
 
 function setIoTeaRootDir(ioteaProjectRootDir: string): Thenable<void> {
-    return vscode.workspace.getConfiguration('iotea').update('project.root.dir', ioteaProjectRootDir);
+    return vscode.workspace.getConfiguration('iotea').update('project.root.dir', ioteaProjectRootDir, true);
 }
