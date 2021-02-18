@@ -16,7 +16,14 @@ async function replaceOptionItems(selector, items, getDisplayName = i => i, getV
 
     for (let item of items) {
         const itemElem = document.createElement('option');
-        itemElem.value = getValue(item) || '';
+
+        let value = getValue(item);
+
+        if (value === undefined) {
+            value = '';
+        }
+
+        itemElem.value = value;
 
         if (item === null) {
             itemElem.selected = true;
@@ -45,6 +52,13 @@ function __setProperty(selector, property, value) {
     for (let i = 0; i < elems.length; ++i) {
         const elem = elems[i];
         elem[property] = value;
+
+        if (elem.onchange) {
+            // Trigger onchange listener
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent('change', false, true);
+            elem.dispatchEvent(evt);
+        }
     }
 }
 
@@ -108,6 +122,12 @@ function removeClass(selector, class_) {
     }
 }
 
+function setAttribute(selector, attr, value) {
+    document.querySelectorAll(selector).forEach(elem => {
+        elem.setAttribute(attr, value);
+    });
+}
+
 function show(selector) {
     removeClass(selector, 'hidden');
 }
@@ -141,4 +161,11 @@ class VssPathTranslator {
         }
         return input.replace(new RegExp(`\\${searchChar}`, 'g'), replaceChar);
     }
+}
+
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
 }

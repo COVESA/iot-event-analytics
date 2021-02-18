@@ -1,3 +1,4 @@
+let ioteaValueSelectValues = {};
 let ioteaTypeFeatures = {};
 
 function setMessageType(type) {
@@ -78,6 +79,88 @@ function createJsonMessage(type) {
     }
 }
 
+function onIoTeaEventValueUpdate(value, tryJson = false) {
+    if (tryJson) {
+        try {
+            value = JSON.parse(value);
+        }
+        catch(err) {}
+    }
+
+    updateJsonMessage('value', value);
+}
+
+function onIoTeaEventFeatureChange(feature) {
+    const type = getValue('#ioteaEventType');
+
+    updateJsonMessage('feature', feature);
+
+    const metaFeature = ioteaTypeFeatures[type][feature];
+
+    // Hide all value inputs
+    hide('.iotea-event-value');
+
+    let value = metaFeature.encoding.default;
+
+    if (metaFeature.encoding.encoder === 'category') {
+        show('.value-enum');
+
+        let selectedValue = value;
+        ioteaValueSelectValues = {};
+
+        if (selectedValue === undefined) {
+            selectedValue = metaFeature.encoding.enum[0];
+        }
+
+        replaceOptionItems('.value-enum-select', metaFeature.encoding.enum, value => `${value}`, value => {
+            const someUid = uuidv4();
+
+            ioteaValueSelectValues[someUid] = value;
+
+            if (value === selectedValue) {
+                selectedValue = someUid;
+            }
+
+            return someUid;
+        });
+
+        setValue('.value-enum-select', selectedValue);
+    } else if (metaFeature.encoding.type === 'number') {
+        if (metaFeature.encoding.encoder === 'minmax' || metaFeature.encoding.encoder === 'through') {
+            let min = 0;
+            let max = 1;
+
+            if (metaFeature.encoding.encoder === 'minmax') {
+                min = metaFeature.encoding.min;
+                max = metaFeature.encoding.max;
+            }
+
+            if (value === undefined) {
+                value = min + Math.round((max - min) / 2);
+            }
+
+            show('.value-range');
+            setAttribute('.value-range', 'min', min);
+            setAttribute('.value-range', 'max', max);
+            setValue('.value-range', value);
+        } else {
+            show('.value-number');
+            setValue('.value-number', value || 0);
+        }
+    } else if (metaFeature.encoding.type === 'string') {
+        show('.value-string');
+        setValue('.value-string', value || '');
+    } else if (metaFeature.encoding.type === 'object' || metaFeature.encoding.type === 'array' || metaFeature.encoding.type === 'any') {
+        show('.value-object');
+
+        if (metaFeature.encoding.type === 'array') {
+            setValue('.value-object', JSON.stringify(Array.isArray(value) ? value : [], null, 2));
+        } else {
+            setValue('.value-object', JSON.stringify(value || {}, null, 2));
+        }
+    }
+}
+
 function onIoTeaEventTypeChange(type) {
     if (Object.prototype.hasOwnProperty.call(ioteaTypeFeatures, type)) {
         const features = Object.keys(ioteaTypeFeatures[type]).sort((a, b) => a.localeCompare(b));
@@ -87,20 +170,27 @@ function onIoTeaEventTypeChange(type) {
             VSS_PATH_REPLACER
         );
 
+        function formatFeatureDisplayName(feature) {
+            const vssPath = vssPathTranslator.ioteaFeature2KuksaPartialVssPath(feature);
+
+            if (ioteaTypeFeatures[type][feature].unit === undefined) {
+                return vssPath;
+            }
+
+            return `${vssPath}&nbsp;[${ioteaTypeFeatures[type][feature].unit}]`;
+        }
+
         // Set features and add description title
         replaceOptionItems(
             '#ioteaEventFeature',
             features,
-            feature => `${vssPathTranslator.ioteaFeature2KuksaPartialVssPath(feature)}&nbsp;[${ioteaTypeFeatures[type][feature].unit}]`,
+            formatFeatureDisplayName,
             feature => feature,
             (itemElem, feature) => itemElem.title = ioteaTypeFeatures[type][feature].description
         );
 
         // Select first feature
         setValue('#ioteaEventFeature', features[0]);
-
-        // Update Message
-        updateJsonMessage('feature', features[0]);
     }
 }
 

@@ -68,9 +68,21 @@
           <div class="group">
             <h4>IoTea: Event Feature</h4>
             <div class="select-wrapper fullwidth">
-              <select id="ioteaEventFeature" onchange="updateJsonMessage('feature', this.value);"></select>
+              <select id="ioteaEventFeature" onchange="onIoTeaEventFeatureChange(this.value);"></select>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="row ioteaevent">
+        <div class="group">
+          <h4>IoTea: Event value</h4>
+          <input type="number" step="1" class="fullwidth iotea-event-value value-number hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-number'), 10));" />
+          <input type="range" min="1" max="100" value="50" class="value-range iotea-event-value hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-range'), 10));" />
+          <div class="select-wrapper fullwidth iotea-event-value value-enum hidden">
+            <select class="value-enum-select" onchange="onIoTeaEventValueUpdate(ioteaValueSelectValues[getValue('.value-enum-select')]);"></select>
+          </div>
+          <input type="text" class="fullwidth iotea-event-value value-string hidden" onchange="onIoTeaEventValueUpdate(getValue('.value-string'));"/>
+          <textarea class="fullwidth iotea-event-value value-object hidden" rows="10" onchange="onIoTeaEventValueUpdate(getValue('.value-object'), true);"></textarea>
         </div>
       </div>
       <div class="row ioteaevent">
