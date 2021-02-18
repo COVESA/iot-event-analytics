@@ -132,6 +132,11 @@ textarea:focus {
     right: 10px;
 }
 
+.highlight {
+    padding: 10px;
+    border: 1px solid var(--vscode-inputValidation-warningBorder);
+}
+
 select>option {
     background: var(--vscode-settings-dropdownBackground);
 }

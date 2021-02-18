@@ -94,6 +94,15 @@
           </div>
         </div>
       </div>
+      <div class="row ioteaevent">
+        <div class="group">
+          <div class="highlight">
+            The tuple <i>(subject, instance)</i> has to be unique for each virtual device, which sends events into the IoTea platform.<br />
+            If you want to simulate two different devices, belonging to the same <i>subject</i> i.e. to the same user (e.g. userId) be sure you change the <i>instance</i> (e.g. GUID) in the event, which should be sent.<br />
+            Otherwise an already existing device will be overwritten for that subject and given rulesets may not apply.
+        </div>
+        </div>
+      </div>
       <div class="row">
         <div class="group">
           <h4>Message: Content</h4>
