@@ -77,13 +77,13 @@
             "title": "IoTea",
             "properties": {
                 "iotea.platform.api.endpoint": {
-                    "scope": "application",
+                    "scope": "machine-overridable",
                     "type": "string",
                     "default": "http://localhost:8080/metadata/api/v1",
-                    "description": "Metadata API Endpoint"
+                    "description": "Metadata API Endpoint (port has to match given Platform API port)"
                 },
                 "iotea.platform.mqtt.endpoint": {
-                    "scope": "application",
+                    "scope": "machine-overridable",
                     "type": "string",
                     "default": "mqtt://localhost:1883",
                     "description": "MQTT Endpoint (port has to match given MQTT port)"
