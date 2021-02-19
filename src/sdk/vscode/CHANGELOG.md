@@ -12,6 +12,21 @@
 
 ## [Unreleased]
 
+- 0.9.0 [2021-02-19]
+  - Add configurable platform prechecks before any command is executed<br>
+    The checks are done once. When successfully done, the state is stored in the configuration, until the requirements change
+    - The checks contain
+      - Docker Engine _version_
+      - Docker _proxy configuration_
+      - docker-compose _version_
+      - NodeJS _version_
+      - git _any version_
+      - python _version_
+      - pip _any version_
+      - IoTea Project root folder _validation_
+  - Remove talent class creation command
+  - Remove all types definitions to devDependencies to reduce extension size to ~130kB
+
 - 0.8.0 [2021-02-18]
   - Extend configuration to support Python, pip, docker-compose executable and Docker socket (for rootless installations)
   - Extend configuration for IoT Event Analytics platform to make MQTT- and API-ports configurable
