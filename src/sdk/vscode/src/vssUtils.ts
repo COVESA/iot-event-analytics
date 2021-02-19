@@ -15,7 +15,8 @@ import { Terminal } from './terminal';
 import {
     chooseAndUpdateIoTeaProjectDir,
     getPythonCmd,
-    getPipModule
+    getPipModule,
+    showProgressWithRuntimePrecheck
 } from './util';
 
 export class VssUtils {
@@ -26,16 +27,16 @@ export class VssUtils {
 
     public static register(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand('iotea.vss.createIoTeaTypesFromVssJson', () => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Creating IoT Event Analytics types from Vehicle signal specification', cancellable: false }, async p => {
-                await new VssUtils(await chooseAndUpdateIoTeaProjectDir(), p).startCreateIoTeaTypesFromVssJsonFlow();
+            return showProgressWithRuntimePrecheck('Creating IoT Event Analytics types from Vehicle signal specification', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
+                return await new VssUtils(await chooseAndUpdateIoTeaProjectDir(), p).startCreateIoTeaTypesFromVssJsonFlow();
             })
             .then(() => {}, err => {
-                return vscode.window.showErrorMessage(err.message);
+                vscode.window.showErrorMessage(err.message);
             });
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand('iotea.vss.createKuksaValConfiguration', () => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Creating Kuksa.VAL configuration', cancellable: false }, async p => {
+            return showProgressWithRuntimePrecheck('Creating Kuksa.VAL configuration', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 await new VssUtils(await chooseAndUpdateIoTeaProjectDir(), p).startCreateKuksaValConfigFlow();
             })
             .then(() => {}, err => {

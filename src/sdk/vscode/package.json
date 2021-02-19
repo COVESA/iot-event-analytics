@@ -76,6 +76,38 @@
         "configuration": {
             "title": "IoTea",
             "properties": {
+                "iotea.platform.requirements": {
+                    "scope": "machine",
+                    "type": "object",
+                    "default": {
+                        "docker": {
+                            "version": ">=19.3.13",
+                            "config": true
+                        },
+                        "compose": {
+                            "version": ">=1.27.4"
+                        },
+                        "node": {
+                            "version": ">=12.3.0"
+                        },
+                        "git": {
+                            "version": "*"
+                        },
+                        "python": {
+                            "version": ">=3.6.8"
+                        },
+                        "pip": {
+                            "version": "*"
+                        }
+                    },
+                    "description": "Requirements, which are needed for the platform to run"
+                },
+                "iotea.platform.requirements-check": {
+                    "scope": "machine",
+                    "type": "string",
+                    "default": "",
+                    "description": "Should not be modified manually. Stores the result of the requirements check"
+                },
                 "iotea.platform.api.endpoint": {
                     "scope": "machine-overridable",
                     "type": "string",
@@ -138,6 +170,12 @@
                     "default": "",
                     "description": "Has to be set for rootless docker e.g. unix:///run/user/1001/docker.sock"
                 },
+                "iotea.terminal.docker": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "docker",
+                    "description": "Command to start docker"
+                },
                 "iotea.terminal.docker-compose": {
                     "scope": "machine-overridable",
                     "type": "string",
@@ -176,8 +214,10 @@
     "devDependencies": {
         "@types/glob": "^7.1.3",
         "@types/mocha": "^8.0.0",
-        "@types/node": "^12.11.7",
+        "@types/node": "^14.14.28",
         "@types/vscode": "^1.46.0",
+        "@types/bent": "^7.3.2",
+        "@types/semver": "^7.3.4",
         "@typescript-eslint/eslint-plugin": "^4.1.1",
         "@typescript-eslint/parser": "^4.1.1",
         "cpy-cli": "^3.1.1",
@@ -190,7 +230,7 @@
         "vscode-test": "^1.4.0"
     },
     "dependencies": {
-        "@types/bent": "^7.3.2",
-        "bent": "^7.3.12"
+        "bent": "^7.3.12",
+        "semver": "^7.3.4"
     }
 }

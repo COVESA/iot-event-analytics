@@ -22,7 +22,8 @@ import {
     getDockerSock,
     getDockerComposeCmd,
     getAndUpdateDockerProxy,
-    updateJsonFileAt
+    updateJsonFileAt,
+    showProgressWithRuntimePrecheck
 } from './util';
 
 import { MqttWebView } from './mqttWebView';
@@ -60,18 +61,18 @@ export class IoTeaUtils {
             }
         });
 
-        context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.PUBLISH_MQTT_MESSAGE, async () => {
-            try {
-                const ioteaUtils = new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir());
+        context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.PUBLISH_MQTT_MESSAGE, () => {
+            return showProgressWithRuntimePrecheck('Loading MQTT publisher', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
+                const ioteaUtils = new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p);
                 MqttWebView.loadOnce(context.extensionPath, ioteaUtils.ioteaProjectRootDir);
-            }
-            catch(err) {
+            })
+            .then(() => {}, err => {
                 vscode.window.showErrorMessage(err.message);
-            }
+            });
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.START_IOTEA_PLATFORM_COMMAND, async (envFile: string | undefined) => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Starting IoT Event Analytics platform'}, async p => {
+            return showProgressWithRuntimePrecheck('Starting IoT Event Analytics platform', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).startIoTeaPlatform(envFile);
             })
             .then(() => {}, err => {
@@ -80,7 +81,7 @@ export class IoTeaUtils {
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.STOP_IOTEA_PLATFORM_COMMAND, async (terminal: vscode.Terminal | undefined) => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Stopping IoT Event Analytics platform'}, async p => {
+            return showProgressWithRuntimePrecheck('Starting IoT Event Analytics platform', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).stopIoTeaPlatform(terminal);
             })
             .then(() => {}, err => {
@@ -89,7 +90,7 @@ export class IoTeaUtils {
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.START_MOSQUITTO_BROKER_COMMAND, async (envFile: string | undefined) => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Starting Mosquitto MQTT broker'}, async p => {
+            return showProgressWithRuntimePrecheck('Starting Mosquitto MQTT broker', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).startIoTeaMqttBroker(envFile);
             })
             .then(() => {}, err => {
@@ -98,7 +99,7 @@ export class IoTeaUtils {
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.STOP_MOSQUITTO_BROKER_COMMAND, async (terminal: vscode.Terminal | undefined) => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Stopping Mosquitto MQTT broker'}, async p => {
+            return showProgressWithRuntimePrecheck('Stopping Mosquitto MQTT broker', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).stopIoTeaMqttBroker(terminal);
             })
             .then(() => {}, err => {
@@ -107,7 +108,7 @@ export class IoTeaUtils {
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.CREATE_IOTEA_JS_TALENT_PROJECT_COMMAND, async () => {
-            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Creating IoT Event Analytics JavaScript Talent project'}, async p => {
+            return showProgressWithRuntimePrecheck('Creating IoT Event Analytics JavaScript Talent project', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).startCreateIoTeaJsTalentProjectFlow();
             })
             .then(() => {}, err => {
