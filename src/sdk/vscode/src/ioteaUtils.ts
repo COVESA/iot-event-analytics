@@ -115,23 +115,6 @@ export class IoTeaUtils {
                 vscode.window.showErrorMessage(err.message);
             });
         }));
-
-        context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.CREATE_IOTEA_JS_TALENT_CLASS_COMMAND, async () => {
-            try {
-                const uri = vscode.Uri.parse('untitled:talent.js');
-
-                const template = fs.readFileSync(path.resolve(__dirname, '../resources/talent.template.js'), { encoding: 'utf8' });
-
-                const edit = new vscode.WorkspaceEdit();
-                edit.insert(uri, new vscode.Position(0, 0), template);
-                await vscode.workspace.applyEdit(edit);
-
-                await vscode.window.showTextDocument(uri);
-            }
-            catch(err) {
-                vscode.window.showErrorMessage(err.message);
-            }
-        }));
     }
 
     public startIoTeaPlatform(envFile: string | undefined): Promise<void> {

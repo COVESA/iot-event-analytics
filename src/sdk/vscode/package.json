@@ -22,11 +22,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "iotea.createJSTalentClass",
-                "title": "Create new JavaScript Talent class",
-                "category": "Bosch IoT Event Analytics"
-            },
-            {
                 "command": "iotea.createJsTalentProject",
                 "title": "Create new JavaScript Talent project",
                 "category": "Bosch IoT Event Analytics"
