@@ -15,6 +15,16 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ![Image of IoTea](./docs/assets/iotea.jpg)
 
+## tldr - get it running - asap
+
+- Install the latest IoTea VSCode extension from _src/sdk/vscode/lib/*.vsix_
+- Use `Ctrl + Shift + P` to bring up the command palette and select _**Bosch IoT Event Analytics: Create new JavaScript Talent project**_ in an empty folder.
+  - Follow the instructions to create a "ready to use" Talent project
+- Bring the command palette up again and run _**Bosch IoT Event Analytics: Start platform using docker-compose**_.<br>Select the generated _.env_ file in the folder, which contains your newly created talent project.
+- Run your talent using NodeJS by simple run `node index.js` in your newly created talent project.
+- Send events to the platform by using the command _**Bosch IoT Event Analytics: Publish an MQTT Message**_
+- __Done__
+
 ## Project structure
 
 ```code
@@ -89,7 +99,10 @@ The _.env_ file should contain the following
 DOCKER_HTTP_PROXY=http://docker.for.win.localhost:3128   (Proxy configuration)
 DOCKER_HTTPS_PROXY=http://docker.for.win.localhost:3128  (Proxy configuration)
 MOSQUITTO_CONFIG_DIR=                                    (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
+MQTT_PORT=1883                                           (MQTT port for the local broker)
+MQTT_REMOTE_PORT=1884                                    (MQTT port for the remote broker - is automatically bridged from the local broker)
 PLATFORM_CONFIG_DIR=                                     (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
+API_PORT=8080                                            (Port, which is used to expose the platform REST APIs)
 ```
 
 ## Run the configured platform
