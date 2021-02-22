@@ -17,6 +17,7 @@
 #include <string>
 #include <thread>
 
+#include "logging.hpp"
 #include "util.hpp"
 
 namespace iotea {

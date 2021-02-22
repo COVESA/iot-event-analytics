@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "logging.hpp"
 #include "schema.hpp"
 #include "util.hpp"
 
