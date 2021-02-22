@@ -81,7 +81,7 @@ export class IoTeaUtils {
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(IoTeaUtils.STOP_IOTEA_PLATFORM_COMMAND, async (terminal: vscode.Terminal | undefined) => {
-            return showProgressWithRuntimePrecheck('Starting IoT Event Analytics platform', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
+            return showProgressWithRuntimePrecheck('Stopping IoT Event Analytics platform', async (p: vscode.Progress<{ message: string; increment: number; }>) => {
                 return new IoTeaUtils(await chooseAndUpdateIoTeaProjectDir(), p).stopIoTeaPlatform(terminal);
             })
             .then(() => {}, err => {
