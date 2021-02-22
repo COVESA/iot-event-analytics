@@ -2,10 +2,10 @@ version: "3.2"
 services:
   configmanager:
     ports:
-      - "9229:9230"
+      - "9230:9230"
     command:
       - node
-      - "--inspect-brk=0.0.0.0"
+      - "--inspect-brk=0.0.0.0:9230"
       - "/app/docker/config/index.js"
   pipeline:
     ports:
