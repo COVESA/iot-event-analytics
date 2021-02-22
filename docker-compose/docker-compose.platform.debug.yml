@@ -13,4 +13,4 @@ services:
     command:
       - "node"
       - "--inspect-brk=0.0.0.0"
-      - "/app/docker/platform/index.js"
+      - "/app/docker/pipeline/index.js"
