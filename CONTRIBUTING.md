@@ -28,7 +28,6 @@ The following is a set of guidelines for contributing to IoTea Event Analytics a
 - [Git Commit Messages](#git-commit-messages)
 - [JavaScript Styleguide](#javascript-styleguide)
 - [Python Styleguide](#python-styleguide)
-- [C++](#c++-styleguide)
 - [Documentation Styleguide](#documentation-styleguide)
 
 ## How can I contribute
@@ -88,10 +87,6 @@ We won't implement anything which tailors IoTea to be an exact solution for a si
   ```python
   # pylint: disable=wrong-import-position
   ```
-
-### C++ Styleguide
-
-- TBD
 
 ### Documentation Styleguide
 
