@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.1 [2021-02-23]
+  - Display a non-technical error message in case the docker version cannot be retrieved as JSON
+
 - 0.9.0 [2021-02-19]
   - Add configurable platform prechecks before any command is executed<br>
     The checks are done once. When successfully done, the state is stored in the configuration, until the requirements change
