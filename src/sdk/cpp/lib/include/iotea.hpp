@@ -40,7 +40,8 @@ class DiscoverMessage;
 
 using func_ptr = std::function<void(const json&, const CallContext&)>;
 using function_map = std::unordered_map<std::string, func_ptr>;
-using func_result_ptr = std::function<void(const json&, const EventContext&)>;
+using gather_func_ptr = std::function<void(std::vector<std::pair<json, EventContext>>)>;
+using gather_and_reply_func_ptr = std::function<json(std::vector<std::pair<json, EventContext>>)>;
 using message_ptr = std::shared_ptr<Message>;
 using talent_ptr = std::shared_ptr<Talent>;
 using talent_map = std::unordered_map<std::string, talent_ptr>;
@@ -49,6 +50,8 @@ using call_handler_ptr = std::shared_ptr<CallHandler>;
 
 using duration_t = std::chrono::duration<int64_t>;
 using timepoint_t = std::chrono::system_clock::time_point;
+
+using call_token_t = std::string;
 
 /**
  * @brief Arriving messages must be parsed in two steps beginning with
@@ -432,53 +435,6 @@ class Publisher {
 };
 
 /**
- * @brief CallHandler maintains a registry of pending function calls
- * and their associated result handling functions. CallHandler should not be
- * used by external clients.
- *
- */
-class CallHandler {
-   private:
-    std::set<std::string> callees_;
-
-    std::mutex call_map_mutex_;
-    std::unordered_map<std::string, func_result_ptr> call_map_;
-
-   public:
-   /**
-    * @brief Register a callee.
-    *
-    * @param callee A callee
-    */
-    void Register(const Callee& callee);
-
-    /**
-     * @brief Associate a call ID with a callback.
-     *
-     * @param call_id call ID
-     * @param callback callback function
-     */
-    void DeferCall(const std::string& call_id, const func_result_ptr callback);
-
-    /**
-     * @brief Remove a deferred call from the registry and return the
-     * associated callback function or nullptr if the call ID is unknown or if
-     * the associated call has timed out.
-     *
-     * @param call_id call ID
-     * @return func_result_ptr
-     */
-    func_result_ptr PopDeferredCall(const std::string& call_id);
-
-    /**
-     * @brief Get the Callees registered with this handler.
-     *
-     * @return std::set<std::string>
-     */
-    std::set<std::string> GetCallees() const;
-};
-
-/**
  * @brief A Callee represents a callable function provided by some Talent. It
  * is responsible for managing calls to and replies from the function as well
  * as for holding information about the function call details necessary to
@@ -491,7 +447,8 @@ class Callee {
     std::string talent_id_;
     std::string func_;
     std::string type_;
-    std::shared_ptr<CallHandler> call_handler_;
+    publisher_ptr publisher_;
+
     bool registered_;
 
    public:
@@ -505,23 +462,21 @@ class Callee {
      * @brief Construct a new Callee. Clients should not call this constructor
      * directly but should use Talent::CreateCallee().
      *
-     * @param call_handler CallHandler to keep track of pending calls
      * @param talent_id ID of the Talent providing the function
      * @param func Name of the function
      * @param type Name of the type associated with the function
+     * @param publisher // TODO document
      */
-    Callee(call_handler_ptr call_handler, const std::string& talent_id, const std::string& func,
-           const std::string& type = "default");
+    Callee(const std::string& talent_id, const std::string& func, const std::string& type, publisher_ptr publisher);
 
     /**
-     * @brief Call the function represented by the Callee, results will we
+     * @brief Call the function represented by the Callee, results will be
      * routed to the provided callback.
      *
      * @param args Arguments to pass to the function
-     * @param ctx Context assocaited with the call
-     * @param callback Callback to handle the result of the function call
+     * @param ctx Context associated with the call
      */
-    void Call(const json& args, const EventContext& ctx, const func_result_ptr callback) const;
+    call_token_t Call(const json& args, const EventContext& ctx) const;
 
     /**
      * @brief Get the name of the feature providing the function call.
@@ -550,13 +505,6 @@ class Callee {
      * @return std::string
      */
     std::string GetType() const;
-
-    /**
-     * @brief Get the CallHandler associated with this Callee.
-     *
-     * @return call_handler_ptr
-     */
-    call_handler_ptr GetHandler() const;
 };
 
 /**
@@ -567,10 +515,11 @@ class Callee {
  */
 class EventContext {
    protected:
-    const std::string instance_;
+    const std::string talent_id_;
     const std::string channel_id_;
     const std::string subject_;
     const std::string return_topic_;
+    call_handler_ptr call_handler_;
     publisher_ptr publisher_;
 
    public:
@@ -584,8 +533,8 @@ class EventContext {
     * @param subject Name identifying the context
     * @param return_topic The topic to reply to function call ons
     */
-    EventContext(const Talent& talent, publisher_ptr publisher, const std::string& subject,
-                 const std::string& return_topic);
+    EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
+                 const std::string& return_topic, call_handler_ptr call_handler, publisher_ptr publisher);
 
     /**
      * @brief Construct an EventContext object based on the context of an
@@ -595,16 +544,16 @@ class EventContext {
      * @param publisher Publisher for sending data
      * @param event Event to base context on
      */
-    EventContext(const Talent& talent, publisher_ptr publisher, const Event& event);
+    EventContext(const std::string& talent_id, const std::string& channel_id, const Event& event,
+                 call_handler_ptr call_handler, publisher_ptr publisher);
 
-    /**
-     * @brief Call a function within this context.
-     *
-     * @param callee Callee representing the function to call
-     * @param args Arguments to pass to the function
-     * @param callback Callback to handle the result of the called function
-     */
-    void Call(const Callee& callee, const json& args, const func_result_ptr callback) const;
+    std::string GetTalentId() const;
+
+    std::string GetChannelId() const;
+
+    std::string GetSubject() const;
+
+    std::string GetReturnTopic() const;
 
     /**
      * @brief Emit an event within this context.
@@ -621,10 +570,12 @@ class EventContext {
      */
     template <typename T>
     void Emit(const std::string& feature, const T& value, const std::string& type = "default") const {
-        auto e = OutgoingEvent<T>{subject_, feature, value, type, instance_};
+        auto e = OutgoingEvent<T>{subject_, feature, value, type, talent_id_};
 
         publisher_->Publish(return_topic_, e.Json().dump());
     }
+
+    void Gather(gather_func_ptr func, const std::vector<call_token_t>& tokens);
 };
 
 /**
@@ -647,14 +598,154 @@ class CallContext : public EventContext {
     * @param feature Name of the feature
     * @param event Event for which the context applies
     */
-    CallContext(const Talent& talent, publisher_ptr publisher, const std::string& feature, const Event& event);
+    CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
+                const Event& event, call_handler_ptr call_handler, publisher_ptr publisher);
 
     /**
-     * @brief Reply with a value within the context of a received event.
+     * @brief Reply replies to a function call received in this context.
      *
-     * @param value The event payload
+     * @param value Result of function call
      */
     void Reply(const json& value) const;
+
+    /**
+     * @brief GatherAndReply defers a reply until all the replies associated
+     * with tokens have been gathered. The replies are fed to the reply
+     * callback function in the order given in tokens.
+     *
+     * @param func Callback to execute once all replies have been gathered
+     * @param tokens Pending replies on which func dependes
+     */
+    void GatherAndReply(gather_and_reply_func_ptr func, const std::vector<call_token_t>& tokens);
+};
+
+
+/**
+ * @brief ReplyGatherer associates a set of pending replies with a callback
+ * function. When the all the replies have been received the ReplyGatherer is
+ * done and the replies can be forwarded to the callback.
+ *
+ * @tparam Func Function signature associated with the replies
+ * @tparam Ctx Context type from which the callback should be executed
+ */
+template <typename Func, typename Ctx>
+class ReplyGatherer {
+   private:
+    const Func func_;
+    const Ctx ctx_;
+    const std::vector<call_token_t> order_;
+
+    std::unordered_map<call_token_t, std::pair<json, EventContext>> replies_;
+
+   public:
+    /**
+     * @brief Construct a new ReplyGatherer object
+     *
+     * @param func callback function
+     * @param ctx callback context
+     * @param tokens ordered list of tokens representing pending replies
+     */
+    ReplyGatherer(Func func, const Ctx& ctx, std::vector<call_token_t> tokens)
+        : func_{func}
+        , ctx_{ctx}
+        , order_{tokens} {}
+
+    /**
+     * @brief Gather accepts the reply associated with token and stores it
+     * until it can be forwarded to the callback.
+     *
+     * @param token token associated with the pending reply
+     * @param reply pair of function reply and the context from which it emanated
+     */
+    void Gather(const call_token_t& token, const std::pair<json, EventContext>& reply) {
+        if (std::find(order_.begin(), order_.end(), token) == order_.end()) {
+            log::Error() << "Unrecognized call id " << token;
+            return;
+        }
+
+        replies_.insert(std::make_pair(token, reply));
+    }
+
+    /**
+     * @brief IsDone returns whether all the pending replies have been gathered.
+     *
+     * @return true iff. all replies have been gathered.
+     */
+    bool IsDone() const {
+        return order_.size() == replies_.size();
+    }
+
+    /**
+     * @brief GetReplies returns all the gathered tokens and their associated
+     * replies. This function must not be called before IsDone returns true.
+     *
+     * @return std::unordered_map<call_token_t, std::pair<json, EventContext>>
+     */
+    std::unordered_map<call_token_t, std::pair<json, EventContext>> GetReplies() const {
+        return replies_;
+    }
+
+    /**
+     * @brief GetFunc returns the callback function associated with this ReplyGatherer.
+     *
+     * @return Func
+     */
+    Func GetFunc() const {
+        return func_;
+    }
+
+    /**
+     * @brief GetFunc returns the context associated with this ReplyGatherer.
+     *
+     * @return Ctx
+     */
+    Ctx GetContext() const {
+        return ctx_;
+    }
+};
+
+/**
+ * @brief CallHandler maintains a registry of pending function calls
+ * and their associated result handling functions. CallHandler should not be
+ * used by external clients.
+ *
+ */
+class CallHandler {
+   private:
+    std::unordered_map<call_token_t, std::shared_ptr<ReplyGatherer<gather_func_ptr, EventContext>>> gatherer_map_;
+    std::unordered_map<call_token_t, std::shared_ptr<ReplyGatherer<gather_and_reply_func_ptr, CallContext>>> gatherer_and_reply_map_;
+
+    void HandleGather(std::shared_ptr<ReplyGatherer<gather_func_ptr, EventContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply);
+    void HandleGatherAndReply(std::shared_ptr<ReplyGatherer<gather_and_reply_func_ptr, CallContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply);
+
+   public:
+    /**
+     * @brief Gather stores a callback function to be called when the pending
+     * replies associated with tokens have been gathered.
+     *
+     * @param func Callback function
+     * @param tokens Call tokens
+     */
+    void Gather(gather_func_ptr func, const EventContext& ctx, std::vector<call_token_t> tokens);
+
+    /**
+     * @brief GatherAndReply stores a callback function to be called when the
+     * pending replies associated with tokens have been gathered.
+     *
+     * @param func Callback function
+     * @param tokens Call tokens
+     */
+    void GatherAndReply(gather_and_reply_func_ptr func, const CallContext& ctx, std::vector<call_token_t> tokens);
+
+    /**
+     * @brief HandleReply forwards a reply to the proper ReplyGatherer. If the
+     * ReplyGatherer has gathered all the required replies (IsDone) the
+     * assicated callback is called and the ReplyGatherer is freed.
+     *
+     * @param token Call token.
+     * @param reply Reply associated with token.
+     */
+    void HandleReply(const call_token_t& token, const std::pair<json, EventContext>& reply);
 };
 
 /**
@@ -665,6 +756,7 @@ class Talent {
    private:
     const std::string talent_id_;
     const std::string channel_id_;
+    std::set<std::string> callees_;
 
    protected:
     publisher_ptr publisher_;
@@ -794,7 +886,7 @@ class Talent {
      *
      * @return std::string
      */
-    std::string GetChannel() const;
+    std::string GetChannelId() const;
 
     /**
      * @brief Handle incoming event by unmarshalling and forwarding it to the
@@ -830,16 +922,16 @@ class Talent {
     void HandlePlatformEvent(const std::string& data);
 
     /**
-     * @brief Handle replies to deferred function calls by unmarshalling the
-     * result and forwarding it and the associated context to the appropriate
-     * callback. Not to be used by external subsclasses.
+     * @brief Handle replies to function calls by unmarshalling the result and
+     * forwarding it and the associated context to the appropriate callback.
+     * Not to be used by external subsclasses.
      *
      * @param channel_id Channel the call was made on
      * @param call_id Unique ID of the call to be paired with the ID generated
      * when the call was issued.
      * @param data Raw result data
      */
-    void HandleDeferredCall(const std::string& channel_id, const std::string& call_id, const std::string& data);
+    void HandleReply(const std::string& channel_id, const std::string& call_id, const std::string& data);
 
     /**
      * @brief Get the CallHandler for this Talent. Should not be used by
@@ -856,7 +948,6 @@ class Talent {
  */
 class FunctionTalent : public Talent {
    private:
-    const std::string channel_id_;
     function_map funcs_;
 
    protected:

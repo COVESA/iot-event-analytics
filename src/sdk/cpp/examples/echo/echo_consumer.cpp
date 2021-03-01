@@ -43,9 +43,12 @@ class EchoConsumer : public Talent {
             auto message = json{event.GetValue().get<std::string>()};
             log::Info() << "Received message:  '" << message << "'";
 
-            echo_provider.echo.Call(message, context, [](const json& result, const EventContext& context) {
-                log::Info() << "Received echo:     '" << result.dump(4) << "'";
-            });
+            auto t = echo_provider.echo.Call(message, context);
+
+            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
+                    log::Info() << "Received echo:     '" << replies[0].first.dump(4) << "'";
+                }, {t});
+
             log::Info() << "Forwarded message: '" << message << "'";
         } else {
             log::Warn() << "UNKNOWN EVENT RECEIVED";

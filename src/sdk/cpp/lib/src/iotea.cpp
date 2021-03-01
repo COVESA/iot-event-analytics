@@ -212,60 +212,39 @@ json OutgoingCall::Json() const {
 }
 
 //
-// CallHandler
-//
-void CallHandler::Register(const Callee& callee) { callees_.insert(callee.GetFeature()); }
-
-void CallHandler::DeferCall(const std::string& call_id, const func_result_ptr callback) {
-    std::lock_guard<std::mutex> lock(call_map_mutex_);
-    call_map_[call_id] = callback;
-}
-
-func_result_ptr CallHandler::PopDeferredCall(const std::string& call_id) {
-    std::lock_guard<std::mutex> lock(call_map_mutex_);
-    auto item = call_map_.find(call_id);
-
-    if (item == call_map_.end()) {
-        // Error: call did not originate from here (or has timed out)
-        return nullptr;
-    }
-
-    auto callback = item->second;
-    call_map_.erase(item);
-
-    return callback;
-}
-
-std::set<std::string> CallHandler::GetCallees() const { return callees_; }
-
-//
 // EventContext
 //
-EventContext::EventContext(const Talent& talent, publisher_ptr publisher, const std::string& subject,
-                           const std::string& return_topic)
-    : instance_{talent.GetId()}
-    , channel_id_{talent.GetChannel()}
+EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
+                           const std::string& return_topic, call_handler_ptr call_handler, publisher_ptr publisher)
+    : talent_id_{talent_id}
+    , channel_id_{channel_id}
     , subject_{subject}
     , return_topic_{return_topic}
+    , call_handler_{call_handler}
     , publisher_{publisher} {}
 
-EventContext::EventContext(const Talent& talent, publisher_ptr publisher, const Event& event)
-    : EventContext{talent, publisher, event.GetSubject(), event.GetReturnTopic()} {}
+EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const Event& event,
+                           call_handler_ptr call_handler, publisher_ptr publisher)
+    : EventContext(talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), call_handler, publisher) {}
 
-void EventContext::Call(const Callee& callee, const json& args, const func_result_ptr callback) const {
-    auto call_id = GenerateUUID();
-    auto c =
-        OutgoingCall{callee.GetTalentId(), channel_id_, call_id, callee.GetFunc(), args, subject_, callee.GetType()};
+std::string EventContext::GetTalentId() const { return talent_id_; }
 
-    callee.GetHandler()->DeferCall(call_id, callback);
-    publisher_->Publish(return_topic_, c.Json().dump());
+std::string EventContext::GetChannelId() const { return channel_id_; }
+
+std::string EventContext::GetSubject() const { return subject_; }
+
+std::string EventContext::GetReturnTopic() const { return return_topic_; }
+
+void EventContext::Gather(gather_func_ptr func, const std::vector<call_token_t>& tokens) {
+    call_handler_->Gather(func, *this, tokens);
 }
 
 //
 // CallContext
 //
-CallContext::CallContext(const Talent& talent, publisher_ptr publisher, const std::string& feature, const Event& event)
-    : EventContext{talent, publisher, event}
+CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
+                         const Event& event, call_handler_ptr call_handler, publisher_ptr publisher)
+    : EventContext{talent_id, channel_id, event, call_handler, publisher}
     , feature_{feature}
     , channel_{event.GetValue()["chnl"].get<std::string>()}
     , call_{event.GetValue()["call"].get<std::string>()} {}
@@ -278,28 +257,41 @@ void CallContext::Reply(const json& value) const {
     publisher_->Publish(return_topic_, event.Json().dump());
 }
 
+void CallContext::GatherAndReply(gather_and_reply_func_ptr func, const std::vector<call_token_t>& tokens) {
+    call_handler_->GatherAndReply(func, *this, tokens);
+}
+
+
 //
 // Callee
 //
-
 Callee::Callee()
     : registered_(false) {}
 
-Callee::Callee(call_handler_ptr call_handler, const std::string& talent_id, const std::string& func,
-               const std::string& type)
+Callee::Callee(const std::string& talent_id, const std::string& func, const std::string& type, publisher_ptr publisher)
     : talent_id_{talent_id}
     , func_{func}
     , type_{type}
-    , call_handler_{call_handler} {
+    , publisher_{publisher} {
     registered_ = true;  // Should probably be deferred until talent is actually registered
 }
 
-void Callee::Call(const json& args, const EventContext& ctx, const func_result_ptr callback) const {
+call_token_t Callee::Call(const json& args, const EventContext& ctx) const {
     if (!registered_) {
         log::Warn() << "Tried to call unregistered Callee";
-        return;
+
+        // TODO how do we best report an error in this case? We would like to avoid using exceptions.
+        return static_cast<call_token_t>("");
     }
-    ctx.Call(*this, args, callback);
+
+    auto call_id = GenerateUUID();
+
+    auto j = args.is_array() ? args : json::array({args});
+    auto c = OutgoingCall(talent_id_, ctx.GetChannelId(), call_id, func_, j, ctx.GetSubject(), type_);
+
+    publisher_->Publish(ctx.GetReturnTopic(), c.Json().dump());
+
+    return static_cast<call_token_t>(call_id);
 }
 
 std::string Callee::GetFeature() const { return talent_id_ + "." + func_; }
@@ -310,7 +302,79 @@ std::string Callee::GetTalentId() const { return talent_id_; }
 
 std::string Callee::GetType() const { return type_; }
 
-call_handler_ptr Callee::GetHandler() const { return call_handler_; }
+//
+// CallHandler
+//
+void CallHandler::Gather(gather_func_ptr func, const EventContext& ctx, std::vector<call_token_t> tokens) {
+    auto gatherer = std::make_shared<ReplyGatherer<gather_func_ptr, EventContext>>(func, ctx, tokens);
+    for (const auto& t : tokens) {
+        gatherer_map_[t] = gatherer;
+    }
+}
+
+void CallHandler::GatherAndReply(gather_and_reply_func_ptr func, const CallContext& ctx, std::vector<call_token_t> tokens) {
+    auto gatherer = std::make_shared<ReplyGatherer<gather_and_reply_func_ptr, CallContext>>(func, ctx, tokens);
+    for (const auto& t : tokens) {
+        gatherer_and_reply_map_[t] = gatherer;
+    }
+}
+
+void CallHandler::HandleGather(std::shared_ptr<ReplyGatherer<gather_func_ptr, EventContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply) {
+    gatherer->Gather(token, reply);
+
+    if (!gatherer->IsDone()) {
+        return;
+    }
+
+    auto tokens = gatherer->GetReplies();
+    std::vector<std::pair<json, EventContext>> replies;
+    for (const auto& t : tokens) {
+        gatherer_map_.erase(t.first);
+        replies.push_back(t.second);
+    }
+
+    auto func = gatherer->GetFunc();
+
+    func(replies);
+}
+
+void CallHandler::HandleGatherAndReply(std::shared_ptr<ReplyGatherer<gather_and_reply_func_ptr, CallContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply) {
+    gatherer->Gather(token, reply);
+
+    if (!gatherer->IsDone()) {
+        return;
+    }
+
+    auto tokens = gatherer->GetReplies();
+    std::vector<std::pair<json, EventContext>> replies;
+    for (const auto& t : tokens) {
+        gatherer_and_reply_map_.erase(t.first);
+        replies.push_back(t.second);
+    }
+
+    auto func = gatherer->GetFunc();
+    auto ctx = gatherer->GetContext();
+
+    auto freply = func(replies);
+    ctx.Reply(freply);
+}
+
+void CallHandler::HandleReply(const call_token_t& token, const std::pair<json, EventContext>& reply) {
+    auto g_entry = gatherer_map_.find(token);
+    if (g_entry != gatherer_map_.end()) {
+        HandleGather(g_entry->second, token, reply);
+        return;
+    }
+
+    auto gar_entry = gatherer_and_reply_map_.find(token);
+    if (gar_entry != gatherer_and_reply_map_.end()) {
+        HandleGatherAndReply(gar_entry->second, token, reply);
+        return;
+    }
+
+    log::Warn() << "Could not find gatherer of call id " << token;
+}
+
 
 //
 // Talent
@@ -325,14 +389,12 @@ Talent::Talent(const std::string& talent_id, publisher_ptr publisher)
 std::string Talent::GetId() const { return talent_id_; }
 
 Callee Talent::CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type) {
-    auto callee = Callee(call_handler_, talent_id, func, type);
-
-    call_handler_->Register(callee);
-
-    return callee;
+    auto c = Callee(talent_id, func, type, publisher_);
+    callees_.insert(c.GetFeature());
+    return c;
 }
 
-std::string Talent::GetChannel() const { return channel_id_; }
+std::string Talent::GetChannelId() const { return channel_id_; }
 
 publisher_ptr Talent::GetPublisher() const { return publisher_; }
 
@@ -341,16 +403,16 @@ void Talent::AddOutput(const std::string& feature, const schema::Metadata& metad
 }
 
 EventContext Talent::NewEventContext(const std::string& subject) {
-    return EventContext{*this, publisher_, subject, publisher_->GetIngestionEventsTopic()};
+    return EventContext{talent_id_, channel_id_, subject, publisher_->GetIngestionTopic(), call_handler_, publisher_};
 }
 
 schema::rules_ptr Talent::GetRules() const {
-    if (call_handler_->GetCallees().empty()) {
+    if (callees_.empty()) {
         return nullptr;
     }
 
     schema::rule_vec callee_rules;
-    for (auto& callee : call_handler_->GetCallees()) {
+    for (auto& callee : callees_) {
         callee_rules.push_back(std::make_shared<schema::Rule>(
             std::make_shared<schema::RegexMatch>(callee + "-out", "^/" + channel_id_ + "/.*", schema::DEFAULT_TYPE,
                                                  schema::ValueEncoding::RAW, "/$tsuffix")));
@@ -400,7 +462,7 @@ void Talent::HandleEvent(const std::string& data) {
 }
 
 void Talent::HandleEvent(const Event& event) {
-    auto context = EventContext{*this, publisher_, event};
+    auto context = EventContext{talent_id_, channel_id_, event, call_handler_, publisher_};
     OnEvent(event, context);
 }
 
@@ -448,28 +510,22 @@ void Talent::HandlePlatformEvent(const std::string& data) {
     }
 }
 
-void Talent::HandleDeferredCall(const std::string& channel_id, const std::string& call_id, const std::string& data) {
+void Talent::HandleReply(const std::string& channel_id, const std::string& call_id, const std::string& data) {
     if (channel_id_ != channel_id) {
         log::Info() << "Unexpected channel id " << channel_id;
         return;
     }
 
-    auto deferred_call = call_handler_->PopDeferredCall(call_id);
-    if (deferred_call == nullptr) {
-        log::Info() << "Received reply for call which did not originate here (or has timed out)";
-        return;
-    }
-
     auto payload = json::parse(data);
     auto event = Event::FromJson(payload);
-    auto context = EventContext(*this, publisher_, event);
-
     auto value = event.GetValue()["value"];
+    auto context = EventContext(talent_id_, channel_id , event, call_handler_, publisher_);
 
-    deferred_call(value, context);
+    call_handler_->HandleReply(static_cast<call_token_t>(call_id), std::make_pair(value, context));
 }
 
 call_handler_ptr Talent::GetCallHandler() const { return call_handler_; }
+
 
 //
 // FunctionTalent
@@ -516,7 +572,7 @@ void FunctionTalent::HandleEvent(const Event& event) {
         if (GetInputName(pair.first) == event.GetFeature()) {
             auto feature = GetOutputName(pair.first);
             auto args = event.GetValue()["args"];
-            auto context = CallContext{static_cast<Talent&>(*this), publisher_, feature, event};
+            auto context = CallContext{GetId(), GetChannelId(), feature, event, call_handler_, publisher_};
             pair.second(args, context);
             return;
         }

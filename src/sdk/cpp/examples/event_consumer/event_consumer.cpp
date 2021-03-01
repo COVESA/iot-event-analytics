@@ -18,12 +18,14 @@ class EventConsumer : public Talent {
    private:
     struct ProviderTalent {
         Callee Multiply;
+        Callee Fib;
     } provider_talent;
 
    public:
-    EventConsumer(std::shared_ptr<Publisher> publisher)
+    explicit EventConsumer(std::shared_ptr<Publisher> publisher)
         : Talent("event_consumer", publisher) {
         provider_talent.Multiply = CreateCallee("provider_talent", "multiply");
+        provider_talent.Fib = CreateCallee("provider_talent", "fibonacci");
     }
 
     void OnEvent(const Event& event, EventContext context) override {
@@ -31,16 +33,24 @@ class EventConsumer : public Talent {
             auto args =
                 json{event.GetValue().get<int>(), json{{"factor", event.GetValue().get<int>()}, {"unit", "thing"}}};
 
-            provider_talent.Multiply.Call(args, context, [](const json& result, const EventContext& context) {
-                log::Info() << "Result: " << result.dump(4);
-            });
+            auto t = provider_talent.Multiply.Call(args, context);
+
+            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
+                log::Info() << "Multiply result: " << replies[0].first.dump(4);
+            }, {t});
+
+            auto s = provider_talent.Fib.Call(args, context);
+
+            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
+                log::Info() << "Fibonacci result: " << replies[0].first.dump(4);
+            }, {s});
         } else if (event.GetType() == "blob") {
             log::Info() << "Currently at " << event.GetValue().dump() << " dingdings";
         }
     }
 
     schema::rules_ptr OnGetRules() const override {
-        return OrRules({AndRules({GreaterThan("temp", 3, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")}),
+        return OrRules({AndRules({GreaterThan("temp", 2, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")}),
                         OrRules({IsSet("dingdings", "blob")})});
     }
 };

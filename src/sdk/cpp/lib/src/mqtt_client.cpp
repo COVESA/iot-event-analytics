@@ -80,7 +80,7 @@ void MqttClient::Run() {
                         // Event
                         client_.subscribe(shared_prefix + "/" + event_topic, QOS);
                         // Call
-                        client_.subscribe(event_topic + "/" + talent.second->GetChannel() + "/+", QOS);
+                        client_.subscribe(event_topic + "/" + talent.second->GetChannelId() + "/+", QOS);
                     }
                 } break;
                 case State::kDisconnected:
@@ -243,7 +243,7 @@ void MqttClient::OnDeferredCall(const std::string& talent_id, const std::string&
 
     auto talent = talents_.find(talent_id);
     if (talent != talents_.end()) {
-        talent->second->HandleDeferredCall(channel_id, call_id, payload);
+        talent->second->HandleReply(channel_id, call_id, payload);
         return;
     }
 

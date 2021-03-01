@@ -18,11 +18,20 @@ static const std::string FUNC_SUM = "sum";
 static const std::string FUNC_FIBONACCI = "fibonacci";
 
 class MathFunctions : public FunctionTalent {
+   private:
+    Callee fib;
+
    public:
-    MathFunctions(std::shared_ptr<Publisher> publisher)
+    explicit MathFunctions(std::shared_ptr<Publisher> publisher)
         : FunctionTalent(FEATURE, publisher) {
         RegisterFunction(FUNC_MULTIPLY,
                          [this](const json& args, const CallContext& context) { Multiply(args, context); });
+
+        RegisterFunction(FUNC_FIBONACCI,
+                [this](const json& args, const CallContext& context) { Fibonacci(args, context); });
+
+        fib = CreateCallee(FEATURE, FUNC_FIBONACCI);
+
         SkipCycleCheck(true);
     }
 
@@ -35,6 +44,27 @@ class MathFunctions : public FunctionTalent {
         static int dingdings = 0;
         NewEventContext("my-subject").Emit<int>("dingdings", ++dingdings, "blob");
     }
+
+
+    void Fibonacci(const json& args, CallContext context) {
+        auto n = args[0].get<int>();
+
+        if (n <= 1) {
+            context.Reply(n);
+            return;
+        }
+
+        auto t1 = fib.Call(n - 1, context);
+        auto t2 = fib.Call(n - 2, context);
+
+        context.GatherAndReply([](std::vector<std::pair<json, EventContext>> replies) {
+                auto n1 = replies[0].first.get<int>();
+                auto n2 = replies[1].first.get<int>();
+
+                return n1 + n2;
+                }, {t1, t2});
+    }
+
 
     schema::rules_ptr OnGetRules() const override { return nullptr; }
 };
