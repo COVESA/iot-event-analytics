@@ -70,3 +70,6 @@ add_subdirectory(lib)
 ## enable testing
 project(Test)
 include(CTest)
+
+## integration tests
+add_subdirectory(integration_tests)

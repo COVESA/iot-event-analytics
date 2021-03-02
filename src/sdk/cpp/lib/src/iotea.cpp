@@ -17,12 +17,14 @@
 #include <unordered_map>
 #include <utility>
 
-#include "logging.hpp"
 #include "schema.hpp"
 #include "util.hpp"
 
 namespace iotea {
 namespace core {
+
+static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.rules.set";
+static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.rules.unset";
 
 // Message
 //
@@ -77,6 +79,39 @@ DiscoverMessage DiscoverMessage::FromJson(const json& j) {
     auto return_topic = j["returnTopic"].get<std::string>();
 
     return DiscoverMessage{version, return_topic};
+}
+
+
+//
+// PlatformEvent
+//
+PlatformEvent::PlatformEvent(const Type& type, const json& data, const timepoint_t& timestamp)
+    : type_{type}
+    , data_(data)
+    , timestamp_{timestamp} {}
+
+json PlatformEvent::GetData() const { return data_; }
+
+timepoint_t PlatformEvent::GetTimestamp() const { return timestamp_; }
+
+PlatformEvent::Type PlatformEvent::GetType() const { return type_; }
+
+PlatformEvent PlatformEvent::FromJson(const json& j) {
+    auto type_name = j["type"].get<std::string>();
+
+    auto type = PlatformEvent::Type::UNDEF;
+    if (type_name.c_str() == PLATFORM_EVENT_TYPE_SET_RULES) {
+        type = PlatformEvent::Type::TALENT_RULES_SET;
+    } else if (type_name.c_str() == PLATFORM_EVENT_TYPE_UNSET_RULES) {
+        type = PlatformEvent::Type::TALENT_RULES_UNSET;
+    }
+
+    auto data = j["data"];
+    auto timestamp_ms = j["timestamp"].get<int64_t>();
+
+    timepoint_t timestamp{std::chrono::milliseconds{timestamp_ms}};
+
+    return PlatformEvent{type, data, timestamp};
 }
 
 ErrorMessage::ErrorMessage(const int code)
@@ -306,7 +341,7 @@ void Talent::AddOutput(const std::string& feature, const schema::Metadata& metad
 }
 
 EventContext Talent::NewEventContext(const std::string& subject) {
-    return EventContext{*this, publisher_, subject, publisher_->GetIngestionTopic()};
+    return EventContext{*this, publisher_, subject, publisher_->GetIngestionEventsTopic()};
 }
 
 schema::rules_ptr Talent::GetRules() const {
@@ -378,6 +413,10 @@ void Talent::OnEvent(const Event& event, EventContext context) {
     (void)context;
 }
 
+void Talent::OnPlatformEvent(const PlatformEvent& event) {
+    (void)event;
+}
+
 void Talent::HandleDiscover(const std::string& data) {
     try {
         auto payload = json::parse(data);
@@ -393,6 +432,19 @@ void Talent::HandleDiscover(const std::string& data) {
         log::Error() << "Failed to parse discovery message.";
     } catch (const json::type_error& e) {
         log::Error() << "Unexpected content in discovery message: " << e.what();
+    }
+}
+
+void Talent::HandlePlatformEvent(const std::string& data) {
+    try {
+        auto payload = json::parse(data);
+        auto event = PlatformEvent::FromJson(payload);
+
+        OnPlatformEvent(event);
+    } catch (const json::parse_error& e) {
+        log::Error() << "Failed to parse platform event.";
+    } catch (const json::type_error& e) {
+        log::Error() << "Unexpected content in platform event: " << e.what();
     }
 }
 

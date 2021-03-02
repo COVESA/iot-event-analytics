@@ -11,16 +11,17 @@
 #define IOTEA_HPP
 
 #include <chrono>
-#include <functional>
+#include <initializer_list>
 #include <memory>
-#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
 
 #include "nlohmann/json.hpp"
 
+#include "logging.hpp"
 #include "schema.hpp"
+#include "util.hpp"
 
 using json = nlohmann::json;
 
@@ -29,11 +30,13 @@ namespace core {
 
 class Message;
 class Talent;
+class Event;
 class Publisher;
 class EventContext;
 class CallContext;
 class Callee;
 class CallHandler;
+class DiscoverMessage;
 
 using func_ptr = std::function<void(const json&, const CallContext&)>;
 using function_map = std::unordered_map<std::string, func_ptr>;
@@ -160,6 +163,31 @@ class DiscoverMessage {
      * @return DiscoverMessage
      */
     static DiscoverMessage FromJson(const json& j);
+};
+
+class PlatformEvent {
+   public:
+    enum class Type {
+        TALENT_RULES_SET,
+        TALENT_RULES_UNSET,
+        UNDEF // TODO extend
+    };
+
+   private:
+    const Type type_;
+    const json data_;
+    const timepoint_t timestamp_;
+
+   public:
+   PlatformEvent(const Type& type, const json& data, const timepoint_t& timestamp);
+
+   json GetData() const;
+
+   timepoint_t GetTimestamp() const;
+
+   Type GetType() const;
+
+   static PlatformEvent FromJson(const json& j);
 };
 
 /**
@@ -399,7 +427,7 @@ class OutgoingCall {
 class Publisher {
    public:
     virtual void Publish(const std::string& topic, const std::string& data) = 0;
-    virtual std::string GetIngestionTopic() const = 0;
+    virtual std::string GetIngestionEventsTopic() const = 0;
     virtual std::string GetNamespace() const = 0;
 };
 
@@ -709,6 +737,13 @@ class Talent {
     virtual void OnEvent(const Event& event, EventContext context);
 
     /**
+     * @brief Call upon reception of a platform event.
+     *
+     * @param event PlatformEvent
+     */
+    virtual void OnPlatformEvent(const PlatformEvent& event);
+
+    /**
      * @brief Called periodically in order to fetch the rules describing the
      * set of events the Talent is interested in. The Talent may change is
      * ruleset over time.
@@ -778,13 +813,21 @@ class Talent {
     virtual void HandleEvent(const Event& event);
 
     /**
-     * @brief Handle incoming disovery request by generating and emitting an
+     * @brief Handle incoming discovery request by generating and emitting an
      * event with the Talent capability schema. Should not be used by external
      * subsclasses.
      *
      * @param data Payload
      */
     void HandleDiscover(const std::string& data);
+
+    /**
+     * @brief Handle incoming platorm event by forwading it ot OnPlatformEvent
+     * with the associated payload.
+     *
+     * @param data Payload
+     */
+    void HandlePlatformEvent(const std::string& data);
 
     /**
      * @brief Handle replies to deferred function calls by unmarshalling the
