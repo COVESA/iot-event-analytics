@@ -14,21 +14,16 @@ import os
 import logging
 import sys
 
-sys.path.append(os.path.abspath('../../../../src/sdk/python/pkg/iotea/core/test'))
-
-# Do the import
-#from iotea.core.talent_test import TestSetTalent
-from talent_test import TestSetTalent
-
+from iotea.core.talent_test import TestSetTalent
 from iotea.core.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
+
 os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
-
-class RPCTest(TestSetTalent):
+class TestSetSDK(TestSetTalent):
     def __init__(self, connection_string):
-        super(RPCTest, self).__init__('rpc-py', connection_string)
+        super(TestSetSDK, self).__init__('testSet-sdk-py', connection_string)
 
         # Register Tests
 
@@ -113,8 +108,8 @@ class RPCTest(TestSetTalent):
         return result
 
 async def main():
-    rpc_echo_talent= RPCTest('mqtt://localhost:1883')
-    await rpc_echo_talent.start()
+    talent = TestSetSDK('mqtt://localhost:1883')
+    await talent.start()
 
 LOOP = asyncio.get_event_loop()
 LOOP.run_until_complete(main())

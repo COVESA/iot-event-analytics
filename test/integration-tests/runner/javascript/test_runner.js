@@ -10,13 +10,13 @@ const {
     TestRunnerTalent
 } = require('../../../../src/core/talent.test.js')
 
-class JavascriptTestRunner extends TestRunnerTalent {
+class TestRunner extends TestRunnerTalent {
     constructor(connectionString) {
         // Define your testSetTalent list and set via super constructor
-        super('javascript-test-runner', ['rpc-js'], connectionString);
+        super('testRunner-js', ['testSet-sdk-js', 'testSet-sdk-py', 'testSet-sdk-cpp'], connectionString);
     }
 }
 
-const runner = new JavascriptTestRunner('mqtt://localhost:1883');
+const runner = new TestRunner('mqtt://localhost:1883');
 
 runner.start();

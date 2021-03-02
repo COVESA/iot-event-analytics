@@ -17,6 +17,12 @@ const Talent = require('./core/talent');
 const FunctionTalent = require('./core/talent.func');
 
 const {
+    TestSetTalent,
+    TestRunnerTalent
+} = require('./core/talent.test')
+
+
+const {
     TalentInput,
     TalentIO,
     TalentOutput
@@ -58,7 +64,11 @@ const {
     VALUE_TYPE_RAW,
     PLATFORM_EVENTS_TOPIC,
     PLATFORM_EVENT_TYPE_SET_RULES,
-    PLATFORM_EVENT_TYPE_UNSET_RULES
+    PLATFORM_EVENT_TYPE_UNSET_RULES,
+    GET_TEST_INFO_METHOD_NAME,
+    PREPARE_TEST_SET_METHOD_NAME,
+    RUN_TEST_METHOD_NAME,
+    TEST_ERROR
 } = require('./core/constants');
 
 const {
@@ -140,10 +150,16 @@ module.exports = {
         VALUE_TYPE_RAW,
         PLATFORM_EVENTS_TOPIC,
         PLATFORM_EVENT_TYPE_SET_RULES,
-        PLATFORM_EVENT_TYPE_UNSET_RULES
+        PLATFORM_EVENT_TYPE_UNSET_RULES,
+        GET_TEST_INFO_METHOD_NAME,
+        PREPARE_TEST_SET_METHOD_NAME,
+        RUN_TEST_METHOD_NAME,
+        TEST_ERROR
     },
     Talent,
     FunctionTalent,
+    TestSetTalent,
+    TestRunnerTalent,
     Mapper,
     Worker,
     Reducer,

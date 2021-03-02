@@ -19,13 +19,13 @@ using json = nlohmann::json;
 using namespace iotea::core;
 
 static const char SERVER_ADDRESS[] = "tcp://localhost:1883";
-static const char FEATURE[] = "testable_talent";
+static const char TALENT_ID[] = "functionProvider-cpp";
 static const char FUNC_ECHO[] = "echo";
 
-class EchoTalent : public FunctionTalent {
+class FunctionProvider : public FunctionTalent {
    public:
-    explicit EchoTalent(std::shared_ptr<Publisher> publisher)
-        : FunctionTalent(FEATURE, publisher) {
+    explicit FunctionProvider(std::shared_ptr<Publisher> publisher)
+        : FunctionTalent(TALENT_ID, publisher) {
         RegisterFunction(FUNC_ECHO, [](const json& args, const CallContext& context) {
             context.Reply(args[0]);
         });
@@ -33,12 +33,12 @@ class EchoTalent : public FunctionTalent {
     }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, FEATURE);
+static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, TALENT_ID);
 
 void signal_handler(int signal) { client->Stop(); }
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<EchoTalent>(client);
+    auto talent = std::make_shared<FunctionProvider>(client);
     client->RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);

@@ -5,13 +5,13 @@ add_executable(function_provider_for_test
 target_include_directories(function_provider_for_test PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_link_libraries(function_provider_for_test PUBLIC iotea_sdk_cpp)
 
-add_executable(testset_rpc
-    testset_rpc.cpp
+add_executable(testset_sdk
+    testset_sdk.cpp
 )
 
-target_include_directories(testset_rpc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(testset_sdk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(testset_rpc
+target_link_libraries(testset_sdk
     PUBLIC
     iotea_test_cpp
     nlohmann_json::nlohmann_json)

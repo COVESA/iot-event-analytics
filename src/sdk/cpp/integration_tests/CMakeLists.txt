@@ -7,4 +7,4 @@ target_include_directories(iotea_test_cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 
 target_link_libraries(iotea_test_cpp PUBLIC iotea_sdk_cpp)
 
-add_subdirectory("../../../../test/integration-tests/testset-rpc/cpp" "${CMAKE_CURRENT_BINARY_DIR}/testset-rpc")
+add_subdirectory("../../../../test/integration-tests/testset_sdk/cpp" "${CMAKE_CURRENT_BINARY_DIR}/testset_sdk")

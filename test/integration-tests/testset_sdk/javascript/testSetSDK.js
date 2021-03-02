@@ -3,15 +3,13 @@ const iotea = require('boschio.iotea');
 process.env.MQTT_TOPIC_NS = 'iotea/';
 
 const Logger = iotea.util.Logger;
+const TestSetTalent = iotea.TestSetTalent;
+
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
-const {
-    TestSetTalent
-} = require('../../../../src/core/talent.test.js')
-
-class RPCTest extends TestSetTalent {
+class TestSetSDK extends TestSetTalent {
     constructor(connectionString) {
-        super('rpc-js', connectionString);
+        super('testSet-sdk-js', connectionString);
 
         // Register Tests
 
@@ -122,5 +120,5 @@ class RPCTest extends TestSetTalent {
     }
 }
 
-const t1 = new RPCTest('mqtt://localhost:1883');
-t1.start()
+const talent = new TestSetSDK('mqtt://localhost:1883');
+talent.start()

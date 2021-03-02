@@ -23,13 +23,13 @@ using namespace iotea::test;
 
 
 static const char SERVER_ADDRESS[] = "tcp://localhost:1883";
-static const char TALENT_NAME[] = "rpc-cpp";
-static const char FEATURE_TESTABLE_TALENT[] = "testable_talent";
+static const char TALENT_NAME[] = "testSet-sdk-cpp";
+static const char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
 static const char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
-class RPCTest : public TestSetTalent {
+class TestSetSDK : public TestSetTalent {
    public:
-    explicit RPCTest(std::shared_ptr<Publisher> publisher)
+    explicit TestSetSDK(std::shared_ptr<Publisher> publisher)
         : TestSetTalent(TALENT_NAME, publisher) {
         auto callee = CreateCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
 
@@ -53,7 +53,7 @@ static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_
 void signal_handler(int signal) { client->Stop(); }
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<RPCTest>(client);
+    auto talent = std::make_shared<TestSetSDK>(client);
     client->RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);

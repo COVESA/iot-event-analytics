@@ -17,7 +17,7 @@ Functions in Talents shall be named using camelCase
 e.g. `myFunction`
 
 ## Integration Test Function names
-IoTEA Functions shall be named like `\<feature\>\<variation/case\>
+IoTEA Functions shall be named like `\<feature\>\<variation/case\>`  
 e.g. `echoString`, `echoInteger`, `echoMixedList`  
 **NOTE** Since a definition of a test using the test classes would need the expectedValue it would be not part of the function name. 
 

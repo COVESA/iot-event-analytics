@@ -20,12 +20,6 @@ from iotea.core.constants import *
 # Setup logging for debugging 
 from iotea.core.logger import Logger
 
-GET_TEST_INFO_METHOD_NAME = 'getTestSetInfo'
-PREPARE_TEST_SET_METHOD_NAME = 'prepare'
-RUN_TEST_METHOD_NAME = 'runTest'
-TEST_SET_PREFIX = 'testSet'
-TEST_ERROR = 'TEST_ERROR'
-
 class Test:
     def __init__(self, name, expected_value, func, timeout=2000):
         self.name = name
@@ -191,7 +185,7 @@ class TestRunnerTalent(Talent):
                 actual = test_result['actual']
                 duration = test_result['duration']
 
-                self.logger.info(f'- Actual: {actual}')
+                self.logger.debug(f'- Actual: {actual}')
 
                 if expected == actual:
                     self.logger.info(f'- Result: OK ({duration}ms)')

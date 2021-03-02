@@ -14,10 +14,8 @@ import os
 import logging
 import sys
 
+# TODO: create 
 sys.path.append(os.path.abspath('../../../../src/sdk/python/pkg/iotea/core/test'))
-
-# Do the import
-#from iotea.core.talent_test import TestRunnerTalent
 from talent_test import TestRunnerTalent
 
 from iotea.core.logger import Logger
@@ -25,12 +23,12 @@ logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
-class PythonTestRunner(TestRunnerTalent):
+class TestRunner(TestRunnerTalent):
     def __init__(self, connection_string):
-        super(PythonTestRunner, self).__init__('python-test-runner', ['rpc-py'], connection_string)
+        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-js', 'testSet-sdk-py', 'testSet-sdk-cpp'], connection_string)
         
 async def main():
-    testrunner = PythonTestRunner('mqtt://localhost:1883')
+    testrunner = TestRunner('mqtt://localhost:1883')
     await testrunner.start()
 
 LOOP = asyncio.get_event_loop()
