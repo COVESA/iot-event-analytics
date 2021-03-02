@@ -1,6 +1,3 @@
-
-from setuptools import setup
-
 ##############################################################################
 # Copyright (c) 2021 Bosch.IO GmbH
 #
@@ -10,6 +7,8 @@ from setuptools import setup
 #
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
+
+from setuptools import setup
 
 with open('README.md', 'r') as fh:
     LONG_DESCRIPTION = fh.read()
