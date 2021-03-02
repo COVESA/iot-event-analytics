@@ -17,6 +17,7 @@ const { NamedMqttBroker } = require('../../core/util/mqttBroker');
 const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
+const jsonata = require('jsonata');
 
 const args = yargs
     .command('pub', 'Publishes message(s) to a given topic of an mqtt broker')
@@ -33,6 +34,10 @@ const args = yargs
     .option('message', {
         alias: 'm',
         description: 'The message to send',
+        default: null
+    })
+    .option('transform', {
+        description: 'This jsonata transformation is applied before the message is published',
         default: null
     })
     .option('file', {
@@ -86,8 +91,14 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
     try {
         let totalMessageCount = 0;
 
+        let transformer = undefined;
+
+        if (argv.transform) {
+            transformer = jsonata(fs.readFileSync(path.resolve(__dirname, 'transformers', argv.transform), { encoding: 'utf8' }));
+        }
+
         if (argv.message) {
-            totalMessageCount += await sendMessageNTimes(broker, argv.topic, argv.message, argv.times, argv.delayMs);
+            totalMessageCount += await sendMessageNTimes(broker, argv.topic, argv.message, argv.times, argv.delayMs, transformer);
             console.log(`Total number of messages sent ${totalMessageCount}`);
         }
 
@@ -117,7 +128,7 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
                 await waitMs(argv.delayMs);
             }
 
-            totalMessageCount += await sendMessageNTimes(broker, argv.topic, line, argv.times, argv.delayMs);
+            totalMessageCount += await sendMessageNTimes(broker, argv.topic, line, argv.times, argv.delayMs, transformer);
 
             console.log(`Processed line ${lineCounter()}, total number of messages sent ${totalMessageCount}`);
         }
@@ -129,11 +140,17 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
     }
 })(argv);
 
-async function sendMessageNTimes(broker, topic, message, times, delayMs) {
+async function sendMessageNTimes(broker, topic, message, times, delayMs, transformer) {
     let messageCount = 0;
 
     for (let i = 0; i < times; i++) {
         try {
+            if (transformer !== undefined) {
+                // jsonata just works on JSON objects
+                message = JSON.stringify(transformer.evaluate(JSON.parse(message)));
+                console.log(message);
+            }
+
             await broker.publish(topic, message);
 
             if (i < times - 1) {
