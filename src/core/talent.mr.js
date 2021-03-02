@@ -136,11 +136,12 @@ class Mapper extends Talent {
         talentOutput.add(this, ev, Mapper.FEATURE_MAP_PARTIAL, partialResults);
 
         // Jobs for workers
+        // Ensure different timestamps for all work packages
         for (let i = 0; i < workPackages.length; i++) {
             talentOutput.add(this, ev, Mapper.FEATURE_MAP_ASSIGN, {
                 idx: i,
                 value: workPackages[i]
-            });
+            }, ev.subject, DEFAULT_TYPE, DEFAULT_INSTANCE, Date.now() + i);
         }
 
         return talentOutput.toJson();
