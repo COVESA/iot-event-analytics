@@ -1,0 +1,25 @@
+{
+    "loglevel": "DEBUG",
+    "platformId": "123456",
+    "platformConfigDir": "./config",
+    "talentDiscoveryIntervalMs": 30000,
+    "mqtt": {
+        "connectionString": "mqtt://localhost:1883",
+        "ns": "iotea/"
+    },
+    "api": {
+        "port": 8080,
+        "metadata": {}
+    },
+    "ingestion": {
+        "loglevel": "INFO",
+        "processes": 1
+    },
+    "encoding": {
+        "processes": 2
+    },
+    "routing": {
+        "loglevel": "DEBUG",
+        "processes": 2
+    }
+}
