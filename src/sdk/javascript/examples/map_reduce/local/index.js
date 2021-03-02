@@ -48,7 +48,11 @@ class RandomMapper extends Mapper {
     }
 
     map() {
-        return Promise.resolve(new Array(1 + Math.floor(Math.random() * 9)).fill(null).map(() => Math.random()));
+        const workPackages = new Array(1 + Math.floor(Math.random() * 9)).fill(null).map(() => Math.random());
+
+        this.logger.info(`Created work packages ${JSON.stringify(workPackages)}`);
+
+        return Promise.resolve(workPackages);
     }
 }
 
@@ -58,6 +62,8 @@ class RandomWorker extends Worker {
     }
 
     work(data) {
+        this.logger.info(`Computing result for work package ${data}...`);
+
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 if (Math.random() > 0.95) {
@@ -85,8 +91,8 @@ const ing = new Ingestion('mqtt://localhost:1883');
 const enc = new Encoding('mqtt://localhost:1883');
 const rou = new Routing('mqtt://localhost:1883', '123456');
 const mapper = new RandomMapper('mqtt://localhost:1883');
-const w1= new RandomWorker('mqtt://localhost:1883');
-const w2= new RandomWorker('mqtt://localhost:1883');
+const w1 = new RandomWorker('mqtt://localhost:1883');
+const w2 = new RandomWorker('mqtt://localhost:1883');
 const reducer = new RandomReducer('mqtt://localhost:1883');
 const platformLogger = new Logger('Platform');
 
