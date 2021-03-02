@@ -14,9 +14,9 @@
 
 - Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose
   - If there is __no__ _.env_ file within the example folder
-    ```docker-compose -f docker-compose.platform.yml up --remove-orphans```
+    `docker-compose -f docker-compose.platform.yml up --remove-orphans`
   - If there is _.env_ in the folder, run
-    ```docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/python/examples/<example>/.env up --remove-orphans```
+    `docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/python/examples/<example>/.env up --remove-orphans`
 
 ## How to run the examples
 
@@ -26,4 +26,4 @@
 
 - If there is an _events.txt_ within the example folder
   - Open the _tools/mqtt_ in a terminal
-  - Run ```node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/python/examples/<example>/events.txt" --times 1 --delayMs 2000```
+  - Run `node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/python/examples/<example>/events.txt" --times 1 --delayMs 2000 --transform iotea.ts-now.jna`
