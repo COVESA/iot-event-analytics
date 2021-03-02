@@ -112,7 +112,7 @@ class Constraint {
                     prevFeatureValue = this.valueType === VALUE_TYPE_RAW ? lastHistoryEntry.raw : lastHistoryEntry.enc;
 
                     if (prevFeatureValue.$vpath && !this.options.isAbsolutePath) {
-                        Constraint.logger.verbose(`Picking previous value from given value path = ${prevFeatureValue.$vpath}`)
+                        Constraint.logger.verbose(`Picking previous value from given value path = ${prevFeatureValue.$vpath}`);
                         prevFeatureValue = jsonQuery.first(prevFeatureValue, prevFeatureValue.$vpath).value;
                     }
 
@@ -387,21 +387,25 @@ class Rule {
                 // *.*.*                    -> select all feature from all instances                            -> select all features from instance
 
                 // Get the <constraintFeature> from the instance
+                let featureEntry = null;
                 let $feature = null;
 
                 try {
                     Rule.logger.verbose(`Getting feature ${instance.type}.${constraintFeature} from instance ${instance.id}...`);
-                    $feature = featureMap.get(instance.type, constraintFeature, instance.id).$feature;
+                    featureEntry = featureMap.get(instance.type, constraintFeature, instance.id);
+                    $feature = featureEntry.$feature;
                 }
                 catch(err) {
                     const $metaFeature = await instanceManager.getMetadataManager().resolveMetaFeature(instance.type, constraintFeature);
-                    $feature = await instanceManager.getFeature(subject, instance.id, constraintFeature, instance.type, $metaFeature);
+                    // The change date of a feature can be newer than the current event, since we have to accept any event order
+                    // The $feature needs to be cloned, so all evaluations on the same $feature are based on the same dataset
+                    $feature = await instanceManager.getFeature(subject, instance.id, constraintFeature, instance.type, true, $metaFeature);
                     featureMap.set(instance.type, constraintFeature, instance.id, $feature, $metaFeature);
+                    featureEntry = featureMap.get(instance.type, constraintFeature, instance.id);
                 }
 
-                if ($feature !== null) {
-                    Rule.logger.verbose(`Evaluating feature ${JSON.stringify($feature)}...`);
-                }
+                // Feature cannot be null here, since an exception is thrown otherwise and caught by the outer catch block
+                Rule.logger.verbose(`Evaluating feature ${JSON.stringify($feature)}...`);
 
                 if (this.constraint.evaluate($feature)) {
                     Rule.logger.verbose(`Successfully evaluated feature ${JSON.stringify($feature)} agains constraint ${this.constraint}`);

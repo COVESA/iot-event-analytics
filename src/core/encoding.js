@@ -65,7 +65,7 @@ module.exports = class Encoding {
         try {
             const metaFeature = await this.instanceManager.getMetadataManager().resolveMetaFeature(ev.type, ev.feature);
 
-            ev.$feature = await this.instanceManager.setFeature(
+            const updateResult = await this.instanceManager.updateFeature(
                 ev.subject,
                 ev.instance,
                 ev.feature,
@@ -75,11 +75,20 @@ module.exports = class Encoding {
                 ev.type
             );
 
-            if (ev.$feature === null) {
+            if (updateResult === null) {
                 // Feature could not be set instance. Do not publish it to encoding
                 this.logger.debug(`Could not set ${ev.type}.${ev.feature} at ${ev.whenMs} to value ${ev.value} for instance ${ev.instance} of type ${ev.type} belonging to ${ev.subject}`, evtctx);
                 return;
             }
+
+            if (updateResult.$hidx > -1) {
+                // Just a history update --> A newer value was already set
+                this.logger.debug(`Updated history at index ${updateResult.$hidx} with raw value ${ev.value}. Skipping event`, evtctx);
+                return;
+            }
+
+            // Add $feature to event
+            Object.assign(ev, { $feature: updateResult.$feature });
         }
         catch(err) {
             // Encoding issues should only be logged on debug level
