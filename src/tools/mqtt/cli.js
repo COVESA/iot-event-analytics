@@ -148,7 +148,6 @@ async function sendMessageNTimes(broker, topic, message, times, delayMs, transfo
             if (transformer !== undefined) {
                 // jsonata just works on JSON objects
                 message = JSON.stringify(transformer.evaluate(JSON.parse(message)));
-                console.log(message);
             }
 
             await broker.publish(topic, message);
