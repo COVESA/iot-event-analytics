@@ -13,7 +13,7 @@
 
 #include "nlohmann/json.hpp"
 #include "iotea.hpp"
-#include "integrationtest.hpp"
+#include "talent_test.hpp"
 #include "logging.hpp"
 #include "mqtt_client.hpp"
 

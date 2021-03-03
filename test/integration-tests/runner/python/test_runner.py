@@ -15,7 +15,7 @@ import logging
 import sys
 
 # TODO: create 
-sys.path.append(os.path.abspath('../../../../src/sdk/python/pkg/iotea/core/test'))
+sys.path.append(os.path.abspath('../../../../src/sdk/python/pkg/iotea/core'))
 from talent_test import TestRunnerTalent
 
 from iotea.core.logger import Logger
@@ -25,7 +25,7 @@ os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 class TestRunner(TestRunnerTalent):
     def __init__(self, connection_string):
-        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-js', 'testSet-sdk-py', 'testSet-sdk-cpp'], connection_string)
+        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js', 'testSet-sdk-cpp'], connection_string)
         
 async def main():
     testrunner = TestRunner('mqtt://localhost:1883')

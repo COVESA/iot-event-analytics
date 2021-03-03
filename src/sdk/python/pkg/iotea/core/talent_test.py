@@ -215,8 +215,6 @@ class TestRunnerTalent(Talent):
             
     async def on_event(self, ev, evtctx):
         result, not_connected_array = self.talent_dependencies.check_all()
-        
-        self.logger.info('NOT site-pkg talent_test.py')
 
         if result is True:
             self.logger.info('Start Integration Tests')

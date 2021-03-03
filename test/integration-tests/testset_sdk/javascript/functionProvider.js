@@ -1,5 +1,5 @@
-//const iotea = require('boschio.iotea');
 const iotea = require('../../../../src/module.js');
+//const iotea = require('boschio.iotea');
 
 process.env.MQTT_TOPIC_NS = 'iotea/';
 

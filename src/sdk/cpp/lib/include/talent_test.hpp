@@ -1,5 +1,5 @@
-#ifndef INTEGRATIONTEST_HPP
-#define INTEGRATIONTEST_HPP
+#ifndef TALENT_TEST_HPP
+#define TALENT_TEST_HPP
 
 #include "iotea.hpp"
 #include "nlohmann/json.hpp"
@@ -94,4 +94,4 @@ class TestSetTalent : public core::FunctionTalent {
 } // namespace test
 } // namespace iotea
 
-#endif // INTEGRATIONTEST_HPP
+#endif // TALENT_TEST_HPP

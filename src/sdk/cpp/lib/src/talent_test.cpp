@@ -7,7 +7,7 @@
 
 #include "iotea.hpp"
 #include "logging.hpp"
-#include "integrationtest.hpp"
+#include "talent_test.hpp"
 
 namespace iotea {
 namespace test {

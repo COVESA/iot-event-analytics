@@ -37,6 +37,7 @@ add_library(iotea_sdk_cpp
     src/logging.cpp
     src/iotea.cpp
     src/schema.cpp
+    src/talent_test.cpp
     src/mqtt_client.cpp
 )
 

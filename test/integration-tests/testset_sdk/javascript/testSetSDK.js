@@ -1,4 +1,5 @@
-const iotea = require('boschio.iotea');
+const iotea = require('../../../../src/module.js'); //TODO: we need to fix this Jochen 
+//const iotea = require('boschio.iotea'); 
 
 process.env.MQTT_TOPIC_NS = 'iotea/';
 

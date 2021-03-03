@@ -71,5 +71,3 @@ add_subdirectory(lib)
 project(Test)
 include(CTest)
 
-## integration tests
-add_subdirectory(integration_tests)
