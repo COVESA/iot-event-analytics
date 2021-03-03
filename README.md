@@ -15,6 +15,12 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ![Image of IoTea](./docs/assets/iotea.jpg)
 
+## Introduction
+
+IoT Event Analytics, is a complex and freely scalable event processing and agent network platform. The platform is basically build around so called __Talents__ which form a distributed network. Each talent is a unit of work and can interact with other Talents via events. The platform itself orchestrates the flow of events and offers additional services, like an in-memory digital twin, calculation of statistical data based on given event histories and complex rule evaluation of when to inform a Talent, that something happened, that the Talent "is interested in".
+Thus, a talent is always an event consumer and may also be an event producer. The event-driven business logic can be implemented using one of our SDKs for JavaScript, Python or C++.
+There are more features which can be explored unsing various examples for the different SDKs.
+
 ## tldr - get it running - asap
 
 - Install the latest IoT Event Analytics VSCode extension from _src/sdk/vscode/lib/*.vsix_

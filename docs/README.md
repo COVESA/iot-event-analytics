@@ -15,10 +15,6 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ![Image of IoTea](./assets/iotea.jpg)
 
-## Introduction
-
-IoT Event Analytics, is a complex event processing and agent network platform. The platform itself basically build from so called __talents__ which form a distributed network. Each talent is a unit of work. Per default so called core talents taking over the fundamental logic.
-
 ## Talents
 
 Talents encapsulate the data demand for a functional processing unit. Each Talent just has to define its required as well as offered data and services results. How a request or a reply reaches the consumer is managed by  at least one __Instance-Manager__ core talent. This enables the concept of non-blocking channeling ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html)) IO.
