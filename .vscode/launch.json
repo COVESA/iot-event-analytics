@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [{
+            "name": "Launch SDK Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": ["--extensionDevelopmentPath=${workspaceFolder}/src/sdk/vscode"]
+        },
+        {
+            "name": "Launch SDK Extension Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/src/sdk/vscode",
+                "--extensionTestsPath=${workspaceFolder}/src/sdk/vscode/out/test/suite/index"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/src/sdk/vscode/out/test/**/*.js"
+            ],
+            "preLaunchTask": "${defaultBuildTask}"
+        },
+        {
+            "name": "Launch current NodeJS module",
+            "type": "node",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals/**>"
+            ]
+        }
+    ]
+}

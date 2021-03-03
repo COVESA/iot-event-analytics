@@ -1,0 +1,94 @@
+# =================================================================
+# Global settings
+# -----------------------------------------------------------------
+{{#mqtt}}
+listener {{mqtt.port}}
+{{#mqtt.caCert}}
+# Path to the Certification Authority certificate
+cafile {{mqtt.caCert}}
+{{/mqtt.caCert}}
+{{#mqtt.serverCert}}
+# Path to the PEM encoded server certificate
+certfile {{mqtt.serverCert}}
+{{/mqtt.serverCert}}
+{{#mqtt.serverKey}}
+# Path to the PEM encoded server private key
+keyfile {{mqtt.serverKey}}
+{{/mqtt.serverKey}}
+{{/mqtt}}
+{{#ws}}
+listener {{ws.port}}
+protocol websockets
+{{/ws}}
+{{#logTypes}}
+log_type {{.}}
+{{/logTypes}}
+log_dest stdout
+
+{{#bridges}}
+# =================================================================
+# Bridge {{platformId}}{{platformIdSuffix}}
+# -----------------------------------------------------------------
+
+# =================================================================
+# Settings
+# -----------------------------------------------------------------
+connection {{platformId}}{{platformIdSuffix}}
+address {{address}}
+bridge_protocol_version mqttv311
+cleansession true
+remote_clientid {{platformId}}{{platformIdSuffix}}
+start_type automatic
+notifications false
+try_private false
+{{^auth}}
+bridge_insecure true
+{{/auth}}
+{{#auth}}
+{{#type=basic}}
+# =================================================================
+# Basic authentication
+# -----------------------------------------------------------------
+bridge_insecure true
+remote_username {{auth.username}}
+remote_password {{auth.password}}
+{{/type=basic}}
+{{#type=certificate}}
+# =================================================================
+# Certificate based authentication
+# -----------------------------------------------------------------
+bridge_tls_version tlsv1.2
+bridge_insecure false
+{{#auth.caCert}}
+# Path to the Certification Authority certificate
+bridge_cafile {{auth.caCert}}
+{{/auth.caCert}}
+{{#auth.clientCert}}
+# Path to the PEM encoded client certificate
+bridge_certfile {{auth.clientCert}}
+{{/auth.clientCert}}
+{{#auth.clientKey}}
+# Path to the PEM encoded client private key
+bridge_keyfile {{auth.clientKey}}
+{{/auth.clientKey}}
+{{/type=certificate}}
+{{/auth}}
+# =================================================================
+# IoTea Topic routing
+# -----------------------------------------------------------------
+# Send discovery requests to remote talents
+topic {{mqtt.ns}}configManager/talents/discover out 0 "" ""
+
+# Receive discovery response from all talents local/remote
+topic {{mqtt.ns}}{{platformId}}/configManager/talent/discover in 0 "" ""
+
+# Send events to remote talents and remove the local remote/ prefix
+topic talent/+/events out 0 {{mqtt.ns}}remote/ {{mqtt.ns}}
+
+# Send events to a specific talent instance (in case of shared groups, where multiple talents are able to receive)
+# 1st wildcard = talentId, 2nd wildcard = call channel id, 3rd wildcard = call id
+topic talent/+/events/+/+ out 0 {{mqtt.ns}}remote/ {{mqtt.ns}}
+
+# Receive events from talents and reroute them to local shared ingestion pipeline
+topic ingestion/events in 0 {{mqtt.ns}} {{mqtt.ns}}{{platformId}}/
+{{/bridges}}

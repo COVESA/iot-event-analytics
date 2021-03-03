@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/schemas/types.schema.json",
+    "type": "object",
+    "patternProperties": {
+        "^[0-9]{6}$": {
+            "$ref": "types.schema.json#/definitions/segment"
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "segment": {
+            "type": "object",
+            "properties": {
+                "features": {
+                    "$ref": "types.schema.json#/definitions/features"
+                },
+                "types": {
+                    "$ref": "types.schema.json#/definitions/type"
+                }
+            },
+            "required": [
+                "features",
+                "types"
+            ]
+        },
+        "type": {
+            "type": "object",
+            "patternProperties": {
+                "^[^\\.]+$": {
+                    "type": "object",
+                    "properties": {
+                        "features": {
+                            "$ref": "types.schema.json#/definitions/features"
+                        }
+                    },
+                    "required": [
+                        "features"
+                    ]
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+        "features": {
+            "type": "object",
+            "patternProperties": {
+                "^[^\\.]+$": {
+                    "$ref": "types.schema.json#/definitions/indexedFeature"
+                }
+            },
+            "additionalProperties": false
+        },
+        "indexedFeature": {
+            "allOf": [
+                {
+                    "$ref": "feature.schema.json#/definitions/feature"
+                },
+                {
+                    "required": [
+                        "idx"
+                    ],
+                    "properties": {
+                        "idx": {
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

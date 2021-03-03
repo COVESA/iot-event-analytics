@@ -1,0 +1,4 @@
+__pycache__
+node_modules/
+*.tar
+.vscode/extensions.json

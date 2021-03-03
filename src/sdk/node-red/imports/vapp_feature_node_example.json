@@ -1,0 +1,58 @@
+[
+    {
+        "id": "11980e13.405e42",
+        "type": "inject",
+        "z": "9610fe85.f9b39",
+        "name": "",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "Trigger",
+        "payloadType": "str",
+        "x": 120,
+        "y": 200,
+        "wires": [
+            [
+                "65adff08.a4b36"
+            ]
+        ]
+    },
+    {
+        "id": "ff618b87.77fde8",
+        "type": "debug",
+        "z": "9610fe85.f9b39",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "65adff08.a4b36",
+        "type": "vapp-feat",
+        "z": "9610fe85.f9b39",
+        "VAPPhost": "13.81.84.98",
+        "VAPPfeatures": "leer",
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "ff618b87.77fde8"
+            ]
+        ]
+    }
+]

@@ -1,0 +1,13 @@
+.dockerignore
+.gitattributes
+.vscode
+*.tar
+*.tgz
+src/sdk
+src/tools
+docker
+docker-compose
+resources
+docs
+requirements.txt
+.pylintrc

@@ -1,0 +1,76 @@
+{
+    "in": [
+        {
+            "dapr": {
+                "pubSubName": "pubsub",
+                "topic": "vehicle",
+                "valueRef": "speed"
+            },
+
+            "iotea": {
+                "type": null,
+                "feature": "speed",
+                "description": "Vehicle Speed from dapr.io",
+                "encoding": {
+                    "type": "number",
+                    "encoder": null
+                },
+                "unit": "KMH"
+            }
+        },
+
+        {
+            "dapr": {
+                "pubSubName": "pubsub",
+                "topic": "vehicle",
+                "valueRef": "rpm"
+            },
+
+            "iotea": {
+                "type": null,
+                "feature": "rpm",
+                "description": "Vehicle RPM from dapr.io",
+                "encoding": {
+                    "type": "number",
+                    "encoder": null
+                },
+                "unit": "KMH"
+            }
+        },
+
+        {
+            "dapr": {
+                "pubSubName": "pubsub",
+                "topic": "driver",
+                "valueRef": "name"
+            },
+
+            "iotea": {
+                "type": null,
+                "feature": "driver",
+                "description": "Vehicle RPM from dapr.io",
+                "encoding": {
+                    "type": "string",
+                    "encoder": null
+                },
+                "unit": "KMH"
+            }
+        }
+    ],
+  
+    "out": [
+        {
+            "dapr": {
+                "pubSubName": "pubsub",
+                "topic": "vapp.anyfeature"
+            },
+
+            "iotea": {
+                "type": "anytype",
+                "valueType": "ENCODED",
+                "feature": "anyfeature",
+                "instance": "4711"
+            }
+        }
+    ]
+}

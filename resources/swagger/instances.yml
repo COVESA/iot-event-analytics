@@ -1,0 +1,7 @@
+components:
+    schemas:
+        Instances:
+            type: object
+            x-pattern: ^[^\.]+$
+            additionalProperties:
+                $ref: '#/components/schemas/Instance'

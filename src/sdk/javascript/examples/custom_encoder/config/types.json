@@ -1,0 +1,22 @@
+{
+    "100000": {
+        "features": {
+            "lightcolor": {
+                "idx": 0,
+                "encoding": {
+                    "type": "object",
+                    "reduce": "$reduce($reverse($split($pad($formatBase(r,2),-8,'0') & $pad($formatBase(g,2),-8,'0') & $pad($formatBase(b,2),-8,'0'), '')), function($a, $v, $i) { $a + $number($v) * $power(2, $i) }, 0)",
+                    "encoder": "minmax",
+                    "min": 0,
+                    "max": 16777215
+                },
+                "description": "Light color as encoded 24bit RGB value"
+            }
+        },
+        "types": {
+            "mybulb": {
+                "features": {}
+            }
+        }
+    }
+}

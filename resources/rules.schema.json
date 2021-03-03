@@ -1,0 +1,193 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/schemas/rules.schema.json",
+    "oneOf": [
+      {
+        "$ref": "rules.schema.json#/definitions/rules.or"
+      },
+      {
+        "$ref": "rules.schema.json#/definitions/rules.and"
+      }
+    ],
+    "definitions": {
+      "rules": {
+        "required": [
+          "rules"
+        ],
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "rules.schema.json#/definitions/rule.nelson"
+                },
+                {
+                  "$ref": "rules.schema.json#/definitions/rule.tseries.pattern"
+                },
+                {
+                  "$ref": "rules.schema.json#/definitions/rule.schema"
+                },
+                {
+                  "$ref": "rules.schema.json#/definitions/rule.change"
+                },
+                {
+                  "$ref": "rules.schema.json#/definitions/rules.or"
+                },
+                {
+                  "$ref": "rules.schema.json#/definitions/rules.and"
+                }
+              ]
+            },
+            "additionalItems": false,
+            "minItems": 1
+          }
+        }
+      },
+      "rule": {
+        "type": "object",
+        "required": [
+          "feature",
+          "valueType",
+          "op",
+          "path",
+          "typeSelector"
+        ],
+        "properties": {
+          "feature": {
+              "type": "string",
+              "pattern": "^(?:(?:[^\\.]+\\.)?(?:[^\\.]+))$|^\\.$"
+          },
+          "valueType": {
+              "type": "integer",
+              "enum": [0, 1]
+          },
+          "op": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3,
+            "multipleOf": 1
+          },
+          "path": {
+            "type": "string"
+          },
+          "typeSelector": {
+            "type": "string",
+            "pattern": "^(?:^(?:\\*|([^\\.]*))\\.)?([^\\.]+)$"
+          },
+          "instanceIdFilter": {
+            "type": "string"
+          },
+          "limitFeatureSelection": {
+            "type": "boolean"
+          },
+          "value": {}
+        },
+        "additionalProperties": false
+      },
+      "rule.schema": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rule"
+          },
+          {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "object"
+              },
+              "op": {
+                "const": 0
+              }
+            }
+          }
+        ]
+      },
+      "rule.change": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rule"
+          },
+          {
+            "properties": {
+              "op": {
+                "const": 1
+              }
+            }
+          }
+        ]
+      },
+      "rule.nelson": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rule"
+          },
+          {
+            "properties": {
+              "op": {
+                "const": 2
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 7,
+                "multipleOf": 1
+              }
+            }
+          }
+        ]
+      },
+      "rule.tseries.pattern": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rule"
+          },
+          {
+            "properties": {
+              "op": {
+                "const": 3
+              }
+            }
+          }
+        ]
+      },
+      "rules.and": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rules"
+          },
+          {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "and"
+              }
+            }
+          }
+        ]
+      },
+      "rules.or": {
+        "allOf": [
+          {
+            "$ref": "rules.schema.json#/definitions/rules"
+          },
+          {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "or"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }

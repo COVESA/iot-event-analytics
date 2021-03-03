@@ -1,0 +1,11 @@
+.vscode/
+docs/
+node_modules/
+src/sdk/
+src/tools/
+*.tar
+.git/
+docker/config/config
+docker/pipeline/config
+docker/platform/config
+docker/vss2iotea/config

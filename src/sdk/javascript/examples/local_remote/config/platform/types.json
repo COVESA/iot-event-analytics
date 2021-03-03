@@ -1,0 +1,21 @@
+{
+    "100000": {
+        "features": {
+            "temp": {
+                "idx": 0,
+                "encoding": {
+                    "type": "number",
+                    "encoder": null
+                },
+                "history": 3,
+                "description": "Current inner temperature",
+                "unit": "°C"
+            }
+        },
+        "types": {
+            "kuehlschrank": {
+                "features": {}
+            }
+        }
+    }
+}

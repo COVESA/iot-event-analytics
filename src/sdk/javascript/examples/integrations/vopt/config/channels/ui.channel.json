@@ -1,0 +1,14 @@
+[
+    {
+        "type": "validate",
+        "path": "./ui.schema.json"
+    },
+    {
+        "type": "transform",
+        "path": "./ui.transform.jna"
+    },
+    {
+        "type": "validate",
+        "path": "./talent.schema.json"
+    }
+]

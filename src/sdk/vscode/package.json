@@ -1,0 +1,105 @@
+{
+    "name": "iotea",
+    "displayName": "IoT Event Analytics",
+    "description": "Provides scaffolding, code completion for developing Talents for IoT Event Analytcis",
+    "icon": "resources/icon.png",
+    "categories": [
+        "Snippets"
+    ],
+    "version": "0.5.0",
+    "license": "MPL-2.0",
+    "private": "true",
+    "author": "Bosch.IO GmbH",
+    "publisher": "boschio",
+    "repository": "https://<Github IoTea repo>",
+    "engines": {
+        "vscode": "^1.51.0"
+    },
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/src/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "iotea.createJSTalentClass",
+                "title": "Bosch IoT Event Analytics: Create new JavaScript Talent class"
+            },
+            {
+                "command": "iotea.createJsTalentProject",
+                "title": "Bosch IoT Event Analytics: Create new JavaScript Talent project"
+            },
+            {
+                "command": "iotea.startIoTeaPlatform",
+                "title": "Bosch IoT Event Analytics: Start platform using docker-compose"
+            },
+            {
+                "command": "iotea.stopIoTeaPlatform",
+                "title": "Bosch IoT Event Analytics: Stop platform using docker-compose"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "javascript",
+                "path": "./resources/snippets/javascript.json"
+            }
+        ],
+        "configuration": {
+            "title": "IoTea",
+            "properties": {
+                "iotea.platform.api.endpoint": {
+                    "scope": "application",
+                    "type": "string",
+                    "default": "http://localhost:8080/metadata/api/v1",
+                    "description": "Metadata API Endpoint"
+                },
+                "iotea.project.root.dir": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "",
+                    "description": "IoTea project root folder"
+                },
+                "iotea.project.docker.proxy": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "",
+                    "description": "The http(s) proxy used during creation of the platforms docker images"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn compile:prod",
+        "package": "vsce package --out lib/",
+        "precompile:prod": "yarn precompile",
+        "precompile:dev": "yarn precompile",
+        "precompile": "del-cli out/&&cpy resources/**/* out/ --parents",
+        "compile:dev": "tsc -p ./tsconfig.dev.json",
+        "compile:prod": "tsc -p ./tsconfig.prod.json",
+        "debug": "yarn watch",
+        "watch": "yarn precompile&&tsc -watch -p ./tsconfig.dev.json",
+        "pretest": "yarn compile:dev&&yarn run lint",
+        "lint": "eslint src --ext ts",
+        "test": "yarn pretest&&node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.0.0",
+        "@types/node": "^12.11.7",
+        "@types/vscode": "^1.46.0",
+        "@typescript-eslint/eslint-plugin": "^4.1.1",
+        "@typescript-eslint/parser": "^4.1.1",
+        "cpy-cli": "^3.1.1",
+        "del-cli": "^3.0.1",
+        "eslint": "^7.9.0",
+        "glob": "^7.1.6",
+        "mocha": "^8.1.3",
+        "typescript": "^4.0.2",
+        "vsce": "^1.81.1",
+        "vscode-test": "^1.4.0"
+    },
+    "dependencies": {
+        "@types/bent": "^7.3.2",
+        "bent": "^7.3.12"
+    }
+}

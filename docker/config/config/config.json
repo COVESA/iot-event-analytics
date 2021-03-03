@@ -1,0 +1,14 @@
+{
+    "loglevel": "DEBUG",
+    "platformId": "ABCDE",
+    "talentDiscoveryIntervalMs": 30000,
+    "mqtt": {
+        "connectionString": "mqtt://localhost:1883",
+        "ns": "iotea/"
+    },
+    "api": {
+        "port": 8080,
+        "instance": {},
+        "metadata": {}
+    }
+}

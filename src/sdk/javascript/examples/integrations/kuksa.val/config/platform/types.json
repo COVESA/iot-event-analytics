@@ -1,0 +1,33 @@
+{
+    "100000": {
+        "features": {},
+        "types": {
+            "Vehicle": {
+                "features": {
+                    "ADAS$ObstacleDetection$IsActive": {
+                        "idx": 0,
+                        "description": "Indicates if obstacle sensor system is enabled. True = Enabled. False = Disabled.",
+                        "encoding": {
+                            "type": "boolean",
+                            "encoder": "category",
+                            "enum": [
+                                true, false
+                            ]
+                        }
+                    },
+                    "ADAS$ObstacleDetection$Error": {
+                        "idx": 1,
+                        "description": "Indicates if obstacle sensor system incurred an error condition. True = Error. False = No Error.",
+                        "encoding": {
+                            "type": "boolean",
+                            "encoder": "category",
+                            "enum": [
+                                true, false
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

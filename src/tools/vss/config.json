@@ -1,0 +1,10 @@
+{
+    "vss": {
+        "pathConfig": {
+            "separator": ".",
+            "replacer": {
+                ".": "$"
+            }
+        }
+    }
+}

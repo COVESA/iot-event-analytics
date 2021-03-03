@@ -1,0 +1,2323 @@
+{
+    "03Z": {
+        "fac": 1,
+        "unit": "03Z",
+        "desc": "Graugusszuschlag"
+    },
+    "04Z": {
+        "fac": 1,
+        "unit": "04Z",
+        "desc": "Sphärogusszuschlag"
+    },
+    "0VS": {
+        "fac": 1,
+        "unit": "0VS",
+        "desc": "Stück"
+    },
+    "ONE": {
+        "fac": 1,
+        "unit": "one",
+        "desc": "Eins"
+    },
+    "%": {
+        "fac": 0.01,
+        "unit": "%",
+        "desc": "percent",
+        "ref": "ONE"
+    },
+    "%0": {
+        "fac": 0.001,
+        "unit": "%0",
+        "desc": "Promille",
+        "ref": "ONE"
+    },
+    "PPB": {
+        "fac": 1e-9,
+        "unit": "ppb",
+        "desc": "Parts per billion",
+        "ref": "ONE"
+    },
+    "PPM": {
+        "fac": 0.000001,
+        "unit": "ppm",
+        "desc": "Parts per million",
+        "ref": "ONE"
+    },
+    "PPT": {
+        "fac": 1e-12,
+        "unit": "ppt",
+        "desc": "Parts per trillion",
+        "ref": "ONE"
+    },
+    "1/K": {
+        "fac": 1,
+        "unit": "1/K",
+        "desc": "Reziprokes Kelvin"
+    },
+    "3VP": {
+        "fac": 1,
+        "unit": "3VP",
+        "desc": "Verpackungseinheit"
+    },
+    "N/M": {
+        "fac": 1,
+        "unit": "N/m",
+        "desc": "Newton durch Meter"
+    },
+    "MNM": {
+        "fac": 0.001,
+        "unit": "mN/m",
+        "desc": "Millinewton durch Meter",
+        "ref": "N/M"
+    },
+    "NCM": {
+        "fac": 0.01,
+        "unit": "N/cm",
+        "desc": "Newton pro Zentimeter",
+        "ref": "N/M"
+    },
+    "NM2": {
+        "fac": 1000,
+        "unit": "N/mm",
+        "desc": "Newton durch Millimeter",
+        "ref": "N/M"
+    },
+    "KNM": {
+        "fac": 0.001,
+        "unit": "kN/m",
+        "desc": "KiloNewton durch Meter",
+        "ref": "N/M"
+    },
+    "V/S": {
+        "fac": 1,
+        "unit": "V/s",
+        "desc": "Volt durch Sekunde"
+    },
+    "BD": {
+        "fac": 1,
+        "unit": "Bd",
+        "desc": "Baud"
+    },
+    "KBD": {
+        "fac": 1000,
+        "unit": "KBd",
+        "desc": "Kilobaud",
+        "ref": "BD"
+    },
+    "8PK": {
+        "fac": 1,
+        "unit": "8PK",
+        "desc": "Standardverpackungseinheit. [P"
+    },
+    "8SA": {
+        "fac": 1,
+        "unit": "8SA",
+        "desc": "Eine Reihe von Artikeln oder G"
+    },
+    "96Z": {
+        "fac": 1,
+        "unit": "96Z",
+        "desc": "Stahlschrottzuschlag"
+    },
+    "97Z": {
+        "fac": 1,
+        "unit": "97Z",
+        "desc": "Stahllegierungszuschlag"
+    },
+    "98Z": {
+        "fac": 1,
+        "unit": "98Z",
+        "desc": "Schmiedeschrottzuschlag"
+    },
+    "99Z": {
+        "fac": 1,
+        "unit": "99Z",
+        "desc": "Schmiedelegierungszuschlag"
+    },
+    "A": {
+        "fac": 1,
+        "unit": "A",
+        "desc": "Ampere"
+    },
+    "µA": {
+        "fac": 0.000001,
+        "unit": "µA",
+        "desc": "Mikroampere",
+        "ref": "A"
+    },
+    "NA": {
+        "fac": 1e-9,
+        "unit": "nA",
+        "desc": "Nanoampere",
+        "ref": "A"
+    },
+    "KA": {
+        "fac": 1000,
+        "unit": "kA",
+        "desc": "Kiloampere",
+        "ref": "A"
+    },
+    "MA": {
+        "fac": 0.001,
+        "unit": "mA",
+        "desc": "Milliampere",
+        "ref": "A"
+    },
+    "BYT": {
+        "fac": 1,
+        "unit": "Byte",
+        "desc": "Byte"
+    },
+    "KB": {
+        "fac": 1000,
+        "unit": "kB",
+        "desc": "Kilobyte",
+        "ref": "BYT"
+    },
+    "MB": {
+        "fac": 1000000,
+        "unit": "MB",
+        "desc": "Megabyte",
+        "ref": "BYT"
+    },
+    "BIT": {
+        "fac": 0.125,
+        "unit": "Bit",
+        "desc": "Bit",
+        "ref": "BYT"
+    },
+    "GBY": {
+        "fac": 1000000000,
+        "unit": "GB",
+        "desc": "Gigabyte",
+        "ref": "BYT"
+    },
+    "PBY": {
+        "fac": 1000000000000000,
+        "unit": "PB",
+        "desc": "Petabyte",
+        "ref": "BYT"
+    },
+    "TB": {
+        "fac": 1000000000000,
+        "unit": "TB",
+        "desc": "Terabyte",
+        "ref": "BYT"
+    },
+    "A/M": {
+        "fac": 1,
+        "unit": "A/m",
+        "desc": "Ampere durch Meter"
+    },
+    "A/C": {
+        "fac": 100,
+        "unit": "A/cm",
+        "desc": "Ampere durch Zentimeter",
+        "ref": "A/M"
+    },
+    "KAM": {
+        "fac": 1000,
+        "unit": "kA/m",
+        "desc": "Kiloampere durch Meter",
+        "ref": "A/M"
+    },
+    "AK": {
+        "fac": 1,
+        "unit": "AK",
+        "desc": "Arbeitskraft"
+    },
+    "AL1": {
+        "fac": 1,
+        "unit": "AL1",
+        "desc": "enthält Al226S"
+    },
+    "AL5": {
+        "fac": 1,
+        "unit": "AL5",
+        "desc": "enthält AL233"
+    },
+    "AL7": {
+        "fac": 1,
+        "unit": "AL7",
+        "desc": "enthält ADC6"
+    },
+    "AL8": {
+        "fac": 1,
+        "unit": "AL8",
+        "desc": "enthält Al239"
+    },
+    "AL9": {
+        "fac": 1,
+        "unit": "AL9",
+        "desc": "enthält AlSi12"
+    },
+    "ALA": {
+        "fac": 1,
+        "unit": "ALA",
+        "desc": "enthält AL235"
+    },
+    "ALB": {
+        "fac": 1,
+        "unit": "ALB",
+        "desc": "enthält AL242"
+    },
+    "ALC": {
+        "fac": 1,
+        "unit": "ALC",
+        "desc": "enthält AL244"
+    },
+    "ALD": {
+        "fac": 1,
+        "unit": "ALD",
+        "desc": "enthält AL331"
+    },
+    "ALE": {
+        "fac": 1,
+        "unit": "ALE",
+        "desc": "enthält AL349"
+    },
+    "ALF": {
+        "fac": 1,
+        "unit": "ALF",
+        "desc": "enthält AlSi7Mg"
+    },
+    "ALS": {
+        "fac": 1,
+        "unit": "ALS",
+        "desc": "enthält AlSi17Mg"
+    },
+    "ANZ": {
+        "fac": 1,
+        "unit": "ANZ",
+        "desc": "Anzahl (für PCC)"
+    },
+    "AS9": {
+        "fac": 1,
+        "unit": "AS9",
+        "desc": "enthält Aluminium Silizium"
+    },
+    "B32": {
+        "fac": 1,
+        "unit": "kg.m²",
+        "desc": "Kilogramm Quadratmeter"
+    },
+    "KGC": {
+        "fac": 0.0001,
+        "unit": "kg.cm",
+        "desc": "Kilogramm Quadratzentimeter",
+        "ref": "B32"
+    },
+    "TTE": {
+        "fac": 1,
+        "unit": "Tüte",
+        "desc": "Tüte"
+    },
+    "BEH": {
+        "fac": 1,
+        "unit": "BEH",
+        "desc": "Behälter"
+    },
+    "BL": {
+        "fac": 1,
+        "unit": "BL",
+        "desc": "Block"
+    },
+    "FL": {
+        "fac": 1,
+        "unit": "Fl",
+        "desc": "Flasche"
+    },
+    "BQK": {
+        "fac": 1,
+        "unit": "Bq/kg",
+        "desc": "Becquerel durch Kilogramm"
+    },
+    "KBK": {
+        "fac": 1000,
+        "unit": "kBq/kg",
+        "desc": "Kilobecquerel durch Kilogramm",
+        "ref": "BQK"
+    },
+    "BR1": {
+        "fac": 1,
+        "unit": "BR1",
+        "desc": "enthält CuSn6"
+    },
+    "BR2": {
+        "fac": 1,
+        "unit": "BR2",
+        "desc": "enthält CuSn6Zn"
+    },
+    "BR3": {
+        "fac": 1,
+        "unit": "BR3",
+        "desc": "enthält CuFe2P"
+    },
+    "BR4": {
+        "fac": 1,
+        "unit": "BR4",
+        "desc": "enthält CuSn0,15"
+    },
+    "SHT": {
+        "fac": 1,
+        "unit": "sheet",
+        "desc": "sheet"
+    },
+    "C": {
+        "fac": 1,
+        "unit": "C",
+        "desc": "Coulomb (Ampere Sekunde)"
+    },
+    "AH": {
+        "fac": 3600,
+        "unit": "Ah",
+        "desc": "Ampere Stunde",
+        "ref": "C"
+    },
+    "mAh": {
+        "fac": 3.6,
+        "unit": "MAH",
+        "desc": "Milliampere Stunde",
+        "ref": "C"
+    },
+    "M/M": {
+        "fac": 1,
+        "unit": "mol/m3",
+        "desc": "Mol durch Kubikmeter"
+    },
+    "M/L": {
+        "fac": 1000,
+        "unit": "mol/l",
+        "desc": "Mol durch Liter",
+        "ref": "M/M"
+    },
+    "MPL": {
+        "fac": 1000000,
+        "unit": "mmol/l",
+        "desc": "Millimol durch Liter",
+        "ref": "M/M"
+    },
+    "OM": {
+        "fac": 1,
+        "unit": "Ohm.m",
+        "desc": "Ohm Meter"
+    },
+    "MUM": {
+        "fac": 0.000001,
+        "unit": "µOhm.m",
+        "desc": "Mikroohm Meter",
+        "ref": "OM"
+    },
+    "MOM": {
+        "fac": 1,
+        "unit": "mΩ/m",
+        "desc": "Milliohm durch Meter"
+    },
+    "OCM": {
+        "fac": 0.01,
+        "unit": "Ohm.cm",
+        "desc": "Ohm Zentimeter",
+        "ref": "OM"
+    },
+    "UOM": {
+        "fac": 0.000001,
+        "unit": "Ohmmm2",
+        "desc": "Ohm Quadratmillimeter / Meter",
+        "ref": "OM"
+    },
+    "RAD": {
+        "fac": 1,
+        "unit": "rad",
+        "desc": "Radiant"
+    },
+    "ACM": {
+        "fac": 0.00029089000000000003,
+        "unit": "'",
+        "desc": "Bogenminute (Winkelminute)",
+        "ref": "RAD"
+    },
+    "ACS": {
+        "fac": 0.0000048481,
+        "unit": "\"",
+        "desc": "Bogensekunde",
+        "ref": "RAD"
+    },
+    "deg": {
+        "fac": 0.01745,
+        "unit": "DEG",
+        "desc": "Grad (Winkel)",
+        "ref": "RAD"
+    },
+    "M/K": {
+        "fac": 1,
+        "unit": "m/m.K",
+        "desc": "Meter durch Meter.Kelvin"
+    },
+    "CAR": {
+        "fac": 1,
+        "unit": "CAR",
+        "desc": "Karton"
+    },
+    "CDL": {
+        "fac": 1,
+        "unit": "cd",
+        "desc": "Candela"
+    },
+    "CH1": {
+        "fac": 1,
+        "unit": "CH1",
+        "desc": "Enth. Ch. St. 1.4509 BL"
+    },
+    "CH2": {
+        "fac": 1,
+        "unit": "CH2",
+        "desc": "Enth. Ch. St. 1.4509 RO"
+    },
+    "CH3": {
+        "fac": 1,
+        "unit": "CH3",
+        "desc": "Enth. Ch. St. 1.4509 SW"
+    },
+    "CH4": {
+        "fac": 1,
+        "unit": "CH4",
+        "desc": "Enth. Ch. St. 1.4511 FG"
+    },
+    "CKG": {
+        "fac": 1,
+        "unit": "m3/kg",
+        "desc": "Kubikmeter durch Kilogramm"
+    },
+    "CMG": {
+        "fac": 9.999999999999999e-10,
+        "unit": "cm3/g",
+        "desc": "Kubikzentimeter durch Gramm",
+        "ref": "CKG"
+    },
+    "CN2": {
+        "fac": 1,
+        "unit": "CN2",
+        "desc": "enthält CrNi4310W"
+    },
+    "CN3": {
+        "fac": 1,
+        "unit": "CN3",
+        "desc": "enthält CRNi4310D"
+    },
+    "CN4": {
+        "fac": 1,
+        "unit": "CN4",
+        "desc": "enthält CrNi4301W"
+    },
+    "CN5": {
+        "fac": 1,
+        "unit": "CN5",
+        "desc": "enthält CrNi4303B"
+    },
+    "KS": {
+        "fac": 1,
+        "unit": "KS",
+        "desc": "Kasten"
+    },
+    "CS1": {
+        "fac": 1,
+        "unit": "CS1",
+        "desc": "enthält CH.ST 1.4301SS"
+    },
+    "CS2": {
+        "fac": 1,
+        "unit": "CS2",
+        "desc": "enthält CH.ST 1.4418BD"
+    },
+    "CS3": {
+        "fac": 1,
+        "unit": "CS3",
+        "desc": "enthält CH.ST 1.4541BD"
+    },
+    "CS4": {
+        "fac": 1,
+        "unit": "CS4",
+        "desc": "enthält CH.ST 1.4301RO"
+    },
+    "CS5": {
+        "fac": 1,
+        "unit": "CS5",
+        "desc": "enthält CH.ST 1.4310BD"
+    },
+    "CS6": {
+        "fac": 1,
+        "unit": "CS6",
+        "desc": "enthält CH.ST 1.4568BD"
+    },
+    "CS7": {
+        "fac": 1,
+        "unit": "CS7",
+        "desc": "enthält CH.ST 1.4401BD"
+    },
+    "CS8": {
+        "fac": 1,
+        "unit": "CS8",
+        "desc": "enthält CH. ST. 1.4512 BS"
+    },
+    "CS9": {
+        "fac": 1,
+        "unit": "CS9",
+        "desc": "enthält CH.ST  1.4841 BS"
+    },
+    "CT": {
+        "fac": 1,
+        "unit": "Carat",
+        "desc": "Carat"
+    },
+    "CU1": {
+        "fac": 1,
+        "unit": "CU1",
+        "desc": "enthält Cu +1% für Bearbeitung"
+    },
+    "CU2": {
+        "fac": 1,
+        "unit": "CU2",
+        "desc": "CU2  bearbeitet"
+    },
+    "CU3": {
+        "fac": 1,
+        "unit": "CU3",
+        "desc": "enthält CuAg2"
+    },
+    "CU4": {
+        "fac": 1,
+        "unit": "CU4",
+        "desc": "Enth. Cu C1100"
+    },
+    "CU5": {
+        "fac": 1,
+        "unit": "CU5",
+        "desc": "Enth. Cu C2680"
+    },
+    "CU6": {
+        "fac": 1,
+        "unit": "CU6",
+        "desc": "Enth. Cu C5210"
+    },
+    "CU7": {
+        "fac": 1,
+        "unit": "CU7",
+        "desc": "Enth. Cu SCR"
+    },
+    "CU8": {
+        "fac": 1,
+        "unit": "CU8",
+        "desc": "Enth. Cu C1020"
+    },
+    "S/M": {
+        "fac": 1,
+        "unit": "S/m",
+        "desc": "Siemens durch Meter"
+    },
+    "MSC": {
+        "fac": 0.0001,
+        "unit": "µS/cm",
+        "desc": "Mikrosiemens durch Zentimeter",
+        "ref": "S/M"
+    },
+    "MSZ": {
+        "fac": 0.1,
+        "unit": "mS/cm",
+        "desc": "Millisiemens durch Zentimeter",
+        "ref": "S/M"
+    },
+    "S/C": {
+        "fac": 0.01,
+        "unit": "S/cm",
+        "desc": "Siemens durch Zentimeter",
+        "ref": "S/M"
+    },
+    "VA": {
+        "fac": 1,
+        "unit": "VA",
+        "desc": "Volt Ampere"
+    },
+    "V/K": {
+        "fac": 1,
+        "unit": "V/K",
+        "desc": "Volt durch Kelvin"
+    },
+    "MVK": {
+        "fac": 0.001,
+        "unit": "mV/K",
+        "desc": "Millivolt durch Kelvin",
+        "ref": "V/K"
+    },
+    "V/M": {
+        "fac": 1,
+        "unit": "V/m",
+        "desc": "Volt duch Meter"
+    },
+    "VCM": {
+        "fac": 0.01,
+        "unit": "V/cm",
+        "desc": "Volt durch Zentimeter",
+        "ref": "V/M"
+    },
+    "MVC": {
+        "fac": 0.00001,
+        "unit": "mV/cm",
+        "desc": "millivolt per centimeter",
+        "ref": "V/M"
+    },
+    "MVI": {
+        "fac": 0.000025641025641025643,
+        "unit": "mV/in",
+        "desc": "millivolt per inch",
+        "ref": "V/M"
+    },
+    "VIN": {
+        "fac": 0.02564102564102564,
+        "unit": "V/Inch",
+        "desc": "Volt durch Inch",
+        "ref": "V/M"
+    },
+    "W/K": {
+        "fac": 1,
+        "unit": "W/K",
+        "desc": "Watt durch Kelvin"
+    },
+    "MWK": {
+        "fac": 0.001,
+        "unit": "mW/K",
+        "desc": "Milliwatt durch Kelvin",
+        "ref": "W/K"
+    },
+    "WKM": {
+        "fac": 1,
+        "unit": "W/m.K",
+        "desc": "Watt durch Meter Kelvin"
+    },
+    "DB": {
+        "fac": 1,
+        "unit": "dB",
+        "desc": "Dezibel"
+    },
+    "DBA": {
+        "fac": 1,
+        "unit": "db(A)",
+        "desc": "Schalldruckpegel A-Bewertung"
+    },
+    "DGM": {
+        "fac": 1,
+        "unit": "dgm",
+        "desc": "Gefahrgutmenge"
+    },
+    "DL": {
+        "fac": 1,
+        "unit": "Dienst",
+        "desc": "Dienstleistung"
+    },
+    "TR": {
+        "fac": 1,
+        "unit": "tr",
+        "desc": "Trommel"
+    },
+    "DZ": {
+        "fac": 1,
+        "unit": "dz",
+        "desc": "Dutzend"
+    },
+    "EA": {
+        "fac": 1,
+        "unit": "EA",
+        "desc": "einzeln"
+    },
+    "EE": {
+        "fac": 1,
+        "unit": "EE",
+        "desc": "Einheiten Enzyme"
+    },
+    "EML": {
+        "fac": 1,
+        "unit": "Enzyme",
+        "desc": "Einheiten Enzyme / Milliliter"
+    },
+    "EUR": {
+        "fac": 1,
+        "unit": "EURO",
+        "desc": "EURO"
+    },
+    "FAR": {
+        "fac": 1,
+        "unit": "F",
+        "desc": "Farad"
+    },
+    "µF": {
+        "fac": 0.000001,
+        "unit": "µF",
+        "desc": "Mikrofarad",
+        "ref": "FAR"
+    },
+    "PF": {
+        "fac": 1e-12,
+        "unit": "pF",
+        "desc": "Pikofarad",
+        "ref": "FAR"
+    },
+    "MF": {
+        "fac": 0.001,
+        "unit": "mF",
+        "desc": "Millifarad",
+        "ref": "FAR"
+    },
+    "NF": {
+        "fac": 1e-9,
+        "unit": "nF",
+        "desc": "Nanofarad",
+        "ref": "FAR"
+    },
+    "FF": {
+        "fac": 1e-15,
+        "unit": "fF",
+        "desc": "Femtofarad",
+        "ref": "FAR"
+    },
+    "FKT": {
+        "fac": 1,
+        "unit": "FKT",
+        "desc": "Funktion (für PCC)"
+    },
+    "FLD": {
+        "fac": 1,
+        "unit": "FLD",
+        "desc": "Anzahl der Kanten bei Faltenba"
+    },
+    "FP": {
+        "fac": 1,
+        "unit": "fp",
+        "desc": "Folie"
+    },
+    "FS": {
+        "fac": 1,
+        "unit": "Fass",
+        "desc": "Fass"
+    },
+    "G/L": {
+        "fac": 1,
+        "unit": "gW/l",
+        "desc": "Gramm Wirkstoff / Liter"
+    },
+    "GAG": {
+        "fac": 1,
+        "unit": "GAG",
+        "desc": "Gramm Silber"
+    },
+    "GAM": {
+        "fac": 1,
+        "unit": "GAM",
+        "desc": "Gramm Aluminium"
+    },
+    "GAU": {
+        "fac": 1,
+        "unit": "GAU",
+        "desc": "Gramm Gold"
+    },
+    "GB": {
+        "fac": 1,
+        "unit": "Gebind",
+        "desc": "Gebinde"
+    },
+    "GBP": {
+        "fac": 1,
+        "unit": "GBP",
+        "desc": "Gitterboxbehälter"
+    },
+    "GBR": {
+        "fac": 1,
+        "unit": "GBR",
+        "desc": "Gramm Bronze"
+    },
+    "°C": {
+        "fac": 1,
+        "unit": "°C",
+        "desc": "Grad Celsius"
+    },
+    "GCN": {
+        "fac": 1,
+        "unit": "GCN",
+        "desc": "Gramm Chrom-Nickel"
+    },
+    "GCU": {
+        "fac": 1,
+        "unit": "GCU",
+        "desc": "Gramm Kupfer"
+    },
+    "GLI": {
+        "fac": 1,
+        "unit": "g/l",
+        "desc": "Gramm durch Liter"
+    },
+    "GMA": {
+        "fac": 1,
+        "unit": "PFG",
+        "desc": "GMA-Pallet"
+    },
+    "GMM": {
+        "fac": 1,
+        "unit": "gmm",
+        "desc": "Unwucht"
+    },
+    "GNI": {
+        "fac": 1,
+        "unit": "GNI",
+        "desc": "Gramm Nickel"
+    },
+    "GPD": {
+        "fac": 1,
+        "unit": "GPD",
+        "desc": "Gramm Palladium"
+    },
+    "GPL": {
+        "fac": 1,
+        "unit": "GPL",
+        "desc": "Gramm Platin"
+    },
+    "GRH": {
+        "fac": 1,
+        "unit": "GRH",
+        "desc": "Gramm Rhodium"
+    },
+    "GRO": {
+        "fac": 1,
+        "unit": "gro",
+        "desc": "Gross"
+    },
+    "GRP": {
+        "fac": 1,
+        "unit": "GRP",
+        "desc": "Gruppe"
+    },
+    "GRU": {
+        "fac": 1,
+        "unit": "GRU",
+        "desc": "Gramm Ruthenium"
+    },
+    "GW": {
+        "fac": 1,
+        "unit": "gW",
+        "desc": "Gramm Wirkstoff"
+    },
+    "GZN": {
+        "fac": 1,
+        "unit": "GZN",
+        "desc": "Gramm Zink"
+    },
+    "HB": {
+        "fac": 1,
+        "unit": "HB",
+        "desc": "Brinellhärte"
+    },
+    "HEA": {
+        "fac": 1,
+        "unit": "HEA",
+        "desc": "Heads (für PCC)"
+    },
+    "HEN": {
+        "fac": 1,
+        "unit": "H",
+        "desc": "Henry"
+    },
+    "UH": {
+        "fac": 0.000001,
+        "unit": "µH",
+        "desc": "Mikrohenry",
+        "ref": "HEN"
+    },
+    "MH": {
+        "fac": 0.001,
+        "unit": "mH",
+        "desc": "Millihenry",
+        "ref": "HEN"
+    },
+    "NH": {
+        "fac": 1e-9,
+        "unit": "nH",
+        "desc": "Nanohenry",
+        "ref": "HEN"
+    },
+    "KH": {
+        "fac": 1000,
+        "unit": "kH",
+        "desc": "kilohenry",
+        "ref": "HEN"
+    },
+    "HRA": {
+        "fac": 1,
+        "unit": "HRA",
+        "desc": "Rockwellhärte A"
+    },
+    "HRB": {
+        "fac": 1,
+        "unit": "HRB",
+        "desc": "Rockwellhärte B"
+    },
+    "HRC": {
+        "fac": 1,
+        "unit": "HRC",
+        "desc": "Rockwellhärte C"
+    },
+    "HV": {
+        "fac": 1,
+        "unit": "HV",
+        "desc": "Vickershärte"
+    },
+    "HZ": {
+        "fac": 1,
+        "unit": "Hz",
+        "desc": "Hertz"
+    },
+    "IDX": {
+        "fac": 1,
+        "unit": "IDX",
+        "desc": "Index (für PCC)"
+    },
+    "IRH": {
+        "fac": 1,
+        "unit": "IRHD",
+        "desc": "Härte O-Ring"
+    },
+    "J": {
+        "fac": 1,
+        "unit": "J",
+        "desc": "Joule"
+    },
+    "JKG": {
+        "fac": 1,
+        "unit": "J/kg",
+        "desc": "Joule durch Kilogramm"
+    },
+    "KJK": {
+        "fac": 1000,
+        "unit": "kJ/kg",
+        "desc": "Kilojoule durch Kilogramm",
+        "ref": "JKG"
+    },
+    "JMO": {
+        "fac": 1,
+        "unit": "J/mol",
+        "desc": "Joule/Mol"
+    },
+    "KJM": {
+        "fac": 1000,
+        "unit": "kJ/mol",
+        "desc": "Kilojoule/Mol",
+        "ref": "JMO"
+    },
+    "K": {
+        "fac": 1,
+        "unit": "K",
+        "desc": "Kelvin"
+    },
+    "KAG": {
+        "fac": 1,
+        "unit": "KAG",
+        "desc": "Kilogramm Silber"
+    },
+    "KAL": {
+        "fac": 1,
+        "unit": "KAL",
+        "desc": "Kilogramm Aluminium"
+    },
+    "KAN": {
+        "fac": 1,
+        "unit": "Kan",
+        "desc": "Kanister"
+    },
+    "KAR": {
+        "fac": 1,
+        "unit": "Kar",
+        "desc": "Karton"
+    },
+    "KBR": {
+        "fac": 1,
+        "unit": "KBR",
+        "desc": "Kilogramm Bronze"
+    },
+    "KC4": {
+        "fac": 1,
+        "unit": "KC4",
+        "desc": "Enth. Chromst. 430F"
+    },
+    "KCN": {
+        "fac": 1,
+        "unit": "KCN",
+        "desc": "Kilogramm Chrom-Nickel"
+    },
+    "KCU": {
+        "fac": 1,
+        "unit": "KCU",
+        "desc": "Kilogramm Kupfer"
+    },
+    "KEW": {
+        "fac": 1,
+        "unit": "K/W",
+        "desc": "Kelvin durch Watt"
+    },
+    "KG": {
+        "fac": 1,
+        "unit": "kg",
+        "desc": "Kilogramm"
+    },
+    "G": {
+        "fac": 0.001,
+        "unit": "g",
+        "desc": "Gramm",
+        "ref": "KG"
+    },
+    "KT": {
+        "fac": 1000,
+        "unit": "kt",
+        "desc": "Kilotonne",
+        "ref": "KG"
+    },
+    "LB": {
+        "fac": 0.453592,
+        "unit": "lb",
+        "desc": "Pfund (Pound)",
+        "ref": "KG"
+    },
+    "MG": {
+        "fac": 0.000001,
+        "unit": "mg",
+        "desc": "Milligramm",
+        "ref": "KG"
+    },
+    "OZ": {
+        "fac": 0.02835,
+        "unit": "oz",
+        "desc": "ounce (US)",
+        "ref": "KG"
+    },
+    "TO": {
+        "fac": 1000,
+        "unit": "t",
+        "desc": "Tonne",
+        "ref": "KG"
+    },
+    "TON": {
+        "fac": 907.2,
+        "unit": "ton",
+        "desc": "US-Ton",
+        "ref": "KG"
+    },
+    "KGF": {
+        "fac": 1,
+        "unit": "kg/m2",
+        "desc": "Kilogramm durch Quadratmeter"
+    },
+    "GCQ": {
+        "fac": 1.0000000000000001e-7,
+        "unit": "g/cm2",
+        "desc": "Gramm durch Quadratzentimeter",
+        "ref": "KGF"
+    },
+    "GM2": {
+        "fac": 0.001,
+        "unit": "g/m2",
+        "desc": "Gramm durch Quadratmeter",
+        "ref": "KGF"
+    },
+    "KCQ": {
+        "fac": 10000,
+        "unit": "kg/cm²",
+        "desc": "Massenbedeckung kg/cm²",
+        "ref": "KGF"
+    },
+    "MGF": {
+        "fac": 0.01,
+        "unit": "mg/cm2",
+        "desc": "Milligramm / Quadratzentimeter",
+        "ref": "KGF"
+    },
+    "KGK": {
+        "fac": 1,
+        "unit": "kg/kg",
+        "desc": "Kilogramm durch Kilogramm"
+    },
+    "GHG": {
+        "fac": 0.01,
+        "unit": "g/hg",
+        "desc": "Gramm durch Hektogramm",
+        "ref": "KGK"
+    },
+    "GKG": {
+        "fac": 0.001,
+        "unit": "g/kg",
+        "desc": "Gramm durch Kilogramm",
+        "ref": "KGK"
+    },
+    "M%": {
+        "fac": 0.01,
+        "unit": "%(m)",
+        "desc": "Massenprozent",
+        "ref": "KGK"
+    },
+    "M%O": {
+        "fac": 0.001,
+        "unit": "%O(m)",
+        "desc": "Massenpromille",
+        "ref": "KGK"
+    },
+    "MGG": {
+        "fac": 0.001,
+        "unit": "mg/g",
+        "desc": "Milligramm durch Gramm",
+        "ref": "KGK"
+    },
+    "MPB": {
+        "fac": 1e-9,
+        "unit": "ppb(m)",
+        "desc": "Massen-parts per billion",
+        "ref": "KGK"
+    },
+    "MPM": {
+        "fac": 0.000001,
+        "unit": "ppm(m)",
+        "desc": "Massen-parts per million",
+        "ref": "KGK"
+    },
+    "MPT": {
+        "fac": 1e-12,
+        "unit": "ppt(m)",
+        "desc": "Massen-parts per trillion",
+        "ref": "KGK"
+    },
+    "MGK": {
+        "fac": 0.000001,
+        "unit": "mg/kg",
+        "desc": "Milligramm durch Kilogramm",
+        "ref": "KGK"
+    },
+    "KGM": {
+        "fac": 1,
+        "unit": "kg/mol",
+        "desc": "Kilogramm/Mol"
+    },
+    "GM": {
+        "fac": 0.001,
+        "unit": "g/mol",
+        "desc": "Gramm/Mol",
+        "ref": "KGM"
+    },
+    "KGS": {
+        "fac": 1,
+        "unit": "kg/s",
+        "desc": "Kilogramm durch Sekunde"
+    },
+    "LBH": {
+        "fac": 0.000126,
+        "unit": "lb/h",
+        "desc": "Pfund pro Stunde",
+        "ref": "KGS"
+    },
+    "GMN": {
+        "fac": 0.000016666666666666667,
+        "unit": "g/min",
+        "desc": "Gramm durch Minute",
+        "ref": "KGS"
+    },
+    "KGT": {
+        "fac": 0.000011574074074074073,
+        "unit": "kg/d",
+        "desc": "Kilogramm durch Tag",
+        "ref": "KGS"
+    },
+    "KGH": {
+        "fac": 0.0002777777777777778,
+        "unit": "kg/h",
+        "desc": "Kilogramm durch Stunde",
+        "ref": "KGS"
+    },
+    "KMI": {
+        "fac": 0.016666666666666666,
+        "unit": "kg/min",
+        "desc": "Kilogramm durch Minute",
+        "ref": "KGS"
+    },
+    "TPM": {
+        "fac": 0.00038580246913580245,
+        "unit": "t/mon",
+        "desc": "Tonne durch Monat",
+        "ref": "KGS"
+    },
+    "KGV": {
+        "fac": 1,
+        "unit": "kg/m3",
+        "desc": "Kilogramm durch Kubikmeter"
+    },
+    "KGW": {
+        "fac": 1,
+        "unit": "kgW",
+        "desc": "Kilogramm Wirkstoff"
+    },
+    "KI": {
+        "fac": 1,
+        "unit": "Kiste",
+        "desc": "Kiste"
+    },
+    "KL": {
+        "fac": 1,
+        "unit": "kg/m",
+        "desc": "Kilogramm durch Meter"
+    },
+    "KMK": {
+        "fac": 1,
+        "unit": "m3/m3",
+        "desc": "Kubikmeter durch Kubikmeter"
+    },
+    "MLK": {
+        "fac": 0.000001,
+        "unit": "ml/m3",
+        "desc": "Milliliter durch Kubikmeter",
+        "ref": "KMK"
+    },
+    "V%": {
+        "fac": 0.01,
+        "unit": "%(V)",
+        "desc": "percentage by volume",
+        "ref": "KMK"
+    },
+    "V%O": {
+        "fac": 0.001,
+        "unit": "%O(V)",
+        "desc": "Volumenpromille",
+        "ref": "KMK"
+    },
+    "VPB": {
+        "fac": 1e-9,
+        "unit": "ppb(V)",
+        "desc": "Volumen-parts per billion",
+        "ref": "KMK"
+    },
+    "VPM": {
+        "fac": 0.000001,
+        "unit": "ppm(V)",
+        "desc": "Volumen-parts per million",
+        "ref": "KMK"
+    },
+    "VPT": {
+        "fac": 1e-12,
+        "unit": "ppt(V)",
+        "desc": "Volumen-parts per trillion",
+        "ref": "KMK"
+    },
+    "KMS": {
+        "fac": 1,
+        "unit": "K/s",
+        "desc": "Kelvin durch Sekunde"
+    },
+    "KMN": {
+        "fac": 0.016666666666666666,
+        "unit": "K/min",
+        "desc": "Kelvin durch Minute",
+        "ref": "KMS"
+    },
+    "KNI": {
+        "fac": 1,
+        "unit": "KNI",
+        "desc": "Kilogramm Nickel"
+    },
+    "KPD": {
+        "fac": 1,
+        "unit": "KPD",
+        "desc": "Kilogramm Palladium"
+    },
+    "KPL": {
+        "fac": 1,
+        "unit": "KPL",
+        "desc": "Kilogramm Platin"
+    },
+    "KRU": {
+        "fac": 1,
+        "unit": "KRU",
+        "desc": "Kilogramm Ruthenium"
+    },
+    "KWK": {
+        "fac": 1,
+        "unit": "kgW/kg",
+        "desc": "kg Wirkstoff / kg"
+    },
+    "KZN": {
+        "fac": 1,
+        "unit": "KZN",
+        "desc": "Kilogramm Zink"
+    },
+    "LE": {
+        "fac": 1,
+        "unit": "LE",
+        "desc": "Leistungseinheit"
+    },
+    "LHK": {
+        "fac": 1,
+        "unit": "l/hkm",
+        "desc": "Liter durch 100 km"
+    },
+    "LMS": {
+        "fac": 1,
+        "unit": "l/m.s",
+        "desc": "Liter durch Mol Sekunde"
+    },
+    "LU": {
+        "fac": 1,
+        "unit": "lu",
+        "desc": "Logistikeinheit"
+    },
+    "LUX": {
+        "fac": 1,
+        "unit": "LX",
+        "desc": "Lux"
+    },
+    "LZ0": {
+        "fac": 1,
+        "unit": "LZ0",
+        "desc": "LZ0 Stahl 1.3343"
+    },
+    "LZ1": {
+        "fac": 1,
+        "unit": "LZ1",
+        "desc": "LZ1Stahl 1.2344"
+    },
+    "LZ2": {
+        "fac": 1,
+        "unit": "LZ2",
+        "desc": "LZ2 Stahl 1.3505"
+    },
+    "LZ3": {
+        "fac": 1,
+        "unit": "LZ3",
+        "desc": "LZ3 Stahl 1.7227"
+    },
+    "LZ4": {
+        "fac": 1,
+        "unit": "LZ4",
+        "desc": "LZ4 Stahl 1.0504"
+    },
+    "M": {
+        "fac": 1,
+        "unit": "m",
+        "desc": "Meter"
+    },
+    "CM": {
+        "fac": 0.01,
+        "unit": "cm",
+        "desc": "Zentimeter",
+        "ref": "M"
+    },
+    "DM": {
+        "fac": 0.1,
+        "unit": "dm",
+        "desc": "Dezimeter",
+        "ref": "M"
+    },
+    "FT": {
+        "fac": 0.3048,
+        "unit": "Fuß",
+        "desc": "Fuß",
+        "ref": "M"
+    },
+    "IN": {
+        "fac": 0.0254,
+        "unit": "in",
+        "desc": "Inch",
+        "ref": "M"
+    },
+    "KM": {
+        "fac": 1000,
+        "unit": "km",
+        "desc": "Kilometer",
+        "ref": "M"
+    },
+    "MI": {
+        "fac": 1609.344,
+        "unit": "mile",
+        "desc": "mile (statute mile)",
+        "ref": "M"
+    },
+    "µM": {
+        "fac": 0.000001,
+        "unit": "µm",
+        "desc": "Mikrometer",
+        "ref": "M"
+    },
+    "MM": {
+        "fac": 0.001,
+        "unit": "mm",
+        "desc": "Millimeter",
+        "ref": "M"
+    },
+    "NAM": {
+        "fac": 1e-9,
+        "unit": "nm",
+        "desc": "Nanometer",
+        "ref": "M"
+    },
+    "YD": {
+        "fac": 0.9144,
+        "unit": "yd",
+        "desc": "yard",
+        "ref": "M"
+    },
+    "M/S": {
+        "fac": 1,
+        "unit": "m/s",
+        "desc": "Meter durch Sekunde"
+    },
+    "CMS": {
+        "fac": 0.01,
+        "unit": "cm/s",
+        "desc": "Zentimeter durch Sekunde",
+        "ref": "M/S"
+    },
+    "MMI": {
+        "fac": 0.016666666666666666,
+        "unit": "m/min",
+        "desc": "Meter durch Minute",
+        "ref": "M/S"
+    },
+    "CMH": {
+        "fac": 0.000002777777777777778,
+        "unit": "cm/h",
+        "desc": "Zentimeter durch Stunde",
+        "ref": "M/S"
+    },
+    "KMH": {
+        "fac": 0.2777777777777778,
+        "unit": "km/h",
+        "desc": "Kilometer durch Stunde",
+        "ref": "M/S"
+    },
+    "M/H": {
+        "fac": 0.0002777777777777778,
+        "unit": "m/h",
+        "desc": "Meter durch Stunde",
+        "ref": "M/S"
+    },
+    "MMA": {
+        "fac": 3.1709791983764586e-11,
+        "unit": "mm/a",
+        "desc": "Millimeter durch Jahr",
+        "ref": "M/S"
+    },
+    "MMH": {
+        "fac": 2.7777777777777776e-7,
+        "unit": "mm/h",
+        "desc": "Millimeter durch Stunde",
+        "ref": "M/S"
+    },
+    "MMS": {
+        "fac": 0.001,
+        "unit": "mm/s",
+        "desc": "Millimeter durch Sekunde",
+        "ref": "M/S"
+    },
+    "M2": {
+        "fac": 1,
+        "unit": "m2",
+        "desc": "Quadratmeter"
+    },
+    "M-2": {
+        "fac": 1,
+        "unit": "1/M2",
+        "desc": "Reziproker Quadratmeter"
+    },
+    "M2S": {
+        "fac": 1,
+        "unit": "m²/s",
+        "desc": "square meter per second"
+    },
+    "M3": {
+        "fac": 1,
+        "unit": "m3",
+        "desc": "Kubikmeter"
+    },
+    "M3S": {
+        "fac": 1,
+        "unit": "m3/s",
+        "desc": "Kubikmeter durch Sekunde"
+    },
+    "C3S": {
+        "fac": 0.000001,
+        "unit": "cm3/s",
+        "desc": "Kubikzentimeter durch Sekunde",
+        "ref": "M3S"
+    },
+    "C4S": {
+        "fac": 0.000059999999999999995,
+        "unit": "cm3/mn",
+        "desc": "Kubikzentimeter durch Minute",
+        "ref": "M3S"
+    },
+    "LPS": {
+        "fac": 0.001,
+        "unit": "l/s",
+        "desc": "Liter durch Sekunde",
+        "ref": "M3S"
+    },
+    "GPH": {
+        "fac": 0.0000010514844444444445,
+        "unit": "GPH US",
+        "desc": "Gallonen durch Stunde (US)",
+        "ref": "M3S"
+    },
+    "LMI": {
+        "fac": 0.000016666666666666667,
+        "unit": "l/min",
+        "desc": "Liter durch Minute",
+        "ref": "M3S"
+    },
+    "LPH": {
+        "fac": 2.7777777777777776e-7,
+        "unit": "l/h",
+        "desc": "Liter durch Stunde",
+        "ref": "M3S"
+    },
+    "MLM": {
+        "fac": 1.6666666666666667e-8,
+        "unit": "ml/min",
+        "desc": "Milliliter pro Minute",
+        "ref": "M3S"
+    },
+    "MQD": {
+        "fac": 0.000011574074074074073,
+        "unit": "m3/d",
+        "desc": "Kilogramm durch Tag",
+        "ref": "M3S"
+    },
+    "M3H": {
+        "fac": 0.0002777777777777778,
+        "unit": "m3/h",
+        "desc": "Kubikmeter durch Stunde",
+        "ref": "M3S"
+    },
+    "MQM": {
+        "fac": 3.8580246913580245e-7,
+        "unit": "m3/mon",
+        "desc": "Kubikmeter durch Monat",
+        "ref": "M3S"
+    },
+    "MQW": {
+        "fac": 0.0000016534391534391535,
+        "unit": "m3/w",
+        "desc": "Kubikmeter durch Woche",
+        "ref": "M3S"
+    },
+    "Z01": {
+        "fac": 1e-9,
+        "unit": "mm3/s",
+        "desc": "cubic millimeter per second",
+        "ref": "M3S"
+    },
+    "ZL3": {
+        "fac": 0.0000016666666666666667,
+        "unit": "l/10mi",
+        "desc": "Liter durch 10 Minuten",
+        "ref": "M3S"
+    },
+    "CDH": {
+        "fac": 0.0002777777777777778,
+        "unit": "dm3/h",
+        "desc": "Kubikdezimeter durch Stunde",
+        "ref": "M3S"
+    },
+    "MLW": {
+        "fac": 1,
+        "unit": "mlW",
+        "desc": "Milliliter Wirkstoff"
+    },
+    "MMG": {
+        "fac": 1,
+        "unit": "mmol/g",
+        "desc": "Millimol durch Gramm"
+    },
+    "MOK": {
+        "fac": 1,
+        "unit": "mol/kg",
+        "desc": "Mol durch Kilogramm"
+    },
+    "MOL": {
+        "fac": 1,
+        "unit": "mol",
+        "desc": "Mol"
+    },
+    "KML": {
+        "fac": 1000,
+        "unit": "kmol",
+        "desc": "Kilomol",
+        "ref": "MOL"
+    },
+    "MMO": {
+        "fac": 0.001,
+        "unit": "mmol",
+        "desc": "Millimol",
+        "ref": "MOL"
+    },
+    "MPG": {
+        "fac": 1,
+        "unit": "MPG US",
+        "desc": "Meilen durch Gallone (US)"
+    },
+    "MPZ": {
+        "fac": 1,
+        "unit": "m.Pa/s",
+        "desc": "Meter Pascal durch Sekunde"
+    },
+    "MBZ": {
+        "fac": 100000,
+        "unit": "m.b/s",
+        "desc": "Meter bar durch Sekunde",
+        "ref": "MPZ"
+    },
+    "MS2": {
+        "fac": 1,
+        "unit": "m/s2",
+        "desc": "Meter durch Quadratsekunde"
+    },
+    "GA": {
+        "fac": 9.807,
+        "unit": "GA",
+        "desc": "Gravitations-Beschleun [G]",
+        "ref": "MS2"
+    },
+    "MGA": {
+        "fac": 0.009807,
+        "unit": "mGA",
+        "desc": "mm/s² Gravitations-Beschl.[mG]",
+        "ref": "MS2"
+    },
+    "MSS": {
+        "fac": 0.001,
+        "unit": "mm/s2",
+        "desc": "Millimeter pro Quadratsekunde",
+        "ref": "MS2"
+    },
+    "MS4": {
+        "fac": 1,
+        "unit": "MS4",
+        "desc": "enthält CuZn38Pb2"
+    },
+    "MS5": {
+        "fac": 1,
+        "unit": "MS5",
+        "desc": "enthält CuZn39Pb3"
+    },
+    "MS6": {
+        "fac": 1,
+        "unit": "MS6",
+        "desc": "enthält CuZn37F45"
+    },
+    "MS7": {
+        "fac": 1,
+        "unit": "MS7",
+        "desc": "enthält CuZN37F43"
+    },
+    "MS8": {
+        "fac": 1,
+        "unit": "MS8",
+        "desc": "enthält CuZn37F38"
+    },
+    "MS9": {
+        "fac": 1,
+        "unit": "MS9",
+        "desc": "enthält CuZn20F32"
+    },
+    "N": {
+        "fac": 1,
+        "unit": "N",
+        "desc": "Newton"
+    },
+    "KN": {
+        "fac": 1000,
+        "unit": "kN",
+        "desc": "Kilonewton",
+        "ref": "N"
+    },
+    "MN": {
+        "fac": 1000000,
+        "unit": "MN",
+        "desc": "Meganewton",
+        "ref": "N"
+    },
+    "MNW": {
+        "fac": 0.001,
+        "unit": "mN",
+        "desc": "Millinewton",
+        "ref": "N"
+    },
+    "CN": {
+        "fac": 0.01,
+        "unit": "cN",
+        "desc": "Zentinewton",
+        "ref": "N"
+    },
+    "DAN": {
+        "fac": 10,
+        "unit": "daN",
+        "desc": "Dekanewton",
+        "ref": "N"
+    },
+    "gf": {
+        "fac": 0.009810000000000001,
+        "unit": "gf",
+        "desc": "Grammforce",
+        "ref": "N"
+    },
+    "kgf": {
+        "fac": 9.81,
+        "unit": "kgf",
+        "desc": "Kilogramm-Kraft",
+        "ref": "N"
+    },
+    "kp": {
+        "fac": 9.81,
+        "unit": "kp",
+        "desc": "KiloPond",
+        "ref": "N"
+    },
+    "NME": {
+        "fac": 1,
+        "unit": "Nm",
+        "desc": "Newton Meter"
+    },
+    "OHM": {
+        "fac": 1,
+        "unit": "ohm",
+        "desc": "ohm"
+    },
+    "GOH": {
+        "fac": 1000000000,
+        "unit": "GOhm",
+        "desc": "Gigaohm",
+        "ref": "OHM"
+    },
+    "MGO": {
+        "fac": 1000000,
+        "unit": "MOhm",
+        "desc": "Megaohm",
+        "ref": "OHM"
+    },
+    "UOH": {
+        "fac": 0.000001,
+        "unit": "µOhm",
+        "desc": "Mikroohm",
+        "ref": "OHM"
+    },
+    "KOH": {
+        "fac": 1000,
+        "unit": "kOhm",
+        "desc": "Kiloohm",
+        "ref": "OHM"
+    },
+    "MIO": {
+        "fac": 0.001,
+        "unit": "mOhm",
+        "desc": "Milliohm",
+        "ref": "OHM"
+    },
+    "NOH": {
+        "fac": 1e-9,
+        "unit": "nohm",
+        "desc": "nanoohm",
+        "ref": "OHM"
+    },
+    "TEO": {
+        "fac": 1000000000000,
+        "unit": "TOhm",
+        "desc": "Teraohm",
+        "ref": "OHM"
+    },
+    "KOW": {
+        "fac": 1000,
+        "unit": "kOhm/W",
+        "desc": "KOhm durch Watt",
+        "ref": "OHM"
+    },
+    "OMM": {
+        "fac": 1,
+        "unit": "Ohm/m",
+        "desc": "Ohm durch Meter"
+    },
+    "P": {
+        "fac": 1,
+        "unit": "P",
+        "desc": "Punkte"
+    },
+    "PA": {
+        "fac": 1,
+        "unit": "Pa",
+        "desc": "pascal"
+    },
+    "PAA": {
+        "fac": 1,
+        "unit": "pair",
+        "desc": "pair: item described by two's"
+    },
+    "PAK": {
+        "fac": 1,
+        "unit": "PAK",
+        "desc": "Pack"
+    },
+    "PAL": {
+        "fac": 1,
+        "unit": "PAL",
+        "desc": "Palette [Packmitel]"
+    },
+    "PAS": {
+        "fac": 1,
+        "unit": "Pa.s",
+        "desc": "Pascal Sekunde"
+    },
+    "MPS": {
+        "fac": 0.001,
+        "unit": "mPa.s",
+        "desc": "Millipascal Sekunde",
+        "ref": "PAS"
+    },
+    "PB1": {
+        "fac": 1,
+        "unit": "PB1",
+        "desc": "enthält Blei"
+    },
+    "PBP": {
+        "fac": 1,
+        "unit": "PBP",
+        "desc": "Pappboxpallette"
+    },
+    "PE": {
+        "fac": 1,
+        "unit": "PE",
+        "desc": "Packeinheit"
+    },
+    "pH-": {
+        "fac": 1,
+        "unit": "PH",
+        "desc": "acidity and alkalinity"
+    },
+    "PK": {
+        "fac": 1,
+        "unit": "PK",
+        "desc": "Päckchen [Packmitel]"
+    },
+    "PKI": {
+        "fac": 1,
+        "unit": "PKI",
+        "desc": "Palleten-Kiste"
+    },
+    "PL1": {
+        "fac": 1,
+        "unit": "PL1",
+        "desc": "Enth Plastik PA"
+    },
+    "PL2": {
+        "fac": 1,
+        "unit": "PL2",
+        "desc": "Enth Plastik PP"
+    },
+    "PL3": {
+        "fac": 1,
+        "unit": "PL3",
+        "desc": "Enth Plastik PBT"
+    },
+    "PL4": {
+        "fac": 1,
+        "unit": "PL4",
+        "desc": "Enth Plastik POM"
+    },
+    "PLA": {
+        "fac": 1,
+        "unit": "pla",
+        "desc": "Palettenlage"
+    },
+    "PO": {
+        "fac": 1,
+        "unit": "po",
+        "desc": "Pouch"
+    },
+    "PRK": {
+        "fac": 1,
+        "unit": "%/K",
+        "desc": "Prozent durch Kelvin"
+    },
+    "PRS": {
+        "fac": 1,
+        "unit": "PRS",
+        "desc": "Anzahl Personen"
+    },
+    "RAA": {
+        "fac": 1,
+        "unit": "RAA",
+        "desc": "Rahmen"
+    },
+    "ROL": {
+        "fac": 1,
+        "unit": "ROL",
+        "desc": "role"
+    },
+    "ROW": {
+        "fac": 1,
+        "unit": "ROW",
+        "desc": "Rollenwagen"
+    },
+    "S": {
+        "fac": 1,
+        "unit": "s",
+        "desc": "second"
+    },
+    "SET": {
+        "fac": 1,
+        "unit": "set",
+        "desc": "set"
+    },
+    "SG": {
+        "fac": 1,
+        "unit": "SG",
+        "desc": "Stange"
+    },
+    "SHA": {
+        "fac": 1,
+        "unit": "SHA",
+        "desc": "Shore Härte A"
+    },
+    "SHD": {
+        "fac": 1,
+        "unit": "SHD",
+        "desc": "Shore Härte D"
+    },
+    "SIE": {
+        "fac": 1,
+        "unit": "S",
+        "desc": "siemens"
+    },
+    "MSI": {
+        "fac": 0.001,
+        "unit": "mS",
+        "desc": "el. Leitwert millisiemens",
+        "ref": "SIE"
+    },
+    "SK": {
+        "fac": 1,
+        "unit": "sac",
+        "desc": "sac"
+    },
+    "SLS": {
+        "fac": 1,
+        "unit": "SLS",
+        "desc": "slipsheet"
+    },
+    "SN1": {
+        "fac": 1,
+        "unit": "SN1",
+        "desc": "enthält Sn"
+    },
+    "ST": {
+        "fac": 1,
+        "unit": "ST",
+        "desc": "Stück"
+    },
+    "SW": {
+        "fac": 1,
+        "unit": "sw",
+        "desc": "Shrinkwrapped"
+    },
+    "TA": {
+        "fac": 1,
+        "unit": "TA",
+        "desc": "Tafel"
+    },
+    "TES": {
+        "fac": 1,
+        "unit": "T",
+        "desc": "Tesla"
+    },
+    "MTE": {
+        "fac": 0.001,
+        "unit": "mT",
+        "desc": "Millitesla",
+        "ref": "TES"
+    },
+    "µT": {
+        "fac": 0.000001,
+        "unit": "µT",
+        "desc": "Mikrotesla",
+        "ref": "TES"
+    },
+    "NT": {
+        "fac": 1e-9,
+        "unit": "nT",
+        "desc": "Nanotesla",
+        "ref": "TES"
+    },
+    "TS": {
+        "fac": 1,
+        "unit": "thsd",
+        "desc": "Tausend"
+    },
+    "TM3": {
+        "fac": 1,
+        "unit": "1/m3",
+        "desc": "Reziproker Kubikmeter"
+    },
+    "TC3": {
+        "fac": 1000000,
+        "unit": "1/cm3",
+        "desc": "Reziproker Kubikzentimeter",
+        "ref": "TM3"
+    },
+    "TMS": {
+        "fac": 1,
+        "unit": "TMS",
+        "desc": "Sekunde 1 Nachkomma"
+    },
+    "TRU": {
+        "fac": 1,
+        "unit": "TrU",
+        "desc": "Handelseinh. > 1 Kundeneinheit"
+    },
+    "TU": {
+        "fac": 1,
+        "unit": "tube",
+        "desc": "tube"
+    },
+    "UNT": {
+        "fac": 1,
+        "unit": "unit",
+        "desc": "Mengeneinheit"
+    },
+    "V": {
+        "fac": 1,
+        "unit": "V",
+        "desc": "Volt"
+    },
+    "A/S": {
+        "fac": 1,
+        "unit": "A/s",
+        "desc": "Ampere durch Sekunde"
+    },
+    "AMS": {
+        "fac": 1000,
+        "unit": "A/ms",
+        "desc": "Ampere durch Millisekunde",
+        "ref": "A/S"
+    },
+    "VAL": {
+        "fac": 1,
+        "unit": "val",
+        "desc": "Wertartikel"
+    },
+    "VE": {
+        "fac": 1,
+        "unit": "VE",
+        "desc": "Verpackungseinheit"
+    },
+    "W": {
+        "fac": 1,
+        "unit": "W",
+        "desc": "watt"
+    },
+    "WB": {
+        "fac": 1,
+        "unit": "Wb",
+        "desc": "Weber"
+    },
+    "MWB": {
+        "fac": 0.001,
+        "unit": "mWb",
+        "desc": "Milliweber",
+        "ref": "WB"
+    },
+    "DUM": {
+        "fac": 1,
+        "unit": "DUMMY-",
+        "desc": "DUMMY-Einheit für CI/BMB"
+    },
+    "YU0": {
+        "fac": 1,
+        "unit": "YU0",
+        "desc": "Anzahl (ohne Nachkomma für Lv)"
+    },
+    "YU1": {
+        "fac": 1,
+        "unit": "YU1",
+        "desc": "Anzahl ( 1 Nachkomma für Lv)"
+    },
+    "Z00": {
+        "fac": 1,
+        "unit": "Z00",
+        "desc": "brass agio"
+    },
+    "W74": {
+        "fac": 1,
+        "unit": "W74",
+        "desc": "Enthält Wolfram"
+    },
+    "C60": {
+        "fac": 1,
+        "unit": "C60Z",
+        "desc": "enthält C60Z"
+    },
+    "C45": {
+        "fac": 1,
+        "unit": "C45Z",
+        "desc": "enthält C45Z"
+    },
+    "AZ9": {
+        "fac": 1,
+        "unit": "AZ91",
+        "desc": "enthält AZ91"
+    },
+    "Z51": {
+        "fac": 1,
+        "unit": "Z51",
+        "desc": "Alu-Gusszuschlag"
+    },
+    "mvs": {
+        "fac": 1,
+        "unit": "mV/ms",
+        "desc": "Millivolt / Milisekunde"
+    },
+    "ZBL": {
+        "fac": 1,
+        "unit": "zbl",
+        "desc": "Blister Pack"
+    },
+    "BRX": {
+        "fac": 1,
+        "unit": "°Brx",
+        "desc": "Grad Brix"
+    },
+    "ZCO": {
+        "fac": 1,
+        "unit": "ZCO",
+        "desc": "Kobalt"
+    },
+    "µε": {
+        "fac": 1,
+        "unit": "µε",
+        "desc": "Dehnung in Mikrometer / Meter"
+    },
+    "CN6": {
+        "fac": 1,
+        "unit": "CN6",
+        "desc": "Enthält CrNi1.4510 Flat"
+    },
+    "CN7": {
+        "fac": 1,
+        "unit": "CN7",
+        "desc": "Enthält CrNi1.4310 Prec"
+    },
+    "ZN8": {
+        "fac": 1,
+        "unit": "ZN8",
+        "desc": "enthält Zamek8"
+    },
+    "ZPL": {
+        "fac": 1,
+        "unit": "zpl",
+        "desc": "Palettenlage"
+    },
+    "ZR1": {
+        "fac": 1,
+        "unit": "ZR1",
+        "desc": "Nutzen"
+    },
+    "ZR2": {
+        "fac": 1,
+        "unit": "ZR2",
+        "desc": "Kern"
+    },
+    "ZR3": {
+        "fac": 1,
+        "unit": "ZR3",
+        "desc": "Abguss"
+    },
+    "ZR4": {
+        "fac": 1,
+        "unit": "ZR4",
+        "desc": "Paket"
+    },
+    "ZR5": {
+        "fac": 1,
+        "unit": "ZR5",
+        "desc": "Fass"
+    },
+    "ZR6": {
+        "fac": 1,
+        "unit": "ZR6",
+        "desc": "Stück"
+    },
+    "ZR7": {
+        "fac": 1,
+        "unit": "ZR7",
+        "desc": "Dose"
+    },
+    "ZR8": {
+        "fac": 1,
+        "unit": "ZR8",
+        "desc": "Falten"
+    },
+    "ZRA": {
+        "fac": 1,
+        "unit": "ZRA",
+        "desc": "Satz_2"
+    },
+    "ZRB": {
+        "fac": 1,
+        "unit": "ZRB",
+        "desc": "Satz_3"
+    },
+    "ZRE": {
+        "fac": 1,
+        "unit": "ZRE",
+        "desc": "Zylinder"
+    },
+    "ZRF": {
+        "fac": 1,
+        "unit": "ZRF",
+        "desc": "Blatt_BR"
+    },
+    "ZRG": {
+        "fac": 1,
+        "unit": "ZRG",
+        "desc": "Grad"
+    },
+    "ZRK": {
+        "fac": 1,
+        "unit": "ZRK",
+        "desc": "LSB/GRD/s  Bit/Winkelgeschw."
+    },
+    "ZRL": {
+        "fac": 1,
+        "unit": "ZRL",
+        "desc": "LSB/m/s²  Bit/Beschleunigung"
+    },
+    "ZRM": {
+        "fac": 1,
+        "unit": "LSB/g",
+        "desc": "LSB/g (Erdbeschleunigung)"
+    },
+    "ZRU": {
+        "fac": 1,
+        "unit": "ZRU",
+        "desc": "W/(m³/h)"
+    },
+    "ZRV": {
+        "fac": 1,
+        "unit": "Wh/m³",
+        "desc": "Wattstunde pro Kubikmeter"
+    },
+    "ZRX": {
+        "fac": 1,
+        "unit": "rad/s",
+        "desc": "Winkelgeschwindigkeit"
+    },
+    "LM": {
+        "fac": 1,
+        "unit": "lm",
+        "desc": "Lumen"
+    }
+}

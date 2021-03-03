@@ -1,0 +1,8 @@
+{
+    "loglevel": "INFO",
+    "platformId": "ABCDE",
+    "mqtt": {
+        "connectionString": "mqtt://localhost:1883",
+        "ns": "iotea/"
+    }
+}

@@ -1,0 +1,633 @@
+[
+    {
+        "id": "8a5eba8b.431e7",
+        "type": "inject",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 40,
+        "wires": [
+            [
+                "b8e8fa32.9eac98"
+            ]
+        ]
+    },
+    {
+        "id": "b8e8fa32.9eac98",
+        "type": "http request",
+        "z": "2a4244a2.c01f1c",
+        "name": "instance",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://13.81.84.98:8080/instance/api/v1/subjects",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 320,
+        "y": 40,
+        "wires": [
+            [
+                "6a731b89.57392c"
+            ]
+        ]
+    },
+    {
+        "id": "6a731b89.57392c",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 510,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "70667d5b.c5aa4c",
+        "type": "inject",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 100,
+        "wires": [
+            [
+                "b7ec5fea.75609"
+            ]
+        ]
+    },
+    {
+        "id": "b7ec5fea.75609",
+        "type": "http request",
+        "z": "2a4244a2.c01f1c",
+        "name": "metadata",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "localhost:8080/metadata/api/v1/types",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 270,
+        "y": 100,
+        "wires": [
+            [
+                "fa97030a.ed82c",
+                "8b49e315.2530c"
+            ]
+        ]
+    },
+    {
+        "id": "fa97030a.ed82c",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "8b49e315.2530c",
+        "type": "json",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 430,
+        "y": 140,
+        "wires": [
+            [
+                "30e01012.4f9818"
+            ]
+        ]
+    },
+    {
+        "id": "bb5ffe8f.a639d",
+        "type": "ui_dropdown",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "e6642763.5994a",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "",
+                "value": "",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "",
+        "x": 760,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "30e01012.4f9818",
+        "type": "function",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "func": "\nvar arr = []; //a new array for populating results\nvar row;\n\nfor (var key in msg.payload.Vehicle.features) {\n    if (msg.payload.Vehicle.features.hasOwnProperty(key)) {\n        \n        console.log(key + \" -> \" + msg.payload.Vehicle.features[key]);\n        row = key.toString() + \" Type : \" + msg.payload.Vehicle.features[key].encoding.type\n        \n        // arr.push( key );\n        arr.push( row  );\n    }\n}\n\n\n\nmsg.options = arr;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 600,
+        "y": 140,
+        "wires": [
+            [
+                "bb5ffe8f.a639d",
+                "934065e7.084d28"
+            ]
+        ]
+    },
+    {
+        "id": "934065e7.084d28",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "5fc96cba.a4c3dc",
+        "type": "inject",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 420,
+        "y": 480,
+        "wires": [
+            [
+                "29699534.f21e12"
+            ]
+        ]
+    },
+    {
+        "id": "29699534.f21e12",
+        "type": "function",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "func": "\nvar mySubscription = {\n    \"id\": \"node-red-talent\",\n    \"remote\": false,                                                                // Whether talent is connected to a bridged broker or not\n    \"options\": {  },\n    \"outputs\": {  },\n    \"rules\": {\n        \"type\": \"or\",                                                               // If one rule is evaluated to true, the whole ruleset is evaluated to true\n        \"rules\": [\n            {\n                \"path\": \"\",                                                // Inner path of the value to be checked\n                \"feature\": \"Body$Windshield$Front$Wiping$Status\",                              // Name of the <feature>, which should be evaluated\n//                \"feature\": \"FuerJemand\",                              // Name of the <feature>, which should be evaluated\n                \"op\": 0,                                                            // 0 = Schema constraint\n                \"value\": {\n                    \"not\" : {                                                          // JSON Schema, which should be used\n                        \"type\": \"null\"\n                    } //,\n                      // \"$id\": \"c129fe46360211eb9e3b000d3a481c41\"\n                },\n                \"valueType\": 0,                                                     // Evaluate 0 = RAW, 1 = ENCODED value\n                \"typeSelector\": \"Vehicle\",                                          // Selects the <type>. Can be used in conjunction with <segment> and wildcards\n//                \"typeSelector\": \"FuerJemand\",                                          // Selects the <type>. Can be used in conjunction with <segment> and wildcards\n                \"instanceIdFilter\": \".*\",                                           // Evaluates only for <instance> for which the regex matches\n                \"limitFeatureSelection\": true                                       // Only applicable, if <feature> is a wildcard --> set to false to retrieve each and every feature in the $features section, otherwise only the $feature belonging to the event is contained\n            }\n        ]\n    }\n};\n\nmsg.payload = mySubscription;\nmsg.topic = \"iotea/ABCDE/configManager/talent/discover\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 590,
+        "y": 480,
+        "wires": [
+            [
+                "f7e6705a.a1f9c8",
+                "c23cf3c.0a5471"
+            ]
+        ]
+    },
+    {
+        "id": "f7e6705a.a1f9c8",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "c23cf3c.0a5471",
+        "type": "mqtt out",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "broker": "147be6c0.8c4b09",
+        "x": 780,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "18299b4e.eb6fb5",
+        "type": "mqtt in",
+        "z": "2a4244a2.c01f1c",
+        "name": "discover",
+        "topic": "iotea/configManager/talents/discover",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "147be6c0.8c4b09",
+        "x": 80,
+        "y": 300,
+        "wires": [
+            [
+                "d3ec382c.cc3cc",
+                "71c18fb0.f2ba48"
+            ]
+        ]
+    },
+    {
+        "id": "d3ec382c.cc3cc",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 230,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "d48861ca.1d81e8",
+        "type": "switch",
+        "z": "2a4244a2.c01f1c",
+        "name": "2 discover 4 error",
+        "property": "payload.msgType",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "4",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 390,
+        "y": 300,
+        "wires": [
+            [
+                "dfbe2c58.17fab"
+            ],
+            [
+                "916e8786.eaee3",
+                "29699534.f21e12"
+            ],
+            [
+                "d9a7c246.93b0b"
+            ]
+        ]
+    },
+    {
+        "id": "dfbe2c58.17fab",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "71c18fb0.f2ba48",
+        "type": "json",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 230,
+        "y": 300,
+        "wires": [
+            [
+                "d48861ca.1d81e8"
+            ]
+        ]
+    },
+    {
+        "id": "916e8786.eaee3",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "23d4656e.1e789a",
+        "type": "inject",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 580,
+        "wires": [
+            [
+                "49b155c9.56f87c"
+            ]
+        ]
+    },
+    {
+        "id": "49b155c9.56f87c",
+        "type": "function",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "func": "var myEvent = {\n    \"subject\": \"Micha\",\n    \"instance\": \"Vehicle\",\n    \"feature\": \"Body$Windshield$Front$Wiping$Status\",\n//    \"type\": \"string\",                                                                 // If not \"default\" i.e. feature defined by some talent\n    \"type\": \"Vehicle\",                                                                 // If not \"default\" i.e. feature defined by some talent\n    \"value\": \"slow\",\n    \"whenMs\": Date.now()\n}\n\nmsg.payload = myEvent;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 260,
+        "y": 580,
+        "wires": [
+            [
+                "e0b342c3.1d8218"
+            ]
+        ]
+    },
+    {
+        "id": "e0b342c3.1d8218",
+        "type": "mqtt out",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "topic": "iotea/ingestion/events",
+        "qos": "",
+        "retain": "",
+        "broker": "147be6c0.8c4b09",
+        "x": 490,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "5d45614e.34f348",
+        "type": "inject",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 620,
+        "wires": [
+            [
+                "5d3de8a8.9db488"
+            ]
+        ]
+    },
+    {
+        "id": "5d3de8a8.9db488",
+        "type": "function",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "func": "var myEvent = {\n    \"subject\": \"Micha\",\n    \"instance\": \"Vehicle\",\n    \"feature\": \"Body$Windshield$Front$Wiping$Status\",\n    \"type\": \"string\",                                                                 // If not \"default\" i.e. feature defined by some talent\n    \"value\": \"fast\",\n    \"whenMs\": Date.now()\n}\n\nmsg.payload = myEvent;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 260,
+        "y": 620,
+        "wires": [
+            [
+                "e0b342c3.1d8218"
+            ]
+        ]
+    },
+    {
+        "id": "d9a7c246.93b0b",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "fde036bc.8144e",
+        "type": "mqtt in",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "topic": "iotea/talent/node-red-talent/#",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "147be6c0.8c4b09",
+        "x": 140,
+        "y": 700,
+        "wires": [
+            [
+                "db03dd4c.458518"
+            ]
+        ]
+    },
+    {
+        "id": "19fb28e.978c057",
+        "type": "debug",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 510,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "db03dd4c.458518",
+        "type": "json",
+        "z": "2a4244a2.c01f1c",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 370,
+        "y": 700,
+        "wires": [
+            [
+                "19fb28e.978c057"
+            ]
+        ]
+    },
+    {
+        "id": "e6642763.5994a",
+        "type": "ui_group",
+        "name": "Features",
+        "tab": "8ea8b3ce.938898",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "147be6c0.8c4b09",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "8ea8b3ce.938898",
+        "type": "ui_tab",
+        "name": "VAPP Studio",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

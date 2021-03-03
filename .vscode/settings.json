@@ -1,0 +1,9 @@
+{
+    "files.exclude": {
+        "src/sdk/vscode/out": false
+    },
+    "search.exclude": {
+        "src/sdk/vscode/out": true
+    },
+    "python.linting.enabled": true
+}

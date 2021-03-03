@@ -1,0 +1,6 @@
+.gitignore
+tsconfig.*.json
+src/
+test/
+extension/
+out/test

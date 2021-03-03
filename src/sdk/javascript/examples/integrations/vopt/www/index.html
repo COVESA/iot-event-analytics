@@ -1,0 +1,214 @@
+<!--
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+-->
+
+<html>
+    <head>
+        <title>Hello world</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="lib/knob.jquery.min.js"></script>
+        <style type="text/css">
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: textfield !important;
+                margin: 0;
+            }
+
+            input[type="number"] {
+                -moz-appearance:textfield !important;
+            }
+
+            body {
+                border: 0;
+                margin: 0;
+                padding: 0;
+            }
+
+            .fullscreen-wrapper {
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                justify-content: center;
+                margin: 0;
+                padding: 0;
+                position: relative;
+                width: 100vw;
+            }
+
+            .car-icon {
+                left: 50%;
+                position: absolute;
+                top: 0;
+                transform: translate(-50%, 100px);
+                width: 200px;
+            }
+
+            .knob-wrapper,
+            .headline-wrapper {
+                align-items: center;
+                box-sizing: border-box;
+                display: flex;
+                height: 25%;
+                justify-content: space-between;
+                padding: 0 5%;
+                text-align: center;
+                width: 100%;
+            }
+
+            .headline-wrapper {
+                height: auto;
+            }
+
+            .headline-wrapper > div {
+                width: 10%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="fullscreen-wrapper">
+            <img class="car-icon" src="assets/car.png" />
+            <div class="headline-wrapper">
+                <div>Masse 1</div>
+                <div>Masse 2</div>
+                <div>Masse 3</div>
+                <div>Acc</div>
+                <div>Vmin</div>
+                <div>Vmax</div>
+                <div>Vopt</div>
+            </div>
+            <div class="knob-wrapper">
+                <input type="number" id="mass-1" data-width="10%" data-param-name="m1" value="0" onchange="send(this)" />
+                <input type="number" id="mass-2" data-width="10%" data-param-name="m2" value="0" onchange="send(this)" />
+                <input type="number" id="mass-3" data-width="10%" data-param-name="m3" value="0" onchange="send(this)" />
+                <input type="number" id="acc" data-width="10%" data-param-name="acc" value="0" onchange="send(this)" />
+                <input type="number" id="vmin" data-width="10%" data-param-name="vmin" value="0" onchange="send(this)" />
+                <input type="number" id="vmax" data-width="10%" data-param-name="vmax" value="0" onchange="send(this)" />
+                <input type="number" id="vopt" data-width="10%" disabled />
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('#mass-1').knob({
+                min: 0,
+                max: 2500,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 10,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(147, 24, 19)'
+            });
+
+            $('#mass-2').knob({
+                min: 0,
+                max: 2500,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 10,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(36, 92, 163)'
+            });
+
+            $('#mass-3').knob({
+                min: 0,
+                max: 2500,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 10,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(36, 92, 163)'
+            });
+
+            $('#acc').knob({
+                min: 0,
+                max: 220,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 5,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(147, 24, 19)'
+            });
+
+            $('#vmin').knob({
+                min: 0,
+                max: 220,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 5,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(147, 24, 19)'
+            });
+
+            $('#vmax').knob({
+                min: 0,
+                max: 220,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 5,
+                release: function () { send(this.$); },
+                fgColor: 'rgb(147, 24, 19)'
+            });
+
+            $('#vopt').knob({
+                min: 0,
+                max: 5000,
+                angleOffset: -125,
+                angleArc: 250,
+                rotation: 'clockwise',
+                step: 5,
+                readOnly: true,
+                fgColor: '#AAAAAA'
+            });
+
+            $('#mass-1').val(0).trigger('change');
+            $('#mass-2').val(0).trigger('change');
+            $('#mass-3').val(0).trigger('change');
+            $('#acc').val(0).trigger('change');
+            $('#vmin').val(0).trigger('change');
+            $('#vmax').val(0).trigger('change');
+            $('#vopt').val(0).trigger('change');
+
+            function send(el) {
+                const data = $(el).data();
+
+                $.ajax({
+                    url: 'http://localhost:8080/api/event',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        feature: data.paramName,
+                        value: parseFloat($(el).val())
+                    })
+                });
+            }
+
+            function updateVOpt() {
+                $.ajax({
+                    url: 'http://localhost:8080/api/values/vopt',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: (data, status) => {
+                        if (data.value !== -1) {
+                            $('#vopt').val(data.value).trigger('change');
+                        }
+
+                        setTimeout(updateVOpt, 500);
+                    }
+                });
+            }
+
+            updateVOpt();
+        </script>
+    </body>
+</html>

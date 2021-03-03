@@ -1,0 +1,14 @@
+[
+    {
+        "type": "validate",
+        "path": "./ditto.schema.json"
+    },
+    {
+        "type": "transform",
+        "path": "./ditto.transform.jna"
+    },
+    {
+        "type": "validate",
+        "path": "./talent.schema.json"
+    }
+]

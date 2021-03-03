@@ -1,0 +1,14 @@
+[
+    {
+        "type": "validate",
+        "path": "./vss.schema.json"
+    },
+    {
+        "type": "transform",
+        "path": "./vss.transform.jna"
+    },
+    {
+        "type": "validate",
+        "path": "./talent.schema.json"
+    }
+]

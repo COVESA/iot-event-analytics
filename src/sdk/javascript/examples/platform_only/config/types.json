@@ -1,0 +1,59 @@
+{
+    "100000": {
+        "features": {
+            "temp": {
+                "idx": 0,
+                "encoding": {
+                    "type": "number",
+                    "encoder": null
+                },
+                "description": "Current inner temperature",
+                "unit": "°C"
+            }
+        },
+        "types": {
+            "kuehlschrank": {
+                "features": {}
+            },
+            "kuehlschrank0": {
+                "features": {
+                    "foo": {
+                        "idx": 1,
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        },
+                        "description": "Current 2nd inner temperature",
+                        "unit": "°C"
+                    }
+                }
+            },
+            "kuehlschrank1": {
+                "features": {
+                    "bar": {
+                        "idx": 3,
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        },
+                        "description": "Current 2nd inner temperature",
+                        "unit": "°C"
+                    }
+                }
+            },
+            "kuehlschrank2": {
+                "features": {
+                    "temp2": {
+                        "idx": 2,
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        },
+                        "description": "Current 2nd inner temperature",
+                        "unit": "°C"
+                    }
+                }
+            }
+        }
+    }
+}

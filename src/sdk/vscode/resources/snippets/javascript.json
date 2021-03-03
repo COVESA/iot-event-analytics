@@ -1,0 +1,21 @@
+{
+    "iotea.rule.and": {
+        "prefix": [ "iotea.rule.and" ],
+        "body": [
+            "new AndRules([",
+            "\tiotea.rule.op$0",
+            "])"
+        ],
+        "description": "Add And Rule"
+    },
+    "iotea.rule.or": {
+        "prefix": [ "iotea.rule.or" ],
+        "body": [
+            "new OrRules([",
+            "\tiotea.rule.op$0",
+            "])"
+        ],
+        "description": "Add Or Rule"
+    }
+}
+

@@ -1,0 +1,19 @@
+components:
+    schemas:
+        Types:
+            type: object
+            x-pattern: ^[^\.]+$
+            additionalProperties:
+                $ref: '#/components/schemas/Type'
+            example:
+                default:
+                    segment: "000000"
+                    features:
+                        my-talent-id.test2:
+                            description: Hello this is a new output
+                            history: 10,
+                            encoding:
+                                type: number
+                                encoder: delta
+                            unit: µM
+                            idx: 0

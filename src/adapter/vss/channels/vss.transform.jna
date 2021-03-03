@@ -1,0 +1,16 @@
+(
+    {
+        "type": type,
+        "feature": feature,
+        "instance": instance,
+        "cid": cid,
+        "value": {
+            "$vpath": "value",
+            "source": source,
+            "sub": subscriptionId,
+            "value": value
+        },
+        "subject": userId,
+        "whenMs": timestampMs
+    }
+)

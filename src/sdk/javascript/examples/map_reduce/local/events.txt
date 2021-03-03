@@ -1,0 +1,6 @@
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400000 }

@@ -1,0 +1,1 @@
+{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 6, "whenMs": 1626566400000 }

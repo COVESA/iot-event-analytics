@@ -1,0 +1,8 @@
+{
+    "subject": "demouser",
+    "feature": feature,
+    "value": value,
+    "whenMs": $millis(),
+    "type": "Car",
+    "instance": "webapp"
+}

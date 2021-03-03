@@ -1,0 +1,27 @@
+components:
+    schemas:
+        InstanceFeature:
+            type: object
+            properties:
+                $metadata:
+                    $ref: '#/components/schemas/Feature'
+                $feature:
+                    allOf:
+                      - $ref: '#/components/schemas/FeatureValue'
+                      - type: object
+                        properties:
+                            history:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/FeatureValue'
+        FeatureValue:
+            type: object
+            properties:
+                whenMs:
+                    type: number
+                ttlMs:
+                    type: number
+                raw:
+                    type: any
+                enc:
+                    type: number

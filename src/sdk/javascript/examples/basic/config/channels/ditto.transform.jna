@@ -1,0 +1,13 @@
+(
+    $t := topic.($match(/^((?:(?:[a-z]+\.?)+)\.(\w+))\/([^@]+)@([^@]+)@([^\/]+)(\/.+)$/));
+
+    {
+        "type": $t.groups[3] & '@' & $t.groups[1],
+        "instance": $t.groups[0] & ':' & $t.groups[2] & '@' & $t.groups[3] & '@' & $t.groups[4],
+        "subject": $t.groups[4],
+        "value": value.properties.value,
+        "msgType": 1,
+        "feature": path.$split("/")[2],
+        "whenMs": value.properties.timestamp
+    }
+)

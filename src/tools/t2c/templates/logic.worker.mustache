@@ -1,0 +1,30 @@
+async function yourBusinessLogic(ev) {
+    // DO NOT CHANGE ANYTHING HERE
+    // Your business-Logic goes in work function
+    return work(ev.$feature.raw.value)
+        .catch(() => {
+            return 'ERROR';
+        })
+        .then(partialResult => {
+            return [
+                {
+                    feature: `{{ MAPPER_TALENT_ID }}.map_partial`,
+                    value: {
+                        value: partialResult,
+                        $part: ev.$feature.raw.idx
+                    },
+                    subject: ev.subject,
+                    whenMs: Date.now()
+                }
+            ];
+    });
+}
+
+function work(data) {
+    // Calculate the partial result
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(data * 10);
+        }, Math.floor(Math.random() * 2000));
+    });
+}

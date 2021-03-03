@@ -1,0 +1,46 @@
+components:
+    schemas:
+        Feature:
+            type: object
+            required:
+                - idx
+                - encoding
+                - description
+            properties:
+                idx:
+                    type: number
+                encoding:
+                    type: object
+                    properties:
+                        encoder:
+                            type:
+                              - null
+                              - string
+                            enum:
+                              - minmax
+                              - delta
+                              - through
+                              - category
+                        type:
+                            type:
+                              - string
+                            enum:
+                              - number
+                              - boolean
+                              - string
+                              - object
+                              - any
+                description:
+                    type: string
+                history:
+                    type: number
+                unit:
+                    type: string
+            example:
+                idx: 0
+                description: "Hello this is a new output"
+                encoding:
+                    type: number
+                    encoder: delta
+                history: 10
+                unit: µM

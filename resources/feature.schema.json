@@ -1,0 +1,212 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/schemas/feature.schema.json",
+    "definitions": {
+        "feature": {
+            "type": "object",
+            "required": [
+                "description",
+                "encoding"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "encoding": {
+                    "anyOf": [
+                        {
+                            "$ref": "feature.schema.json#/definitions/encoding.through"
+                        },
+                        {
+                            "$ref": "feature.schema.json#/definitions/encoding.minmax"
+                        },
+                        {
+                            "$ref": "feature.schema.json#/definitions/encoding.delta"
+                        },
+                        {
+                            "$ref": "feature.schema.json#/definitions/encoding.category"
+                        },
+                        {
+                            "$ref": "feature.schema.json#/definitions/encoding.null"
+                        }
+                    ]
+                },
+                "default": {},
+                "history": {
+                    "type": "number",
+                    "multipleOf": 1,
+                    "minimum": 0,
+                    "maximum": 50,
+                    "default": 1
+                },
+                "idx": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "ttl": {
+                    "type": "number",
+                    "minimum": 1000
+                },
+                "unit": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "fac",
+                                "unit",
+                                "desc"
+                            ],
+                            "properties": {
+                                "fac": {
+                                    "type": "number"
+                                },
+                                "unit": {
+                                    "type": "string"
+                                },
+                                "desc": {
+                                    "type": "string"
+                                },
+                                "ref": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "encoding.null": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "boolean",
+                        "string",
+                        "object",
+                        "any"
+                    ]
+                },
+                "encoder": {
+                    "const": null
+                }
+            }
+        },
+        "encoding.through": {
+            "type": "object",
+            "required": [
+                "type",
+                "encoder"
+            ],
+            "properties": {
+                "encoder": {
+                    "type": "string",
+                    "const": "through"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number"
+                    ]
+                },
+                "reduce": {
+                    "type": "string"
+                }
+            }
+        },
+        "encoding.minmax": {
+            "type": "object",
+            "required": [
+                "type",
+                "encoder",
+                "min",
+                "max"
+            ],
+            "properties": {
+                "encoder": {
+                    "type": "string",
+                    "const": "minmax"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "object"
+                    ]
+                },
+                "min": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "reduce": {
+                    "type": "string"
+                }
+            }
+        },
+        "encoding.delta": {
+            "type": "object",
+            "required": [
+                "type",
+                "encoder"
+            ],
+            "properties": {
+                "encoder": {
+                    "type": "string",
+                    "const": "delta"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "object"
+                    ]
+                },
+                "reduce": {
+                    "type": "string"
+                }
+            }
+        },
+        "encoding.category": {
+            "type": "object",
+            "required": [
+                "type",
+                "encoder",
+                "enum"
+            ],
+            "properties": {
+                "encoder": {
+                    "type": "string",
+                    "const": "category"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "boolean",
+                        "string",
+                        "object"
+                    ]
+                },
+                "enum": {
+                    "type": "array",
+                    "minItems": 1
+                },
+                "reduce": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

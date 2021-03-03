@@ -1,0 +1,21 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/channels/ui.schema.json",
+    "type": "object",
+    "required": [
+      "feature",
+      "value"
+    ],
+    "properties": {
+      "feature": {
+        "$id": "#/properties/feature",
+        "type": "string",
+        "minLength": 1
+      },
+      "value": {
+        "$id": "#/properties/value",
+        "type": "number"
+      }
+    }
+  }

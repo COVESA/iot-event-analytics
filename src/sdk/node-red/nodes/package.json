@@ -1,0 +1,12 @@
+{
+  "name": "boschio.node-red-contrib-vapp",
+  "version": "0.0.2",
+  "description": "Vehicle Application Plugin Platform",
+  "node-red" : {
+    "nodes": {
+       "vapp-red": "vapp-feat.js"
+    }
+  },
+  "author": "Bosch.IO GmbH",
+  "license": "MPL 2.0"
+}

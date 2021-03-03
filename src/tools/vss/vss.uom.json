@@ -1,0 +1,90 @@
+{
+    "m": "M",
+    "m/s2": "MS2",
+    "l": {
+        "fac": 1,
+        "unit": "l",
+        "desc": "Liter"
+    },
+    "litres": {
+        "fac": 1,
+        "unit": "l",
+        "desc": "Liter"
+    },
+    "rpm": {
+        "fac": 0.01666,
+        "unit": "rpm",
+        "desc": "Rounds per minute",
+        "ref": "HZ"
+    },
+    "inch": {
+        "fac": 0.0254,
+        "unit": "\"",
+        "desc": "One inch",
+        "ref": "M"
+    },
+    "cm3": {
+        "fac": 0.000001,
+        "unit": "cm3",
+        "desc": "Cubic centimeter",
+        "ref": "M3"
+    },
+    "l/100km": "LHK",
+    "kg": "KG",
+    "km": "KM",
+    "kilometer": "KM",
+    "kpa": {
+        "fac": 1000,
+        "unit": "kpa",
+        "desc": "Kilopascal",
+        "ref": "PA"
+    },
+    "pa": "PA",
+    "kW": {
+        "fac": 1000,
+        "unit": "kW",
+        "desc": "Kilowatt",
+        "ref": "W"
+    },
+    "kw": {
+        "fac": 1000,
+        "unit": "kW",
+        "desc": "Kilowatt",
+        "ref": "W"
+    },
+    "N.m": "N/M",
+    "g/s": {
+        "fac": 0.001,
+        "unit": "g/s",
+        "desc": "Grams per second",
+        "ref": "KGS"
+    },
+    "g/km": {
+        "fac": 0.000001,
+        "unit": "g/km",
+        "desc": "Grams per kilometer",
+        "ref": "KL"
+    },
+    "sec": "S",
+    "s": "S",
+    "A": "A",
+    "V": "V",
+    "mm": "MM",
+    "min": {
+        "fac": 60,
+        "unit": "min",
+        "desc": "Minutes",
+        "ref": "S"
+    },
+    "l/h": "LPH",
+    "degrees": "deg",
+    "km/h": "KMH",
+    "percent": "%",
+    "celsius": "°C",
+    "ratio": "ONE",
+    "degrees/s": {
+        "fac": 1,
+        "unit": "deg/s",
+        "desc": "Degrees per second"
+    }
+}

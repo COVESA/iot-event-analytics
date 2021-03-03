@@ -1,0 +1,17 @@
+{
+    "logTypes": [
+        "warning",
+        "error"
+    ],
+    "mqtt": {
+        "ns": "iotea/",
+        "port": 1883
+    },
+    "platformId": "ABCDE",
+    "bridges": [
+        {
+            "platformIdSuffix": "br-1",
+            "address": "localhost:1884"
+        }
+    ]
+}

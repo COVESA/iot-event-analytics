@@ -1,0 +1,22 @@
+{
+    "100000": {
+        "features": {
+            "anyfeature": {
+                "idx": 0,
+                "encoding": {
+                    "type": "number",
+                    "encoder": "minmax",
+                    "min": 0,
+                    "max": 20
+                },
+                "description": "Any feature in the range of [0..20]",
+                "unit": "°C"
+            }
+        },
+        "types": {
+            "anytype": {
+                "features": {}
+            }
+        }
+    }
+}

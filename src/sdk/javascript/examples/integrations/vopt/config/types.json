@@ -1,0 +1,59 @@
+{
+    "100000": {
+        "features": {},
+        "types": {
+            "Car": {
+                "features": {
+                    "m1": {
+                        "idx": 0,
+                        "description": "Mass Q3 in kg",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    },
+                    "m2": {
+                        "idx": 1,
+                        "description": "Mass Q2 in kg",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    },
+                    "m3": {
+                        "idx": 2,
+                        "description": "Mass Q1 in kg",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    },
+                    "acc": {
+                        "idx": 3,
+                        "description": "Acceleration in ms^2",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    },
+                    "vmin": {
+                        "idx": 4,
+                        "description": "Minimal speed",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    },
+                    "vmax": {
+                        "idx": 5,
+                        "description": "Maximum speed",
+                        "encoding": {
+                            "type": "number",
+                            "encoder": null
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

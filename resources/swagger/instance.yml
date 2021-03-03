@@ -1,0 +1,12 @@
+components:
+    schemas:
+        Instance:
+            type: object
+            properties:
+                type:
+                    type: string
+                features:
+                    type: object
+                    x-pattern: ^(?:[^\.]+\.)?[^\.]+$
+                    additionalProperties:
+                        $ref: '#/components/schemas/InstanceFeature'

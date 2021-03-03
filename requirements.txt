@@ -1,0 +1,18 @@
+# Platform
+asyncinit==0.2.4
+docopt==0.6.2
+hbmqtt==0.9.6
+passlib==1.7.4
+PyYAML==5.3.1
+six==1.15.0
+transitions==0.8.6
+websockets==8.1
+# Dapr Adapter
+dapr==1.0.0rc2
+dapr-client==0.4.0b1
+dapr-ext-grpc==1.0.0rc2
+paho-mqtt==1.5.0
+# Python SDK example agent-network
+jwcrypto==0.8
+requests==2.18.4
+cryptography==3.2.1

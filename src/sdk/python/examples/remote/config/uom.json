@@ -1,0 +1,1889 @@
+{
+    "03Z": {
+        "fac": 1,
+        "unit": "03Z"
+    },
+    "04Z": {
+        "fac": 1,
+        "unit": "04Z"
+    },
+    "0VS": {
+        "fac": 1,
+        "unit": "0VS"
+    },
+    "ONE": {
+        "fac": 1,
+        "unit": "one"
+    },
+    "%": {
+        "fac": 0.01,
+        "unit": "%",
+        "ref": "ONE"
+    },
+    "%0": {
+        "fac": 0.001,
+        "unit": "%0",
+        "ref": "ONE"
+    },
+    "PPB": {
+        "fac": 1e-9,
+        "unit": "ppb",
+        "ref": "ONE"
+    },
+    "PPM": {
+        "fac": 0.000001,
+        "unit": "ppm",
+        "ref": "ONE"
+    },
+    "PPT": {
+        "fac": 1e-12,
+        "unit": "ppt",
+        "ref": "ONE"
+    },
+    "1/K": {
+        "fac": 1,
+        "unit": "1/K"
+    },
+    "3VP": {
+        "fac": 1,
+        "unit": "3VP"
+    },
+    "N/M": {
+        "fac": 1,
+        "unit": "N/m"
+    },
+    "MNM": {
+        "fac": 0.001,
+        "unit": "mN/m",
+        "ref": "N/M"
+    },
+    "NCM": {
+        "fac": 0.01,
+        "unit": "N/cm",
+        "ref": "N/M"
+    },
+    "NM2": {
+        "fac": 1000,
+        "unit": "N/mm",
+        "ref": "N/M"
+    },
+    "KNM": {
+        "fac": 0.001,
+        "unit": "kN/m",
+        "ref": "N/M"
+    },
+    "V/S": {
+        "fac": 1,
+        "unit": "V/s"
+    },
+    "BD": {
+        "fac": 1,
+        "unit": "Bd"
+    },
+    "KBD": {
+        "fac": 1000,
+        "unit": "KBd",
+        "ref": "BD"
+    },
+    "8PK": {
+        "fac": 1,
+        "unit": "8PK"
+    },
+    "8SA": {
+        "fac": 1,
+        "unit": "8SA"
+    },
+    "96Z": {
+        "fac": 1,
+        "unit": "96Z"
+    },
+    "97Z": {
+        "fac": 1,
+        "unit": "97Z"
+    },
+    "98Z": {
+        "fac": 1,
+        "unit": "98Z"
+    },
+    "99Z": {
+        "fac": 1,
+        "unit": "99Z"
+    },
+    "A": {
+        "fac": 1,
+        "unit": "A"
+    },
+    "µA": {
+        "fac": 0.000001,
+        "unit": "µA",
+        "ref": "A"
+    },
+    "NA": {
+        "fac": 1e-9,
+        "unit": "nA",
+        "ref": "A"
+    },
+    "KA": {
+        "fac": 1000,
+        "unit": "kA",
+        "ref": "A"
+    },
+    "MA": {
+        "fac": 0.001,
+        "unit": "mA",
+        "ref": "A"
+    },
+    "BYT": {
+        "fac": 1,
+        "unit": "Byte"
+    },
+    "KB": {
+        "fac": 1000,
+        "unit": "kB",
+        "ref": "BYT"
+    },
+    "MB": {
+        "fac": 1000000,
+        "unit": "MB",
+        "ref": "BYT"
+    },
+    "BIT": {
+        "fac": 0.125,
+        "unit": "Bit",
+        "ref": "BYT"
+    },
+    "GBY": {
+        "fac": 1000000000,
+        "unit": "GB",
+        "ref": "BYT"
+    },
+    "PBY": {
+        "fac": 1000000000000000,
+        "unit": "PB",
+        "ref": "BYT"
+    },
+    "TB": {
+        "fac": 1000000000000,
+        "unit": "TB",
+        "ref": "BYT"
+    },
+    "A/M": {
+        "fac": 1,
+        "unit": "A/m"
+    },
+    "A/C": {
+        "fac": 100,
+        "unit": "A/cm",
+        "ref": "A/M"
+    },
+    "KAM": {
+        "fac": 1000,
+        "unit": "kA/m",
+        "ref": "A/M"
+    },
+    "AK": {
+        "fac": 1,
+        "unit": "AK"
+    },
+    "AL1": {
+        "fac": 1,
+        "unit": "AL1"
+    },
+    "AL5": {
+        "fac": 1,
+        "unit": "AL5"
+    },
+    "AL7": {
+        "fac": 1,
+        "unit": "AL7"
+    },
+    "AL8": {
+        "fac": 1,
+        "unit": "AL8"
+    },
+    "AL9": {
+        "fac": 1,
+        "unit": "AL9"
+    },
+    "ALA": {
+        "fac": 1,
+        "unit": "ALA"
+    },
+    "ALB": {
+        "fac": 1,
+        "unit": "ALB"
+    },
+    "ALC": {
+        "fac": 1,
+        "unit": "ALC"
+    },
+    "ALD": {
+        "fac": 1,
+        "unit": "ALD"
+    },
+    "ALE": {
+        "fac": 1,
+        "unit": "ALE"
+    },
+    "ALF": {
+        "fac": 1,
+        "unit": "ALF"
+    },
+    "ALS": {
+        "fac": 1,
+        "unit": "ALS"
+    },
+    "ANZ": {
+        "fac": 1,
+        "unit": "ANZ"
+    },
+    "AS9": {
+        "fac": 1,
+        "unit": "AS9"
+    },
+    "B32": {
+        "fac": 1,
+        "unit": "kg.m²"
+    },
+    "KGC": {
+        "fac": 0.0001,
+        "unit": "kg.cm",
+        "ref": "B32"
+    },
+    "TTE": {
+        "fac": 1,
+        "unit": "Tüte"
+    },
+    "BEH": {
+        "fac": 1,
+        "unit": "BEH"
+    },
+    "BL": {
+        "fac": 1,
+        "unit": "BL"
+    },
+    "FL": {
+        "fac": 1,
+        "unit": "Fl"
+    },
+    "BQK": {
+        "fac": 1,
+        "unit": "Bq/kg"
+    },
+    "KBK": {
+        "fac": 1000,
+        "unit": "kBq/kg",
+        "ref": "BQK"
+    },
+    "BR1": {
+        "fac": 1,
+        "unit": "BR1"
+    },
+    "BR2": {
+        "fac": 1,
+        "unit": "BR2"
+    },
+    "BR3": {
+        "fac": 1,
+        "unit": "BR3"
+    },
+    "BR4": {
+        "fac": 1,
+        "unit": "BR4"
+    },
+    "SHT": {
+        "fac": 1,
+        "unit": "sheet"
+    },
+    "C": {
+        "fac": 1,
+        "unit": "C"
+    },
+    "AH": {
+        "fac": 3600,
+        "unit": "Ah",
+        "ref": "C"
+    },
+    "mAh": {
+        "fac": 3.6,
+        "unit": "MAH",
+        "ref": "C"
+    },
+    "M/M": {
+        "fac": 1,
+        "unit": "mol/m3"
+    },
+    "M/L": {
+        "fac": 1000,
+        "unit": "mol/l",
+        "ref": "M/M"
+    },
+    "MPL": {
+        "fac": 1000000,
+        "unit": "mmol/l",
+        "ref": "M/M"
+    },
+    "OM": {
+        "fac": 1,
+        "unit": "Ohm.m"
+    },
+    "MUM": {
+        "fac": 0.000001,
+        "unit": "µOhm.m",
+        "ref": "OM"
+    },
+    "MOM": {
+        "fac": 1,
+        "unit": "mΩ/m"
+    },
+    "OCM": {
+        "fac": 0.01,
+        "unit": "Ohm.cm",
+        "ref": "OM"
+    },
+    "UOM": {
+        "fac": 0.000001,
+        "unit": "Ohmmm2",
+        "ref": "OM"
+    },
+    "RAD": {
+        "fac": 1,
+        "unit": "rad"
+    },
+    "ACM": {
+        "fac": 0.00029089000000000003,
+        "unit": "'",
+        "ref": "RAD"
+    },
+    "ACS": {
+        "fac": 0.0000048481,
+        "unit": "\"",
+        "ref": "RAD"
+    },
+    "deg": {
+        "fac": 0.01745,
+        "unit": "DEG",
+        "ref": "RAD"
+    },
+    "M/K": {
+        "fac": 1,
+        "unit": "m/m.K"
+    },
+    "CAR": {
+        "fac": 1,
+        "unit": "CAR"
+    },
+    "CDL": {
+        "fac": 1,
+        "unit": "cd"
+    },
+    "CH1": {
+        "fac": 1,
+        "unit": "CH1"
+    },
+    "CH2": {
+        "fac": 1,
+        "unit": "CH2"
+    },
+    "CH3": {
+        "fac": 1,
+        "unit": "CH3"
+    },
+    "CH4": {
+        "fac": 1,
+        "unit": "CH4"
+    },
+    "CKG": {
+        "fac": 1,
+        "unit": "m3/kg"
+    },
+    "CMG": {
+        "fac": 9.999999999999999e-10,
+        "unit": "cm3/g",
+        "ref": "CKG"
+    },
+    "CN2": {
+        "fac": 1,
+        "unit": "CN2"
+    },
+    "CN3": {
+        "fac": 1,
+        "unit": "CN3"
+    },
+    "CN4": {
+        "fac": 1,
+        "unit": "CN4"
+    },
+    "CN5": {
+        "fac": 1,
+        "unit": "CN5"
+    },
+    "KS": {
+        "fac": 1,
+        "unit": "KS"
+    },
+    "CS1": {
+        "fac": 1,
+        "unit": "CS1"
+    },
+    "CS2": {
+        "fac": 1,
+        "unit": "CS2"
+    },
+    "CS3": {
+        "fac": 1,
+        "unit": "CS3"
+    },
+    "CS4": {
+        "fac": 1,
+        "unit": "CS4"
+    },
+    "CS5": {
+        "fac": 1,
+        "unit": "CS5"
+    },
+    "CS6": {
+        "fac": 1,
+        "unit": "CS6"
+    },
+    "CS7": {
+        "fac": 1,
+        "unit": "CS7"
+    },
+    "CS8": {
+        "fac": 1,
+        "unit": "CS8"
+    },
+    "CS9": {
+        "fac": 1,
+        "unit": "CS9"
+    },
+    "CT": {
+        "fac": 1,
+        "unit": "Carat"
+    },
+    "CU1": {
+        "fac": 1,
+        "unit": "CU1"
+    },
+    "CU2": {
+        "fac": 1,
+        "unit": "CU2"
+    },
+    "CU3": {
+        "fac": 1,
+        "unit": "CU3"
+    },
+    "CU4": {
+        "fac": 1,
+        "unit": "CU4"
+    },
+    "CU5": {
+        "fac": 1,
+        "unit": "CU5"
+    },
+    "CU6": {
+        "fac": 1,
+        "unit": "CU6"
+    },
+    "CU7": {
+        "fac": 1,
+        "unit": "CU7"
+    },
+    "CU8": {
+        "fac": 1,
+        "unit": "CU8"
+    },
+    "S/M": {
+        "fac": 1,
+        "unit": "S/m"
+    },
+    "MSC": {
+        "fac": 0.0001,
+        "unit": "µS/cm",
+        "ref": "S/M"
+    },
+    "MSZ": {
+        "fac": 0.1,
+        "unit": "mS/cm",
+        "ref": "S/M"
+    },
+    "S/C": {
+        "fac": 0.01,
+        "unit": "S/cm",
+        "ref": "S/M"
+    },
+    "VA": {
+        "fac": 1,
+        "unit": "VA"
+    },
+    "V/K": {
+        "fac": 1,
+        "unit": "V/K"
+    },
+    "MVK": {
+        "fac": 0.001,
+        "unit": "mV/K",
+        "ref": "V/K"
+    },
+    "V/M": {
+        "fac": 1,
+        "unit": "V/m"
+    },
+    "VCM": {
+        "fac": 0.01,
+        "unit": "V/cm",
+        "ref": "V/M"
+    },
+    "MVC": {
+        "fac": 0.00001,
+        "unit": "mV/cm",
+        "ref": "V/M"
+    },
+    "MVI": {
+        "fac": 0.000025641025641025643,
+        "unit": "mV/in",
+        "ref": "V/M"
+    },
+    "VIN": {
+        "fac": 0.02564102564102564,
+        "unit": "V/Inch",
+        "ref": "V/M"
+    },
+    "W/K": {
+        "fac": 1,
+        "unit": "W/K"
+    },
+    "MWK": {
+        "fac": 0.001,
+        "unit": "mW/K",
+        "ref": "W/K"
+    },
+    "WKM": {
+        "fac": 1,
+        "unit": "W/m.K"
+    },
+    "DB": {
+        "fac": 1,
+        "unit": "dB"
+    },
+    "DBA": {
+        "fac": 1,
+        "unit": "db(A)"
+    },
+    "DGM": {
+        "fac": 1,
+        "unit": "dgm"
+    },
+    "DL": {
+        "fac": 1,
+        "unit": "Dienst"
+    },
+    "TR": {
+        "fac": 1,
+        "unit": "tr"
+    },
+    "DZ": {
+        "fac": 1,
+        "unit": "dz"
+    },
+    "EA": {
+        "fac": 1,
+        "unit": "EA"
+    },
+    "EE": {
+        "fac": 1,
+        "unit": "EE"
+    },
+    "EML": {
+        "fac": 1,
+        "unit": "Enzyme"
+    },
+    "EUR": {
+        "fac": 1,
+        "unit": "EURO"
+    },
+    "FAR": {
+        "fac": 1,
+        "unit": "F"
+    },
+    "µF": {
+        "fac": 0.000001,
+        "unit": "µF",
+        "ref": "FAR"
+    },
+    "PF": {
+        "fac": 1e-12,
+        "unit": "pF",
+        "ref": "FAR"
+    },
+    "MF": {
+        "fac": 0.001,
+        "unit": "mF",
+        "ref": "FAR"
+    },
+    "NF": {
+        "fac": 1e-9,
+        "unit": "nF",
+        "ref": "FAR"
+    },
+    "FF": {
+        "fac": 1e-15,
+        "unit": "fF",
+        "ref": "FAR"
+    },
+    "FKT": {
+        "fac": 1,
+        "unit": "FKT"
+    },
+    "FLD": {
+        "fac": 1,
+        "unit": "FLD"
+    },
+    "FP": {
+        "fac": 1,
+        "unit": "fp"
+    },
+    "FS": {
+        "fac": 1,
+        "unit": "Fass"
+    },
+    "G/L": {
+        "fac": 1,
+        "unit": "gW/l"
+    },
+    "GAG": {
+        "fac": 1,
+        "unit": "GAG"
+    },
+    "GAM": {
+        "fac": 1,
+        "unit": "GAM"
+    },
+    "GAU": {
+        "fac": 1,
+        "unit": "GAU"
+    },
+    "GB": {
+        "fac": 1,
+        "unit": "Gebind"
+    },
+    "GBP": {
+        "fac": 1,
+        "unit": "GBP"
+    },
+    "GBR": {
+        "fac": 1,
+        "unit": "GBR"
+    },
+    "°C": {
+        "fac": 1,
+        "unit": "°C"
+    },
+    "GCN": {
+        "fac": 1,
+        "unit": "GCN"
+    },
+    "GCU": {
+        "fac": 1,
+        "unit": "GCU"
+    },
+    "GLI": {
+        "fac": 1,
+        "unit": "g/l"
+    },
+    "GMA": {
+        "fac": 1,
+        "unit": "PFG"
+    },
+    "GMM": {
+        "fac": 1,
+        "unit": "gmm"
+    },
+    "GNI": {
+        "fac": 1,
+        "unit": "GNI"
+    },
+    "GPD": {
+        "fac": 1,
+        "unit": "GPD"
+    },
+    "GPL": {
+        "fac": 1,
+        "unit": "GPL"
+    },
+    "GRH": {
+        "fac": 1,
+        "unit": "GRH"
+    },
+    "GRO": {
+        "fac": 1,
+        "unit": "gro"
+    },
+    "GRP": {
+        "fac": 1,
+        "unit": "GRP"
+    },
+    "GRU": {
+        "fac": 1,
+        "unit": "GRU"
+    },
+    "GW": {
+        "fac": 1,
+        "unit": "gW"
+    },
+    "GZN": {
+        "fac": 1,
+        "unit": "GZN"
+    },
+    "HB": {
+        "fac": 1,
+        "unit": "HB"
+    },
+    "HEA": {
+        "fac": 1,
+        "unit": "HEA"
+    },
+    "HEN": {
+        "fac": 1,
+        "unit": "H"
+    },
+    "UH": {
+        "fac": 0.000001,
+        "unit": "µH",
+        "ref": "HEN"
+    },
+    "MH": {
+        "fac": 0.001,
+        "unit": "mH",
+        "ref": "HEN"
+    },
+    "NH": {
+        "fac": 1e-9,
+        "unit": "nH",
+        "ref": "HEN"
+    },
+    "KH": {
+        "fac": 1000,
+        "unit": "kH",
+        "ref": "HEN"
+    },
+    "HRA": {
+        "fac": 1,
+        "unit": "HRA"
+    },
+    "HRB": {
+        "fac": 1,
+        "unit": "HRB"
+    },
+    "HRC": {
+        "fac": 1,
+        "unit": "HRC"
+    },
+    "HV": {
+        "fac": 1,
+        "unit": "HV"
+    },
+    "HZ": {
+        "fac": 1,
+        "unit": "Hz"
+    },
+    "IDX": {
+        "fac": 1,
+        "unit": "IDX"
+    },
+    "IRH": {
+        "fac": 1,
+        "unit": "IRHD"
+    },
+    "J": {
+        "fac": 1,
+        "unit": "J"
+    },
+    "JKG": {
+        "fac": 1,
+        "unit": "J/kg"
+    },
+    "KJK": {
+        "fac": 1000,
+        "unit": "kJ/kg",
+        "ref": "JKG"
+    },
+    "JMO": {
+        "fac": 1,
+        "unit": "J/mol"
+    },
+    "KJM": {
+        "fac": 1000,
+        "unit": "kJ/mol",
+        "ref": "JMO"
+    },
+    "K": {
+        "fac": 1,
+        "unit": "K"
+    },
+    "KAG": {
+        "fac": 1,
+        "unit": "KAG"
+    },
+    "KAL": {
+        "fac": 1,
+        "unit": "KAL"
+    },
+    "KAN": {
+        "fac": 1,
+        "unit": "Kan"
+    },
+    "KAR": {
+        "fac": 1,
+        "unit": "Kar"
+    },
+    "KBR": {
+        "fac": 1,
+        "unit": "KBR"
+    },
+    "KC4": {
+        "fac": 1,
+        "unit": "KC4"
+    },
+    "KCN": {
+        "fac": 1,
+        "unit": "KCN"
+    },
+    "KCU": {
+        "fac": 1,
+        "unit": "KCU"
+    },
+    "KEW": {
+        "fac": 1,
+        "unit": "K/W"
+    },
+    "KG": {
+        "fac": 1,
+        "unit": "kg"
+    },
+    "G": {
+        "fac": 0.001,
+        "unit": "g",
+        "ref": "KG"
+    },
+    "KT": {
+        "fac": 1000,
+        "unit": "kt",
+        "ref": "KG"
+    },
+    "LB": {
+        "fac": 0.453592,
+        "unit": "lb",
+        "ref": "KG"
+    },
+    "MG": {
+        "fac": 0.000001,
+        "unit": "mg",
+        "ref": "KG"
+    },
+    "OZ": {
+        "fac": 0.02835,
+        "unit": "oz",
+        "ref": "KG"
+    },
+    "TO": {
+        "fac": 1000,
+        "unit": "t",
+        "ref": "KG"
+    },
+    "TON": {
+        "fac": 907.2,
+        "unit": "ton",
+        "ref": "KG"
+    },
+    "KGF": {
+        "fac": 1,
+        "unit": "kg/m2"
+    },
+    "GCQ": {
+        "fac": 1.0000000000000001e-7,
+        "unit": "g/cm2",
+        "ref": "KGF"
+    },
+    "GM2": {
+        "fac": 0.001,
+        "unit": "g/m2",
+        "ref": "KGF"
+    },
+    "KCQ": {
+        "fac": 10000,
+        "unit": "kg/cm²",
+        "ref": "KGF"
+    },
+    "MGF": {
+        "fac": 0.01,
+        "unit": "mg/cm2",
+        "ref": "KGF"
+    },
+    "KGK": {
+        "fac": 1,
+        "unit": "kg/kg"
+    },
+    "GHG": {
+        "fac": 0.01,
+        "unit": "g/hg",
+        "ref": "KGK"
+    },
+    "GKG": {
+        "fac": 0.001,
+        "unit": "g/kg",
+        "ref": "KGK"
+    },
+    "M%": {
+        "fac": 0.01,
+        "unit": "%(m)",
+        "ref": "KGK"
+    },
+    "M%O": {
+        "fac": 0.001,
+        "unit": "%O(m)",
+        "ref": "KGK"
+    },
+    "MGG": {
+        "fac": 0.001,
+        "unit": "mg/g",
+        "ref": "KGK"
+    },
+    "MPB": {
+        "fac": 1e-9,
+        "unit": "ppb(m)",
+        "ref": "KGK"
+    },
+    "MPM": {
+        "fac": 0.000001,
+        "unit": "ppm(m)",
+        "ref": "KGK"
+    },
+    "MPT": {
+        "fac": 1e-12,
+        "unit": "ppt(m)",
+        "ref": "KGK"
+    },
+    "MGK": {
+        "fac": 0.000001,
+        "unit": "mg/kg",
+        "ref": "KGK"
+    },
+    "KGM": {
+        "fac": 1,
+        "unit": "kg/mol"
+    },
+    "GM": {
+        "fac": 0.001,
+        "unit": "g/mol",
+        "ref": "KGM"
+    },
+    "KGS": {
+        "fac": 1,
+        "unit": "kg/s"
+    },
+    "LBH": {
+        "fac": 0.000126,
+        "unit": "lb/h",
+        "ref": "KGS"
+    },
+    "GMN": {
+        "fac": 0.000016666666666666667,
+        "unit": "g/min",
+        "ref": "KGS"
+    },
+    "KGT": {
+        "fac": 0.000011574074074074073,
+        "unit": "kg/d",
+        "ref": "KGS"
+    },
+    "KGH": {
+        "fac": 0.0002777777777777778,
+        "unit": "kg/h",
+        "ref": "KGS"
+    },
+    "KMI": {
+        "fac": 0.016666666666666666,
+        "unit": "kg/min",
+        "ref": "KGS"
+    },
+    "TPM": {
+        "fac": 0.00038580246913580245,
+        "unit": "t/mon",
+        "ref": "KGS"
+    },
+    "KGV": {
+        "fac": 1,
+        "unit": "kg/m3"
+    },
+    "KGW": {
+        "fac": 1,
+        "unit": "kgW"
+    },
+    "KI": {
+        "fac": 1,
+        "unit": "Kiste"
+    },
+    "KL": {
+        "fac": 1,
+        "unit": "kg/m"
+    },
+    "KMK": {
+        "fac": 1,
+        "unit": "m3/m3"
+    },
+    "MLK": {
+        "fac": 0.000001,
+        "unit": "ml/m3",
+        "ref": "KMK"
+    },
+    "V%": {
+        "fac": 0.01,
+        "unit": "%(V)",
+        "ref": "KMK"
+    },
+    "V%O": {
+        "fac": 0.001,
+        "unit": "%O(V)",
+        "ref": "KMK"
+    },
+    "VPB": {
+        "fac": 1e-9,
+        "unit": "ppb(V)",
+        "ref": "KMK"
+    },
+    "VPM": {
+        "fac": 0.000001,
+        "unit": "ppm(V)",
+        "ref": "KMK"
+    },
+    "VPT": {
+        "fac": 1e-12,
+        "unit": "ppt(V)",
+        "ref": "KMK"
+    },
+    "KMS": {
+        "fac": 1,
+        "unit": "K/s"
+    },
+    "KMN": {
+        "fac": 0.016666666666666666,
+        "unit": "K/min",
+        "ref": "KMS"
+    },
+    "KNI": {
+        "fac": 1,
+        "unit": "KNI"
+    },
+    "KPD": {
+        "fac": 1,
+        "unit": "KPD"
+    },
+    "KPL": {
+        "fac": 1,
+        "unit": "KPL"
+    },
+    "KRU": {
+        "fac": 1,
+        "unit": "KRU"
+    },
+    "KWK": {
+        "fac": 1,
+        "unit": "kgW/kg"
+    },
+    "KZN": {
+        "fac": 1,
+        "unit": "KZN"
+    },
+    "LE": {
+        "fac": 1,
+        "unit": "LE"
+    },
+    "LHK": {
+        "fac": 1,
+        "unit": "l/hkm"
+    },
+    "LMS": {
+        "fac": 1,
+        "unit": "l/m.s"
+    },
+    "LU": {
+        "fac": 1,
+        "unit": "lu"
+    },
+    "LUX": {
+        "fac": 1,
+        "unit": "LX"
+    },
+    "LZ0": {
+        "fac": 1,
+        "unit": "LZ0"
+    },
+    "LZ1": {
+        "fac": 1,
+        "unit": "LZ1"
+    },
+    "LZ2": {
+        "fac": 1,
+        "unit": "LZ2"
+    },
+    "LZ3": {
+        "fac": 1,
+        "unit": "LZ3"
+    },
+    "LZ4": {
+        "fac": 1,
+        "unit": "LZ4"
+    },
+    "M": {
+        "fac": 1,
+        "unit": "m"
+    },
+    "CM": {
+        "fac": 0.01,
+        "unit": "cm",
+        "ref": "M"
+    },
+    "DM": {
+        "fac": 0.1,
+        "unit": "dm",
+        "ref": "M"
+    },
+    "FT": {
+        "fac": 0.3048,
+        "unit": "Fuß",
+        "ref": "M"
+    },
+    "IN": {
+        "fac": 0.0254,
+        "unit": "in",
+        "ref": "M"
+    },
+    "KM": {
+        "fac": 1000,
+        "unit": "km",
+        "ref": "M"
+    },
+    "MI": {
+        "fac": 1609.344,
+        "unit": "mile",
+        "ref": "M"
+    },
+    "µM": {
+        "fac": 0.000001,
+        "unit": "µm",
+        "ref": "M"
+    },
+    "MM": {
+        "fac": 0.001,
+        "unit": "mm",
+        "ref": "M"
+    },
+    "NAM": {
+        "fac": 1e-9,
+        "unit": "nm",
+        "ref": "M"
+    },
+    "YD": {
+        "fac": 0.9144,
+        "unit": "yd",
+        "ref": "M"
+    },
+    "M/S": {
+        "fac": 1,
+        "unit": "m/s"
+    },
+    "CMS": {
+        "fac": 0.01,
+        "unit": "cm/s",
+        "ref": "M/S"
+    },
+    "MMI": {
+        "fac": 0.016666666666666666,
+        "unit": "m/min",
+        "ref": "M/S"
+    },
+    "CMH": {
+        "fac": 0.000002777777777777778,
+        "unit": "cm/h",
+        "ref": "M/S"
+    },
+    "KMH": {
+        "fac": 0.2777777777777778,
+        "unit": "km/h",
+        "ref": "M/S"
+    },
+    "M/H": {
+        "fac": 0.0002777777777777778,
+        "unit": "m/h",
+        "ref": "M/S"
+    },
+    "MMA": {
+        "fac": 3.1709791983764586e-11,
+        "unit": "mm/a",
+        "ref": "M/S"
+    },
+    "MMH": {
+        "fac": 2.7777777777777776e-7,
+        "unit": "mm/h",
+        "ref": "M/S"
+    },
+    "MMS": {
+        "fac": 0.001,
+        "unit": "mm/s",
+        "ref": "M/S"
+    },
+    "M2": {
+        "fac": 1,
+        "unit": "m2"
+    },
+    "M-2": {
+        "fac": 1,
+        "unit": "1/M2"
+    },
+    "M2S": {
+        "fac": 1,
+        "unit": "m²/s"
+    },
+    "M3": {
+        "fac": 1,
+        "unit": "m3"
+    },
+    "M3S": {
+        "fac": 1,
+        "unit": "m3/s"
+    },
+    "C3S": {
+        "fac": 0.000001,
+        "unit": "cm3/s",
+        "ref": "M3S"
+    },
+    "C4S": {
+        "fac": 0.000059999999999999995,
+        "unit": "cm3/mn",
+        "ref": "M3S"
+    },
+    "LPS": {
+        "fac": 0.001,
+        "unit": "l/s",
+        "ref": "M3S"
+    },
+    "GPH": {
+        "fac": 0.0000010514844444444445,
+        "unit": "GPH US",
+        "ref": "M3S"
+    },
+    "LMI": {
+        "fac": 0.000016666666666666667,
+        "unit": "l/min",
+        "ref": "M3S"
+    },
+    "LPH": {
+        "fac": 2.7777777777777776e-7,
+        "unit": "l/h",
+        "ref": "M3S"
+    },
+    "MLM": {
+        "fac": 1.6666666666666667e-8,
+        "unit": "ml/min",
+        "ref": "M3S"
+    },
+    "MQD": {
+        "fac": 0.000011574074074074073,
+        "unit": "m3/d",
+        "ref": "M3S"
+    },
+    "M3H": {
+        "fac": 0.0002777777777777778,
+        "unit": "m3/h",
+        "ref": "M3S"
+    },
+    "MQM": {
+        "fac": 3.8580246913580245e-7,
+        "unit": "m3/mon",
+        "ref": "M3S"
+    },
+    "MQW": {
+        "fac": 0.0000016534391534391535,
+        "unit": "m3/w",
+        "ref": "M3S"
+    },
+    "Z01": {
+        "fac": 1e-9,
+        "unit": "mm3/s",
+        "ref": "M3S"
+    },
+    "ZL3": {
+        "fac": 0.0000016666666666666667,
+        "unit": "l/10mi",
+        "ref": "M3S"
+    },
+    "CDH": {
+        "fac": 0.0002777777777777778,
+        "unit": "dm3/h",
+        "ref": "M3S"
+    },
+    "MLW": {
+        "fac": 1,
+        "unit": "mlW"
+    },
+    "MMG": {
+        "fac": 1,
+        "unit": "mmol/g"
+    },
+    "MOK": {
+        "fac": 1,
+        "unit": "mol/kg"
+    },
+    "MOL": {
+        "fac": 1,
+        "unit": "mol"
+    },
+    "KML": {
+        "fac": 1000,
+        "unit": "kmol",
+        "ref": "MOL"
+    },
+    "MMO": {
+        "fac": 0.001,
+        "unit": "mmol",
+        "ref": "MOL"
+    },
+    "MPG": {
+        "fac": 1,
+        "unit": "MPG US"
+    },
+    "MPZ": {
+        "fac": 1,
+        "unit": "m.Pa/s"
+    },
+    "MBZ": {
+        "fac": 100000,
+        "unit": "m.b/s",
+        "ref": "MPZ"
+    },
+    "MS2": {
+        "fac": 1,
+        "unit": "m/s2"
+    },
+    "GA": {
+        "fac": 9.807,
+        "unit": "GA",
+        "ref": "MS2"
+    },
+    "MGA": {
+        "fac": 0.009807,
+        "unit": "mGA",
+        "ref": "MS2"
+    },
+    "MSS": {
+        "fac": 0.001,
+        "unit": "mm/s2",
+        "ref": "MS2"
+    },
+    "MS4": {
+        "fac": 1,
+        "unit": "MS4"
+    },
+    "MS5": {
+        "fac": 1,
+        "unit": "MS5"
+    },
+    "MS6": {
+        "fac": 1,
+        "unit": "MS6"
+    },
+    "MS7": {
+        "fac": 1,
+        "unit": "MS7"
+    },
+    "MS8": {
+        "fac": 1,
+        "unit": "MS8"
+    },
+    "MS9": {
+        "fac": 1,
+        "unit": "MS9"
+    },
+    "N": {
+        "fac": 1,
+        "unit": "N"
+    },
+    "KN": {
+        "fac": 1000,
+        "unit": "kN",
+        "ref": "N"
+    },
+    "MN": {
+        "fac": 1000000,
+        "unit": "MN",
+        "ref": "N"
+    },
+    "MNW": {
+        "fac": 0.001,
+        "unit": "mN",
+        "ref": "N"
+    },
+    "CN": {
+        "fac": 0.01,
+        "unit": "cN",
+        "ref": "N"
+    },
+    "DAN": {
+        "fac": 10,
+        "unit": "daN",
+        "ref": "N"
+    },
+    "gf": {
+        "fac": 0.009810000000000001,
+        "unit": "gf",
+        "ref": "N"
+    },
+    "kgf": {
+        "fac": 9.81,
+        "unit": "kgf",
+        "ref": "N"
+    },
+    "kp": {
+        "fac": 9.81,
+        "unit": "kp",
+        "ref": "N"
+    },
+    "NME": {
+        "fac": 1,
+        "unit": "Nm"
+    },
+    "OHM": {
+        "fac": 1,
+        "unit": "ohm"
+    },
+    "GOH": {
+        "fac": 1000000000,
+        "unit": "GOhm",
+        "ref": "OHM"
+    },
+    "MGO": {
+        "fac": 1000000,
+        "unit": "MOhm",
+        "ref": "OHM"
+    },
+    "UOH": {
+        "fac": 0.000001,
+        "unit": "µOhm",
+        "ref": "OHM"
+    },
+    "KOH": {
+        "fac": 1000,
+        "unit": "kOhm",
+        "ref": "OHM"
+    },
+    "MIO": {
+        "fac": 0.001,
+        "unit": "mOhm",
+        "ref": "OHM"
+    },
+    "NOH": {
+        "fac": 1e-9,
+        "unit": "nohm",
+        "ref": "OHM"
+    },
+    "TEO": {
+        "fac": 1000000000000,
+        "unit": "TOhm",
+        "ref": "OHM"
+    },
+    "KOW": {
+        "fac": 1000,
+        "unit": "kOhm/W",
+        "ref": "OHM"
+    },
+    "OMM": {
+        "fac": 1,
+        "unit": "Ohm/m"
+    },
+    "P": {
+        "fac": 1,
+        "unit": "P"
+    },
+    "PA": {
+        "fac": 1,
+        "unit": "Pa"
+    },
+    "PAA": {
+        "fac": 1,
+        "unit": "pair"
+    },
+    "PAK": {
+        "fac": 1,
+        "unit": "PAK"
+    },
+    "PAL": {
+        "fac": 1,
+        "unit": "PAL"
+    },
+    "PAS": {
+        "fac": 1,
+        "unit": "Pa.s"
+    },
+    "MPS": {
+        "fac": 0.001,
+        "unit": "mPa.s",
+        "ref": "PAS"
+    },
+    "PB1": {
+        "fac": 1,
+        "unit": "PB1"
+    },
+    "PBP": {
+        "fac": 1,
+        "unit": "PBP"
+    },
+    "PE": {
+        "fac": 1,
+        "unit": "PE"
+    },
+    "pH-": {
+        "fac": 1,
+        "unit": "PH"
+    },
+    "PK": {
+        "fac": 1,
+        "unit": "PK"
+    },
+    "PKI": {
+        "fac": 1,
+        "unit": "PKI"
+    },
+    "PL1": {
+        "fac": 1,
+        "unit": "PL1"
+    },
+    "PL2": {
+        "fac": 1,
+        "unit": "PL2"
+    },
+    "PL3": {
+        "fac": 1,
+        "unit": "PL3"
+    },
+    "PL4": {
+        "fac": 1,
+        "unit": "PL4"
+    },
+    "PLA": {
+        "fac": 1,
+        "unit": "pla"
+    },
+    "PO": {
+        "fac": 1,
+        "unit": "po"
+    },
+    "PRK": {
+        "fac": 1,
+        "unit": "%/K"
+    },
+    "PRS": {
+        "fac": 1,
+        "unit": "PRS"
+    },
+    "RAA": {
+        "fac": 1,
+        "unit": "RAA"
+    },
+    "ROL": {
+        "fac": 1,
+        "unit": "ROL"
+    },
+    "ROW": {
+        "fac": 1,
+        "unit": "ROW"
+    },
+    "S": {
+        "fac": 1,
+        "unit": "s"
+    },
+    "SET": {
+        "fac": 1,
+        "unit": "set"
+    },
+    "SG": {
+        "fac": 1,
+        "unit": "SG"
+    },
+    "SHA": {
+        "fac": 1,
+        "unit": "SHA"
+    },
+    "SHD": {
+        "fac": 1,
+        "unit": "SHD"
+    },
+    "SIE": {
+        "fac": 1,
+        "unit": "S"
+    },
+    "MSI": {
+        "fac": 0.001,
+        "unit": "mS",
+        "ref": "SIE"
+    },
+    "SK": {
+        "fac": 1,
+        "unit": "sac"
+    },
+    "SLS": {
+        "fac": 1,
+        "unit": "SLS"
+    },
+    "SN1": {
+        "fac": 1,
+        "unit": "SN1"
+    },
+    "ST": {
+        "fac": 1,
+        "unit": "ST"
+    },
+    "SW": {
+        "fac": 1,
+        "unit": "sw"
+    },
+    "TA": {
+        "fac": 1,
+        "unit": "TA"
+    },
+    "TES": {
+        "fac": 1,
+        "unit": "T"
+    },
+    "MTE": {
+        "fac": 0.001,
+        "unit": "mT",
+        "ref": "TES"
+    },
+    "µT": {
+        "fac": 0.000001,
+        "unit": "µT",
+        "ref": "TES"
+    },
+    "NT": {
+        "fac": 1e-9,
+        "unit": "nT",
+        "ref": "TES"
+    },
+    "TS": {
+        "fac": 1,
+        "unit": "thsd"
+    },
+    "TM3": {
+        "fac": 1,
+        "unit": "1/m3"
+    },
+    "TC3": {
+        "fac": 1000000,
+        "unit": "1/cm3",
+        "ref": "TM3"
+    },
+    "TMS": {
+        "fac": 1,
+        "unit": "TMS"
+    },
+    "TRU": {
+        "fac": 1,
+        "unit": "TrU"
+    },
+    "TU": {
+        "fac": 1,
+        "unit": "tube"
+    },
+    "UNT": {
+        "fac": 1,
+        "unit": "unit"
+    },
+    "V": {
+        "fac": 1,
+        "unit": "V"
+    },
+    "A/S": {
+        "fac": 1,
+        "unit": "A/s"
+    },
+    "AMS": {
+        "fac": 1000,
+        "unit": "A/ms",
+        "ref": "A/S"
+    },
+    "VAL": {
+        "fac": 1,
+        "unit": "val"
+    },
+    "VE": {
+        "fac": 1,
+        "unit": "VE"
+    },
+    "W": {
+        "fac": 1,
+        "unit": "W"
+    },
+    "WB": {
+        "fac": 1,
+        "unit": "Wb"
+    },
+    "MWB": {
+        "fac": 0.001,
+        "unit": "mWb",
+        "ref": "WB"
+    },
+    "DUM": {
+        "fac": 1,
+        "unit": "DUMMY-"
+    },
+    "YU0": {
+        "fac": 1,
+        "unit": "YU0"
+    },
+    "YU1": {
+        "fac": 1,
+        "unit": "YU1"
+    },
+    "Z00": {
+        "fac": 1,
+        "unit": "Z00"
+    },
+    "W74": {
+        "fac": 1,
+        "unit": "W74"
+    },
+    "C60": {
+        "fac": 1,
+        "unit": "C60Z"
+    },
+    "C45": {
+        "fac": 1,
+        "unit": "C45Z"
+    },
+    "AZ9": {
+        "fac": 1,
+        "unit": "AZ91"
+    },
+    "Z51": {
+        "fac": 1,
+        "unit": "Z51"
+    },
+    "mvs": {
+        "fac": 1,
+        "unit": "mV/ms"
+    },
+    "ZBL": {
+        "fac": 1,
+        "unit": "zbl"
+    },
+    "BRX": {
+        "fac": 1,
+        "unit": "°Brx"
+    },
+    "ZCO": {
+        "fac": 1,
+        "unit": "ZCO"
+    },
+    "µε": {
+        "fac": 1,
+        "unit": "µε"
+    },
+    "CN6": {
+        "fac": 1,
+        "unit": "CN6"
+    },
+    "CN7": {
+        "fac": 1,
+        "unit": "CN7"
+    },
+    "ZN8": {
+        "fac": 1,
+        "unit": "ZN8"
+    },
+    "ZPL": {
+        "fac": 1,
+        "unit": "zpl"
+    },
+    "ZR1": {
+        "fac": 1,
+        "unit": "ZR1"
+    },
+    "ZR2": {
+        "fac": 1,
+        "unit": "ZR2"
+    },
+    "ZR3": {
+        "fac": 1,
+        "unit": "ZR3"
+    },
+    "ZR4": {
+        "fac": 1,
+        "unit": "ZR4"
+    },
+    "ZR5": {
+        "fac": 1,
+        "unit": "ZR5"
+    },
+    "ZR6": {
+        "fac": 1,
+        "unit": "ZR6"
+    },
+    "ZR7": {
+        "fac": 1,
+        "unit": "ZR7"
+    },
+    "ZR8": {
+        "fac": 1,
+        "unit": "ZR8"
+    },
+    "ZRA": {
+        "fac": 1,
+        "unit": "ZRA"
+    },
+    "ZRB": {
+        "fac": 1,
+        "unit": "ZRB"
+    },
+    "ZRE": {
+        "fac": 1,
+        "unit": "ZRE"
+    },
+    "ZRF": {
+        "fac": 1,
+        "unit": "ZRF"
+    },
+    "ZRG": {
+        "fac": 1,
+        "unit": "ZRG"
+    },
+    "ZRK": {
+        "fac": 1,
+        "unit": "ZRK"
+    },
+    "ZRL": {
+        "fac": 1,
+        "unit": "ZRL"
+    },
+    "ZRM": {
+        "fac": 1,
+        "unit": "LSB/g"
+    },
+    "ZRU": {
+        "fac": 1,
+        "unit": "ZRU"
+    },
+    "ZRV": {
+        "fac": 1,
+        "unit": "Wh/m³"
+    },
+    "ZRX": {
+        "fac": 1,
+        "unit": "rad/s"
+    },
+    "LM": {
+        "fac": 1,
+        "unit": "lm"
+    }
+}

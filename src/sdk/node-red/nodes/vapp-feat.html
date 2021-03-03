@@ -1,0 +1,134 @@
+<!--
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+-->
+
+<script type="text/javascript">
+    RED.nodes.registerType('vapp-feat', {
+        category: 'VAPP',
+        color: '#a6bbcf',
+        defaults: {
+            VAPPhost: { value: "127.0.0.1" },
+            VAPPDiscoveryEndpoint: { value: "8080" },
+            VAPPBrokerEndpoint: { value: "1883" },
+            VAPPfeatures: { value: "" }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "icon.png",
+        label: function () {
+            return "VAPP Feature";
+        },
+        paletteLabel: "VAPP Feature",
+        oneditprepare: function () {}
+    });
+</script>
+<script>
+    function discover() {
+        var xVAPPhost = document.getElementById("node-input-VAPPhost");
+        var xVAPPDiscoveryEndpoint = document.getElementById("node-input-VAPPDiscoveryEndpoint");
+        var xVAPPBrokerEndpoint = document.getElementById("node-input-VAPPBrokerEndpoint");
+
+        $.getJSON('features', { 'xVAPPhost': xVAPPhost.value, 'xVAPPDiscoveryEndpoint': xVAPPDiscoveryEndpoint.value, 'xVAPPBrokerEndpoint': xVAPPBrokerEndpoint.value }, function (data) {
+            console.log(data);
+
+            var subjects_segments = {};
+
+            features = JSON.parse(data)
+            var x = document.getElementById("node-input-VAPPfeatures");
+            length = x.options.length;
+            while(length--){
+                x.remove(length);
+            }
+            var option = document.createElement("option");
+            option.text = "";
+            x.add(option);
+
+            for (const [key, value] of Object.entries(features)) {
+                if(features[key] != undefined && features[key] != null && features[key].features != undefined && features[key].features != null ){
+                    for (const [key2, value2] of Object.entries(features[key].features)) {
+                        option = document.createElement("option");
+                        option.text = key+"#"+key2;
+
+                        document.getElementById("node-input-VAPPfeatures").value = key2;
+                        if ( document.getElementById("node-input-VAPPfeatures").selectedIndex == -1 )
+                            x.add(option);
+
+                    }
+                }
+            }
+        });
+    }
+</script>
+<script>
+    function start() {
+        document.getElementById('node-input-VAPPhost').disabled = true;
+        document.getElementById('node-input-VAPPDiscoveryEndpoint').disabled = true;
+        document.getElementById('node-input-VAPPBrokerEndpoint').disabled = true;
+        document.getElementById('node-input-VAPPfeatures').disabled = true;
+        document.getElementById('node-input-VAPPOutput').disabled = true;
+        document.getElementById('node-input-start').disabled = true;
+        document.getElementById('node-input-stop').disabled = false;
+
+
+        datapoint = document.getElementById("node-input-VAPPfeatures").value
+
+        var xVAPPhost = document.getElementById("node-input-VAPPhost");
+        var xVAPPDiscoveryEndpoint = document.getElementById("node-input-VAPPDiscoveryEndpoint");
+        var xVAPPBrokerEndpoint = document.getElementById("node-input-VAPPBrokerEndpoint");
+        var xVAPPOutput = document.getElementById("node-input-VAPPOutput");
+        $.post('talent', { 'xVAPPhost': xVAPPhost.value, 'xVAPPDataPoint': datapoint, 'xVAPPBrokerEndpoint': xVAPPBrokerEndpoint.value ,'xVAPPOutput':xVAPPOutput.value}, function (data) {
+            console.log(data);
+        });
+    }
+</script>
+<script>
+    function stop() {
+        document.getElementById('node-input-VAPPhost').disabled = false;
+        document.getElementById('node-input-VAPPDiscoveryEndpoint').disabled = false;
+        document.getElementById('node-input-VAPPBrokerEndpoint').disabled = false;
+        document.getElementById('node-input-VAPPfeatures').disabled = false;
+        document.getElementById('node-input-VAPPOutput').disabled = false;
+        document.getElementById('node-input-start').disabled = false;
+        document.getElementById('node-input-stop').disabled = true;
+
+        datapoint = document.getElementById("node-input-VAPPfeatures").value
+
+        var xVAPPhost = document.getElementById("node-input-VAPPhost");
+        var xVAPPDiscoveryEndpoint = document.getElementById("node-input-VAPPDiscoveryEndpoint");
+        var xVAPPBrokerEndpoint = document.getElementById("node-input-VAPPBrokerEndpoint");
+
+        $.post('stop', { 'xVAPPhost': xVAPPhost.value, 'xVAPPDataPoint': datapoint, 'xVAPPBrokerEndpoint': xVAPPBrokerEndpoint.value }, function (data) {
+            console.log(data);
+        });
+    }
+</script>
+<script type="text/html" data-template-name="vapp-feat">
+    <div class="form-row">
+        <label for="node-input-VAPPhost"><i class="fa fa-tag"></i> Host Running VAPP </label>
+        <input type="text" id="node-input-VAPPhost" placeholder="127.0.0.1"><br/>
+        <label for="node-input-VAPPDiscoveryEndpoint"><i class="fa fa-tag"></i>Discovery port</label>
+        <input type="text" id="node-input-VAPPDiscoveryEndpoint" placeholder="8080"><br/>
+        <label for="node-input-VAPPBrokerEndpoint"><i class="fa fa-tag"></i> Host Running VAPP </label>
+        <input type="text" id="node-input-VAPPBrokerEndpoint" placeholder="1883"><br/>
+        <label for="node-input-VAPPfeatures"><i class="fa fa-tag"></i> Available Features </label>
+        <select id="node-input-VAPPfeatures">
+            <option value="noFeature"></option>
+        </select><br>
+        <label for="node-input-VAPPOutput"><i class="fa fa-tag"></i> VAPP output datapoint</label>
+        <input type="text" id="node-input-VAPPOutput" placeholder=""><br/>
+        <br><br>
+        <button type="button" class="red-ui-button" onclick="discover()">Refresh</button>
+        <button type="button" id="node-input-start" class="red-ui-button" onclick="start()">Start</button>
+        <button type="button" id="node-input-stop" class="red-ui-button" onclick="stop()">Stop</button>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="vapp-feat">
+    <p>A simple VPP nodes.</p>
+</script>
