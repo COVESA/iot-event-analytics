@@ -11,7 +11,7 @@
     "private": "true",
     "author": "Bosch.IO GmbH",
     "publisher": "boschio",
-    "repository": "https://<Github IoTea repo>",
+    "repository": "https://github.com/GENIVI/iot-event-analytics",
     "engines": {
         "vscode": "^1.51.0"
     },
@@ -69,7 +69,7 @@
             }
         ],
         "configuration": {
-            "title": "IoTea",
+            "title": "IoT Event Analytics",
             "properties": {
                 "iotea.platform.requirements": {
                     "scope": "machine",
@@ -137,7 +137,7 @@
                     "scope": "machine-overridable",
                     "type": "string",
                     "default": "",
-                    "description": "IoTea project root folder"
+                    "description": "IoT Event Analytics project root folder"
                 },
                 "iotea.project.docker.proxy": {
                     "scope": "machine-overridable",

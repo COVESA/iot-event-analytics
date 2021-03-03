@@ -79,7 +79,7 @@ class VssAdapter extends Talent {
         // Represents the actor, user, to whom the IoT instance belongs
         this.userId = null;
 
-        // Prevents events, from being sent to IoTea, if they
+        // Prevents events, from being sent to IoT Event Analytics, if they
         // originate by a publish and reappear in a subscription
         this.enableLoopPrevention = enableLoopPrevention;
 
@@ -136,9 +136,9 @@ class VssAdapter extends Talent {
         ]);
     }
 
-    // Receives event from IoTea Platform
+    // Receives event from IoT Event Analytics Platform
     async onEvent(ev, evtctx) {
-        // Make a VSS path out of IoTea paths
+        // Make a VSS path out of IoT Event Analytics paths
         const absKuksaVssPath = this.vssPathTranslator.ioteaTypeAndFeature2KuksaVssPath(ev.type, ev.feature);
 
         const rawValue = TalentInput.getRawValue(ev);
@@ -218,7 +218,7 @@ class VssAdapter extends Talent {
                     msg.instance = this.instanceId;
                     msg.userId =  this.userId;
 
-                    this.logger.debug(`Forwarding event to IoTea: ${JSON.stringify(msg)}...`);
+                    this.logger.debug(`Forwarding event to IoT Event Analytics Platform: ${JSON.stringify(msg)}...`);
 
                     await this.broker.publishJson(INGESTION_TOPIC, msg);
                 }, err => {

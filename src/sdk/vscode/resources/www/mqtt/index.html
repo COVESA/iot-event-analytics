@@ -43,22 +43,22 @@
           <div class="select-wrapper">
             <select id="messageType" onchange="setMessageType(this.value);">
               <option value="none">None</option>
-              <option value="ioteaevent" selected>IoTea Event</option>
+              <option value="ioteaevent" selected>IoT Event Analytics Event</option>
             </select>
           </div>
         </div>
       </div>
       <div class="row ioteaevent">
         <div class="group">
-          <h4>IoTea: MetadataAPI Endpoint Address</h4>
-          <p>Will be automatically loaded, if Message type is set to "IoTea Event". To manually update, click <a href="javascript:void(0);", onclick="updateIoteaTypeFeatures()">here</a></p>
+          <h4>IoT Event Analytics: MetadataAPI Endpoint Address</h4>
+          <p>Will be automatically loaded, if Message type is set to "IoT Event Analytics Event". To manually update, click <a href="javascript:void(0);", onclick="updateIoteaTypeFeatures()">here</a></p>
           <input type="text" placeholder="http://localhost:8080/metadata/api/v1/types" value="http://localhost:8080/metadata/api/v1/types" id="ioteaMetadataApiEndpoint" class="fullwidth"/>
         </div>
       </div>
       <div class="row ioteaevent">
         <div class="col1">
           <div class="group">
-            <h4>IoTea: Event Type</h4>
+            <h4>IoT Event Analytics: Event Type</h4>
             <div class="select-wrapper fullwidth">
               <select id="ioteaEventType" onchange="onIoTeaEventTypeChange(this.value); updateJsonMessage('type', this.value);"></select>
             </div>
@@ -66,7 +66,7 @@
         </div>
         <div class="col2">
           <div class="group">
-            <h4>IoTea: Event Feature</h4>
+            <h4>IoT Event Analytics: Event Feature</h4>
             <div class="select-wrapper fullwidth">
               <select id="ioteaEventFeature" onchange="onIoTeaEventFeatureChange(this.value);"></select>
             </div>
@@ -75,7 +75,7 @@
       </div>
       <div class="row ioteaevent">
         <div class="group">
-          <h4>IoTea: Event value</h4>
+          <h4>IoT Event Analytics: Event value</h4>
           <input type="number" step="1" class="fullwidth iotea-event-value value-number hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-number'), 10));" />
           <input type="range" min="1" max="100" value="50" class="value-range iotea-event-value hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-range'), 10));" />
           <div class="select-wrapper fullwidth iotea-event-value value-enum hidden">
@@ -97,7 +97,7 @@
       <div class="row ioteaevent">
         <div class="group">
           <div class="highlight">
-            The tuple <i>(subject, instance)</i> has to be unique for each virtual device, which sends events into the IoTea platform.<br />
+            The tuple <i>(subject, instance)</i> has to be unique for each virtual device, which sends events into the IoT Event Analytics platform.<br />
             If you want to simulate two different devices, belonging to the same <i>subject</i> i.e. to the same user (e.g. userId) be sure you change the <i>instance</i> (e.g. GUID) in the event, which should be sent.<br />
             Otherwise an already existing device will be overwritten for that subject and given rulesets may not apply.
         </div>

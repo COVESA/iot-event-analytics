@@ -40,7 +40,7 @@ const args = yargs
     })
     .option('vss-uom-input-path', {
         alias: 'u',
-        description: 'VSS unit to IoTea unit Lookup file',
+        description: 'VSS unit to IoT Event Analytics unit Lookup file',
         default: null
     })
     .option('types-input-path', {
@@ -99,7 +99,7 @@ readJson(vssInputPath)
 
         if (Object.prototype.hasOwnProperty.call(typesJson, vssSegment)) {
             if (!overwriteSegment) {
-                throw new Error(`Segment ${vssSegment} is already defined in input IoTea configuration ${typesInputPath}. To overwrite, call converter with option -f true`);
+                throw new Error(`Segment ${vssSegment} is already defined in input IoT Event Analytics configuration ${typesInputPath}. To overwrite, call converter with option -f true`);
             }
         }
 

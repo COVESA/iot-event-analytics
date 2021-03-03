@@ -34,11 +34,11 @@ let platformId = undefined;
 
 try {
     platformId = config.get('platformId');
-    platformLogger = new Logger(`IoTeaPlatform-${platformId}`);
+    platformLogger = new Logger(`IoT Event Analytics Platform-${platformId}`);
     platformLogger.info(`Local client installation ${platformId}`);
 }
 catch(err) {
-    platformLogger = new Logger(`IoTeaPlatform`);
+    platformLogger = new Logger(`IoT Event Analytics Platform`);
 }
 
 platformLogger.info(`Starting IoT Event Analytics Platform...`);

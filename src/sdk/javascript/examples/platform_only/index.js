@@ -48,7 +48,7 @@ cf.start(config.get('talentDiscoveryIntervalMs'), path.resolve(config.get('platf
         platformLogger.info(`${procs.length} child processes started`);
     })
     .catch(err => {
-        platformLogger.error('Failed to start IoTea Event Analytics Platform', null, err);
+        platformLogger.error('Failed to start IoT Event Analytics Platform', null, err);
     });
 
 function spawnIngestionChildProcess(count = 1) {

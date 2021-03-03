@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea C++ SDK
+# IoT Event Analytics C++ SDK
 
 To build the library, just create a build directory and configure/build with CMake.
 This will automatically fetch the required dependencies (i.e. the Paho MQTT client).

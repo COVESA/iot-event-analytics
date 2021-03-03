@@ -1,7 +1,6 @@
-# IoTea C++ SDK - Echo Example
+# IoT Event Analytics C++ SDK - Echo Example
 
 The echo example consists of multiple talents:
-
 
 ## echo_provider
 
@@ -19,9 +18,7 @@ Each time the echo function gets called, it increases an internal counter and pu
 
 Each time the echo function gets called, the uppercase converted message is published via this event.
 
-
 All features are dynamic, i.e. of default type and part of the default segment (`"000000"`).
-
 
 ## echo_consumer
 
@@ -29,10 +26,10 @@ Calls the `echo` function of the `echo_provider` with sending a string-based mes
 
 The message string must be injected publishing this message to the MQTT broker:
 
-    { "subject": "someuserid", "type": "default", "instance": "4711", "feature": "echo_consumer.messageString", "value": "Hello", "whenMs": 1626566400000 }
-
+```json
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "echo_consumer.messageString", "value": "Hello", "whenMs": 1626566400000 }
+```
 
 ## echo_observer
 
 Subscribes the events offered by the `echo_provider` and receives and logs respective notifications.
-

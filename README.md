@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoT Event Analytics - IoTea
+# IoT Event Analytics
 
 Bosch.IO GmbH
 under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
@@ -17,7 +17,7 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ## tldr - get it running - asap
 
-- Install the latest IoTea VSCode extension from _src/sdk/vscode/lib/*.vsix_
+- Install the latest IoT Event Analytics VSCode extension from _src/sdk/vscode/lib/*.vsix_
 - Use `Ctrl + Shift + P` to bring up the command palette and select _**Bosch IoT Event Analytics: Create new JavaScript Talent project**_ in an empty folder.
   - Follow the instructions to create a "ready to use" Talent project
 - Bring the command palette up again and run _**Bosch IoT Event Analytics: Start platform using docker-compose**_.<br>Select the generated _.env_ file in the folder, which contains your newly created talent project.
@@ -71,7 +71,7 @@ The platform will spin up together with Mosquitto MQTT brokers
 
 - Run `docker-compose -f docker-compose/docker-compose.platform.yml up`
 
-- __Important:__ If you want to specify an alternative configuration directory for the IoTea Platform and/or the MQTT Broker, you can create alternative configuration folders in a different directory<br>
+- __Important:__ If you want to specify an alternative configuration directory for the IoT Event Analytics Platform and/or the MQTT Broker, you can create alternative configuration folders in a different directory<br>
 Your configuration directories should look like this
 
   ```code

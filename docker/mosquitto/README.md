@@ -18,7 +18,7 @@
 
 ## Build
 
-- Clone the boschio.iotea project from [here](https://<Github IoTea repo>)
+- Clone the IoT Event Analytics repository from [here](https://github.com/GENIVI/iot-event-analytics)
 - Go folder, into which you cloned the project will be referred to as `<iotea project folder>`
 - Open the folder `<iotea project folder>/docker/mosquitto` in a terminal
 - `<version>` will reference the version of the base image in the Dockerfile (`Dockerfile.*64`)

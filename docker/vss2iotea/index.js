@@ -19,7 +19,7 @@ catch(err) {
     delete process.env.MQTT_TOPIC_NS;
 }
 
-let vss2ioteaLogger = new Logger(`Vss2IoTea`);
+let vss2ioteaLogger = new Logger(`Vss2IoTEventAnalytics`);
 
 const vssAdapter = new VssAdapter(
     config.get('mqtt.connectionString'),

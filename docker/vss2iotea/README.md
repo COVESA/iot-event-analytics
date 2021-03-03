@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea Vss2IoTea Adapter
+# Vss2IoTEventAnalytics Adapter
 
 ## Prerequisites
 
@@ -103,7 +103,7 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
 
 ## Build
 
-- Clone the boschio.iotea project from [here](https://<Github IoTea repo>)
+- Clone the boschio.iotea project from [here](https://github.com/GENIVI/iot-event-analytics)
 - Go into the folder, into which you cloned the project. This folder will be referred to as `<iotea project folder>`
 - Look into the _package.json_ file in the `<iotea project folder>` to retrieve the `<version>`
 

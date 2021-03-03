@@ -231,7 +231,7 @@ function updateIoteaTypeFeatures() {
 
             replaceOptionItems('#ioteaEventType', types);
             updateJsonMessage('type', type);
-            // Update IoTeaEventFeature
+            // Update IoT Event Analytics Feature
             onIoTeaEventTypeChange(type);
         });
 }

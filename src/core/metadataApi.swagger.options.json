@@ -2,12 +2,15 @@
     "swaggerDefinition": {
         "openapi": "3.0.0",
         "info": {
-            "title": "Metadata API",
+            "title": "IoT Event Analytics Metadata API",
             "description": "API which provides an interface for types- and features-discovery",
             "version": "1.0.0",
             "license": {
                 "name": "MPL-2.0",
                 "url": "https://www.mozilla.org/en-US/MPL/2.0"
+            },
+            "contact": {
+                "name": "Bosch.IO GmbH"
             }
         },
         "servers": [

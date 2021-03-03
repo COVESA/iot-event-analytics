@@ -24,11 +24,11 @@ let platformId = undefined;
 
 try {
     platformId = config.get('platformId');
-    pipelineLogger = new Logger(`IoTeaPipeline-${platformId}`);
+    pipelineLogger = new Logger(`IoT Event Analytics Pipeline-${platformId}`);
     pipelineLogger.info(`Local client installation ${platformId}`);
 }
 catch(err) {
-    pipelineLogger = new Logger(`IoTeaPipeline`);
+    pipelineLogger = new Logger(`IoT Event Analytics Pipeline`);
 }
 
 pipelineLogger.info(`Starting IoT Event Analytics Pipeline...`);

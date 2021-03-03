@@ -8,11 +8,11 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# Contributing to IoTea Event Analytics aka IoTea
+# Contributing to IoT Event Analytics
 
 First off, thanks for taking the time to contribute!
 
-The following is a set of guidelines for contributing to IoTea Event Analytics and its packages, which are hosted in the [Bosch.IO Analytics](https://<Github IoTea repo>) on GitHub. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
+The following is a set of guidelines for contributing to IoT Event Analytics and its packages, which are hosted in the [Bosch.IO Analytics](https://github.com/GENIVI/iot-event-analytics) on GitHub. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 ## Table Of Contents
 
@@ -34,19 +34,19 @@ The following is a set of guidelines for contributing to IoTea Event Analytics a
 
 ### Reporting Bugs
 
-- If you find anything, which does not work as expected, feel free to file a bug in our [Bugtracker](<Github IoTea repo>). Please be sure to describe in the ticket, what you expected, what the actual result was and the steps to reproduce the issue (in case it can be reproduced and it's no runtime related issue).
+- If you find anything, which does not work as expected, feel free to file a bug in our [Bugtracker](https://github.com/GENIVI/iot-event-analytics/issues). Please be sure to describe in the ticket, what you expected, what the actual result was and the steps to reproduce the issue (in case it can be reproduced and it's no runtime related issue).
 
 ### Suggesting Enhancements
 
 - If you are missing some functionality, your suggestion is highly welcome. Please feel free to file the suggestion in our Backlog. This is no guarantee, that we will implement it asap, but we will have a look at it and decide whether we have the capacity to add this feature in the future. The priority, in which features will be added is decided by our product owner<br>
-We won't implement anything which tailors IoTea to be an exact solution for a single problem, if that's the only purpose of your suggestion. Get in contact with our sales person, if you would like to start an assisted integration project.
+We won't implement anything which tailors IoT Event Analytics to be an exact solution for a single problem, if that's the only purpose of your suggestion. Get in contact with our sales person, if you would like to start an assisted integration project.
 
 ### Your first code contribution
 
 - Cool, you actually implemented something, which brings the platform to the next level. We highly appreciate collaborative work. Did you already went through our [Styleguides](#Styleguides) to make sure your contribution fits to the rest of the codebase?<br>
   You rebased your feature branch onto our develop-branch and it works with the latest commit? If yes, it's time for your pull request.
-- Push your branch in this repository [<Github IoTea repo>](<Github IoTea repo>)
-- Create one [here](<Github IoTea repo>)
+- Push your branch in this repository [https://github.com/GENIVI/iot-event-analytics](https://github.com/GENIVI/iot-event-analytics)
+- Create one [here](https://github.com/GENIVI/iot-event-analytics/pulls)
 
 ### Pull requests
 

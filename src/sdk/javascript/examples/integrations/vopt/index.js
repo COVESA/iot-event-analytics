@@ -11,9 +11,9 @@
 /**
  *
  * Description:
- * Starts the IoTea Platform together with two talents dealing with the data processing to calculate the optimal velocity.
+ * Starts the IoT Event Analytics Platform together with two talents dealing with the data processing to calculate the optimal velocity.
  * In addition to the Platform, a webserver is started on Port 8080, which serves the UI, which is able to send and receive (and react to)
- * messages from IoTea.
+ * messages from IoT Event Analytics.
  *
  */
 

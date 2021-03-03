@@ -17,7 +17,7 @@ This examples shows pub-sub and rpc handling via dapr_adapter.
 The publisher periodically sends two topics:
 
 - vehicle with speed and rpm as payload (which is mapped to the IoTEA features speed and rpm)
-- driver with name as payload (which is mapped to IoTea feature driver)
+- driver with name as payload (which is mapped to IoT Event Analytics feature driver)
 
 The subscriber-talent subscribes the IoTEA feature and prints them if received. When it receives the feature it also calls _dapr-echo_ which is provided by invoke_-_receiver. (RPC call not tested with invoke_receiver, implemented via mock!) If tests iotea rpc tests are enable (see README.md for dapr_adapter) then iotea_rpc_talent will be called.
 
