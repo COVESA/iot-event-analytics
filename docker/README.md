@@ -1,4 +1,4 @@
-# Building and exporting Docker images
+# Building and exporting Docker images behind a Proxy
 
 ## Prerequisites
 
