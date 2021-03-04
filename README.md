@@ -133,7 +133,7 @@ For further information how to start the platform using docker-compose see [here
 
 ## Run a talent as AWS Lambda function
 
-You have to provide a custom MQTT configuration as mentioned above to configure the certificate based authentication and the remote broker. You can see a preconfigured example [here](./src/sdk/javascript/examples/console/cloud/config/mosquitto/config.json)
+You have to provide a custom MQTT configuration as mentioned above to configure the certificate based authentication and the remote broker. You can see a preconfigured example [here](./src/sdk/javascript/examples/console/cloud/config/mosquitto/config.json). For further advice how to get a Talent running e.g. on AWS use this [Talent2Cloud converter guide](./src/tools/t2c) or look at the example [Cloud Console Output](./src/sdk/javascript/examples/console/cloud)
 
 ## Dependencies
 
