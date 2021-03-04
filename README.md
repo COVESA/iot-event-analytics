@@ -47,6 +47,14 @@ L- docs        Documentation
 ### NodeJS
 
 - Have NodeJS >=12.13.0 installed
+  - __>> Linux only <<__ To update old/missing NodeJS<br>
+
+    ```text
+    sudo apt install npm nodejs -y
+    sudo npm install -g n
+    sudo n latest
+    ```
+
 - Install all dependencies using yarn package manager
   - If yarn is not available on your system, install it using `npm install -g yarn`
   - Run `yarn` in the project root
@@ -65,12 +73,63 @@ L- docs        Documentation
 The recommended way of quickstarting the platform is to use docker-compose where available. If not installed, all components can be built and run manually using the given build instructions under _./docker/README.md_ and _./docker/*/README.md_
 For further information how to start the platform using docker-compose see [here](./docker-compose/README.md)
 
-## Run an example/your own Talent on your machine
+## Run an example/your own Talent on your machine (within the project)
 
 - Simply create your first python or NodeJS talent following the examples given in _src/sdk/(javascript|python|cpp)/examples_<br>
 - Start you talent by connecting it to `mqtt://localhost:1883` or a locally running remote talent by connecting it to `mqtt://localhost:1884`. (Has to match your port configuration for the MQTT Broker)<br>
 - There are examples, which start a platform instance by themselves. They only need an MQTT Broker running. To achieve this, simply run from within the _./docker-compose_ directory<br>
 `docker-compose -f docker-compose.mosquitto.yml up`
+
+## Run an example/your own Talent on your machine (Using the JavaScript SDK)
+
+- Create a new directory for your Talent
+- Copy `src/sdk/javascript/lib/boschio.iotea-<version>.tgz` into this directory
+- Run `npm init` to initialize your NodeJS project
+- Install the SDK by typing `yarn add boschio.iotea-<version>.tgz`
+  - If you have problems with the installation behind a proxy try the following:
+
+    ```text
+    npm config set proxy ${HTTP_PROXY}
+    npm config set https-proxy ${HTTPS_PROXY}
+    npm config set strict-ssl false -g
+    npm config set maxsockets 5 -g
+    ```
+
+- Create an _index.js_ file with the following contents
+
+  ```javascript
+  const iotea = require('boschio.iotea');
+
+  process.env.MQTT_TOPIC_NS = 'iotea/';
+  process.env.LOG_LEVEL = 'DEBUG';
+
+  class TestTalent extends iotea.Talent {
+    constructor(connectionString) {
+      super('my-test-talent', connectionString);
+    }
+
+    isRemote() {
+      return false;
+    }
+
+    getRules() {
+      return new iotea.AndRules([
+        new iotea.Rule(
+          new iotea.OpConstraint('anyfeature', iotea.OpConstraint.OPS.ISSET, null, 'anytype', VALUE_TYPE_RAW)
+        )
+      ]);
+    }
+
+    async onEvent(ev, evtctx) {
+      this.logger.info(`${JSON.stringify(iotea.TalentInput.getRawValue(ev))}`, evtctx);
+    }
+  }
+
+  new TestTalent('mqtt://localhost:1883').start();
+  ```
+
+- If you would like to connect your talent to the remote broker, just connect to port 1884 instead
+- Run `node index.js` to start the test talent.
 
 ## Run a talent as AWS Lambda function
 
