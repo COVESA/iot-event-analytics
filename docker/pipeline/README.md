@@ -18,14 +18,9 @@
 
 ## Build
 
-- Clone the boschio.iotea project from [here](https://github.com/GENIVI/iot-event-analytics)
-- Go into the folder, into which you cloned the project. This folder will be referred to as `<iotea project folder>`
-- Look into the _package.json_ file in the `<iotea project folder>` to retrieve the `<version>`
-
-### >> AMD64 target platform only <<
-
-- You can specify the following build arguments:
-  - _HTTP\_PROXY_ and _HTTPS\_PROXY_: Specify these variables if the internet is only reachable via a proxy. (optional)
+- Look into _../../package.json_ in the `<iotea project folder>` to retrieve the `<version>`
+- Open the folder `<iotea project folder>` in a terminal
+- __For further information how to build the images (especially, if you are working behind a proxy), please see [here](../README.md)__
 
 ### >> ARM64 target platform only <<
 

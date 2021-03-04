@@ -38,60 +38,12 @@ Adapt the configuration files as needed and update the `PLATFORM_CONFIG_DIR` and
 - _PLATFORM_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/platform_
 - _MQTT_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/mosquitto_
 
-__The paths within the _.env_ file need to be relative to the _docker-compose_ folder__
-
-### (Optional) Linux px proxy configuration
-
-If you are running behind a px-proxy on Linux (e.g. using [Bosch Open Source desktop](https://inside-docupedia.bosch.com/confluence/x/nRujEQ)) you need to ensure the binding between your docker network and proxy is configured.
-
-1.) __~/.px/config.ini:__ Ensure binding ___"binds = [...], \<docker network proxy\>___ (e.g. 172.17.0.1:3128) exists
-
-`[server]
-binds = 127.0.0.1:3128, 172.17.0.1:3128#`
-
-If not, add it and restart your proxy (e.g. via _osd-proxy-restart_ for osd)
-
-To check that the binding exists you can call for your proxy port (e.g. 3128):
-`netstat -ntlpn | grep -i 3128`
-
-Which should show the your docker-network proxy (e.g. 172.17.0.1:3128):
-`tcp       0     0 172.17.0.1:3128        0.0.0.0:*              LISTEN     12391/python3`
-
-2.) __~/.docker/config.json:__ Ensure _http(s)Proxys_ in your docker-network have the same port as your host proxy (e.g. [http://172.17.0.1:3128])
-
-```json
-{
- "proxies":
- {
-   "default":
-   {
-     "httpProxy": "http://172.17.0.1:3128",
-     "httpsProxy": "http://172.17.0.1:3128"
-   }
- }
-}
-```
-
-3.) __/etc/systemd/system/docker.service.d/http_proxy.conf__: Ensure that the http(s)_proxies are set
-
-```code
-[Service]
-Environment=HTTP_PROXY=http://localhost:3128/
-Environment=HTTPS_PROXY=http://localhost:3128/
-```
-
-Afterwards you have to restart your docker daemon:
-`sudo systemctl daemon-reload`
-`sudo systemctl restart docker`
-
-To check your env-variables for docker you can call:
-`sudo systemctl show --property=Environment docker`
+__The paths within the _.env_ file need to be relative to the _docker-compose_ folder or absolute paths__
 
 ## Setup
 
-- If you are behind a corporate proxy, update DOCKER_HTTP_PROXY and DOCKER_HTTPS_PROXY in the _.env_ file. __If NOT, remove these lines completly from the .env file__
-  - __>> Windows only: <<__ Use `docker.for.win.localhost` to refer to your computer i.e. _[http://docker.for.win.localhost:3128](http://docker.for.win.localhost:3128)_ assuming your proxy is running locally on Port 3128
-  - __>> Linux only: <<__ Use _[http://172.17.0.1:3128](http://172.17.0.1:3128)_ as proxy address
+- If you are behind a corporate proxy, update DOCKER_HTTP_PROXY and DOCKER_HTTPS_PROXY in the _.env_ file.
+  - __For further information how to configure and setup the Proxy, please see [here](../docker/README.md)__
 
 ## Build & Run (from within the _./docker-compose_ directory)
 
@@ -145,4 +97,15 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
 
 ## Hints
 
-If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port
+If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by addint these lines to the env file
+
+```text
+MQTT_PORT=1883
+MQTT_REMOTE_PORT=1884
+```
+
+Append the following line, if you would like to use another port for the IoT Event Analytics API
+
+```text
+API_PORT=8080
+```
