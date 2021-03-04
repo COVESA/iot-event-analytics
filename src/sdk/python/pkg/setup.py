@@ -22,7 +22,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/GENIVI/iot-event-analytics",
     packages=[
-        "iotea.core"
+        "iotea.core",
+        "iotea.core.util"
     ],
     install_requires=[
         "hbmqtt==0.9.6"
