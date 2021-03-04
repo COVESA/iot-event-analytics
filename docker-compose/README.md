@@ -25,20 +25,51 @@ This folder contains docker-compose configurations (*.yml) for mqtt and platform
     - Docker Engine v19.03.6
     - Compose 1.27.4
 
+## Use the example configuration
+
+Just continue with the _Build & Run (from within the ./docker-compose directory)_ section
+
 ## Setup custom configuration
 
-If you want to create a custom configuration, create a config folder at _\<YOUR CONFIG PATH\>_, and copy the following files/folders into it
+- If you want to create a custom configuration, create a config folder at _\<YOUR CONFIG PATH\>_, and copy the following files/folders into it
+  - _./mosquitto_
+  - _./platform_ (Only needs to be copied, if you want to use _docker-compose.platform.yml_)
+  - _./.env_
+- Your configuration directories should now look like this
 
-- ./_mosquitto_
-- ./_platform_ (Only needs to be copied, if you want to use _docker-compose.platform.yml_)
-- ./.env
+  ```code
+  .env                           Copy from docker-compose/.env
 
-Adapt the configuration files as needed and update the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` variable within the copied _.env_ file
+  <mosquitto configuration dir>  Copy from docker-compose/mosquitto
+  |- remote
+  |  L- config.json
+  L- config.json
 
-- _PLATFORM_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/platform_
-- _MQTT_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/mosquitto_
+  <platform configuration dir>   Copy from docker-compose/platform
+  |- channels
+  |  |- talent.channel.json
+  |  L- talent.schema.json
+  |- config.json
+  |- types.json
+  L- uom.json
+  ```
+
+- You can now adapt the _types.json_ document to fit your needs. Do not make any changes but the `loglevel` to the _config.json_ when you are using `docker_compose`
+- The _.env_ file should contain the following and the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` should be the absolute paths to _\<YOUR CONFIG PATH\>/platform_ and _\<YOUR CONFIG PATH\>/mosquitto_
+
+  ```code
+  DOCKER_HTTP_PROXY=http://docker.for.win.localhost:3128   (Proxy configuration)
+  DOCKER_HTTPS_PROXY=http://docker.for.win.localhost:3128  (Proxy configuration)
+  MOSQUITTO_CONFIG_DIR=                                    (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
+  MQTT_PORT=1883                                           (MQTT port for the local broker)
+  MQTT_REMOTE_PORT=1884                                    (MQTT port for the remote broker - is automatically bridged from the local broker)
+  PLATFORM_CONFIG_DIR=                                     (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
+  API_PORT=8080                                            (Port, which is used to expose the platform REST APIs)
+  ```
 
 __The paths within the _.env_ file need to be relative to the _docker-compose_ folder or absolute paths__
+
+Continue with the _Build & Run (from within the ./docker-compose directory with custom configuration)_
 
 ## Setup
 
@@ -56,7 +87,7 @@ Platform containers can be run with this command: \
 Mosquitto MQTT broker containers (local and local-remote) can be run and built with this command: \
 ```docker-compose -f docker-compose.mosquitto.yml up --build```
 
-## Build & Run (from within the _./docker-compose_ directory with custom environment configuration)
+## Build & Run (from within the _./docker-compose_ directory with custom configuration)
 
 ```docker-compose -f docker-compose.mosquitto.yml --env-file <YOUR CONFIG PATH>/.env up --build```
 
@@ -97,15 +128,4 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
 
 ## Hints
 
-If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by addint these lines to the env file
-
-```text
-MQTT_PORT=1883
-MQTT_REMOTE_PORT=1884
-```
-
-Append the following line, if you would like to use another port for the IoT Event Analytics API
-
-```text
-API_PORT=8080
-```
+If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by modifying `MQTT_PORT` in the _.env_ file
