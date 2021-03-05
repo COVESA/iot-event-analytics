@@ -12,7 +12,7 @@
 
 First off, thanks for taking the time to contribute!
 
-Any contribution is welcome, e.g. documentation, bug reports, feature requests, issues, blog posts, tutorials, feature implementaion, etc. You can contribute code or documentation through the stadard GitHub pull request model. For large contributions we do encourage you to file a ticket in the GitHub issue tracking system prior to any development to coordinate with the IoT Event Analytics developement deam early in the process. Coordinatin up front helps to avoid frustration later on.
+Any contribution is welcome, e.g. documentation, bug reports, feature requests, issues, blog posts, tutorials, feature implementation, etc. You can contribute code or documentation through the standard GitHub pull request model. For large contributions we do encourage you to file a ticket in the GitHub issue tracking system prior to any development to coordinate with the IoT Event Analytics development team early in the process. Coordination up front helps to avoid frustration later on.
 
 The following is a set of guidelines for contributing to IoT Event Analytics and its packages, which are hosted on GitHub [https://github.com/GENIVI/iot-event-analytics](https://github.com/GENIVI/iot-event-analytics). These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
@@ -36,7 +36,7 @@ The following is a set of guidelines for contributing to IoT Event Analytics and
 
 ### Reporting Bugs
 
-- If you find anything, which does not work as expected, feel free to file a bug in our [Bugtracker](https://github.com/GENIVI/iot-event-analytics/issues). Please be sure to describe in the ticket, what you expected, what the actual result was and the steps to reproduce the issue (in case it can be reproduced and it's no runtime related issue).
+- If you find anything, which does not work as expected, feel free to file a bug in our [Bug tracker](https://github.com/GENIVI/iot-event-analytics/issues). Please be sure to describe in the ticket, what you expected, what the actual result was and the steps to reproduce the issue (in case it can be reproduced, and it's no runtime related issue).
 
 ### Suggesting Enhancements
 
@@ -45,17 +45,18 @@ We won't implement anything which tailors IoT Event Analytics to be an exact sol
 
 ### Contribution requirements
 
-- Cool, you actually implemented something, which brings the platform to the next level. We highly appreciate collaborative work. Did you already went through our [Styleguides](#Styleguides) to make sure your contribution fits to the rest of the codebase?<br>
-  You rebased your feature branch onto our develop-branch and it works with the latest commit? If yes, it's time for your pull request.
-- Push your feature branch in this repository [https://github.com/GENIVI/iot-event-analytics](https://github.com/GENIVI/iot-event-analytics) and create a pull-request [here](https://github.com/GENIVI/iot-event-analytics/pulls)
-- __EVERY__ commit needs to be signed. By signing of your commits you certify that you can contribute code according to the rquiremtnts of the [GENIVI contirbution guidelines](https://www.genivi.org/contribute). Simply speaking you certify that you are the creator of the code or have the rights ot contribute under the MPL-2.0 license
+- Create a fork and contribute using feature branches
+- Cool, you already actually implemented something, which brings the platform to the next level. We highly appreciate collaborative work. Did you already go through our [Styleguides](#Styleguides) to make sure your contribution fits to the rest of the codebase?<br>
+  You rebased your feature branch onto our develop-branch, and it works with the latest commit? If yes, it's time for your pull request.
+- Create a pull-request [here](https://github.com/GENIVI/iot-event-analytics/pulls)
+- __EVERY__ commit in your pull request needs to be signed. By signing of your commits you certify that you can contribute code according to the requirements of the [GENIVI contribution guidelines](https://www.genivi.org/contribute). Simply speaking you certify that you are the creator of the code or have the rights to contribute under the MPL-2.0 license
   - If you have set your `user.name` and `user.email` git configs you can automatically sign the commit by running the git-commit command with the `-s` option. There may be multiple sign-offs if more than one developer was involved in authoring the contribution.
 
 ### Pull requests
 
 - Please always make sure, that your branch is properly rebased on the develop branch and that it does not have any unresolved conflicts
-- We chose pull requests as our point of interaction with all our contributers. We will review your changes and comment on that.
-- If we have somthing to improve before merge, we will comment your pull request.
+- We chose pull requests as our point of interaction with all our contributors. We will review your changes and comment on that.
+- If we have something to improve before merge, we will comment your pull request.
 - It will stay open, until it is ready to merge
 - Please be patient. We have many things to do and only work during common business hours in our Timezone (+01:00 GMT)
 
@@ -63,9 +64,9 @@ We won't implement anything which tailors IoT Event Analytics to be an exact sol
 
 ### Git commit messages
 
-- All commits within your pullrequest should contain, what you actually did. A developer should be able to roughly figure out, what you've done, when he reads through your message.
+- All commits within your pull request should contain, what you actually did. A developer should be able to roughly figure out, what you've done, when he reads through your message.
 - If you have a User-Story or a bug ticket, prepend this in front of the commit message.
-- Always write in present as if the "commit does something to the codebase" e.g. If I execute this commit it will "Define more features in the basic ioTea platform configuration"
+- Always write in present as if the "commit does something to the codebase" e.g. If I execute this commit it will "Define more features in the basic IoT Event Analytics platform configuration"
 - Avoid statements like for any commit:
   - Things done
   - Minor fixes
