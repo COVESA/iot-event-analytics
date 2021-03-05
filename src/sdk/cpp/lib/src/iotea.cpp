@@ -16,6 +16,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <algorithm>
 
 #include "schema.hpp"
 #include "util.hpp"
@@ -411,14 +412,16 @@ schema::rules_ptr Talent::GetRules() const {
         return nullptr;
     }
 
-    schema::rule_vec callee_rules;
-    for (auto& callee : callees_) {
-        callee_rules.push_back(std::make_shared<schema::Rule>(
-            std::make_shared<schema::RegexMatch>(callee + "-out", "^/" + channel_id_ + "/.*", schema::DEFAULT_TYPE,
-                                                 schema::ValueEncoding::RAW, "/$tsuffix")));
+    auto rules = schema::rule_vec{};
+    auto chan_expr = "^/" + channel_id_ + "/.*";
+
+    for (const auto& c : callees) {
+        auto r = std::make_shared<schema::Rule>(std::make_shared<schema::RegexMatch>(
+            c + "-out", chan_expr, schema::DEFAULT_TYPE, schema::ValueEncoding::RAW, "/$tsuffix"));
+        rules.push_back(r);
     }
 
-    return std::make_shared<schema::OrRules>(callee_rules);
+    return std::make_shared<schema::OrRules>(rules);
 }
 
 schema::Schema Talent::GetSchema() const {
@@ -568,17 +571,20 @@ schema::rules_ptr FunctionTalent::GetRules() const {
 }
 
 void FunctionTalent::HandleEvent(const Event& event) {
-    for (auto& pair : funcs_) {
-        if (GetInputName(pair.first) == event.GetFeature()) {
-            auto feature = GetOutputName(pair.first);
-            auto args = event.GetValue()["args"];
-            auto context = CallContext{GetId(), GetChannelId(), feature, event, call_handler_, publisher_};
-            pair.second(args, context);
-            return;
-        }
+    auto feature = event.GetFeature();
+
+    auto item = std::find_if(funcs_.begin(), funcs_.end(), [this, feature](const std::pair<std::string, func_ptr>& p) {
+        return GetInputName(p.first) == feature;
+    });
+
+    if (item == funcs_.end()) {
+        Talent::HandleEvent(event);
+        return;
     }
 
-    Talent::HandleEvent(event);
+    auto args = event.GetValue()["args"];
+    auto context = CallContext{static_cast<Talent&>(*this), publisher_, GetOutputName(item->first), event};
+    item->second(args, context);
 }
 
 std::string FunctionTalent::GetInputName(const std::string& feature) const { return GetId() + "." + feature + "-in"; }

@@ -36,16 +36,16 @@ TEST(Schema, StringType) {
         json want;
     } constant_tests[] {
         {
-            .value = "Hello World",
-            .want = json::parse(R"({"type": "string", "const": "Hello World"})"),
+            "Hello World",
+            json::parse(R"({"type": "string", "const": "Hello World"})")
         },
         {
-            .value = R"(["A", "JSON", "array"])",
-            .want = json::parse(R"({"type": "string", "const": "[\"A\", \"JSON\", \"array\"]"})"),
+            R"(["A", "JSON", "array"])",
+            json::parse(R"({"type": "string", "const": "[\"A\", \"JSON\", \"array\"]"})"),
         },
         {
-            .value = R"({"A": "valid", "JSON": "object"})",
-            .want = json::parse(R"({"type": "string", "const": "{\"A\": \"valid\", \"JSON\": \"object\"}"})"),
+            R"({"A": "valid", "JSON": "object"})",
+            json::parse(R"({"type": "string", "const": "{\"A\": \"valid\", \"JSON\": \"object\"}"})"),
         },
     };
 
@@ -63,28 +63,28 @@ TEST(Schema, StringType) {
         json want;
     } constraints_tests[] {
         {
-            .min_length = schema::Opt<unsigned int>{},
-            .max_length = schema::Opt<unsigned int>{},
-            .pattern = schema::Opt<std::string>{},
-            .want = json::parse(R"({"type": "string"})"),
+            schema::Opt<unsigned int>{},
+            schema::Opt<unsigned int>{},
+            schema::Opt<std::string>{},
+            json::parse(R"({"type": "string"})"),
         },
         {
-            .min_length = schema::Opt<unsigned int>{1},
-            .max_length = schema::Opt<unsigned int>{},
-            .pattern = schema::Opt<std::string>{},
-            .want = json::parse(R"({"type": "string", "min_length": 1})"),
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{},
+            schema::Opt<std::string>{},
+            json::parse(R"({"type": "string", "min_length": 1})"),
         },
         {
-            .min_length = schema::Opt<unsigned int>(1),
-            .max_length = schema::Opt<unsigned int>(2),
-            .pattern = schema::Opt<std::string>(),
-            .want = json::parse(R"({"type": "string", "min_length": 1, "max_length": 2})"),
+            schema::Opt<unsigned int>(1),
+            schema::Opt<unsigned int>(2),
+            schema::Opt<std::string>(),
+            json::parse(R"({"type": "string", "min_length": 1, "max_length": 2})"),
         },
         {
-            .min_length = schema::Opt<unsigned int>(1),
-            .max_length = schema::Opt<unsigned int>(2),
-            .pattern = schema::Opt<std::string>("a pattern"),
-            .want = json::parse(R"({"type": "string", "min_length": 1, "max_length": 2, "pattern": "a pattern"})"),
+            schema::Opt<unsigned int>(1),
+            schema::Opt<unsigned int>(2),
+            schema::Opt<std::string>("a pattern"),
+            json::parse(R"({"type": "string", "min_length": 1, "max_length": 2, "pattern": "a pattern"})"),
         }
     };
 
@@ -99,15 +99,16 @@ TEST(Schema, StringType) {
         json want;
     } enumeration_tests[] {
         {
-            .want = json::parse(R"({"type": "string", "enum": []})"),
+            {},
+            json::parse(R"({"type": "string", "enum": []})"),
         },
         {
-            .enumeration = {"alpha"},
-            .want = json::parse(R"({"type": "string", "enum": ["alpha"]})"),
+            {"alpha"},
+            json::parse(R"({"type": "string", "enum": ["alpha"]})"),
         },
         {
-            .enumeration = {"alpha", "beta", "gamma"},
-            .want = json::parse(R"({"type": "string", "enum": ["alpha", "beta", "gamma"]})"),
+            {"alpha", "beta", "gamma"},
+            json::parse(R"({"type": "string", "enum": ["alpha", "beta", "gamma"]})"),
         }
     };
 
@@ -130,70 +131,105 @@ TEST(Schema, ArrayType) {
     } tests[] {
         // ArrayType with "items"
         {
-            .items = {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
-            .want = json::parse(R"({"items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
+            {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
+            {},
+            {},
+            {},
+            {},
+            {},
+            json::parse(R"({"items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
         },
         {
-            .items = {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
-            .min_items = 1,
-            .want = json::parse(R"({"min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
+            {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
+            {},
+            schema::Opt<unsigned int>{1},
+            {},
+            {},
+            {},
+            json::parse(R"({"min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
         },
         {
-            .items = {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
-            .min_items = 1,
-            .max_items = 2,
-            .want = json::parse(R"({"max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
+            {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
+            {},
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            {},
+            {},
+            json::parse(R"({"max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
         },
         {
-            .items = {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
-            .min_items = 1,
-            .max_items = 2,
-            .unique_items = true,
-            .want = json::parse(R"({"unique_items": true, "max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
+            {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
+            {},
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            schema::Opt<bool>{true},
+            {},
+            json::parse(R"({"unique_items": true, "max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
         },
         {
-            .items = {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
-            .min_items = 1,
-            .max_items = 2,
-            .unique_items = true,
-            .additional_items = true,
-            .want = json::parse(R"({"additional_items": true, "unique_items": true, "max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
+            {std::make_shared<schema::StringType>("alpha"), std::make_shared<schema::StringType>("beta")},
+            {},
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            schema::Opt<bool>{true},
+            schema::Opt<bool>{true},
+            json::parse(R"({"additional_items": true, "unique_items": true, "max_items": 2, "min_items": 1, "items":[{"const":"alpha","type":"string"},{"const":"beta","type":"string"}],"type":"array"})"),
         },
 
         // ArrayType with "contains"
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .want = json::parse(R"({"contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            {},
+            {},
+            {},
+            {},
+            json::parse(R"({"contains":{"const":"alpha","type":"string"},"type":"array"})"),
         },
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .want = json::parse(R"({"contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            {},
+            {},
+            {},
+            {},
+            json::parse(R"({"contains":{"const":"alpha","type":"string"},"type":"array"})"),
         },
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .min_items = 1,
-            .want = json::parse(R"({"min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            schema::Opt<unsigned int>{1},
+            {},
+            {},
+            {},
+            json::parse(R"({"min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
         },
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .min_items = 1,
-            .max_items = 2,
-            .want = json::parse(R"({"max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            {},
+            {},
+            json::parse(R"({"max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
         },
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .min_items = 1,
-            .max_items = 2,
-            .unique_items = true,
-            .want = json::parse(R"({"unique_items": true, "max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            schema::Opt<bool>{true},
+            {},
+            json::parse(R"({"unique_items": true, "max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
         },
         {
-            .contains = std::make_shared<schema::StringType>("alpha"),
-            .min_items = 1,
-            .max_items = 2,
-            .unique_items = true,
-            .additional_items = true,
-            .want = json::parse(R"({"additional_items": true, "unique_items": true, "max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
+            {},
+            std::make_shared<schema::StringType>("alpha"),
+            schema::Opt<unsigned int>{1},
+            schema::Opt<unsigned int>{2},
+            schema::Opt<bool>{true},
+            schema::Opt<bool>{true},
+            json::parse(R"({"additional_items": true, "unique_items": true, "max_items": 2, "min_items": 1, "contains":{"const":"alpha","type":"string"},"type":"array"})"),
         }
     };
 
@@ -216,14 +252,14 @@ TEST(Schema, Property) {
         json want;
     } tests[] {
 		{
-			.name = "boolean_property",
-			.value = std::make_shared<schema::BooleanType>(),
-			.want = json::parse(R"({"boolean_property":{"type":"boolean"}})"),
+			"boolean_property",
+			std::make_shared<schema::BooleanType>(),
+			json::parse(R"({"boolean_property":{"type":"boolean"}})"),
 		},
 		{
-			.name = "number_property",
-			.value = std::make_shared<schema::NumberType>(),
-			.want = json::parse(R"({"number_property":{"type":"number"}})"),
+			"number_property",
+			std::make_shared<schema::NumberType>(),
+			json::parse(R"({"number_property":{"type":"number"}})"),
 		},
 	};
 
@@ -252,33 +288,36 @@ TEST(Schema, ObjectType) {
 		json want;
 	} tests[] {
 		{
-			.want = json::parse(R"({"additionalProperties":false,"properties":null,"type":"object"})"),
+            {},
+            {},
+            {},
+			json::parse(R"({"additionalProperties":false,"properties":null,"type":"object"})"),
 		},
 		{
-			.properties = {
+			{
 				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
 			},
-
-			.want = json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"type":"object"})"),
+            {},
+            {},
+			json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"type":"object"})"),
 		},
 		{
-			.properties = {
+			{
 				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
 			},
-			.required = {"boolean_property"},
-			.additional_properties = false,
-
-			.want = json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"required":["boolean_property"],"type":"object"})"),
+			{"boolean_property"},
+			false,
+			json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"required":["boolean_property"],"type":"object"})"),
 		},
 		{
-			.properties = {
+			{
 				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
 				{std::string{"number_property"}, std::make_shared<schema::NumberType>()}
 			},
-			.required = {"boolean_property", "number_property"},
-			.additional_properties = true,
+			{"boolean_property", "number_property"},
+			true,
 
-			.want = json::parse(R"({"additionalProperties":true,"properties":{"boolean_property":{"type":"boolean"},"number_property":{"type":"number"}},"required":["boolean_property","number_property"],"type":"object"})"),
+			json::parse(R"({"additionalProperties":true,"properties":{"boolean_property":{"type":"boolean"},"number_property":{"type":"number"}},"required":["boolean_property","number_property"],"type":"object"})"),
 		}
 	};
 
@@ -784,8 +823,7 @@ TEST(Schema, AndRules) {
 	auto r2 = std::make_shared<schema::Rule>(c2);
 	auto r3 = std::make_shared<schema::Rule>(c3);
 
-	auto have_vector = schema::AndRules{{r1, r2, r3}};
-	auto have_initializer_list = schema::AndRules{r1, r2, r3};
+	auto have = schema::AndRules{r1, r2, r3};
 
 	auto want = json::parse(R"(
 		{
@@ -823,8 +861,7 @@ TEST(Schema, AndRules) {
 	)");
 
 
-	ASSERT_EQ(have_vector.Json(), want);
-	ASSERT_EQ(have_initializer_list.Json(), want);
+	ASSERT_EQ(have.Json(), want);
 }
 
 TEST(Schema, OrRules) {
@@ -835,8 +872,7 @@ TEST(Schema, OrRules) {
 	auto r2 = std::make_shared<schema::Rule>(c2);
 	auto r3 = std::make_shared<schema::Rule>(c3);
 
-	auto have_vector = schema::OrRules{{r1, r2, r3}};
-	auto have_initializer_list = schema::OrRules{r1, r2, r3};
+	auto have = schema::OrRules{r1, r2, r3};
 
 	auto want = json::parse(R"(
 		{
@@ -874,6 +910,109 @@ TEST(Schema, OrRules) {
 	)");
 
 
-	ASSERT_EQ(have_vector.Json(), want);
-	ASSERT_EQ(have_initializer_list.Json(), want);
+	ASSERT_EQ(have.Json(), want);
+}
+
+TEST(Schema, OutputEncoding) {
+	struct {
+		schema::OutputEncoding::Type type;
+		json want;
+	} tests[] {
+		{
+			schema::OutputEncoding::Type::Number,
+			json::parse(R"({"encoder":null,"type":"number"})")
+		},
+		{
+			schema::OutputEncoding::Type::Boolean,
+			json::parse(R"({"encoder":null,"type":"boolean"})")
+		},
+		{
+			schema::OutputEncoding::Type::String,
+			json::parse(R"({"encoder":null,"type":"string"})")
+		},
+		{
+			schema::OutputEncoding::Type::Object,
+			json::parse(R"({"encoder":null,"type":"object"})")
+		},
+		{
+			schema::OutputEncoding::Type::Any,
+			json::parse(R"({"encoder":null,"type":"any"})")
+		},
+	};
+
+
+	for (const auto& t : tests) {
+		auto have = schema::OutputEncoding{t.type};
+
+		ASSERT_EQ(have.Json(), t.want);
+	}
+}
+
+TEST(Schema, Metadata) {
+	auto m1 = schema::Metadata{"metadata1"};
+	auto want1 = json::parse(R"({"description":"metadata1","encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+	auto m2 = schema::Metadata{"metadata2", "kilogram"};
+	auto want2 = json::parse(R"({"description":"metadata2","encoding":{"encoder":null,"type":"object"},"unit":"kilogram"})");
+
+	auto m3 = schema::Metadata{"metadata3", "kilogram", schema::OutputEncoding{schema::OutputEncoding::Type::Number}};
+	auto want3 = json::parse(R"({"description":"metadata3","encoding":{"encoder":null,"type":"number"},"unit":"kilogram"})");
+
+	ASSERT_EQ(m1.Json(), want1);
+	ASSERT_EQ(m2.Json(), want2);
+	ASSERT_EQ(m3.Json(), want3);
+}
+
+TEST(Schema, OutputFeature) {
+	auto have = schema::OutputFeature{"output_feature", schema::Metadata{"metadata"}};
+	auto want = json::parse(R"({"description":"metadata","encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+	ASSERT_EQ(have.Json(), want);
+}
+
+TEST(Schema, SkipCycleCheckType) {
+    struct {
+        schema::Opt<bool> skip;
+        schema::Opt<std::vector<std::string>> names;
+
+        json want;
+    } tests[] {
+        {
+            schema::Opt<bool>{},
+            schema::Opt<std::vector<std::string>>{},
+            json::parse(R"(false)"),
+        },
+        {
+            schema::Opt<bool>{false},
+            schema::Opt<std::vector<std::string>>{},
+            json::parse(R"(false)"),
+        },
+        {
+            schema::Opt<bool>{true},
+            schema::Opt<std::vector<std::string>>{},
+            json::parse(R"(true)"),
+        },
+        {
+            schema::Opt<bool>{},
+            schema::Opt<std::vector<std::string>>{std::vector<std::string>{"alpha"}},
+            json::parse(R"(["alpha"])"),
+        },
+        {
+            schema::Opt<bool>{},
+            schema::Opt<std::vector<std::string>>{std::vector<std::string>{"alpha", "beta", "gamma"}},
+            json::parse(R"(["alpha", "beta", "gamma"])"),
+        },
+    };
+
+    for (const auto& t : tests) {
+        schema::SkipCycleCheckType have;
+
+        if (t.skip) {
+            have = schema::SkipCycleCheckType(t.skip.Get());
+        } else if (t.names) {
+            have = schema::SkipCycleCheckType(t.names.Get());
+        }
+
+       ASSERT_EQ(have.Json(), t.want);
+    }
 }

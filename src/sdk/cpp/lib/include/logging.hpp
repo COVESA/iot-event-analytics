@@ -60,7 +60,7 @@ class LoggerFriend {
    public:
     ~LoggerFriend();
 
-    LoggerFriend& operator<<(std::ostream& (*f)(std::ostream&));
+    LoggerFriend& operator<<(const std::ostream& (*f)(std::ostream&));
 
     template <typename T>
     LoggerFriend& operator<<(const T& t) {

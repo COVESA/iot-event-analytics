@@ -46,6 +46,7 @@ add_library(iotea_sdk_cpp
 target_code_coverage(iotea_sdk_cpp)
 
 ## link binaries
+
 target_include_directories(iotea_sdk_cpp
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -71,6 +72,8 @@ target_compile_options(iotea_sdk_cpp PRIVATE -Wall -Wextra -pedantic -Werror)
 
 include(GoogleTest)
 if(BUILD_TESTING)
+    add_subdirectory(mocks)
+
     add_executable(testrunner
         tests/test_talent.cpp
         tests/test_schema.cpp
@@ -78,6 +81,7 @@ if(BUILD_TESTING)
 
     target_link_libraries(testrunner PRIVATE
         iotea_sdk_cpp
+        iotea_sdk_cpp_mocks
         gtest
         gtest_main
         pthread

@@ -50,8 +50,8 @@ class EventConsumer : public Talent {
     }
 
     schema::rules_ptr OnGetRules() const override {
-        return OrRules({AndRules({GreaterThan("temp", 2, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")}),
-                        OrRules({IsSet("dingdings", "blob")})});
+        return OrRules(AndRules(GreaterThan("temp", 3, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")),
+                        OrRules(IsSet("dingdings", "blob")));
     }
 };
 

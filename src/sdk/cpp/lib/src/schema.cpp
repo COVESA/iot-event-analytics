@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include "util.hpp"
 
@@ -219,13 +220,7 @@ json ObjectType::Json() const {
     j["properties"] = props;
 
     if (!required_.empty()) {
-        auto array = json::array();
-
-        for (auto& r : required_) {
-            array.push_back(r);
-        }
-
-        j["required"] = array;
+        j["required"] = required_;
     }
 
     j["additionalProperties"] = additional_properties_;
@@ -384,8 +379,6 @@ json Rule::Json() const { return constraint_.get() == nullptr ? json(nullptr) : 
 Rules::Rules(const std::string& type)
     : type_{type} {}
 
-void Rules::Add(rule_ptr rule) { rules_.push_back(rule); }
-
 void Rules::Add(const rule_vec& rules) { rules_.insert(rules_.end(), rules.begin(), rules.end()); }
 
 void Rules::Add(const rules_ptr rules) { rules_.insert(rules_.end(), rules->rules_.begin(), rules->rules_.end()); }
@@ -393,47 +386,13 @@ void Rules::Add(const rules_ptr rules) { rules_.insert(rules_.end(), rules->rule
 json Rules::Json() const {
     auto array = json::array();
 
-    for (auto r : rules_) {
-        array.push_back(r->Json());
-    }
+    std::transform(rules_.begin(), rules_.end(), std::back_inserter(array), [](rule_ptr r) { return r->Json(); });
 
     return json{
         {"type", json(type_)},
         {"rules", array},
     };
 }
-
-//
-// AndRules
-//
-AndRules::AndRules(const rule_vec& rules)
-    : Rules("and") {
-    Add(rules);
-}
-
-AndRules::AndRules(rules_ptr rules)
-    : Rules("and") {
-    Add(rules);
-}
-
-AndRules::AndRules(std::initializer_list<rule_ptr> rules)
-    : AndRules(rule_vec(rules.begin(), rules.end())) {}
-
-//
-// OrRules
-//
-OrRules::OrRules(const rule_vec& rules)
-    : Rules("or") {
-    Add(rules);
-}
-
-OrRules::OrRules(rules_ptr rules)
-    : Rules("or") {
-    Add(rules);
-}
-
-OrRules::OrRules(std::initializer_list<rule_ptr> rules)
-    : OrRules(rule_vec(rules.begin(), rules.end())) {}
 
 //
 // OutputEncoder
@@ -502,22 +461,13 @@ SkipCycleCheckType::SkipCycleCheckType()
 SkipCycleCheckType::SkipCycleCheckType(bool skip)
     : skip_{skip} {}
 
-SkipCycleCheckType::SkipCycleCheckType(const std::vector<std::string>& names)
-    : names_{names} {}
-
 json SkipCycleCheckType::Json() const {
     if (skip_) {
         return json(skip_.Get());
     }
 
     if (names_) {
-        auto array = json::array();
-
-        for (auto& n : names_.Get()) {
-            array.push_back(json(n));
-        }
-
-        return array;
+        return json(names_.Get());
     }
 
     // There should never be a situation where neither skip_ nor names_ holds a value
@@ -740,14 +690,6 @@ value_ptr Event::GetValue() const { return value_; }
 std::string Event::GetReturnTopic() const { return return_topic_; }
 
 }  // namespace schema
-
-schema::rules_ptr OrRules(std::initializer_list<schema::rule_ptr> rules) {
-    return std::make_shared<schema::OrRules>(rules);
-}
-
-schema::rules_ptr AndRules(std::initializer_list<schema::rule_ptr> rules) {
-    return std::make_shared<schema::AndRules>(rules);
-}
 
 schema::rule_ptr IsSet(const std::string& feature, const std::string& type_selector,
                        const schema::ValueEncoding value_encoding, const std::string& path,

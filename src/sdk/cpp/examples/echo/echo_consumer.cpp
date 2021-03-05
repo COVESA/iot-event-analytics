@@ -26,7 +26,7 @@ class EchoConsumer : public Talent {
     } echo_provider;
 
    public:
-    EchoConsumer(std::shared_ptr<Publisher> publisher)
+    explicit EchoConsumer(std::shared_ptr<Publisher> publisher)
         : Talent(TALENT_NAME, publisher) {
         AddOutput(PROVIDED_FEATURE_NAME, schema::Metadata("Message to be forwarded to echo provider", "ONE",
                                                           schema::OutputEncoding(schema::OutputEncoding::Type::String)));
@@ -35,7 +35,7 @@ class EchoConsumer : public Talent {
     }
 
     schema::rules_ptr OnGetRules() const override {
-        return OrRules({IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME)});
+        return OrRules(IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME));
     }
 
     void OnEvent(const Event& event, EventContext context) override {
