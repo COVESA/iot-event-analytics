@@ -104,7 +104,7 @@ module.exports = class InstanceManager {
             instance = this.getInstance(subject, instanceId);
         }
         catch(err) {
-            instance = new Instance(type, instanceId);
+            instance = new Instance(type, instanceId, this.logger);
 
             if (!Object.prototype.hasOwnProperty.call(this.subjects, subject)) {
                 this.subjects[subject] = {};
