@@ -140,14 +140,7 @@ module.exports = class Encoding {
         switch(metaFeature.encoding.encoder) {
             case ENCODING_ENCODER_THROUGH: {
                 // Through is just a shorthand for minmax encoding in the range between 0 and 1
-                // The value will be automatically clamped to 0 and 1 if incoming values exceed this range
-
-                Object.assign(metaFeature.encoding, {
-                    min: 0,
-                    max: 1
-                });
-
-                encodedValue = this.__encode_minmax(rawValue, metaFeature, feature);
+                encodedValue = this.__vanilla_encode_minmax(rawValue, 0, 1);
                 break;
             }
             case ENCODING_ENCODER_MINMAX: {
@@ -176,19 +169,7 @@ module.exports = class Encoding {
     }
 
     __encode_minmax(value, metaFeature) {
-        if (!Number.isFinite(value)) {
-            throw new Error(`Expected number value, received ${typeof value}`);
-        }
-
-        const min = metaFeature.encoding.min;
-        const max = metaFeature.encoding.max;
-
-        if (value < min || value > max) {
-            throw new Error(`Value ${value} not within range [${min}..${max}]`);
-        }
-
-        // Clamp and scale between 0..1
-        return Math.max(0, Math.min(1, (value - min) / (max - min)));
+        return this.__vanilla_encode_minmax(value, metaFeature.encoding.min, metaFeature.encoding.max);
     }
 
     __encode_delta(value, metaFeature, feature) {
@@ -200,7 +181,11 @@ module.exports = class Encoding {
             return 0;
         }
 
-        return value - feature.raw;
+        return this.__vanilla_encode_minmax(
+            value - feature.raw,                // delta
+            metaFeature.encoding.min || 0,      // min deviation
+            metaFeature.encoding.max            // max deviation
+        );
     }
 
     __encode_category(value, metaFeature) {
@@ -246,5 +231,22 @@ module.exports = class Encoding {
         }
 
         throw new Error(`No categorical encoder found for given value type ${metaFeature.encoding.type}`);
+    }
+
+    __vanilla_encode_minmax(value, min, max) {
+        if (!Number.isFinite(value)) {
+            throw new Error(`Expected number value, received ${typeof value}`);
+        }
+
+        if (max - min === 0) {
+            throw new Error(`Minimum and maximum need to define a range and must not be equal.`);
+        }
+
+        if (value < min || value > max) {
+            throw new Error(`Value ${value} not within range [${min}..${max}]`);
+        }
+
+        // Clamp and scale between 0..1
+        return Math.max(0, Math.min(1, (value - min) / (max - min)));
     }
 };
