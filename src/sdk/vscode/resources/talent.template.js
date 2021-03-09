@@ -29,7 +29,7 @@ class MyTalent extends Talent {
     }
 
     async onEvent(ev, evtctx) {
-        this.logger.info(`${JSON.stringify(ev.$feature.raw.value)}`, evtctx);
+        this.logger.info(`${JSON.stringify(ev.value)}`, evtctx);
     }
 }
 

@@ -18,14 +18,14 @@
 
 ## Settings
 
-- Go to _File_ > _Preferences_ > _Settings_ and type _IoTea_
-  - Modify API endpoint by clicking on _Edit in settings.json_ (default: http://localhost:8080/metadata/api/v1)
+- Go to _File_ > _Preferences_ > _Settings_ and type _iotea_
 
 ## Talent
 
 ### Create
 
-- `Strg + Shift + p` > _Bosch IoTea Event Analytics: Create new JavaScript Talent_
+- `Strg + Shift + p` > _Bosch IoT Event Analytics: Create new JavaScript Talent class_
+- `Strg + Shift + p` > _Bosch IoT Event Analytics: Create new JavaScript Talent project_
 
 ### Code
 
@@ -35,3 +35,16 @@
 - `iotea.rule.or` + `Strg + Space` > Create new Or Rule
 - `iotea.rule.op` + `Strg + Space` > Create a new Rule with an Operation Constraint
 - `iotea.rule.change` + `Strg + Space` > Create a new Rule with a Change Constraint
+
+## IoT Event Analytics Platform
+
+### Controls
+
+- `Strg + Shift + p` > _Bosch IoT Event Analytics: Start platform using docker-compose_
+- `Strg + Shift + p` > _Bosch IoT Event Analytics: Stop platform using docker-compose_
+
+## Tools
+
+### MQTT
+
+- `Strg + Shift + p` > _Bosch IoT Event Analytics: Publish an MQTT message_

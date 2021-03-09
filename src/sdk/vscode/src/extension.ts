@@ -21,7 +21,8 @@ import {
     getIoTeaRootDir,
     getAndUpdateDockerProxy
 } from './util';
-import { fileURLToPath } from 'url';
+
+import { MqttWebView } from './mqttWebView';
 
 const IOTEA_PLATFORM_TERMINAL_NAME = 'IoT Event Analytics Platform';
 const START_IOTEA_PLATFORM_COMMAND = 'iotea.startIoTeaPlatform';
@@ -180,6 +181,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('iotea.publishMqttMessage', async () => {
+        MqttWebView.loadOnce(context.extensionPath, await chooseAndUpdateIoTeaProjectDir());
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand(START_IOTEA_PLATFORM_COMMAND, async (envFile: string | undefined) => {
         const ioteaProjectRootDir: any = getIoTeaRootDir();
 
@@ -217,7 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
             .then(async (uris: vscode.Uri[] | undefined) => {
                 // Get and verify the Talent Project root directory
                 if (uris === undefined) {
-                    throw new Error('No Talent project folder selected');
+                    throw new Error('No talent project folder selected');
                 }
 
                 const talentProjectRootDir = uris[0].fsPath;
@@ -359,10 +364,8 @@ async function chooseComposeEnvFile(): Promise<string> {
     });
 
     if (selectedEnvFile === undefined) {
-        return Promise.reject(new Error('No env file given'));
+        return Promise.reject(new Error('No .env file selected'));
     }
 
     return selectedEnvFile[0].fsPath;
 }
-
-

@@ -47,11 +47,11 @@ export async function chooseAndUpdateIoTeaProjectDir(): Promise<string> {
             canSelectMany: false,
             canSelectFolders: true,
             canSelectFiles: false,
-            title: 'Choose an empty folder for your talent project'
+            title: 'Choose the IoT Event Analytics project folder'
         });
 
         if (ioteaProjectRootDirUris === undefined) {
-            throw new Error('No IoTea project folder selected');
+            throw new Error('No IoT Event Analytics project folder selected');
         }
 
         ioteaProjectRootDir = ioteaProjectRootDirUris[0].fsPath;

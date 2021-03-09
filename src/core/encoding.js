@@ -75,6 +75,12 @@ module.exports = class Encoding {
                 ev.type
             );
 
+            if (ev.$feature === null) {
+                // Feature could not be set instance. Do not publish it to encoding
+                this.logger.debug(`Could not set ${ev.type}.${ev.feature} at ${ev.whenMs} to value ${ev.value} for instance ${ev.instance} of type ${ev.type} belonging to ${ev.subject}`, evtctx);
+                return;
+            }
+
             this.logger.verbose(`Forwarding event to routing stage ${JSON.stringify(ev)}`, evtctx);
 
             await this.broker.publishJson(ROUTING_TOPIC, ev);
