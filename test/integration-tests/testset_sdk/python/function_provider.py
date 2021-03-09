@@ -9,15 +9,12 @@
 ##############################################################################
 
 import asyncio
-import json
-import os
 import logging
- 
+
 from iotea.core.talent_func import FunctionTalent
 from iotea.core.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 
 class FunctionProvider(FunctionTalent):
@@ -27,6 +24,7 @@ class FunctionProvider(FunctionTalent):
         # Register Functions
         self.register_function('echo', self.echo)
 
+    # pylint: disable=invalid-name,unused-argument
     async def echo(self, value, ev, evctx):
         self.logger.debug('Echo called')
         return value
@@ -36,6 +34,7 @@ async def main():
     function_provider = FunctionProvider('mqtt://localhost:1883')
     await function_provider.start()
 
-LOOP = asyncio.get_event_loop()
-LOOP.run_until_complete(main())
-LOOP.close()
+if __name__ == '__main__':
+    LOOP = asyncio.get_event_loop()
+    LOOP.run_until_complete(main())
+    LOOP.close()

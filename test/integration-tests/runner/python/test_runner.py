@@ -9,28 +9,23 @@
 ##############################################################################
 
 import asyncio
-import json
-import os
 import logging
-import sys
 
-# TODO: create 
-sys.path.append(os.path.abspath('../../../../src/sdk/python/pkg/iotea/core'))
-from talent_test import TestRunnerTalent
-
+from iotea.core.talent_test import TestRunnerTalent
 from iotea.core.logger import Logger
+
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 class TestRunner(TestRunnerTalent):
     def __init__(self, connection_string):
         super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js', 'testSet-sdk-cpp'], connection_string)
-        
+
 async def main():
     testrunner = TestRunner('mqtt://localhost:1883')
     await testrunner.start()
 
-LOOP = asyncio.get_event_loop()
-LOOP.run_until_complete(main())
-LOOP.close()
+if __name__ == '__main__':
+    LOOP = asyncio.get_event_loop()
+    LOOP.run_until_complete(main())
+    LOOP.close()

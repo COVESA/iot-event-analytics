@@ -9,17 +9,13 @@
 ##############################################################################
 
 import asyncio
-import json
-import os
 import logging
-import sys
 
 from iotea.core.talent_test import TestSetTalent
 from iotea.core.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 class TestSetSDK(TestSetTalent):
     def __init__(self, connection_string):
@@ -35,82 +31,94 @@ class TestSetSDK(TestSetTalent):
 
         # Test lists/arrays via echo
         self.register_test('echoEmptyList', [], self.test_echo_empty_list, 2000)
-        self.register_test('echoIntegerList', [ 1, 2, 3 ], self.test_echo_integer_list, 2000)
+        self.register_test('echoIntegerList', [1, 2, 3], self.test_echo_integer_list, 2000)
         self.register_test('echoMixedList', [1, 'Hello World', 3.21], self.test_echo_mixed_list, 2000)
         self.register_test('echoDeepList', [1, [2, [3, [4, [5]]]]], self.test_echo_deep_list, 2000)
 
         self.talent_dependencies.add_talent('function-provider-py')
 
     def callees(self):
-        return [ 'function-provider-py.echo' ]
+        return ['function-provider-py.echo']
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_string(self, ev, evctx):
-        result = await self.call('function-provider-py', 'echo', [ 'Hello World' ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+        result = await self.call('function-provider-py', 'echo',
+                                 ['Hello World'],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_boolean(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ True ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [True],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
-    
+
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_integer(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ 123 ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [123],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_double(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ 123.456 ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [123.456],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_empty_list(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ [] ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [[]],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_integer_list(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ [1, 2, 3] ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [[1, 2, 3]],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_mixed_list(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ [1, 'Hello World', 3.21] ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [[1, 'Hello World', 3.21]],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
 
+    # pylint: disable=invalid-name,unused-argument
     async def test_echo_deep_list(self, ev, evctx):
         result = await self.call('function-provider-py', 'echo',
-                                [ [1, [2, [3, [4, [5]]]]] ],
-                                ev['subject'],
-                                ev['returnTopic'],
-                                500)
+                                 [[1, [2, [3, [4, [5]]]]]],
+                                 ev['subject'],
+                                 ev['returnTopic'],
+                                 500)
         return result
+
 
 async def main():
     talent = TestSetSDK('mqtt://localhost:1883')
     await talent.start()
 
-LOOP = asyncio.get_event_loop()
-LOOP.run_until_complete(main())
-LOOP.close()
+
+if __name__ == '__main__':
+    LOOP = asyncio.get_event_loop()
+    LOOP.run_until_complete(main())
+    LOOP.close()
