@@ -46,6 +46,7 @@ class TalentDependencies {
     constructor() {
         this.talentDependencies = new Map();
     }
+
     addTalent(talentId) {
         this.talentDependencies.set(talentId, false);
     }
@@ -73,16 +74,8 @@ class TalentDependencies {
     }
 
     checkAll() {
-        let notConnectedArray = new Array();
-        let result = true;
-        for (const [key, value] of this.talentDependencies.entries()) {
-            if (value == false) {
-                result = false;
-                notConnectedArray.push(key);
-            }
-        }
-
-        return { 'result': result , 'notConnected': notConnectedArray };
+        // Return the names of all unmet dependencies
+        return Array.from(this.talentDependencies).filter(e => !e[1]).map(e => e[0]);
     }
 }
 
@@ -128,8 +121,7 @@ class TestRunnerTalent extends Talent {
 
             // Add talent id to dependency
             this.talentDependencies.addTalent(testSetTalentId);
-            }
-        );
+        });
 
         this.skipCycleCheck(true);
     }
@@ -164,13 +156,13 @@ class TestRunnerTalent extends Talent {
             return false;
         }
 
-
         try {
             this.logger.info(`Prepare ${testSetName}`);
             var prepared = await this.call(testSetName, PREPARE_TEST_SET_METHOD_NAME, [], ev.subject, ev.returnTopic, 2000);
 
             if (!prepared) {
-                throw 'Result of prepare was false';
+                this.logger.error(`Could not prepare ${testSetName} (Result of prepare was false)`);
+                return false;
             }
 
         } catch (e) {
@@ -191,24 +183,23 @@ class TestRunnerTalent extends Talent {
                 let testResult = await this.call(testSetName, 'runTest', [ test.name ], ev.subject, ev.returnTopic, test.timeout);
 
                 if (testResult.actual == TEST_ERROR) {
-                    throw 'TEST_ERROR returned'
+                    this.logger.info('- Result: NOT OK (TEST_ERROR returned)');
+                    result = false;
+                    continue;
                 }
 
                 this.logger.debug(`- Actual: ${JSON.stringify(testResult.actual)}`);
-                
+
                 // TODO can optimise the use of stringify by doing once
                 if (JSON.stringify(test.expectedValue) == JSON.stringify(testResult.actual)) {
                     this.logger.info(`- Result: OK (${testResult.duration}ms)`);
-                    continue;
                 } else {
                     this.logger.info(` - Result: NOT OK (${JSON.stringify(test.expectedValue)}!=${JSON.stringify(testResult.actual)})`);
                     result = false;
-                    continue;
                 }
             } catch (e) {
                 this.logger.info(`- Result: NOT OK (${e})`);
                 result = false;
-                continue;
             }
         }
 
@@ -231,15 +222,16 @@ class TestRunnerTalent extends Talent {
     }
 
     async onEvent(ev, evtctx) {
-        let dependenciesState = this.talentDependencies.checkAll();
+        let unmetDependencies = this.talentDependencies.checkAll();
 
-        if (dependenciesState.result == true) {
-            this.logger.info('Start Integration Tests');
-            let result = await this.runTestSets(ev);
-            this.logger.info(`Overall test result is ${result}`);
-        } else {
-            this.logger.error(`Can't start tests because of not connected TestSetTalent(s): ${dependenciesState.notConnected}`);
+        if (unmetDependencies.length > 0) {
+            this.logger.error(`Can't start tests because of not connected TestSetTalent(s): ${unmetDependencies}`);
+            return;
         }
+
+        this.logger.info('Start Integration Tests');
+        let result = await this.runTestSets(ev);
+        this.logger.info(`Overall test result is ${result}`);
     }
 }
 
@@ -271,25 +263,24 @@ class TestSetTalent extends FunctionTalent {
 
     getTestSetInfo(ev, evtctx) {
         return {
-            "name" : this.testSetInfo.name,
-            "tests" : this.testSetInfo.getTestList()
+            'name' : this.testSetInfo.name,
+            'tests' : this.testSetInfo.getTestList()
         }
     }
 
     async runTest(testName, ev, evtctx) {
         this.logger.info(`Run Test ${testName}`);
-        if (this.testSetInfo.testMap.has(testName)) {
 
-            let start = Date.now();
-            let actual = await this.testSetInfo.testMap.get(testName).func(ev, evtctx);
-            let duration = Date.now() - start;
-
-            return new TestResult(testName, actual, duration);
-
-        } else {
+        if (!this.testSetInfo.testMap.has(testName)) {
             this.logger.error(`Test ${testName} has not been registered`);
             return new TestResult(testName, TEST_ERROR, -1);
         }
+
+        let start = Date.now();
+        let actual = await this.testSetInfo.testMap.get(testName).func(ev, evtctx);
+        let duration = Date.now() - start;
+
+        return new TestResult(testName, actual, duration);
     }
 
     /*
@@ -298,16 +289,15 @@ class TestSetTalent extends FunctionTalent {
      * for your test cases
      */
     async prepare(ev, evtctx) {
-        let dependenciesState = this.talentDependencies.checkAll();
+        let unmetDependencies = this.talentDependencies.checkAll();
 
-        if (dependenciesState.result == true) {
-            this.logger.debug('All talent dependencies resolved');
-            return true;
-
-        } else {
-            this.logger.error(`Prepare test set failed because not connected TestSetTalent(s): ${dependenciesState.notConnected}`);
+        if (unmetDependencies.length > 0) {
+            this.logger.error(`Prepare test set failed because not connected TestSetTalent(s): ${unmetDependencies}`);
             return false;
         }
+
+        this.logger.debug('All talent dependencies resolved');
+        return true;
     }
 }
 
