@@ -132,6 +132,11 @@ textarea:focus {
     right: 10px;
 }
 
+.highlight {
+    padding: 10px;
+    border: 1px solid var(--vscode-inputValidation-warningBorder);
+}
+
 select>option {
     background: var(--vscode-settings-dropdownBackground);
 }
@@ -139,6 +144,42 @@ select>option {
 input[type="button"] {
     border-radius: 2px;
     padding: 5px 16px;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    background: var(--vscode-settings-textInputBackground);
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    width: 100%;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: var(--vscode-settings-textInputForeground);
+    border-radius: 10px;
+    box-shadow: -10010px 0 0 10000px var(--vscode-settings-textInputForeground);
+    cursor: pointer;
+    height: 20px;
+    margin-top: -5px;
+    width: 20px;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+    background: var(--vscode-focusBorder);
+    box-shadow: -10010px 0 0 10000px var(--vscode-focusBorder);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background: var(--vscode-settings-textInputBackground);
+    border-radius: 10px;
+    cursor: pointer;
+    height: 10px;
 }
 
 .hidden {

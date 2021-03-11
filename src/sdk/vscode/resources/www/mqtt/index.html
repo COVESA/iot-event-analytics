@@ -68,9 +68,21 @@
           <div class="group">
             <h4>IoTea: Event Feature</h4>
             <div class="select-wrapper fullwidth">
-              <select id="ioteaEventFeature" onchange="updateJsonMessage('feature', this.value);"></select>
+              <select id="ioteaEventFeature" onchange="onIoTeaEventFeatureChange(this.value);"></select>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="row ioteaevent">
+        <div class="group">
+          <h4>IoTea: Event value</h4>
+          <input type="number" step="1" class="fullwidth iotea-event-value value-number hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-number'), 10));" />
+          <input type="range" min="1" max="100" value="50" class="value-range iotea-event-value hidden" onchange="onIoTeaEventValueUpdate(parseInt(getValue('.value-range'), 10));" />
+          <div class="select-wrapper fullwidth iotea-event-value value-enum hidden">
+            <select class="value-enum-select" onchange="onIoTeaEventValueUpdate(ioteaValueSelectValues[getValue('.value-enum-select')]);"></select>
+          </div>
+          <input type="text" class="fullwidth iotea-event-value value-string hidden" onchange="onIoTeaEventValueUpdate(getValue('.value-string'));"/>
+          <textarea class="fullwidth iotea-event-value value-object hidden" rows="10" onchange="onIoTeaEventValueUpdate(getValue('.value-object'), true);"></textarea>
         </div>
       </div>
       <div class="row ioteaevent">
@@ -80,6 +92,15 @@
             <div class="checkmark-container"></div>
             <label for="text">Use current timestamp</label>
           </div>
+        </div>
+      </div>
+      <div class="row ioteaevent">
+        <div class="group">
+          <div class="highlight">
+            The tuple <i>(subject, instance)</i> has to be unique for each virtual device, which sends events into the IoTea platform.<br />
+            If you want to simulate two different devices, belonging to the same <i>subject</i> i.e. to the same user (e.g. userId) be sure you change the <i>instance</i> (e.g. GUID) in the event, which should be sent.<br />
+            Otherwise an already existing device will be overwritten for that subject and given rulesets may not apply.
+        </div>
         </div>
       </div>
       <div class="row">

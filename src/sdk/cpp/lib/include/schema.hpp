@@ -49,8 +49,6 @@ enum class ConstraintType { SCHEMA = 0, CHANGE = 1, NELSON = 2 };
 
 enum class ValueEncoding { RAW, ENCODED };
 
-enum class OpType { ISSET, EQUALS, NEQUALS, LESS_THAN, LESS_THAN_EQUAL, GREATER_THAN, GREATER_THAN_EQUAL, REGEX };
-
 enum class MsgType {
     MSG_OK = 1,
     MSG_DISCOVER = 2,
@@ -379,11 +377,46 @@ class RegexMatch : public OpConstraint {
 
 class ChangeConstraint : public Constraint {
    public:
-    explicit ChangeConstraint(const std::string& feature, const std::string& type_selector = DEFAULT_TYPE,
+    ChangeConstraint(const std::string& feature, const std::string& type_selector = DEFAULT_TYPE,
                               const ValueEncoding value_encoding = ValueEncoding::ENCODED,
                               const std::string& path = Constraint::PATH_IDENTITY,
                               const std::string& instance_filter = Constraint::ALL_INSTANCE_FILTERS,
                               const bool limit_feature_selection = true);
+};
+
+class TimeseriesConstraint : public Constraint {
+   public:
+    TimeseriesConstraint(const std::string& feature, const ConstraintType constraint_type, std::shared_ptr<SchemaEntity> value,
+                         const std::string& type_selector = DEFAULT_TYPE,
+                         const ValueEncoding value_encoding = ValueEncoding::ENCODED,
+                         const std::string& path = Constraint::PATH_IDENTITY,
+                         const std::string& instance_filter = Constraint::ALL_INSTANCE_FILTERS,
+                         const bool limit_feature_selection = true);
+};
+
+class NelsonConstraint : public TimeseriesConstraint {
+   public:
+    enum class Type {
+        OUT3_SE = 0,
+        OUT2_SE = 1,
+        OUT1_SE = 2,
+        BIAS = 3,
+        TREND = 4,
+        ALTER = 5,
+        LOW_DEV = 6,
+        HIGH_DEV = 7
+    };
+
+   private:
+    const Type value_;
+
+   public:
+    NelsonConstraint(const std::string& feature, Type value,
+                         const std::string& type_selector = DEFAULT_TYPE,
+                         const std::string& instance_filter = Constraint::ALL_INSTANCE_FILTERS,
+                         const bool limit_feature_selection = true);
+
+    json Json() const override;
 };
 
 class Rule : public SchemaEntity {
@@ -690,6 +723,38 @@ schema::rule_ptr Change(const std::string& feature, const std::string& type_sele
                        const std::string& path = schema::Constraint::PATH_IDENTITY,
                        const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
                        const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonAlter(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonTrend(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonBias(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonHighDev(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonLowDev(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonOut1Se(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonOut2Se(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
+
+schema::rule_ptr NelsonOut3Se(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
+                             const std::string& instance_filter = schema::Constraint::ALL_INSTANCE_FILTERS,
+                             const bool limit_feature_selection = true);
 
 }  // namespace core
 }  // namespace iotea
