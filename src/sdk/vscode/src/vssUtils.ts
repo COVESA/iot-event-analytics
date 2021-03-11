@@ -12,7 +12,11 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Terminal } from './terminal';
-import { chooseAndUpdateIoTeaProjectDir } from './util';
+import {
+    chooseAndUpdateIoTeaProjectDir,
+    getPythonCmd,
+    getPipModule
+} from './util';
 
 export class VssUtils {
     private static YES_OPTION = 'yes';
@@ -339,12 +343,12 @@ export class VssUtils {
         }
 
         // Install all python dependencies
-        await t.executeCommand('python', [ '-m', 'pip', 'install ', '-r', 'requirements.txt', '--user' ], absJwtPath, (message: string) => {
+        await t.executeCommand(getPythonCmd(), [ '-m', getPipModule(), 'install ', '-r', 'requirements.txt', '--user' ], absJwtPath, (message: string) => {
             this.reportProgress(message);
         });
 
         // Create JWT token
-        await t.executeCommand('python', [ 'createToken.py', jwtInputFile ], absJwtPath, (message: string) => {
+        await t.executeCommand(getPythonCmd(), [ 'createToken.py', jwtInputFile ], absJwtPath, (message: string) => {
             this.reportProgress(message);
         });
 
@@ -372,11 +376,11 @@ export class VssUtils {
         const absVssToolsPath = path.resolve(absVssRepositoryPath, 'vss-tools');
 
         // Install all python dependencies
-        await t.executeCommand('python', [ '-m', 'pip', 'install ', '-r', 'requirements.txt', '--user' ], absVssToolsPath, (message: string) => {
+        await t.executeCommand(getPythonCmd(), [ '-m', getPipModule(), 'install ', '-r', 'requirements.txt', '--user' ], absVssToolsPath, (message: string) => {
             this.reportProgress(message);
         });
 
-        await t.executeCommand('python', [ 'vspec2json.py', '-i', `Vehicle:vehicle.uuid`, '../spec/VehicleSignalSpecification.vspec', 'vss.json' ], absVssToolsPath, (message: string) => {
+        await t.executeCommand(getPythonCmd(), [ 'vspec2json.py', '-i', `Vehicle:vehicle.uuid`, '../spec/VehicleSignalSpecification.vspec', 'vss.json' ], absVssToolsPath, (message: string) => {
             this.reportProgress(message);
         });
 

@@ -43,7 +43,7 @@ export async function getAndUpdateDockerProxy(): Promise<string> {
 
     dockerProxy = (dockerProxy || '').trim();
 
-    await vscode.workspace.getConfiguration('iotea').update('project.docker.proxy', dockerProxy);
+    await vscode.workspace.getConfiguration('iotea').update('project.docker.proxy', dockerProxy, true);
 
     return dockerProxy;
 }
@@ -77,6 +77,86 @@ export function getIoTeaRootDir(): string {
     return (vscode.workspace.getConfiguration('iotea').get<string>('project.root.dir') as string).trim();
 }
 
+export function getDockerComposeCmd(): string {
+    return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.docker-compose') as string).trim();
+}
+
+export function getDockerSock(): string {
+    return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.docker-sock') as string).trim();
+}
+
+export function getPythonCmd(): string {
+    return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.python') as string).trim();
+}
+
+export function getPipModule(): string {
+    return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.pip') as string).trim();
+}
+
+export function updateJsonFileAt(absJsonPath: string, updatePaths: any): void {
+    const json = JSON.parse(fs.readFileSync(absJsonPath, { encoding: 'utf8' }));
+    updateJsonAt(json, updatePaths);
+    fs.writeFileSync(absJsonPath, JSON.stringify(json, null, 4), { encoding: 'utf-8'});
+}
+
+function updateJsonAt(json: any, updatePaths: any) {
+    for (let path in updatePaths) {
+        let objLayer = json;
+
+        path.split('.').forEach((pathPart: string, idx: number, pathParts: string[]) => {
+            // Check if pathParts have a number attached to them to specify an array accessor
+            const match: string[] | null = pathPart.match(/([^\[]+)(?:\[([0-9])+\])?/);
+
+            if (match === null) {
+                throw new Error(`Invalid path specified ${path}`);
+            }
+
+            pathPart = match[1];
+            const arrayIndex = match[2];
+
+            if (!Object.prototype.hasOwnProperty.call(objLayer, pathPart)) {
+                if (arrayIndex === undefined) {
+                    // Create new object
+                    objLayer[pathPart] = {};
+                } else {
+                    // Create new array
+                    objLayer[pathPart] = new Array().fill(undefined, 0, parseInt(arrayIndex, 10));
+                }
+            }
+
+            if (arrayIndex !== undefined) {
+                const parsedArrayIndex = parseInt(arrayIndex, 10);
+
+                if (!Array.isArray(objLayer[pathPart])) {
+                    throw new Error('An array should be accessed on a non-array value');
+                }
+
+                if (idx === pathParts.length - 1) {
+                    objLayer[pathPart][parsedArrayIndex] = updatePaths[path];
+                    return;
+                }
+
+                if (objLayer[pathPart][parsedArrayIndex] === undefined) {
+                    objLayer[pathPart][parsedArrayIndex] = {};
+                }
+
+                objLayer = objLayer[pathPart][parsedArrayIndex];
+
+                return;
+            }
+
+            if (idx === pathParts.length - 1) {
+                objLayer[pathPart] = updatePaths[path];
+                return;
+            }
+
+            objLayer = objLayer[pathPart];
+        });
+    }
+
+    return json;
+}
+
 function setIoTeaRootDir(ioteaProjectRootDir: string): Thenable<void> {
-    return vscode.workspace.getConfiguration('iotea').update('project.root.dir', ioteaProjectRootDir);
+    return vscode.workspace.getConfiguration('iotea').update('project.root.dir', ioteaProjectRootDir, true);
 }

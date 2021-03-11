@@ -11,7 +11,7 @@
 const { spawn } = require('child_process');
 
 export class Terminal {
-    async executeCommand(cmd: string, args: string[], cwd: string, onStdOut = (msg: string) => {}): Promise<string> {
+    async executeCommand(cmd: string, args: string[], cwd: string, onStdOut = (msg: string) => {}, env: object = {}): Promise<string> {
         if (cmd.toLowerCase() === 'python') {
             try {
                 // Check for Anaconda installation
@@ -27,7 +27,8 @@ export class Terminal {
         return new Promise((resolve, reject) => {
             const proc = spawn(cmd, args, {
                 cwd,
-                shell: true
+                shell: true,
+                env: { ...process.env, ...env }
             });
 
             let stdout = '';
