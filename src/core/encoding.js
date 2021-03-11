@@ -80,9 +80,15 @@ module.exports = class Encoding {
                 this.logger.debug(`Could not set ${ev.type}.${ev.feature} at ${ev.whenMs} to value ${ev.value} for instance ${ev.instance} of type ${ev.type} belonging to ${ev.subject}`, evtctx);
                 return;
             }
+        }
+        catch(err) {
+            // Encoding issues should only be logged on debug level
+            this.logger.debug(err.message, evtctx);
+            return;
+        }
 
+        try {
             this.logger.verbose(`Forwarding event to routing stage ${JSON.stringify(ev)}`, evtctx);
-
             await this.broker.publishJson(ROUTING_TOPIC, ev);
         }
         catch(err) {
@@ -128,9 +134,9 @@ module.exports = class Encoding {
                 // The value will be automatically clamped to 0 and 1 if incoming values exceed this range
 
                 Object.assign(metaFeature.encoding, {
-                        min: 0,
-                        max: 1
-                    });
+                    min: 0,
+                    max: 1
+                });
 
                 encodedValue = this.__encode_minmax(rawValue, metaFeature, feature);
                 break;
@@ -167,6 +173,11 @@ module.exports = class Encoding {
 
         const min = metaFeature.encoding.min;
         const max = metaFeature.encoding.max;
+
+        if (value < min || value > max) {
+            throw new Error(`Value ${value} not within range [${min}..${max}]`);
+        }
+
         // Clamp and scale between 0..1
         return Math.max(0, Math.min(1, (value - min) / (max - min)));
     }

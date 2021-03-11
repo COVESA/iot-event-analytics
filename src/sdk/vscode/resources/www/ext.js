@@ -4,7 +4,7 @@ async function httpGetJson(url) {
     return fetch(url, { method: 'GET' }).then(response => response.json());
 }
 
-async function replaceOptionItems(selector, items, getDisplayName = i => i, getValue = i => i) {
+async function replaceOptionItems(selector, items, getDisplayName = i => i, getValue = i => i, onListItemElem = (itemElem, item) => {}) {
     const listElem = document.querySelector(selector);
 
     if (listElem === null) {
@@ -24,6 +24,9 @@ async function replaceOptionItems(selector, items, getDisplayName = i => i, getV
         }
 
         itemElem.innerHTML = getDisplayName(item) || '';
+
+        onListItemElem(itemElem, item);
+
         listElem.appendChild(itemElem);
     }
 }

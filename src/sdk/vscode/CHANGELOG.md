@@ -12,6 +12,11 @@
 
 ## [Unreleased]
 
+- 0.6.1 [2021-02-10]
+  - Rename talent.demo.js to index.js to match package.json
+  - Autoselect type and feature on IoT Event Analytics Message type
+  - Add commands to start/stop Mosquitto broker instances (To run examples, which only need an MQTT Broker)
+
 - 0.6.0 [2021-02-10]
   - Add MQTT Publisher to VSCode Extension
 

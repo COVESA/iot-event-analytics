@@ -6,7 +6,7 @@
     "categories": [
         "Snippets"
     ],
-    "version": "0.6.0",
+    "version": "0.6.1",
     "license": "MPL-2.0",
     "private": "true",
     "author": "Bosch.IO GmbH",
@@ -36,6 +36,14 @@
             {
                 "command": "iotea.stopIoTeaPlatform",
                 "title": "Bosch IoT Event Analytics: Stop platform using docker-compose"
+            },
+            {
+                "command": "iotea.startMosquittoBroker",
+                "title": "Bosch IoT Event Analytics: Start mosquitto MQTT Broker using docker-compose"
+            },
+            {
+                "command": "iotea.stopMosquittoBroker",
+                "title": "Bosch IoT Event Analytics: Stop mosquitto MQTT Broker using docker-compose"
             },
             {
                 "command": "iotea.publishMqttMessage",

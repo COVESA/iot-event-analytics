@@ -148,7 +148,6 @@ class TimeseriesPatternConstraint extends TimeseriesConstraint {
             return lastNode.vi + lastNode.length === values.length;
         }
         catch(err) {
-            console.log(err);
             return false;
         }
     }

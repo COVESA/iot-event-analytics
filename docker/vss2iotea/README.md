@@ -20,7 +20,7 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
 
 ### Install KUKSA.VAL
 
-- Open https://kuksaval.northeurope.cloudapp.azure.com/job/kuksaval-upstream/job/master in your browser
+- Open [https://kuksaval.northeurope.cloudapp.azure.com/job/kuksaval-upstream/job/master](https://kuksaval.northeurope.cloudapp.azure.com/job/kuksaval-upstream/job/master) in your browser
 
 ### >> ARM64 target platform only <<
 
@@ -46,7 +46,12 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
   ```
 
 - Directory contents
-  - Build GENIVI Reference JSON model _vss.json_ from vspec as described [https://github.com/GENIVI/vehicle_signal_specification/tree/master](https://github.com/GENIVI/vehicle_signal_specification/tree/master) using the provided vss-tools
+  - Build GENIVI Reference JSON model _vss.json_ from vspec as described [https://github.com/GENIVI/vehicle_signal_specification](https://github.com/GENIVI/vehicle_signal_specification/tree/master) using the provided vss-tools
+    - Clone the repository into _vehicle\_signal\_specification_
+    - Open _vehicle\_signal\_specification/vss-tools_
+    - Install all Python dependencies by running `pip install -r requirements.txt --user`
+    - Run `python vspec2json.py -i Vehicle:vehicle.uuid ../spec/VehicleSignalSpecification.vspec vss.json`
+    - Copy _vss.json_ into your directory
   - The contents of the _certs_ folder can be downloaded from:
     - [jwt.key.pub](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/jwt/jwt.key.pub)
     - [Server.key](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/Server.key)
