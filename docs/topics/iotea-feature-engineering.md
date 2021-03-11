@@ -8,13 +8,13 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea Feature Engineering
+# IoT Event Analytics Feature Engineering
 
-80% of the [Machine Learning](./machine-learning.md) work is typically spend for data sourcing and feature engineering. IoTea does the work for you.
+80% of the [Machine Learning](./machine-learning.md) work is typically spend for data sourcing and feature engineering. IoT Event Analytics does the work for you.
 
 ## The ingestion
 
-Due to the fact that IoTea internally has a harmonized event representation an __E__ xtract-__T__ ransform-__L__ oad (ETL) flow is prerequisite, for transforming and validating the given data. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the VSS adapter](..\..\src\tools\vss).
+Due to the fact that IoT Event Analytics internally has a harmonized event representation an __E__ xtract-__T__ ransform-__L__ oad (ETL) flow is prerequisite, for transforming and validating the given data. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the VSS adapter](..\..\src\tools\vss).
 
 ## The encoding
 
@@ -31,7 +31,7 @@ The respective config file is the __types.json__. For example compare the [VAPP 
 
 ## Feature selection
 
-Data points are the subject of events (aka messages). Within IoTea an event looks like the following
+Data points are the subject of events (aka messages). Within IoT Event Analytics an event looks like the following
 
 ```code
 { "subject": "<VIN>", "type": "Vehicle", "instance": "4711", "feature": "powertrain$speed", "value": 8, "whenMs": 1626566400000 }

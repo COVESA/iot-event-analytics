@@ -20,7 +20,7 @@ setup(
     description="Core library for Talent development",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="<Github IoTea repo>",
+    url="https://github.com/GENIVI/iot-event-analytics",
     packages=[
         "iotea.core"
     ],

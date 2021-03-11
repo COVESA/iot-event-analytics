@@ -90,9 +90,7 @@ module.exports = class Ingestion {
 
                     this.logger.verbose(`Forwarding event to encoding stage ${JSON.stringify(ev)}`, evtctx);
 
-                    await this.broker.publishJson(ENCODING_TOPIC, ev, {
-                        qos: 1
-                    });
+                    await this.broker.publishJson(ENCODING_TOPIC, ev);
                 }
                 catch(err) {
                     // - Metadata could not be found for the processed Event --> skip event

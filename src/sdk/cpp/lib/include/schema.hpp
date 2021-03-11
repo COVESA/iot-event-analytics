@@ -63,10 +63,17 @@ class Opt {
     T value_;
 
    public:
-    Opt() noexcept;
-    explicit Opt(const T& value) noexcept;
-    explicit operator bool() const noexcept;
-    T Get() const;
+    Opt() noexcept
+        : is_set_(false)
+        , value_{T()} {}
+
+    Opt(const T& value) noexcept
+        : is_set_{true}
+        , value_{value} {}
+
+    operator bool() const noexcept { return is_set_; }
+
+    T Get() const { return value_; }
 };
 
 #define defbool Opt<bool>()
@@ -307,7 +314,7 @@ class LessThanOrEqualTo : public OpConstraint {
                       const std::string& path = Constraint::PATH_IDENTITY,
                       const std::string& instance_filter = Constraint::ALL_INSTANCE_FILTERS,
                       const bool limit_feature_selection = true)
-        : OpConstraint{feature, value, type_selector, value_encoding, path, instance_filter, limit_feature_selection}
+        : OpConstraint{feature, nullptr, type_selector, value_encoding, path, instance_filter, limit_feature_selection}
         , value_{value} {}
 
     json Json() const override {

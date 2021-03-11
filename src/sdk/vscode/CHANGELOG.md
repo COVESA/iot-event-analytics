@@ -26,7 +26,7 @@
       - git _any version_
       - python _version_
       - pip _any version_
-      - IoTea Project root folder _validation_
+      - IoT Event Analytics Project root folder _validation_
   - Remove talent class creation command
   - Remove all types definitions to devDependencies to reduce extension size to ~130kB
 
@@ -51,4 +51,4 @@
 
 - 0.5.0
   - Add One-Click Talent project creation using JavaScript SDK
-  - Add IoTea platform controls
+  - Add IoIoT Event AnalyticsTea platform controls

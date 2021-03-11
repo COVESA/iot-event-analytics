@@ -9,7 +9,7 @@
 ##############################################################################
 
 '''
-IoTea Anomaly Detection
+IoT Event Analytics Anomaly Detection
 
 '''
 import copy
@@ -99,7 +99,7 @@ class MultivariateSeriesProbabilisticGaussianProcess(IoTeaAnomalyDetection):
             with open(self.name, 'rb') as f:
                 model = pickle.load(f)
         else:
-            # IoTea normalizes the space between 0..1
+            # IoT Event Analytics normalizes the space between 0..1
             rbf = ConstantKernel(1.0) * RBF(length_scale=1.0)
 
             model = GaussianProcessRegressor(kernel=rbf, alpha=self.noise**2)
@@ -162,7 +162,7 @@ class BinningMultivariateSeriesProbabilisticGaussianProcess(IoTeaAnomalyDetectio
             self.learner[i].learn( np.array(_xtmp).reshape(-1, 1)  , np.array(_ytmp).reshape(-1, 1) )
 
     def predict(self, Features):
-        # IoTea normalizes the space between 0..1
+        # IoT Event Analytics normalizes the space between 0..1
         space = np.arange(-1, 1, 0.05).reshape(-1, 1)
         position = np.argmax(space > Features)
         _binlenght = int(len(space)/ self.bins)
@@ -170,7 +170,7 @@ class BinningMultivariateSeriesProbabilisticGaussianProcess(IoTeaAnomalyDetectio
         return self.learner[_binnumber].predict(Features)
 
     def checkAnomaly(self, Features, Targets=None):
-        # IoTea normalizes the space between 0..1
+        # IoT Event Analytics normalizes the space between 0..1
         space = np.arange(-1, 1, 0.05).reshape(-1, 1)
         position = np.argmax(space > Features)
         _binlenght = int(len(space)/ self.bins)

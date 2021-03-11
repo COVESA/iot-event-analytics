@@ -96,7 +96,7 @@ module.exports = function (RED) {
 
             await talent.broker.publish('iotea/ingestion/events', JSON.stringify(event));
 
-            console.log('Published event successfully to IoTea', event);
+            console.log('Published event successfully to IoT Event Analytics Platform', event);
         });
     }
 

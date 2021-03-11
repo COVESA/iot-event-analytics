@@ -11,7 +11,7 @@
 /**
  *
  * Description:
- * Starts the IoTea Platform to demonstrate the Map-Reduce capabilities.
+ * Starts the IoT Event Analytics Platform to demonstrate the Map-Reduce capabilities.
  *
  */
 

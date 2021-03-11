@@ -10,7 +10,7 @@
 
 # Machine learning
 
-The foundation of the machine learning approaches is the given matrix/ tensor encoding of IoTea. For further details compare the [feature engineering part](./iotea-feature-engineering.md)
+The foundation of the machine learning approaches is the given matrix/ tensor encoding of IoT Event Analytics. For further details compare the [feature engineering part](./iotea-feature-engineering.md)
 
 With a given matrix it is quite easy to determine the identity. Identity is one core pillar of machine learning, because it help to determine the distance and due to that do respective optimization steps (loss or gain based).
 
@@ -30,7 +30,7 @@ In addition to the identity arithmetical operations help to easily applied domai
 
 ### Connectivity
 
-Besides the identity and arithmetic specific distance functions could be activated on __feature__ level. For each feature a separate neural networks (NN) is learned. The NN topology is (pre-) determined by IoTea. This feature e.g. helps to solve __feature__ connectivity issues; also compare the following [article](https://sakhawathsumit.github.io/sumit.log/2018/07/21/drawbacks-of-convolutional-neural-networks.html)
+Besides the identity and arithmetic specific distance functions could be activated on __feature__ level. For each feature a separate neural networks (NN) is learned. The NN topology is (pre-) determined by IoT Event Analytics. This feature e.g. helps to solve __feature__ connectivity issues; also compare the following [article](https://sakhawathsumit.github.io/sumit.log/2018/07/21/drawbacks-of-convolutional-neural-networks.html)
 
 ## Event sourcing
 
@@ -39,11 +39,11 @@ Often event processing struggle with sourcing multiple events into a consistent 
 - Multiple events describing an natural person e.g. event no. 1 containing the given name, event no 2. containing the family name, etc.
 - Multiple CAN signals events representing one message e.g. in case of *J1939*, *ISO-TP*
 
-IoTea offers event sourcing out of the box. Just select required __feature__ out of the event/ message history.
+IoT Event Analytics offers event sourcing out of the box. Just select required __feature__ out of the event/ message history.
 
 ## Probability distribution
 
-Besides the standard as well as learned distances, (probability) distributions help to make the identity less noise prone. For doing so, IoTea out of the box supports to learn __subject__ and __type__ based VAE(GAN)s. VAEs encode the given input as distributions instead of simple points. This support to ensure continuity and completeness of the latent __subject__ space. Continuity (two close points in the latent space should not give two completely different contents once decoded) and completeness (for a chosen distribution, a point sampled from the latent space should give “meaningful” content once decoded). GANs could be optionally applied if less training data is available.
+Besides the standard as well as learned distances, (probability) distributions help to make the identity less noise prone. For doing so, IoT Event Analytics out of the box supports to learn __subject__ and __type__ based VAE(GAN)s. VAEs encode the given input as distributions instead of simple points. This support to ensure continuity and completeness of the latent __subject__ space. Continuity (two close points in the latent space should not give two completely different contents once decoded) and completeness (for a chosen distribution, a point sampled from the latent space should give “meaningful” content once decoded). GANs could be optionally applied if less training data is available.
 
 ![Image](./assets/probabilityDistribution.png)
 

@@ -154,5 +154,5 @@ mathFunctions1.start()
     .then(() => rou.start())
     .then(() => instanceManager.start())
     .catch(err => {
-        platformLogger.error('Failed to start IoTea Event Analytics Platform', null, err);
+        platformLogger.error('Failed to start IoT Event Analytics Platform', null, err);
     });

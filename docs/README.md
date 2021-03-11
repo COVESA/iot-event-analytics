@@ -8,16 +8,12 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea Event Analytics
+# IoT Event Analytics
 
 Bosch.IO GmbH
 under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ![Image of IoTea](./assets/iotea.jpg)
-
-## Introduction
-
-IOT Event Analytics, short IoTea, is a complex event processing and agent network platform. The platform itself basically build from so called __talents__ which form a distributed network. Each talent is a unit of work. Per default so called core talents taking over the fundamental logic.
 
 ## Talents
 
@@ -385,7 +381,7 @@ The amount of considered variables play a central role for applicable detection 
 
 # Build And Deployment Components
 
-IoTea primarily consists of 3 components, except the extensions like adapter:
+IoT Event Analytics primarily consists of 3 components, except the extensions like adapter:
 
 - __Pipeline__, containing (exemplary configuration can be found [here named "pipeline"](../docker/pipeline/),
   - __Ingestion__,
@@ -469,7 +465,7 @@ The following tools support the development and integration:
 - Message publishing e.g. used for passing the event, located in the events.txt files, parallel to each example: [here](..\src\tools\mqtt).
 - Talent 2 Cloud: [here](..\src\tools\t2c).
 - Unit of measurement tool converting Bosch units into a JSON representation: [here](..\src\tools\uom).
-- VSS tooling for converting VSS yaml files into IoTea types and unit of measurement representation: [here](..\src\tools\vss).
+- VSS tooling for converting VSS yaml files into IoT Event Analytics types and unit of measurement representation: [here](..\src\tools\vss).
 - Adapter
   - DAPR integration for consuming data points and calling services: [here](..\src\adapter\dapr).
   - VSS integration for bidirectional data passing with Eclipse KUKSA.VAL: [here](..\src\adapter\vss).

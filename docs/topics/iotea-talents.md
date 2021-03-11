@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea Talents
+# IoT Event Analytics Talents
 
 Talents differ between the respective security domains and programming, but follows a common schema. Each Talent just has to define its required data points / services `method [addOutput]` and the provided data points / services `method [getRules]` automatically notified `method [onEvent]` if the demanded data is available.
 
@@ -37,18 +37,18 @@ The safeguard covers:
 
 All these safeguard happens on the data point (aka feature) level. Also compare the [feature](FEATURE_README.md) description.
 
-The following JSON schema describes what is possible: [feature.schema.json](https://<Github IoTea repo>/resources/feature.schema.json)
+The following JSON schema describes what is possible: [feature.schema.json](https://github.com/GENIVI/iot-event-analytics/resources/feature.schema.json)
 
 __Note:__ the channeling is parallel to the data point type system.  In some programming contexts these channels are also called ETL-pipelines or data type channel ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/DatatypeChannel.html)).
 
 Talent examples are given for
 
-- NodeJS here: [NodeJS SDK](https://<Github IoTea repo>/src/sdk/javascript/examples)
-- Python >3.6 here [Python SDK](https://<Github IoTea repo>/src/sdk/python)
+- NodeJS here: [NodeJS SDK](https://github.com/GENIVI/iot-event-analytics/src/sdk/javascript/examples)
+- Python >3.6 here [Python SDK](https://github.com/GENIVI/iot-event-analytics/src/sdk/python)
 
 __Important to know:__
 
-- One central default talent is the so called `ConfigManager`. The `ConfigManager` supports the communication between talents and manages basic runtime topic including the __type-system__, __uom-system__ and inter talent __discovery__. Also compare the [IoTea components README](./iotea-components.md).
+- One central default talent is the so called `ConfigManager`. The `ConfigManager` supports the communication between talents and manages basic runtime topic including the __type-system__, __uom-system__ and inter talent __discovery__. Also compare the [IoT Event Analytics components README](./iotea-components.md).
 - Do not miss to set the MQTT_TOPIC_NS envionment variable e.g. in Python:
 
   ```code

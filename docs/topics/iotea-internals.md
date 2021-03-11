@@ -8,9 +8,9 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# IoTea internals
+# IoT Event Analytics internals
 
-IoTea is a broker based complex event processing platform interacting through publish subscribe topics.
+IoT Event Analytics is a broker based complex event processing platform interacting through publish subscribe topics.
 To provide the maximum flexibilty the work is distributed between the broker and the paricipating entities.
 
 Broker has to know the

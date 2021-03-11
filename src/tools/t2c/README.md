@@ -30,24 +30,24 @@ The conversion process, does not convert your business logic. It only create a s
   You may only need one virtual device for all functions (It's just about getting and endpoint where to send messages to)
   - Click on _Iot Core_ in the _Services List_
   - Go to _Verwalten_ \> _Richtlinien_ \> _Create_<br>
-    The new "Richtlinie" will be connected to your certificate to protect communication from the IoTea platform with your virtual device
+    The new "Richtlinie" will be connected to your certificate to protect communication from the IoT Event Analytics platform with your virtual device
     - Click on extended and fill in the following
-      - Name: _IoTeaBridge_
+      - Name: _IoTEventAnalyticsBridge_
       - Aktion: _iot:*_
       - Ressourcen-ARN: _*_
       - Effekt: _Erlauben_
   - Go to _Verwalten_ \> _Typen_ \> _Erstellen_<br>
     This is basically a level of hierarchy to takeover settings, which are set on group level
-    - Name it _IoTeaTalents_
+    - Name it _IoTEventAnalyticsTalents_
   - Go to _Verwalten_ \> _Objekte_ \> _Erstellen_ \> _Einzelnes Object erstellen_<br>
     Now we create the new virtual device
     - Name it TalentBridge
-    - Choose the type you created above (here: IoTeaTalents)
+    - Choose the type you created above (here: IoTEventAnalyticsTalents)
     - You dont need an object group
-    - Create a certificate, which secures the communication between IoTea and the virtual device
+    - Create a certificate, which secures the communication between IoT Event Analytics and the virtual device
       - Create a one-click certificate or reuse an existing one
       - __!!!For one click certificates only: Download all 3 files and activate the certificate!!!__
-      - Click on "Eine Richtlinie anfügen" and select the _IoTeaBridge_ "Richtlinie"
+      - Click on "Eine Richtlinie anfügen" and select the _IoTEventAnalyticsBridge_ "Richtlinie"
     - Select your newly created object and click on "Interagieren"
       - Note down the HTTPS API Endpoint. You will need that later
   - Up to this point, we have a device and protected / configured the access
@@ -67,7 +67,7 @@ The conversion process, does not convert your business logic. It only create a s
     - As a "Regel-Abfrageanweisung" enter ```SELECT * FROM configManager/talents/discover```
   - Create a second "Auslöser"
     - Click on _Auslöser hinzufügen_
-    - Do the same as for the first but change the name to _<TalentID>events_ "Regel-Abfrageanweisung" to `SELECT * FROM talent/<TalentID>/events`
+    - Do the same as for the first but change the name to _\<TalentID\>events_ "Regel-Abfrageanweisung" to `SELECT * FROM talent/<TalentID>/events`
 - Now it's time to use the t2c converter to get your existing local NodeJS talent implementation into Cloud-Form
   - Once converted you have to fill in the endpoint noted down during the object creation in the created file<br>
     It looks like this _a3r4wmwpe4yfzp-ats.iot.eu-central-1.amazonaws.com_<br>
@@ -82,8 +82,8 @@ The conversion process, does not convert your business logic. It only create a s
   - Copy the whole contents of the file and paste it into the index.js of your Lamda function
 - Provide certificates to the local Mosquitto MQTT Broker
   - The preconfigured Mosquitto MQTT Broker needs the certificates you created during the AWS process to authenticate at the MQTT endpoint
-  - Copy all your certificates and keys you downloaded (despite the public key) during the object creation process at AWS into the following folder _\<iotea project folder\>/docker/mosquitto/certs_
-    - Download AmazonRootCA from https://www.amazontrust.com/repository/AmazonRootCA1.cer
+  - Copy all your certificates and keys you downloaded (despite the public key) during the object creation process at AWS into the following folder _\<iot event analytics project folder\>/docker/mosquitto/certs_
+    - Download AmazonRootCA from [https://www.amazontrust.com/repository/AmazonRootCA1.cer](https://www.amazontrust.com/repository/AmazonRootCA1.cer)
     - Now you need to rename these files (and overwrite the existing ones)
       - _AmazonRootCA1.cer_ \>\> _ca.pem_
       - _\<\>-certificate.pem.crt.txt_ \>\> _client.crt_

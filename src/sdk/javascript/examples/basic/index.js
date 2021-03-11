@@ -10,7 +10,7 @@
 
 /**
  * Description:
- * Starts the IoTea Platform and 2 talents to shows how you can build a multistage processing pipeline for events.
+ * Starts the IoT Event Analytics Platform and 2 talents to shows how you can build a multistage processing pipeline for events.
  * Also shows, that work can be distributed to multiple talent instances.
  *
  * Also test Timeseriespatternconstraint by sending events for feature tsctest of type kuehlschrank
@@ -172,5 +172,5 @@ cf.start(TALENT_DISCOVERY_INTERVAL_MS, path.resolve(__dirname, 'config', 'types.
     .then(() => t21.start())
     .then(() => instanceManager.start())
     .catch(err => {
-        platformLogger.error('Failed to start IoTea Event Analytics Platform', null, err);
+        platformLogger.error('Failed to start IoT Event Analytics Platform', null, err);
     });
