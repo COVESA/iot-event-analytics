@@ -16,6 +16,8 @@
 `docker image load --input kuksa-val-*-amd64.tar.xz`
   - Look at the tag, which is displayed, if the image was successfully loaded
   - Update the value _KUKSA_VAL_IMG_ in the .env file with the corresponding version
+- Follow this [manual](./config/kuksa.val/README.md) to create your kuksa.val configuration in the _./config/kuksa.val_ folder
+- Update the JWT for authentication against Kuksa.VAL in these configuration files: _./config.json_, _./config/vss2iotea/config.json_
 
 ## How to start it
 

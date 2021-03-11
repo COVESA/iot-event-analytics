@@ -46,20 +46,54 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
   ```
 
 - Directory contents
-  - Build GENIVI Reference JSON model _vss.json_ from vspec as described [https://github.com/GENIVI/vehicle_signal_specification](https://github.com/GENIVI/vehicle_signal_specification/tree/master) using the provided vss-tools
+  - Build GENIVI Reference JSON model **_vss.json_** from vspec as described [https://github.com/GENIVI/vehicle_signal_specification](https://github.com/GENIVI/vehicle_signal_specification/tree/master) using the provided vss-tools
     - Clone the repository into _vehicle\_signal\_specification_
     - Open _vehicle\_signal\_specification/vss-tools_
     - Install all Python dependencies by running `pip install -r requirements.txt --user`
     - Run `python vspec2json.py -i Vehicle:vehicle.uuid ../spec/VehicleSignalSpecification.vspec vss.json`
-    - Copy _vss.json_ into your directory
+    - Copy _vss.json_ into your confiruation directory `<some folder>`
+    - Modify the _vss.json_ file
+
+      ```json
+      {
+        "Vehicle": {
+          "Driver": {
+            "Identifier": {
+              "Subject": {
+                "description": "Subject for the authentification of the occupant. E.g. UserID 7331677",
+                "datatype": "string",
+                "type": "sensor",
+                "uuid": "...",
+                "value": "ishouldbetheuserid"                         // Add a default value for the Subject
+              }
+            }
+          }
+        }
+      }
+
+      {
+        "Vehicle": {
+          "VehicleIdentification": {
+            "VIN": {
+              "description": "17-character Vehicle Identification Number (VIN) as defined by ISO 3779",
+              "datatype": "string",
+              "type": "attribute",
+              "uuid": "...",
+              "value": "ishouldbeavin"                                // Add a default value for the VIN
+            }
+          }
+        }
+      }
+      ```
+
   - The contents of the _certs_ folder can be downloaded from:
     - [jwt.key.pub](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/jwt/jwt.key.pub)
     - [Server.key](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/Server.key)
     - [Server.pem](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/Server.pem)
-  __Make sure to have the latest certificates matching your installation. You might have to check the commit from the last built of the server.__
+  - __Make sure to have the latest certificates matching your installation. You might have to check the commit from the last built of the server.__
 
 - Make sure to copy the `<JSON-Web Token>` from [here](https://github.com/eclipse/kuksa.val/blob/master/certificates/jwt/super-admin.json.token)<br>
-  This will be needed for any client to authorize against the server
+  Make sure you update this token in your _vss2iotea configuration file_ and in any other configuration file, which needs to authenticate against the Kuksa.VAL server.
   - If you have to create a new token (e.g. because the old one expired), execute `python createToken.py super-admin.json` to create a newly signed token based on the configuration found in _super-admin.json_
 
 ### Run KUKSA.VAL

@@ -80,6 +80,7 @@ try {
 catch(err) {
     console.log(`An error occurred loading the configuration for VSS path translation: ${err.message}`);
     // No valid path translator configuration found
+    process.exit(1);
 }
 
 readJson(vssInputPath)
@@ -120,10 +121,11 @@ readJson(vssInputPath)
         return fs.writeFile(typesOutputPath, JSON.stringify(typesJson, null, 4));
     })
     .then(() => {
-        console.log(`IoTea configuration successfully written to ${typesOutputPath}`);
+        console.log(`IoT Event Analytics configuration successfully written to ${typesOutputPath}`);
     })
     .catch(err => {
         console.error(err);
+        process.exit(1);
     });
 
 function readJson(absPath) {
@@ -185,64 +187,64 @@ function walkModel(node, featurePath, typeConfig, vss2UomJson, nextIndex = 0) {
             metadata.unit = unit;
         }
 
-        try {
-            metadata.encoding = {};
+        metadata.encoding = {};
 
-            switch(node.datatype.toLowerCase()) {
-                case 'string': {
-                    metadata.encoding.type = ENCODING_TYPE_STRING;
+        switch(node.datatype.toLowerCase()) {
+            case 'string': {
+                metadata.encoding.type = ENCODING_TYPE_STRING;
 
-                    if (node.enum) {
-                        metadata.encoding.enum = node.enum;
-                        metadata.encoding.encoder = ENCODING_ENCODER_CATEGORY;
-                    } else {
-                        metadata.encoding.encoder = null;
-                    }
-
-                    break;
-                }
-                case 'int8':
-                case 'uint8':
-                case 'int16':
-                case 'uint16':
-                case 'int32':
-                case 'uint32':
-                case 'float':
-                case 'double': {
-                    metadata.encoding.type = ENCODING_TYPE_NUMBER;
-
-                    if (node.max !== undefined && node.min !== undefined) {
-                        metadata.encoding.encoder = ENCODING_ENCODER_MINMAX;
-                        metadata.encoding.min = node.min;
-                        metadata.encoding.max = node.max;
-                    } else {
-                        metadata.encoding.encoder = null;
-                    }
-
-                    break;
-                }
-                case 'boolean': {
-                    metadata.encoding.type = ENCODING_TYPE_BOOLEAN;
-                    metadata.encoding.enum = [ true, false ];
+                if (node.enum) {
+                    metadata.encoding.enum = node.enum;
                     metadata.encoding.encoder = ENCODING_ENCODER_CATEGORY;
-                    break;
+                } else {
+                    metadata.encoding.encoder = null;
                 }
-                default: {
-                    console.log('Type unknown ' + node.datatype);
-                    return;
-                }
-            }
 
-            typeConfig.features[vssPathTranslator.kuksaVss2Iotea(featurePath)] = metadata;
+                break;
+            }
+            case 'int8':
+            case 'uint8':
+            case 'int16':
+            case 'uint16':
+            case 'int32':
+            case 'uint32':
+            case 'float':
+            case 'double': {
+                metadata.encoding.type = ENCODING_TYPE_NUMBER;
+
+                if (node.max !== undefined && node.min !== undefined) {
+                    metadata.encoding.encoder = ENCODING_ENCODER_MINMAX;
+                    metadata.encoding.min = node.min;
+                    metadata.encoding.max = node.max;
+                } else {
+                    metadata.encoding.encoder = null;
+                }
+
+                break;
+            }
+            case 'uint8[]':
+            case 'string[]': {
+                metadata.encoding.type = 'object';
+                metadata.encoding.encoder = null;
+                break;
+            }
+            case 'boolean': {
+                metadata.encoding.type = ENCODING_TYPE_BOOLEAN;
+                metadata.encoding.enum = [ true, false ];
+                metadata.encoding.encoder = ENCODING_ENCODER_CATEGORY;
+                break;
+            }
+            default: {
+                throw new Error('Type unknown ' + node.datatype);
+            }
         }
-        catch(err) {
-            console.error('ERR', err.message);
-        }
+
+        typeConfig.features[vssPathTranslator.kuksaVss2Iotea(featurePath)] = metadata;
 
         return nextIndex;
     }
 
-    console.log('Invalid type', node.type);
+    throw new Error(`Invalid type ${node.type}`);
 }
 
 function resolveUnit(node, vss2UomJson) {
