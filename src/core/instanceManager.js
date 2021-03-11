@@ -13,6 +13,7 @@ const uuid = require('uuid').v4;
 const Logger = require('./util/logger');
 const { NamedMqttBroker } = require('./util/mqttBroker');
 const MetadataManager = require('./metadataManager');
+const clone = require('./util/clone');
 const Instance = require('./instance');
 
 const {
@@ -90,7 +91,7 @@ module.exports = class InstanceManager {
             });
     }
 
-    setFeature(subject, instanceId, feature, encodedValue, rawValue, whenMs, type = DEFAULT_TYPE, shouldPublishUpdate = true) {
+    setFeature(subject, instanceId, feature, encodedValue, rawValue, whenMs, type = DEFAULT_TYPE, returnClonedFeature = true, shouldPublishUpdate = true) {
         let instance = null;
 
         try {
@@ -123,7 +124,14 @@ module.exports = class InstanceManager {
                     return null;
                 }
 
-                const $feature = instance.getFeatureAt(meta.idx);
+                let $feature = instance.getFeatureAt(meta.idx);
+
+                if (returnClonedFeature) {
+                    // Clone $feature to prevent changes made to the reference by any other async tasks
+                    // Since broker.publishJson is asynchronous, changes may happen in between instance.getFeatureAt
+                    // and return the $feature as promise resolution
+                    $feature = clone($feature);
+                }
 
                 if (!shouldPublishUpdate) {
                     return $feature
@@ -167,7 +175,7 @@ module.exports = class InstanceManager {
 
         // Do not publish any updates since it's a received update already
         try {
-            await this.setFeature(feature.subject, feature.instanceId, feature.feature, feature.enc, feature.raw, feature.whenMs, feature.type, false);
+            await this.setFeature(feature.subject, feature.instanceId, feature.feature, feature.enc, feature.raw, feature.whenMs, feature.type, false, false);
         }
         catch(err) {
             this.logger.warn(`Could not update feature ${feature.feature} for instance ${feature.instanceId} of type ${feature.type}`);

@@ -22,11 +22,10 @@ module.exports = function clone(value, createKey = (key => key)) {
     if (value === Object(value)) {
         const object = {};
 
-        const keys = Object.keys(value);
-
-        for (let i = 0; i < keys.length; i++) {
-            let inKey = keys[i];
-            object[createKey(keys[i])] = clone(value[inKey], createKey);
+        for (let inKey in value) {
+            // Enumerate through inherited properties as well
+            // i.e. do not use Object.keys(value) here
+            object[createKey(inKey)] = clone(value[inKey], createKey);
         }
 
         return object;
