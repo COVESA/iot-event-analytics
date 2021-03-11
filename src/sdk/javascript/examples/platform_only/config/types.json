@@ -1,56 +1,41 @@
 {
     "100000": {
-        "features": {
-            "temp": {
-                "idx": 0,
-                "encoding": {
-                    "type": "number",
-                    "encoder": null
-                },
-                "description": "Current inner temperature",
-                "unit": "°C"
-            }
-        },
+        "features": {},
         "types": {
             "kuehlschrank": {
-                "features": {}
-            },
-            "kuehlschrank0": {
                 "features": {
-                    "foo": {
+                    "ltstart": {
+                        "idx": 0,
+                        "encoding": {
+                            "encoder": "minmax",
+                            "type": "number",
+                            "min": 1,
+                            "max": 1000
+                        },
+                        "default": 100,
+                        "description": "Load-Test start",
+                        "unit": "ONE"
+                    },
+                    "ltend": {
                         "idx": 1,
                         "encoding": {
-                            "type": "number",
-                            "encoder": null
+                            "encoder": null,
+                            "type": "number"
                         },
-                        "description": "Current 2nd inner temperature",
-                        "unit": "°C"
-                    }
-                }
-            },
-            "kuehlschrank1": {
-                "features": {
-                    "bar": {
-                        "idx": 3,
-                        "encoding": {
-                            "type": "number",
-                            "encoder": null
-                        },
-                        "description": "Current 2nd inner temperature",
-                        "unit": "°C"
-                    }
-                }
-            },
-            "kuehlschrank2": {
-                "features": {
-                    "temp2": {
+                        "description": "Load-Test end",
+                        "unit": "ONE"
+                    },
+                    "ltvalue": {
                         "idx": 2,
+                        "history": 50,
                         "encoding": {
-                            "type": "number",
-                            "encoder": null
+                            "min": 0,
+                            "max": 1000,
+                            "encoder": "minmax",
+                            "type": "number"
                         },
-                        "description": "Current 2nd inner temperature",
-                        "unit": "°C"
+                        "description": "Load-Test value",
+                        "unit": "ONE"
                     }
                 }
             }

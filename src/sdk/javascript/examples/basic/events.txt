@@ -1,8 +1,8 @@
-{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 8, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": 3, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712-2", "feature": "bar", "value": -2, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": -10, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": 5, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank", "instance": "sdf", "feature": "temp", "value": 4, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 9, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 10, "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 8, "whenMs": 1626566400001 }
+{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": 3, "whenMs": 1626566400002 }
+{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712-2", "feature": "bar", "value": -2, "whenMs": 1626566400003 }
+{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": -10, "whenMs": 1626566400004 }
+{ "subject": "someuserid", "type": "kuehlschrank1", "instance": "4712", "feature": "bar", "value": 5, "whenMs": 1626566400005 }
+{ "subject": "someuserid", "type": "kuehlschrank", "instance": "sdf", "feature": "temp", "value": 4, "whenMs": 1626566400006 }
+{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 9, "whenMs": 1626566400007 }
+{ "subject": "someuserid", "type": "kuehlschrank0", "instance": "4711", "feature": "foo", "value": 10, "whenMs": 1626566400008 }

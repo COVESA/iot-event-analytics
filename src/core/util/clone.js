@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-module.exports = function clone(value, createKey = (key => key)) {
+module.exports = function clone(value, createKey = (key => key), exclude = (key => false)) {
     if (Array.isArray(value)) {
         const arr = [];
 
@@ -25,6 +25,10 @@ module.exports = function clone(value, createKey = (key => key)) {
         for (let inKey in value) {
             // Enumerate through inherited properties as well
             // i.e. do not use Object.keys(value) here
+            if (exclude(inKey)) {
+                continue;
+            }
+
             object[createKey(inKey)] = clone(value[inKey], createKey);
         }
 

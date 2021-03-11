@@ -8,8 +8,15 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# Example: Platform only
+# Example: Scalable Platform
+
+## Prerequisites
+
+- Open the _docker-compose_ folder in the project root in a terminal
+- Start a Mosquitto broker by using docker-compose
+  - Run ```docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/platform_only/.env up --remove-orphans --build```
 
 ## How to start it
 
-- Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose ```docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/javascript/examples/platform_only/.env up --remove-orphans```
+- Check the configuration in _config.json_
+- Start the platform by running ```node index.js```

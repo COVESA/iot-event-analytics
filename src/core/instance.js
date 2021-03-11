@@ -13,6 +13,7 @@ const {
     DEFAULT_HISTORY_LENGTH
 } = require('./constants');
 const jsonQuery = require('./util/jsonQuery');
+const clone = require('./util/clone');
 
 class Instance {
     constructor(type, id) {
@@ -40,15 +41,52 @@ class Instance {
         return this.features[idx];
     }
 
-    setFeatureAt(idx, encodedValue, rawValue, whenMs, maxHistoryLength = DEFAULT_HISTORY_LENGTH, ttlMs = DEFAULT_FEATURE_TTL_MS) {
-        // Prune outdated values as soon as any value is set
-        this.prune();
-
+    updateFeatureAt(idx, encodedValue, rawValue, whenMs, maxHistoryLength = DEFAULT_HISTORY_LENGTH, ttlMs = DEFAULT_FEATURE_TTL_MS, now = Date.now()) {
+        // Check for invalid parameters >> reject value
         if (whenMs === undefined || encodedValue === undefined || rawValue === undefined) {
-            // All values need to be defined
-            return false;
+            // console.log('WhenMs, encodedValue and rawValue must not be undefined');
+            return null;
         }
 
+        // Prune outdated values
+        this.prune();
+
+        if (idx < this.features.length && this.features[idx] !== null) {
+            if (this.features[idx].whenMs === whenMs) {
+                // If the timestamp already exists for this feature >> reject value
+                // console.log(`Timestamp already exists for given value [${idx}]=${rawValue} at ${whenMs}`);
+                return null;
+            }
+
+            if (this.features[idx].history.find(historicalFeature => historicalFeature.whenMs === whenMs)) {
+                // If the timestamp already exists in this features history >> reject value
+                // console.log(`Timestamp exists in history for given value [${idx}]=${rawValue} at ${whenMs}`);
+                return null
+            }
+
+            if (whenMs + ttlMs < now) {
+                const history = this.features[idx].history;
+
+                // Select the oldest feature
+                const oldestFeature = history.length > 0 ? history[history.length - 1] : this.features[idx];
+
+                if (whenMs + ttlMs < oldestFeature.whenMs) {
+                    // The feature would have been pruned, if it had arrived at that given time
+                    // console.log(`Feature would have been pruned already for value [${idx}]=${rawValue} at ${whenMs}`);
+                    return null;
+                }
+            }
+        } else {
+            if (whenMs + ttlMs < now) {
+                // Feature does not exist yet, and the given feature is already invalid
+                // console.log(`Feature does not exist and given feature is alread invalid for value [${idx}]=${rawValue} at ${whenMs}`);
+                return null;
+            }
+        }
+
+        let $hidx = -1;
+
+        // Initialize the feature helper
         if (this.featureHelper[idx] === undefined) {
             // Initialize feature helper
             this.featureHelper[idx] = {
@@ -61,10 +99,7 @@ class Instance {
             }
         }
 
-        // Runninc statistical calculation takes values into account since the start of the platform
-        // >> Every events contributes to the statistical values even though...
-        //   - ...the given timestamp is older than the most recent value
-        //   - ...the given timestamp is outdated (older than the given ttl)
+        // Update the statistical values
         if (encodedValue !== null) {
             let encodedNumericValue = encodedValue;
 
@@ -73,90 +108,109 @@ class Instance {
                     // Fetch the numeric value from given $vpath
                     encodedNumericValue = jsonQuery.first(encodedValue, encodedValue.$vpath).value
                 }
-
-                this.featureHelper[idx].rstat.push(encodedNumericValue);
+                this.featureHelper[idx].rstat.push(encodedNumericValue, whenMs);
             }
             catch(err) {
                 // Could not update statistical data
             }
         }
 
-        if (whenMs + ttlMs < Date.now()) {
-            // Given value is already invalid
-            return false;
-        }
-
+        // Expand the length of features array to match the given index
         if (idx >= this.features.length) {
             this.features = [...this.features, ...new Array(idx - this.features.length + 1).fill(null)];
         }
 
-        if (this.features[idx] !== null) {
-            if (this.features[idx].whenMs > whenMs) {
-                // Current value is newer than the one, which should be written
-                return false;
+        // Does the raw event value contain a partial value?
+        const shouldProcessPartialValue = this.__shouldProcessPartialValueAt(idx, rawValue.$part);
+
+        if (this.features[idx] !== null && whenMs < this.features[idx].whenMs) {
+            // Insert value into history
+            const history = this.features[idx].history;
+
+            let historyIndex = 0;
+
+            for (let i = 0; i <= history.length; i++) {
+                if (i === history.length || whenMs > history[i].whenMs) {
+                    // Place it right in front of i
+                    const historicalFeature = Instance.createHistoryFeature(
+                        rawValue,
+                        encodedValue,
+                        whenMs,
+                        whenMs + ttlMs
+                    );
+
+                    history.splice(i, 0, historicalFeature);
+                    historyIndex = i;
+                    break;
+                }
             }
-        }
 
-        // Process mapped results
-        const $part = rawValue.$part;
-
-        if (Number.isFinite($part)) {
-            if (this.features[idx] === null || !Array.isArray(this.features[idx].raw)) {
-                throw new Error(`Partial results need a target feature of type Array.`);
+            if (!shouldProcessPartialValue) {
+                if (historyIndex < maxHistoryLength) {
+                    // If the feature could actually be inserted within the valid portion of the history
+                    $hidx = historyIndex;
+                }
             }
+        } else {
+            // Replace current value
+            let $history = [];
 
-            if ($part < 0 || $part >= this.features[idx].raw.length) {
-                throw new Error(`Invalid partial index given ${$part}`);
-            }
-
-            this.features[idx].raw[$part] = rawValue.value;
-            // No encoded features for worker results
-            this.features[idx].enc = null;
-
-            return true;
-        }
-
-        let $history = [];
-
-        if (maxHistoryLength > 0) {
-            // If history should actually be kept
-            if (this.features[idx] !== null) {
+            if (this.features[idx] !== null && maxHistoryLength > 0) {
                 // History entries do not contain the history property at all
-                // History entries do not contain statistical data
                 // eslint-disable-next-line no-unused-vars
-                let { history, stat, ...previousFeature } = Object.assign({}, this.features[idx]);
+                let { history, stat, ...previousFeature } = clone(this.features[idx]);
+
                 $history = history;
+                // Add current feature at top of history
                 $history.unshift(previousFeature);
             }
 
-            if ($history.length > maxHistoryLength) {
-                $history.splice(maxHistoryLength);
-            }
+            // Insert new value with the updated history
+            this.features[idx] = Instance.createFeature(
+                rawValue,
+                encodedValue,
+                whenMs,
+                whenMs + ttlMs,
+                $history
+            );
         }
 
-        this.features[idx] = Instance.createFeature(
-            rawValue,
-            encodedValue,
-            whenMs,
-            whenMs + ttlMs,
-            $history
-        );
+        if (shouldProcessPartialValue) {
+            // Modify the current value as well
+            this.features[idx].raw[rawValue.$part] = rawValue.value;
+            // No encoded features for partial values
+            this.features[idx].enc = null;
+            // Update the ttl, since the value was updated right now
+            this.features[idx].ttl = now + ttlMs;
+        }
 
-        // Add statistical data
+        let deletedTimestampsMs = [];
+
+        if (this.features[idx].history.length > maxHistoryLength) {
+            deletedTimestampsMs = this.features[idx].history.splice(maxHistoryLength).map(historyEntry => historyEntry.whenMs);
+        }
+
         if (this.featureHelper[idx].rstat) {
-            const variance = this.featureHelper[idx].rstat.variance();
+            // Remove invalid timestamps
+            this.featureHelper[idx].rstat.remove(deletedTimestampsMs);
+            // Recalculate statistical data
+            this.features[idx].stat = this.featureHelper[idx].rstat.serialize();
+        }
 
-            this.features[idx].stat = {
-                cnt: this.featureHelper[idx].rstat.count(),
-                mean: this.featureHelper[idx].rstat.mean(),
-                var: variance,
-                sdev: this.featureHelper[idx].rstat.standardDeviation(variance)
-            };
+        if ($hidx >= this.features[idx].history.length) {
+            // If current value was not edited for partial updates and the current event was inserted out of history bounds
+            // though it was already deleted again
+            // console.log(`Feature has been set out of bounds for value [${idx}]=${rawValue}.history[${$hidx}] at ${whenMs}`);
+            return null;
         }
 
         this.featureHelper[idx].ttlMs = this.features[idx].ttlMs;
 
-        return true;
+        return {
+            // $hidx is always -1 if a partial value was processed
+            $hidx,
+            $feature: this.features[idx]
+        };
     }
 
     prune(now = Date.now()) {
@@ -175,6 +229,22 @@ class Instance {
         }
     }
 
+    __shouldProcessPartialValueAt(idx, partialIndex) {
+        if (!Number.isFinite(partialIndex)) {
+            return false;
+        }
+
+        if (this.features[idx] === null || !Array.isArray(this.features[idx].raw)) {
+            throw new Error(`Partial results need a target feature of type Array.`);
+        }
+
+        if (partialIndex < 0 || partialIndex >= this.features[idx].raw.length) {
+            throw new Error(`Invalid partial index given ${partialIndex}`);
+        }
+
+        return true;
+    }
+
     __validateIndex(idx) {
         if (Number.isFinite(idx) && idx >= 0) {
             return true;
@@ -183,6 +253,12 @@ class Instance {
         throw new Error(`Invalid index ${idx} given`);
     }
 }
+
+Instance.createHistoryFeature = function createHistoryFeature(rawValue, encodedValue, whenMs, ttlMs) {
+    // eslint-disable-next-line no-unused-vars
+    const { history, stat, ...historyFeature } = Instance.createFeature(rawValue, encodedValue, whenMs, ttlMs);
+    return historyFeature;
+};
 
 Instance.createFeature = function createFeature(rawValue, encodedValue, whenMs, ttlMs, history = []) {
     return {
@@ -198,23 +274,48 @@ Instance.createFeature = function createFeature(rawValue, encodedValue, whenMs, 
 // https://www.johndcook.com/blog/standard_deviation/
 class RunningStat {
     constructor() {
-        this.n = 0;
-        this.oldM = 0;
-        this.newM = 0;
-        this.oldS = 0;
-        this.newS = 0;
+        this.values = [];
+        this.needsRecalculation = false;
+    }
+
+    push(value, timestampMs, shouldRecalculate = false) {
+        this.needsRecalculation = true;
+
+        this.values.push({ value, ts: timestampMs});
+
+        if (shouldRecalculate) {
+            this.__recalculate();
+        }
+    }
+
+    remove(timestampsMs, shouldRecalculate = false) {
+        this.needsRecalculation = true;
+
+        this.values = this.values.filter(value => timestampsMs.indexOf(value.ts) === -1);
+
+        if (shouldRecalculate) {
+            this.__recalculate();
+        }
     }
 
     count() {
-        return this.n;
+        return this.values.length;
     }
 
     mean() {
-        return this.n > 0 ? this.newM : null;
+        if (this.needsRecalculation) {
+            this.__recalculate();
+        }
+
+        return this.values.length > 0 ? this.__newM : null;
     }
 
     variance() {
-        return this.n > 1 ? this.newS / (this.n - 1) : null;
+        if (this.needsRecalculation) {
+            this.__recalculate();
+        }
+
+        return this.values.length > 1 ? this.__newS / (this.values.length - 1) : null;
     }
 
     standardDeviation(variance) {
@@ -227,18 +328,43 @@ class RunningStat {
         return Math.pow(variance, 0.5);
     }
 
-    push(x) {
-        this.n++;
+    serialize() {
+        const variance = this.variance();
+
+        return {
+            cnt: this.count(),
+            mean: this.mean(),
+            var: variance,
+            sdev: this.standardDeviation(variance)
+        };
+    }
+
+    __recalculate() {
+        this.__reset();
+        for (let i = 0; i < this.values.length; i++) { this.__push(this.values[i].value) }
+        this.needsRecalculation = false;
+    }
+
+    __reset() {
+        this.__n = 0;
+        this.__oldM = 0;
+        this.__newM = 0;
+        this.__oldS = 0;
+        this.__newS = 0;
+    }
+
+    __push(x) {
+        this.__n++;
 
         // See Knuth TAOCP vol 2, 3rd edition, page 232
-        if (this.n === 1) {
-            this.oldM = this.newM = x;
-            this.oldS = 0;
+        if (this.__n === 1) {
+            this.__oldM = this.__newM = x;
+            this.__oldS = 0;
         } else {
-            this.newM = this.oldM + (x - this.oldM) / this.n;
-            this.newS = this.oldS + (x - this.oldM) * ( x - this.newM );
-            this.oldM = this.newM;
-            this.oldS = this.newS;
+            this.__newM = this.__oldM + (x - this.__oldM) / this.__n;
+            this.__newS = this.__oldS + (x - this.__oldM) * ( x - this.__newM );
+            this.__oldM = this.__newM;
+            this.__oldS = this.__newS;
         }
     }
 }

@@ -62,7 +62,7 @@ module.exports = class InstanceManager {
             }, []);
     }
 
-    getFeature(subject, instanceId, feature, type = DEFAULT_TYPE, metaFeature = null) {
+    getFeature(subject, instanceId, feature, type = DEFAULT_TYPE, returnClonedFeature = true, metaFeature = null) {
         let metaPromise = null;
 
         if (metaFeature !== null) {
@@ -87,11 +87,17 @@ module.exports = class InstanceManager {
                     return Instance.createFeature(metaFeature.default, metaFeature.default, -1, -1);
                 }
 
-                return instance.getFeatureAt(metaFeature.idx, metaFeature.default);
+                const $feature = instance.getFeatureAt(metaFeature.idx, metaFeature.default);
+
+                if (returnClonedFeature) {
+                    return clone($feature);
+                }
+
+                return $feature;
             });
     }
 
-    setFeature(subject, instanceId, feature, encodedValue, rawValue, whenMs, type = DEFAULT_TYPE, returnClonedFeature = true, shouldPublishUpdate = true) {
+    updateFeature(subject, instanceId, feature, encodedValue, rawValue, whenMs, type = DEFAULT_TYPE, returnClonedFeature = true, shouldPublishUpdate = true) {
         let instance = null;
 
         try {
@@ -111,7 +117,7 @@ module.exports = class InstanceManager {
 
         return this.metadataManager.resolveMetaFeature(type, feature)
             .then(meta => {
-                const successfullySetFeature = instance.setFeatureAt(
+                let updateResult = instance.updateFeatureAt(
                     meta.idx,
                     encodedValue,
                     rawValue,
@@ -120,21 +126,19 @@ module.exports = class InstanceManager {
                     meta.ttl || DEFAULT_FEATURE_TTL_MS
                 );
 
-                if (!successfullySetFeature) {
+                if (updateResult === null) {
                     return null;
                 }
-
-                let $feature = instance.getFeatureAt(meta.idx);
 
                 if (returnClonedFeature) {
                     // Clone $feature to prevent changes made to the reference by any other async tasks
                     // Since broker.publishJson is asynchronous, changes may happen in between instance.getFeatureAt
                     // and return the $feature as promise resolution
-                    $feature = clone($feature);
+                    updateResult.$feature = clone(updateResult.$feature);
                 }
 
                 if (!shouldPublishUpdate) {
-                    return $feature
+                    return updateResult;
                 }
 
                 return this.broker.publishJson(UPDATE_FEATURE_TOPIC, {
@@ -146,7 +150,7 @@ module.exports = class InstanceManager {
                     whenMs,
                     enc: encodedValue,
                     raw: rawValue
-                }).then(() => $feature);
+                }).then(() => updateResult);
             });
     }
 
@@ -175,7 +179,7 @@ module.exports = class InstanceManager {
 
         // Do not publish any updates since it's a received update already
         try {
-            await this.setFeature(feature.subject, feature.instanceId, feature.feature, feature.enc, feature.raw, feature.whenMs, feature.type, false, false);
+            await this.updateFeature(feature.subject, feature.instanceId, feature.feature, feature.enc, feature.raw, feature.whenMs, feature.type, false, false);
         }
         catch(err) {
             this.logger.warn(`Could not update feature ${feature.feature} for instance ${feature.instanceId} of type ${feature.type}`);
