@@ -10,4 +10,5 @@ docker-compose
 resources
 docs
 requirements.txt
+requirements.dev.txt
 .pylintrc
