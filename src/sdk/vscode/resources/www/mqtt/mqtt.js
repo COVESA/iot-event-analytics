@@ -80,13 +80,18 @@ function createJsonMessage(type) {
 
 function onIoTeaEventTypeChange(type) {
     if (Object.prototype.hasOwnProperty.call(ioteaTypeFeatures, type)) {
-        const features = Object.keys(ioteaTypeFeatures[type]);
+        const features = Object.keys(ioteaTypeFeatures[type]).sort((a, b) => a.localeCompare(b));
+
+        const vssPathTranslator = new VssPathTranslator(
+            VSS_PATH_SEPARATOR,
+            VSS_PATH_REPLACER
+        );
 
         // Set features and add description title
         replaceOptionItems(
             '#ioteaEventFeature',
             features,
-            feature => `${feature}&nbsp;[${ioteaTypeFeatures[type][feature].unit}]`,
+            feature => `${vssPathTranslator.ioteaFeature2KuksaPartialVssPath(feature)}&nbsp;[${ioteaTypeFeatures[type][feature].unit}]`,
             feature => feature,
             (itemElem, feature) => itemElem.title = ioteaTypeFeatures[type][feature].description
         );
@@ -126,7 +131,7 @@ function updateIoteaTypeFeatures() {
             updateJsonMessage('feature', '');
 
             // Filter types for those, who have features
-            const types = Object.keys(ioteaTypeFeatures).filter(type => Object.keys(ioteaTypeFeatures[type]).length > 0);
+            const types = Object.keys(ioteaTypeFeatures).filter(type => Object.keys(ioteaTypeFeatures[type]).length > 0).sort((a, b) => a.localeCompare(b));
 
             if (types.length === 0) {
                 return;

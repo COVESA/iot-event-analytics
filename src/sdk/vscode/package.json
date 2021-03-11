@@ -6,7 +6,7 @@
     "categories": [
         "Snippets"
     ],
-    "version": "0.7.0",
+    "version": "0.7.1",
     "license": "MPL-2.0",
     "private": "true",
     "author": "Bosch.IO GmbH",
@@ -99,6 +99,20 @@
                     "type": "string",
                     "default": "",
                     "description": "The http(s) proxy used during creation of the platforms docker images"
+                },
+                "iotea.vss.path.separator": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": ".",
+                    "description": "Path separator for VSS paths"
+                },
+                "iotea.vss.path.replacer": {
+                    "scope": "machine-overridable",
+                    "type": "object",
+                    "default": {
+                        ".": "$"
+                    },
+                    "description": "Character replacements from VSS path to IoT Event Analytics features"
                 }
             }
         }

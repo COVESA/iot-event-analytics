@@ -41,19 +41,36 @@ export class RuleSnippetProvider implements vscode.CompletionItemProvider {
         const typeFeatures = await this.typeFeatureResolver.getTypeFeatures();
 
         return typeFeatures.map(typeFeature => {
-            const item = new vscode.CompletionItem(typeFeature);
+            /**
+             * {
+             *   ioteaType: "",         // IoTEA type
+             *   ioteaFeature: "",      // IoTEA feature
+             *   ioteaDescription: "",  // IoTEA Description from Metadata
+             *   vssPath: ""            // Full VSS path
+             * }
+             */
+            const item = new vscode.CompletionItem(typeFeature.vssPath);
 
             // Insert nothing
             item.insertText = '';
 
-            // Make it appear in the filter
-            item.filterText = `${typeFeature}-${this.triggerString}`;
+            // Sort by <type>.<feature>
+            item.sortText = typeFeature.vssPath;
+
+            // Make it appear in the filter and work for Autocomplete
+            item.filterText = `iotea.rule.op${typeFeature.vssPath}`;
+
+            // Add description
+            item.detail = typeFeature.description;
+
+            // Set type to snippet
+            item.kind = vscode.CompletionItemKind.Snippet;
 
             // Invoke the command
             item.command = {
                 title: '',
                 command: `insertRuleOnTypeFeatureSelect-${this.id}`,
-                arguments: [ typeFeature, position ]
+                arguments: [ [ typeFeature.ioteaType, typeFeature.ioteaFeature ].join('.'), position ]
             };
 
             return item;

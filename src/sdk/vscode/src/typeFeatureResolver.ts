@@ -11,9 +11,34 @@
 import * as bent from 'bent';
 import * as vscode from 'vscode';
 
+export class VssPathTranslator {
+    constructor(private vssPathSeparator: string, private vssPathReplacer: { [s: string]: string } ) {}
+
+    public ioteaTypeAndFeature2KuksaVssPath(type: string, feature: string) {
+        const reversePathSeparator = this.vssPathReplacer[this.vssPathSeparator] === undefined ? this.vssPathSeparator : this.vssPathReplacer[this.vssPathSeparator];
+
+        let kuksaVssPath = `${type}${reversePathSeparator}${feature}`;
+
+        for (let replacement in this.vssPathReplacer) {
+            kuksaVssPath = this.replaceAllChars(kuksaVssPath, this.vssPathReplacer[replacement], replacement);
+        }
+
+        return kuksaVssPath;
+    }
+
+    private replaceAllChars(input: string, searchChar: string, replaceChar: string) {
+        const reservedRegexpChars = ['[', ']', '(', ')', '\\', '^', '$', '.', '|', '?', '*', '+', '{', '}' ];
+
+        if (reservedRegexpChars.indexOf(searchChar) === -1) {
+            return input.replace(new RegExp(`${searchChar}`, 'g'), replaceChar);
+        }
+
+        return input.replace(new RegExp(`\\${searchChar}`, 'g'), replaceChar);
+    }
+}
 export class TypeFeatureResolver {
     private ttl = -1;
-    private typeFeatures: string[] = [];
+    private typeFeatures: any[] = [];
 
     async getTypeFeatures() {
         const apiEndpoint = vscode.workspace.getConfiguration('iotea').get('platform.api.endpoint');
@@ -27,6 +52,11 @@ export class TypeFeatureResolver {
 
         this.typeFeatures = [];
 
+        const vssPathTranslator = new VssPathTranslator(
+            vscode.workspace.getConfiguration('iotea').get('vss.path.separator') as string,
+            vscode.workspace.getConfiguration('iotea').get('vss.path.replacer') as { [s: string]: string }
+        );
+
         try {
             const types: any = await req(`${apiEndpoint}/types`);
 
@@ -36,12 +66,17 @@ export class TypeFeatureResolver {
                 }
 
                 for (let feature in types[type].features) {
-                    this.typeFeatures.push(`${type}.${feature}`);
+                    this.typeFeatures.push({
+                        ioteaType: type,
+                        description: types[type].features[feature].description,
+                        ioteaFeature: feature,
+                        vssPath: vssPathTranslator.ioteaTypeAndFeature2KuksaVssPath(type, feature)
+                    });
                 }
             }
 
             // Fetch again in 10 seconds
-            this.ttl = Date.now() + 10000;
+            this.ttl = Date.now() + 3600000;
 
             return this.typeFeatures;
         }

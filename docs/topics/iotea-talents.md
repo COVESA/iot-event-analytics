@@ -37,14 +37,14 @@ The safeguard covers:
 
 All these safeguard happens on the data point (aka feature) level. Also compare the [feature](FEATURE_README.md) description.
 
-The following JSON schema describes what is possible: [feature.schema.json](https://sourcecode.socialcoding.bosch.com/projects/DBAO/repos/boschio.iotea/browse/resources/feature.schema.json)
+The following JSON schema describes what is possible: [feature.schema.json](https://<Github IoTea repo>/resources/feature.schema.json)
 
 __Note:__ the channeling is parallel to the data point type system.  In some programming contexts these channels are also called ETL-pipelines or data type channel ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/DatatypeChannel.html)).
 
 Talent examples are given for
 
-- NodeJS here: [NodeJS SDK](https://sourcecode.socialcoding.bosch.com/projects/DBAO/repos/boschio.iotea/browse/src/sdk/javascript/examples)
-- Python >3.6 here [Python SDK](https://sourcecode.socialcoding.bosch.com/projects/DBAO/repos/boschio.iotea/browse/src/sdk/python)
+- NodeJS here: [NodeJS SDK](https://<Github IoTea repo>/src/sdk/javascript/examples)
+- Python >3.6 here [Python SDK](https://<Github IoTea repo>/src/sdk/python)
 
 __Important to know:__
 
