@@ -99,7 +99,7 @@ readJson(vssInputPath)
 
         if (Object.prototype.hasOwnProperty.call(typesJson, vssSegment)) {
             if (!overwriteSegment) {
-                throw new Error(`Segment ${vssSegment} is already defined in input IoTea configuration ${typesInputPath}`);
+                throw new Error(`Segment ${vssSegment} is already defined in input IoTea configuration ${typesInputPath}. To overwrite, call converter with option -f true`);
             }
         }
 

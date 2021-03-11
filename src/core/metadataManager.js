@@ -480,7 +480,7 @@ class MetadataManager {
     }
 
     __containsFeatureIndex(segment, index) {
-        for (let next of this.allSegmentFeatures(segment)) {
+        for (let next of this.allFeatureInSegment(segment)) {
             if (next.feature.idx === index) {
                 return true;
             }
@@ -492,28 +492,29 @@ class MetadataManager {
     __getMaxIndex(segment) {
         let maxIndex = -1;
 
-        for (let next of this.allSegmentFeatures(segment)) {
+        for (let next of this.allFeatureInSegment(segment)) {
             maxIndex = Math.max(next.feature.idx, maxIndex);
         }
 
         return maxIndex;
     }
 
-    *allSegmentFeatures(segment) {
+    *allFeatureInSegment(segment) {
         if (segment === undefined || !this.__hasType(segment)) {
             return;
         }
 
-        yield *this.allTypeFeatures(segment);
+        // Segment can be treated as type for common features
+        yield *this.allFeaturesOfType(segment);
 
         const types = this.types[segment].types || [];
 
         for (let type of types) {
-            yield *this.allTypeFeatures(type);
+            yield *this.allFeaturesOfType(type);
         }
     }
 
-    *allTypeFeatures(type) {
+    *allFeaturesOfType(type) {
         if (type !== undefined && this.__hasType(type)) {
             for (let feature of Object.keys(this.types[type].features)) {
                 yield {

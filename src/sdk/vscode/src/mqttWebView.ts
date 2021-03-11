@@ -40,7 +40,7 @@ export class MqttWebView {
             const terminal = new Terminal();
 
             try {
-                await terminal.executeCommand('node', ['cli.js', 'pub', '-c', msg.broker, '-t', msg.topic, '-m', msg.message], path.resolve(ioteaProjectRootDir, 'src', 'tools', 'mqtt'), (msg: string) => {
+                await terminal.executeCommand('node', ['cli.js', 'pub', '-c', msg.broker, '-t', msg.topic, '-m', msg.message], path.resolve(this.ioteaProjectRootDir, 'src', 'tools', 'mqtt'), (msg: string) => {
                     console.log(msg);
                 });
 

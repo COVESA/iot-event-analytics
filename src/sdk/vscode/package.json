@@ -6,7 +6,7 @@
     "categories": [
         "Snippets"
     ],
-    "version": "0.6.1",
+    "version": "0.7.0",
     "license": "MPL-2.0",
     "private": "true",
     "author": "Bosch.IO GmbH",
@@ -23,39 +23,48 @@
         "commands": [
             {
                 "command": "iotea.createJSTalentClass",
-                "title": "Bosch IoT Event Analytics: Create new JavaScript Talent class"
+                "title": "Create new JavaScript Talent class",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.createJsTalentProject",
-                "title": "Bosch IoT Event Analytics: Create new JavaScript Talent project"
+                "title": "Create new JavaScript Talent project",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.startIoTeaPlatform",
-                "title": "Bosch IoT Event Analytics: Start platform using docker-compose"
+                "title": "Start platform using docker-compose",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.stopIoTeaPlatform",
-                "title": "Bosch IoT Event Analytics: Stop platform using docker-compose"
+                "title": "Stop platform using docker-compose",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.startMosquittoBroker",
-                "title": "Bosch IoT Event Analytics: Start mosquitto MQTT Broker using docker-compose"
+                "title": "Start mosquitto MQTT Broker using docker-compose",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.stopMosquittoBroker",
-                "title": "Bosch IoT Event Analytics: Stop mosquitto MQTT Broker using docker-compose"
+                "title": "Stop mosquitto MQTT Broker using docker-compose",
+                "category": "Bosch IoT Event Analytics"
             },
             {
                 "command": "iotea.publishMqttMessage",
-                "title": "Bosch IoT Event Analytics: Publish an MQTT message"
+                "title": "Publish an MQTT message",
+                "category": "Bosch IoT Event Analytics"
             },
             {
-                "command": "iotea.createIoTeaTypesFromVssJson",
-                "title": "Bosch IoT Event Analytics: Convert Vehicle Signal Specification to IoT Event Analytics types configuration"
+                "command": "iotea.vss.createIoTeaTypesFromVssJson",
+                "title": "Convert VSS configuration to IoT Event Analytics types configuration",
+                "category": "Vehicle Signal Specification"
             },
             {
-                "command": "iotea.createKuksaValConfiguration",
-                "title": "Bosch IoT Event Analytics: Create configuration files for Kuksa.VAL"
+                "command": "iotea.vss.createKuksaValConfiguration",
+                "title": "Create configuration for Kuksa.VAL (including VSS configuration)",
+                "category": "Vehicle Signal Specification"
             }
         ],
         "snippets": [
