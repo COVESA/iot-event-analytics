@@ -14,13 +14,13 @@
 
 - Open the _docker-compose_ folder in the project root in a terminal
 - Start a Mosquitto broker by using docker-compose
-  - Run ```docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/custom_encoder/.env up --remove-orphans```
+  - Run `docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/custom_encoder/.env up --remove-orphans`
 
 ## How to start it
 
-Start it by running ```node index.js```
+Start it by running `node index.js`
 
 ## How to test it
 
 - Open the _tools/mqtt_ in a terminal
-- Run `node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/javascript/examples/custom_encoder/events.txt" --times 1 --delayMs 2000`
+- Run `node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/javascript/examples/custom_encoder/events.txt" --times 1 --delayMs 2000 --transform iotea.ts-now.jna`

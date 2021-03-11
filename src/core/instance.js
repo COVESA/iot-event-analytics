@@ -51,16 +51,37 @@ class Instance {
         // Prune outdated values
         this.prune();
 
+        let $hidx = -1;
+
+        // Does the raw event value contain a partial value?
+        if (this.__shouldProcessPartialValueAt(idx, rawValue.$part)) {
+            // console.log(`Updating partial feature at index ${idx} at partial index ${rawValue.$part} to ${rawValue.value}`);
+            // Update the current value
+            this.features[idx].raw[rawValue.$part] = rawValue.value;
+            // No encoded features for partial values
+            this.features[idx].enc = null;
+            // Update the ttl, since the value was updated right now
+            this.features[idx].ttl = now + ttlMs;
+
+            this.featureHelper[idx].ttlMs = this.features[idx].ttlMs;
+
+            return {
+                // $hidx is always -1 if a partial value was processed
+                $hidx,
+                $feature: this.features[idx]
+            };
+        }
+
         if (idx < this.features.length && this.features[idx] !== null) {
             if (this.features[idx].whenMs === whenMs) {
                 // If the timestamp already exists for this feature >> reject value
-                // console.log(`Timestamp already exists for given value [${idx}]=${rawValue} at ${whenMs}`);
+                console.log(`Timestamp already exists for given value [${idx}]=${rawValue} at ${whenMs}`);
                 return null;
             }
 
             if (this.features[idx].history.find(historicalFeature => historicalFeature.whenMs === whenMs)) {
                 // If the timestamp already exists in this features history >> reject value
-                // console.log(`Timestamp exists in history for given value [${idx}]=${rawValue} at ${whenMs}`);
+                console.log(`Timestamp exists in history for given value [${idx}]=${rawValue} at ${whenMs}`);
                 return null
             }
 
@@ -83,8 +104,6 @@ class Instance {
                 return null;
             }
         }
-
-        let $hidx = -1;
 
         // Initialize the feature helper
         if (this.featureHelper[idx] === undefined) {
@@ -120,9 +139,7 @@ class Instance {
             this.features = [...this.features, ...new Array(idx - this.features.length + 1).fill(null)];
         }
 
-        // Does the raw event value contain a partial value?
-        const shouldProcessPartialValue = this.__shouldProcessPartialValueAt(idx, rawValue.$part);
-
+        // Partial values do not have any history, since only the most recent value is updated
         if (this.features[idx] !== null && whenMs < this.features[idx].whenMs) {
             // Insert value into history
             const history = this.features[idx].history;
@@ -132,6 +149,7 @@ class Instance {
             for (let i = 0; i <= history.length; i++) {
                 if (i === history.length || whenMs > history[i].whenMs) {
                     // Place it right in front of i
+
                     const historicalFeature = Instance.createHistoryFeature(
                         rawValue,
                         encodedValue,
@@ -145,11 +163,10 @@ class Instance {
                 }
             }
 
-            if (!shouldProcessPartialValue) {
-                if (historyIndex < maxHistoryLength) {
-                    // If the feature could actually be inserted within the valid portion of the history
-                    $hidx = historyIndex;
-                }
+            // All partial events should be forwarded, set $hidx only for non-partial values
+            if (historyIndex < maxHistoryLength) {
+                // If the feature could actually be inserted within the valid portion of the history
+                $hidx = historyIndex;
             }
         } else {
             // Replace current value
@@ -165,7 +182,7 @@ class Instance {
                 $history.unshift(previousFeature);
             }
 
-            // Insert new value with the updated history
+            // The partial value stays the same and gets updated below
             this.features[idx] = Instance.createFeature(
                 rawValue,
                 encodedValue,
@@ -173,15 +190,6 @@ class Instance {
                 whenMs + ttlMs,
                 $history
             );
-        }
-
-        if (shouldProcessPartialValue) {
-            // Modify the current value as well
-            this.features[idx].raw[rawValue.$part] = rawValue.value;
-            // No encoded features for partial values
-            this.features[idx].enc = null;
-            // Update the ttl, since the value was updated right now
-            this.features[idx].ttl = now + ttlMs;
         }
 
         let deletedTimestampsMs = [];

@@ -1,4 +1,4 @@
-{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 126, "g": 127, "b": 128 }, "whenMs": 1626566400001 }
-{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 127, "g": 127, "b": 128 }, "whenMs": 1626566410002 }
-{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 128, "g": 127, "b": 128 }, "whenMs": 1626566420003 }
-{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 129, "g": 127, "b": 128 }, "whenMs": 1626566430004 }
+{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 126, "g": 127, "b": 128 } }
+{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 127, "g": 127, "b": 128 } }
+{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 128, "g": 127, "b": 128 } }
+{ "subject": "someuserid", "type": "mybulb", "instance": "4711", "feature": "lightcolor", "value": { "r": 129, "g": 127, "b": 128 } }

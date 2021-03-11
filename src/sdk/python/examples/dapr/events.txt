@@ -1,1 +1,1 @@
-{ "subject": "someuserid", "type": "anytype", "instance": "4711", "feature": "anyfeature", "value": 9, "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "anytype", "instance": "4711", "feature": "anyfeature", "value": 9 }

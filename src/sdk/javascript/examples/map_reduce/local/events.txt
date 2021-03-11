@@ -1,6 +1,1 @@
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400001 }
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400002 }
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400003 }
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400004 }
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400005 }
-{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123", "whenMs": 1626566400006 }
+{ "subject": "someuserid", "type": "testdevice", "instance": "4711", "feature": "trigger", "value": "123" }

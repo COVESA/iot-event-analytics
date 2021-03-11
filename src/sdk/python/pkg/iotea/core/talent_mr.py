@@ -99,18 +99,21 @@ class Mapper(Talent):
 
         talent_output = TalentOutput()
 
+        now = round(time.time() * 1000)
+
         # Store mapping start time
-        talent_output.add(self, ev, Mapper.FEATURE_MAP_START, round(time.time() * 1000))
+        talent_output.add(self, ev, Mapper.FEATURE_MAP_START, now)
 
         # Place for workers to write result
         talent_output.add(self, ev, Mapper.FEATURE_MAP_PARTIAL, partial_results)
 
         # Jobs for workers
+        # Ensure different timestamps for all work packages
         for i, work_package in enumerate(work_packages):
             talent_output.add(self, ev, Mapper.FEATURE_MAP_ASSIGN, {
                 'idx': i,
                 'value': work_package
-            })
+            }, ev['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE, now + i)
 
         return talent_output.to_json()
 
@@ -126,11 +129,9 @@ class Mapper(Talent):
     def __get_map_assign_feature(self, _type=None):
         return self.get_full_feature(self.id, Mapper.FEATURE_MAP_ASSIGN, _type)
 
-
 Mapper.FEATURE_MAP_START = 'map_start'
 Mapper.FEATURE_MAP_ASSIGN = 'map_assign'
 Mapper.FEATURE_MAP_PARTIAL = 'map_partial'
-
 
 class Worker(Talent):
     def __init__(self, worker_id, mapper_id, connection_string):
@@ -173,9 +174,7 @@ class Worker(Talent):
     def __get_map_assign_feature(self, _type=None):
         return self.get_full_feature(self.mapper_id, Mapper.FEATURE_MAP_ASSIGN, _type)
 
-
 Worker.ERROR = 'ERROR'
-
 
 class Reducer(Talent):
     def __init__(self, reducer_id, mapper_id, connection_string):
@@ -237,6 +236,5 @@ class Reducer(Talent):
 
     def __get_map_partial_feature(self, _type=None):
         return self.get_full_feature(self.mapper_id, Mapper.FEATURE_MAP_PARTIAL, _type)
-
 
 Reducer.FEATURE_MAP_END = 'map_end'

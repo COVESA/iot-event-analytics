@@ -1,2 +1,2 @@
-{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 8, "whenMs": 1626566400000 }
-{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 8, "whenMs": 1626566400000 }
+{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 8 }
+{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 8 }

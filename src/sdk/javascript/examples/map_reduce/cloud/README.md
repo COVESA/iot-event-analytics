@@ -14,7 +14,7 @@
 
 - Convert the cloudTalent.js using the t2c CLI
   - Open _sdk/javascript/t2c_ in a terminal
-  - Run ```node t2c.js -f "../examples/map_reduce/cloud/cloudTalentWorker.js" -a "local-mapper:string" "mqtt://localhost:1884:string" -p aws -o "../examples/map_reduce/cloud/cloudTalentWorkerAWS.js"```
+  - Run `node t2c.js -f "../examples/map_reduce/cloud/cloudTalentWorker.js" -a "local-mapper:string" "mqtt://localhost:1884:string" -p aws -o "../examples/map_reduce/cloud/cloudTalentWorkerAWS.js"`
   - Deploy the function to AWS as described in the t2c README.md
     - __The TalentID is "cloud-talent-worker"__
 
@@ -22,10 +22,10 @@
 
 ## How to start it
 
-- Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose ```docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/javascript/examples/map_reduce/cloud/.env up --remove-orphans```
-- Start the local cloud output talent by running ```node index.js```
+- Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose `docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/javascript/examples/map_reduce/cloud/.env up --remove-orphans`
+- Start the local cloud output talent by running `node index.js`
 
 ## How to test it
 
 - Open _tools/mqtt_ in a terminal
-- Run ```node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/javascript/examples/map_reduce/cloud/events.txt" --times 1 --delayMs 2000```
+- Run `node cli.js pub -c "mqtt://localhost:1883" -t "iotea/ingestion/events" -f "../../sdk/javascript/examples/map_reduce/cloud/events.txt" --times 1 --delayMs 2000 --transform iotea.ts-now.jna`
