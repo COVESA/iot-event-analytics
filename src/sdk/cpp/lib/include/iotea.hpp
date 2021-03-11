@@ -575,13 +575,60 @@ class EventContext {
         publisher_->Publish(return_topic_, e.Json().dump());
     }
 
+    /**
+     * @brief Gather results from pending replies and execute a function. This
+     * method is non blocking.
+     *
+     * @code
+     class MyTalent : Talent {
+      private:
+         Callee myCallee;
+
+      public:
+         MyTalent(std::shared_ptr<Publisher> publisher)
+             : Talent(MY_TALENT_NAME, publisher) {
+
+             myCallee = CreateCallee(TARGET_TALENT_NAME, TARGET_FUNCTION_NAME);
+        }
+
+        void OnEvent(const Event& event, EventContext context) override
+            if (event.GetType() == MY_DESIRED_TYPE) {
+                auto args = ...; // Args for myCallee
+
+                // Call function represented by myCallee and store the token
+                // associated with the pending reply.
+                auto token = myCallee.Call(args, context);
+
+                // Gather the pending reply, i.e. collect the replies
+                // associated with the given tokens and then execute the given
+                // callback function.
+                context.Gather([]{std::vector<std::pair<json, EventContext>> replies) {
+                    // The replies vector holds the replies as pairs of
+                    // * first:  the actual JSON reply value
+                    // * second: the EventContext from which the call was made
+                    //
+                    // The order of the replies matches the order in which the
+                    // tokens where given to Gather.
+                    auto reply = replies[0].first;
+
+                    log::Info() << "Reply received: " << reply.dump(4);
+                }, {token});
+            }
+        }
+    }
+    * @endcode
+    *
+    * @param func Callback function to call when all replies have been gathered
+    * @param tokens std::vector<call_token_t> of tokens to gather before
+    * calling func. The order of the replies passed to func matches the order
+    * of the tokens.
+    */
     void Gather(gather_func_ptr func, const std::vector<call_token_t>& tokens);
 };
 
 /**
- * @brief CallContext represents the context in which an event exists.
- * It assures that outgoing events are routed to the proper recipients.
- *
+ * @brief CallContext is the context within which a call originated. The
+ * purpose of the context is to be able to trace a chain of events and calls.
  */
 class CallContext : public EventContext {
    private:
@@ -609,9 +656,31 @@ class CallContext : public EventContext {
     void Reply(const json& value) const;
 
     /**
-     * @brief GatherAndReply defers a reply until all the replies associated
-     * with tokens have been gathered. The replies are fed to the reply
-     * callback function in the order given in tokens.
+     * @brief GatherAndReply replies to a function call received in this
+     * context. In contrast to Reply, GatherAndReply should be used when the
+     * reply depends on further calls whose arguments could not be determined a
+     * priori.
+     *
+     * @code
+     void Fibonacci(const json& args, CallContext context) {
+         auto n = args[0].get<int>();
+
+         if (n <= 1) {
+             context.Reply(n);
+             return;
+         }
+
+         auto t1 = fib.Call(n - 1, context);
+         auto t2 = fib.Call(n - 2, context);
+
+         context.GatherAndReply([](std::vector<std::pair<json, EventContext>> replies) {
+                 auto n1 = replies[0].first.get<int>();
+                 auto n2 = replies[1].first.get<int>();
+
+                 return n1 + n2;
+                 }, {t1, t2});
+     }
+     * @endcode
      *
      * @param func Callback to execute once all replies have been gathered
      * @param tokens Pending replies on which func dependes
