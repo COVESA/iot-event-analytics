@@ -172,18 +172,6 @@ void MqttClient::OnMessage(mqtt::const_message_ptr msg) {
     log::Debug() << "\ttopic: '" << msg->get_topic() << "'";
     log::Debug() << "\tpayload: '" << msg->to_string();
 
-    // Forward discovery request
-    if (msg->get_topic() == GetDiscoverTopic()) {
-        OnDiscover(msg);
-        return;
-    }
-
-    // Forward platform request
-    if (msg->get_topic() == GetPlatformEventsTopic()) {
-        OnPlatformEvent(msg);
-        return;
-    }
-
     std::cmatch m;
 
     // Forward event
@@ -202,6 +190,18 @@ void MqttClient::OnMessage(mqtt::const_message_ptr msg) {
         std::regex{"^" + mqtt_topic_ns_ + R"(/(?:remote/)?talent/([^/]+)/events/([^/]+)/([^/]+)$)"};
     if (std::regex_match(msg->get_topic().c_str(), m, call_expr)) {
         OnDeferredCall(m[1], m[2], m[3], msg);
+        return;
+    }
+
+    // Forward discovery request
+    if (msg->get_topic() == GetDiscoverTopic()) {
+        OnDiscover(msg);
+        return;
+    }
+
+    // Forward platform request
+    if (msg->get_topic() == GetPlatformEventsTopic()) {
+        OnPlatformEvent(msg);
         return;
     }
 

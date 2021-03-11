@@ -23,9 +23,6 @@
 namespace iotea {
 namespace core {
 
-static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.rules.set";
-static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.rules.unset";
-
 // Message
 //
 Message::Message(const Type msg_type, const int code)
@@ -97,6 +94,9 @@ timepoint_t PlatformEvent::GetTimestamp() const { return timestamp_; }
 PlatformEvent::Type PlatformEvent::GetType() const { return type_; }
 
 PlatformEvent PlatformEvent::FromJson(const json& j) {
+    static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.rules.set";
+    static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.rules.unset";
+
     auto type_name = j["type"].get<std::string>();
 
     auto type = PlatformEvent::Type::UNDEF;
