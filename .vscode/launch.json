@@ -1,11 +1,26 @@
 {
     "version": "0.2.0",
-    "configurations": [{
-            "name": "Launch SDK Extension",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceFolder}/src/sdk/vscode"]
+    "configurations": [
+
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "name": "Attach to IoTea Pipeline Docker Container",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "name": "Attach to IoTea ConfigManager Docker Container",
+            "port": 9230,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
         },
         {
             "name": "Launch SDK Extension Tests",

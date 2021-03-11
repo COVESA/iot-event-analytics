@@ -10,7 +10,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import * as vscode from 'vscode';
+import { ensureIoTeaProjectRootDirAt, ensureRuntimeRequirements } from './requirements';
+import { Terminal } from './terminal';
 
 export function copyDirContentsSync(inDir: string, outDir: string) {
     if (!fs.existsSync(outDir)) {
@@ -66,6 +69,8 @@ export async function chooseAndUpdateIoTeaProjectDir(): Promise<string> {
 
         ioteaProjectRootDir = ioteaProjectRootDirUris[0].fsPath;
 
+        await ensureIoTeaProjectRootDirAt(ioteaProjectRootDir);
+
         // Update the workspace configuration according to the selected folder
         await setIoTeaRootDir(ioteaProjectRootDir);
     }
@@ -79,6 +84,30 @@ export function getIoTeaRootDir(): string {
 
 export function getDockerComposeCmd(): string {
     return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.docker-compose') as string).trim();
+}
+
+export function getDockerCmdArgs(args: string[]): any {
+    // To take care about sudo docker....
+    const dockerCmdParts = getDockerCmd().split(' ');
+
+    const env: any = {};
+    const dockerSock = getDockerSock();
+
+    if (dockerSock !== '') {
+        env.DOCKER_HOST = dockerSock;
+    }
+
+    return {
+        cmd: dockerCmdParts.shift(),
+        args: [ ...dockerCmdParts, ...args ],
+        env
+    };
+}
+
+export function executeDockerCmd(args: string[], cwd: string): Promise<string> {
+    const t = new Terminal();
+    const dockerCmdArgs = getDockerCmdArgs(args);
+    return t.executeCommand(dockerCmdArgs.cmd, dockerCmdArgs.args, cwd, () => {}, dockerCmdArgs.env);
 }
 
 export function getDockerSock(): string {
@@ -97,6 +126,43 @@ export function updateJsonFileAt(absJsonPath: string, updatePaths: any): void {
     const json = JSON.parse(fs.readFileSync(absJsonPath, { encoding: 'utf8' }));
     updateJsonAt(json, updatePaths);
     fs.writeFileSync(absJsonPath, JSON.stringify(json, null, 4), { encoding: 'utf-8'});
+}
+
+export function showProgressWithRuntimePrecheck(title: string, onPrecheckSuccess: (p: vscode.Progress<{ message: string, increment?: number }>) => Promise<void>): Thenable<any> {
+    return vscode.window.withProgress({ title, location: vscode.ProgressLocation.Notification }, async p => {
+        await checkRuntimeRequirementsIfNeeded(
+            (component: string, requirement: string) => {
+                p.report({ message: `Checking ${requirement} requirement for component ${component}...`});
+            },
+            (component: string, requirement: string, expected: any, actual: any) => {
+                p.report({ message: `Check done. Expected ${requirement} of ${component} to be ${expected}. Found ${actual}`});
+            }
+        )
+            .then(() => onPrecheckSuccess(p));
+    });
+}
+
+export function checkRuntimeRequirementsIfNeeded(onRequirement: (component: string, requirement: string) => void, onRequirementSuccess: (component: string, requirement: string, expected: any, actual: any) => void): Promise<void> {
+    const requirements = vscode.workspace.getConfiguration('iotea').get<object>('platform.requirements');
+    const storedHash = vscode.workspace.getConfiguration('iotea').get<string>('platform.requirements-check');
+
+    const md5 = crypto.createHash('md5');
+    md5.update(JSON.stringify(requirements));
+    const hash = md5.digest('hex');
+
+    if (storedHash === hash) {
+        return Promise.resolve();
+    }
+
+    return ensureRuntimeRequirements(
+        requirements,
+        onRequirement,
+        onRequirementSuccess
+    )
+        .then(() => {
+            // Update check with the hash
+            vscode.workspace.getConfiguration('iotea').update('platform.requirements-check', hash, true);
+        });
 }
 
 function updateJsonAt(json: any, updatePaths: any) {
@@ -159,4 +225,8 @@ function updateJsonAt(json: any, updatePaths: any) {
 
 function setIoTeaRootDir(ioteaProjectRootDir: string): Thenable<void> {
     return vscode.workspace.getConfiguration('iotea').update('project.root.dir', ioteaProjectRootDir, true);
+}
+
+function getDockerCmd(): string {
+    return (vscode.workspace.getConfiguration('iotea').get<string>('terminal.docker') as string).trim();
 }

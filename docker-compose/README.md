@@ -108,6 +108,41 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
 
 ```docker-compose -f docker-compose.mosquitto.yml --env-file <YOUR CONFIG PATH>/.env up --build```
 
+## Debug
+
+- Install the Docker Extension for VSCode
+  - As an alternative without using VSCode, use the Chrome debugger and open the URL [chrome://inspect/#devices](chrome://inspect/#devices) in your Browser and select the matching Target
+- Go to the debugging view and click on the `gears` icon. This brings up the launch.json file
+  - Click on `Add Configuration...` and select `Docker: Attach to node` from the list
+  - Create the following configurations<br>
+
+  ```json
+  {
+      "type": "node",
+      "request": "attach",
+      "protocol": "inspector",
+      "name": "Attach to IoTea Pipeline Docker Container",
+      "port": 9229,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app"
+  },
+  {
+      "type": "node",
+      "request": "attach",
+      "protocol": "inspector",
+      "name": "Attach to IoTea ConfigManager Docker Container",
+      "port": 9230,
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app"
+  }
+  ```
+
+- Start the containers using `docker-compose -f docker-compose.platform.yml -f docker-compose.platform.debug.yml --env-file <YOUR CONFIG PATH>/.env up --build`<br>
+  This will start NodeJS with inspect-brk option using default Port _9229_ for the pipeline and _9230_ for the ConfigManager.
+- Go to the debug view again and select one of the above configurations from the list to attach the debugger to the container. Now you are able to use e.g. breakpoints directly in the source code
+
 ## Hints
 
 If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port

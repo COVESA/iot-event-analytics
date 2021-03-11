@@ -12,14 +12,7 @@
 
 ## Prerequisites
 
-- Docker Desktop / Docker for Windows (may require proxy configuration) >=2.4.0.0
-  - Docker Engine >= v19.03.13
-- docker-compose >= 1.27.4
-- Git
-- NodeJS >= 12.3.0 (+npm and yarn globally installed) (may require proxy configuration) to run the demo Talent
-- VSCode >= 1.51.0
-- Clone of IoTEA repository (develop branch) from socialcoding (Will be OSS on GitHub in near future)
-  - __Install all dependencies in the IoTEA project folder using `yarn`__, since several commands are using tools, which run directly from source
+All requirements will be checked on each command invocation
 
 ## Installation
 
@@ -34,7 +27,7 @@
 
 ## Command usage
 
-- `Strg + Shift + p` > type iotea and you will see all available commands
+- `Strg + Shift + P` > type _iotea_ or _vss_ and you will see all available commands
 
 ## Talent
 
