@@ -55,6 +55,7 @@ class Instance {
 
         // Does the raw event value contain a partial value?
         if (this.__shouldProcessPartialValueAt(idx, rawValue.$part)) {
+            // Partial values do not have any history, since only the most recent value is updated according to the given $part(ial) index
             // console.log(`Updating partial feature at index ${idx} at partial index ${rawValue.$part} to ${rawValue.value}`);
             // Update the current value
             this.features[idx].raw[rawValue.$part] = rawValue.value;
@@ -139,7 +140,6 @@ class Instance {
             this.features = [...this.features, ...new Array(idx - this.features.length + 1).fill(null)];
         }
 
-        // Partial values do not have any history, since only the most recent value is updated
         if (this.features[idx] !== null && whenMs < this.features[idx].whenMs) {
             // Insert value into history
             const history = this.features[idx].history;
@@ -163,7 +163,6 @@ class Instance {
                 }
             }
 
-            // All partial events should be forwarded, set $hidx only for non-partial values
             if (historyIndex < maxHistoryLength) {
                 // If the feature could actually be inserted within the valid portion of the history
                 $hidx = historyIndex;
@@ -206,8 +205,7 @@ class Instance {
         }
 
         if ($hidx >= this.features[idx].history.length) {
-            // If current value was not edited for partial updates and the current event was inserted out of history bounds
-            // though it was already deleted again
+            // If the current history entry was inserted out of history bounds and thus deleted again in the prior step
             // console.log(`Feature has been set out of bounds for value [${idx}]=${rawValue}.history[${$hidx}] at ${whenMs}`);
             return null;
         }
@@ -215,7 +213,6 @@ class Instance {
         this.featureHelper[idx].ttlMs = this.features[idx].ttlMs;
 
         return {
-            // $hidx is always -1 if a partial value was processed
             $hidx,
             $feature: this.features[idx]
         };

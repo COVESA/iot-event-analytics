@@ -1,6 +1,3 @@
-
-from setuptools import setup
-
 ##############################################################################
 # Copyright (c) 2021 Bosch.IO GmbH
 #
@@ -11,6 +8,8 @@ from setuptools import setup
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
+from setuptools import setup
+
 with open('README.md', 'r') as fh:
     LONG_DESCRIPTION = fh.read()
 
@@ -18,7 +17,6 @@ setup(
     name="boschio-iotea",
     version="2.2.0",
     author="Bosch.IO GmbH",
-    author_email="Lars-Erich.Kiefer@de.bosch.com",
     description="Core library for Talent development",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",

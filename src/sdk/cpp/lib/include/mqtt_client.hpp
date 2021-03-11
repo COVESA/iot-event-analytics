@@ -6,6 +6,8 @@
  * This file is subject to the terms and conditions defined in file
  * ’license.txt’, which is part of this source code package.
  *********************************************************************/
+#ifndef MQTT_CLIENT_HPP
+#define MQTT_CLIENT_HPP
 
 #include <mqtt/async_client.h>
 
@@ -75,3 +77,5 @@ class MqttClient : public Publisher {
 
 }  // namespace core
 }  // namespace iotea
+
+#endif // MQTT_CLIENT_HPP
