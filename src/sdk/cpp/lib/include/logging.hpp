@@ -9,7 +9,6 @@
 #ifndef LOGGING_HPP
 #define LOGGING_HPP
 
-#include <ctime>
 #include <iostream>
 #include <mutex>
 

@@ -11,17 +11,16 @@
 #define IOTEA_HPP
 
 #include <chrono>
-#include <initializer_list>
+#include <functional>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
 
 #include "nlohmann/json.hpp"
 
-#include "logging.hpp"
 #include "schema.hpp"
-#include "util.hpp"
 
 using json = nlohmann::json;
 
@@ -30,13 +29,11 @@ namespace core {
 
 class Message;
 class Talent;
-class Event;
 class Publisher;
 class EventContext;
 class CallContext;
 class Callee;
 class CallHandler;
-class DiscoverMessage;
 
 using func_ptr = std::function<void(const json&, const CallContext&)>;
 using function_map = std::unordered_map<std::string, func_ptr>;
