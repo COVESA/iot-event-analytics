@@ -40,7 +40,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "2.2.0"
+        iotea.platform.version: "0.2.1"
       dockerfile: docker/config/Dockerfile.amd64
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
@@ -59,7 +59,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "2.2.0"
+        iotea.platform.version: "0.2.1"
       dockerfile: docker/pipeline/Dockerfile.amd64
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}

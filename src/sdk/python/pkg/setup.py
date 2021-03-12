@@ -15,7 +15,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name="boschio-iotea",
-    version="2.2.1",
+    version="0.2.1",
     author="Bosch.IO GmbH",
     description="Core library for Talent development",
     long_description=LONG_DESCRIPTION,
