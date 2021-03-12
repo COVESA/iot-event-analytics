@@ -1,8 +1,20 @@
 {
     "loglevel": "INFO",
-    "platformId": "ABCDE",
-    "mqtt": {
-        "connectionString": "mqtt://localhost:1883",
-        "ns": "iotea/"
+    "platformId": "123456",
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "mqtt5Only": true,
+                    "brokerUrl": "mqtt://localhost:1883"
+                }
+            }
+        ]
     }
 }

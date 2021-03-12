@@ -67,7 +67,7 @@ For further information how to start the platform using docker-compose see [here
 ## Run an example/your own Talent on your machine (within the project)
 
 - Simply create your first python or NodeJS talent following the examples given in _src/sdk/(javascript|python|cpp)/examples_<br>
-- Start you talent by connecting it to `mqtt://localhost:1883` or a locally running remote talent by connecting it to `mqtt://localhost:1884`. (Has to match your port configuration for the MQTT Broker)<br>
+- Start you talent by connecting it to `mqtt://localhost:1883`<br>
 - There are examples, which start a platform instance by themselves. They only need an MQTT Broker running. To achieve this, simply run from within the _./docker-compose_ directory<br>
 `docker-compose -f docker-compose.mosquitto.yml up`
 
@@ -99,10 +99,6 @@ For further information how to start the platform using docker-compose see [here
       super('my-test-talent', connectionString);
     }
 
-    isRemote() {
-      return false;
-    }
-
     getRules() {
       return new iotea.AndRules([
         new iotea.Rule(
@@ -119,7 +115,6 @@ For further information how to start the platform using docker-compose see [here
   new TestTalent('mqtt://localhost:1883').start();
   ```
 
-- If you would like to connect your talent to the remote broker, just connect to port 1884 instead
 - Run `node index.js` to start the test talent.
 
 ## Run a talent as AWS Lambda function

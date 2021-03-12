@@ -16,7 +16,7 @@ const MetadataManager = require('../../core/metadataManager');
 const Talent = require('../../core/talent');
 const JsonModel = require('../../core/util/jsonModel');
 const { AndRules, Rule, OpConstraint, ANY_FEATURE, ALL_TYPES } = require('../../core/rules');
-const { NamedMqttBroker } = require('../../core/util/mqttBroker');
+const ProtocolGateway = require('../../core/protocolGateway');
 const { PLATFORM_EVENTS_TOPIC } = require('../../core/constants');
 const Logger = require('../../core/util/logger');
 const { TalentInput } = require('../../core/util/talentIO');
@@ -56,11 +56,11 @@ const {
 
 class VssAdapter extends Talent {
     // Handles multiple VssWebsocket Connections
-    constructor(connectionString, wsAddress, wsToken, vssSegment, adapterId = uuid(), wsOptions = {}, enableLoopPrevention = false) {
-        super(`vss-adapter-${adapterId}`, connectionString);
+    constructor(protocolGatewayConfig, wsAddress, wsToken, vssSegment, adapterId = uuid(), wsOptions = {}, enableLoopPrevention = false) {
+        super(`vss-adapter-${adapterId}`, protocolGatewayConfig);
 
-        this.broker = new NamedMqttBroker(this.id, connectionString);
-        this.metadataManager = new MetadataManager(connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.id);
+        this.metadataManager = new MetadataManager(protocolGatewayConfig);
 
         // Identifies the adapter instance
         this.adapterId = adapterId;
@@ -114,7 +114,7 @@ class VssAdapter extends Talent {
                 })
                 .then(() => this.metadataManager.start())
                 // Subscribe for platform events
-                .then(() => this.broker.subscribeJson(PLATFORM_EVENTS_TOPIC, this.__onPlatformEvent.bind(this)))
+                .then(() => this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.__onPlatformEvent.bind(this)))
                 .then(() => super.start());
         }
         catch(err) {
@@ -220,7 +220,7 @@ class VssAdapter extends Talent {
 
                     this.logger.debug(`Forwarding event to IoT Event Analytics Platform: ${JSON.stringify(msg)}...`);
 
-                    await this.broker.publishJson(INGESTION_TOPIC, msg);
+                    await this.pg.publishJson(INGESTION_TOPIC, msg);
                 }, err => {
                     this.logger.error(`Error for subscription on VSS path ${absVssPath}`, null, err);
                 }, true)

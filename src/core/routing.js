@@ -8,35 +8,38 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-const { NamedMqttBroker } = require('./util/mqttBroker');
-
 const { Rules } = require('./rules');
 const Talent = require('./talent');
 
-const RulesManager = require('./rulesManager');
+const TalentConfigManager = require('./talentConfigManager');
 const InstanceManager = require('./instanceManager');
 
 const Logger = require('./util/logger');
 const FeatureMap = require('./util/featureMap');
 
+const validatePlatformId = require('./util/validatePlatformId');
+
 const {
     INGESTION_TOPIC,
     ROUTING_TOPIC
 } = require('./constants');
+const ProtocolGateway = require('./protocolGateway');
 
 module.exports = class Routing {
-    constructor(connectionString, platformId = '') {
+    constructor(protocolGatewayConfig, platformId) {
+        validatePlatformId(platformId);
+
         this.logger = new Logger('Routing');
         this.platformId = platformId;
-        this.broker = new NamedMqttBroker('Routing', connectionString);
-        this.instanceManager = new InstanceManager(connectionString);
-        this.rulesManager = new RulesManager(connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, 'Routing');
+        this.instanceManager = new InstanceManager(protocolGatewayConfig);
+        this.talentConfigManager = new TalentConfigManager(protocolGatewayConfig);
     }
 
     start() {
         return this.instanceManager.start()
-            .then(() => this.rulesManager.start())
-            .then(() => this.broker.subscribeJson(`$share/routing/${ROUTING_TOPIC}`, this.__onEvent.bind(this)))
+            .then(() => this.talentConfigManager.start())
+            .then(() => this.pg.subscribeJsonShared('routing', ROUTING_TOPIC, this.__onEvent.bind(this), ProtocolGateway.createSubscribeOptions(true)))
             .then(() => {
                 this.logger.info('Routing started successfully');
             });
@@ -47,15 +50,17 @@ module.exports = class Routing {
     }
 
     async __handleEvent(ev) {
+
         const evtctx = Logger.createEventContext(ev);
 
         try {
-            for(const id of this.rulesManager.getRuleIds()) {
+            for(const id of this.talentConfigManager.getTalentIds()) {
                 this.logger.debug(`Evaluating rules for talent ${id}...`, evtctx);
 
-                const ruleset = this.rulesManager.getRuleSet(id);
+                const config = this.talentConfigManager.getConfig(id);
+                const rules = config.rules;
 
-                const typeFeatures = await ruleset.rules.getUniqueTypeFeatures();
+                const typeFeatures = await rules.getUniqueTypeFeatures();
                 const evTypeFeature = Rules.getTypeFeature(ev.type, ev.feature, ev.segment);
 
                 // Is the current event part of the rules feature types? If not, the event does not have any influence on this rule >> Skip it
@@ -64,17 +69,17 @@ module.exports = class Routing {
                     continue;
                 }
 
-                if (ruleset.rules.omitInstanceId(ev.instance, evTypeFeature)) {
+                if (rules.omitInstanceId(ev.instance, evTypeFeature)) {
                     // InstanceID is filtered out
                     this.logger.verbose(`Instance id ${ev.instance} was omitted ${JSON.stringify(evTypeFeature)}`, evtctx);
                     continue;
                 }
 
                 const featureMap = new FeatureMap();
-                featureMap.set(ev.type, ev.feature, ev.instance, ev.$feature, await this.instanceManager.getMetadataManager().resolveMetaFeature(ev.type, ev.feature));
+                featureMap.set(ev.type, ev.feature, ev.instance, ev.$feature, ev.$metadata);
 
                 // This object will be handed over into the evaluation and be filled, when evaluation the rules
-                if (!(await ruleset.rules.evaluate(ev.subject, ev.type, ev.feature, ev.instance, featureMap, this.instanceManager))) {
+                if (!(await rules.evaluate(ev.subject, ev.type, ev.feature, ev.instance, featureMap, this.instanceManager))) {
                     this.logger.verbose(`Rules do not evaluate for ${ev.subject}, ${ev.type}, ${ev.feature}, ${ev.instance}`, evtctx);
                     this.logger.verbose(JSON.stringify(featureMap), evtctx);
                     continue;
@@ -84,20 +89,22 @@ module.exports = class Routing {
                 // Only if true, forward it to the talent --> Maybe make that configurable
                 // Currently a current event can evaluate to false, but the circumventing OrRule evaluates to true
                 // So the whole ruleset evaluates to true
+                this.logger.debug(`Sending event to talent with topic ${Talent.getTalentTopic(id, ev.value.$tsuffix)} to adapter ${config.$adapterId}`, evtctx);
 
-                let returnTopic = INGESTION_TOPIC;
+                // Just send it to the adapter, the talent is attached to
+                const publishOptions = ProtocolGateway.createPublishOptions(false, config.$adapterId);
 
-                if (ruleset.remote === true) {
-                    // Prefix return topic with platformId
-                    returnTopic = `${this.platformId}/${INGESTION_TOPIC}`;
-                }
+                // Remove these two fields from the given event
+                ev.$feature = undefined;
+                ev.$metadata = undefined;
 
-                this.logger.debug(`Sending event to talent with topic ${this.broker.__prefixTopicNs(Talent.getTalentTopic(id, ruleset.remote, ev.value.$tsuffix))}`, evtctx);
-
-                await this.broker.publishJson(Talent.getTalentTopic(id, ruleset.remote, ev.value.$tsuffix), Object.assign({
-                    returnTopic: NamedMqttBroker.prefixTopicNs(returnTopic, process.env.MQTT_TOPIC_NS || null),
-                    $features: featureMap.dump()
-                }, ev));
+                await this.pg.publishJson(Talent.getTalentTopic(id, ev.value.$tsuffix), Object.assign(
+                    ev,
+                    {
+                        returnTopic: `${this.platformId}/${INGESTION_TOPIC}`,
+                        $features: featureMap.dump()
+                    }
+                ), publishOptions);
             }
         }
         catch(err) {

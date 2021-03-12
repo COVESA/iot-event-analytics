@@ -12,7 +12,7 @@ const JSON_API_VERSION = require('../../package.json')['jsonApiVersion'];
 
 const TALENTS_DISCOVERY_TOPIC = 'configManager/talents/discover';
 const TALENTS_DISCOVERY_RETURN_TOPIC = 'configManager/talent/discover';
-const UPDATE_RULES_TOPIC = 'rulesManager/update';
+const UPDATE_TALENT_CONFIG_TOPIC = 'talentConfigManager/update';
 const UPDATE_TYPES_TOPIC = 'metadataManager/update';
 const UPDATE_FEATURE_TOPIC = 'instanceManager/update';
 const INGESTION_TOPIC = 'ingestion/events';
@@ -20,8 +20,8 @@ const ENCODING_TOPIC = 'encoding/events';
 const ROUTING_TOPIC = 'routing/events';
 const PLATFORM_EVENTS_TOPIC = 'platform/$events';
 
-const PLATFORM_EVENT_TYPE_SET_RULES = 'platform.talent.rules.set';
-const PLATFORM_EVENT_TYPE_UNSET_RULES = 'platform.talent.rules.unset';
+const PLATFORM_EVENT_TYPE_SET_CONFIG = 'platform.talent.config.set';
+const PLATFORM_EVENT_TYPE_UNSET_CONFIG = 'platform.talent.config.unset';
 
 const ENCODING_TYPE_NUMBER = 'number';
 const ENCODING_TYPE_OBJECT = 'object';
@@ -71,7 +71,7 @@ const TEST_ERROR = 'TEST_ERROR';
 module.exports = {
     TALENTS_DISCOVERY_TOPIC,
     TALENTS_DISCOVERY_RETURN_TOPIC,
-    UPDATE_RULES_TOPIC,
+    UPDATE_TALENT_CONFIG_TOPIC,
     UPDATE_TYPES_TOPIC,
     UPDATE_FEATURE_TOPIC,
     INGESTION_TOPIC,
@@ -106,8 +106,8 @@ module.exports = {
     ENCODING_ENCODER_DELTA,
     ENCODING_ENCODER_MINMAX,
     ENCODING_ENCODER_THROUGH,
-    PLATFORM_EVENT_TYPE_SET_RULES,
-    PLATFORM_EVENT_TYPE_UNSET_RULES,
+    PLATFORM_EVENT_TYPE_SET_CONFIG,
+    PLATFORM_EVENT_TYPE_UNSET_CONFIG,
     JSON_API_VERSION,
     GET_TEST_INFO_METHOD_NAME,
     PREPARE_TEST_SET_METHOD_NAME,

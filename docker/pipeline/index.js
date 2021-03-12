@@ -12,30 +12,15 @@ const Logger = require('../../src/core/util/logger');
 
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.WARN);
 
-try {
-    process.env.MQTT_TOPIC_NS = config.get('mqtt.ns');
-}
-catch(err) {
-    delete process.env.MQTT_TOPIC_NS;
-}
-
 let pipelineLogger = undefined;
-let platformId = undefined;
+const platformId = config.get('platformId', 'default');
 
-try {
-    platformId = config.get('platformId');
-    pipelineLogger = new Logger(`IoT Event Analytics Pipeline-${platformId}`);
-    pipelineLogger.info(`Local client installation ${platformId}`);
-}
-catch(err) {
-    pipelineLogger = new Logger(`IoT Event Analytics Pipeline`);
-}
+pipelineLogger = new Logger(`IoT Event Analytics Pipeline (${platformId})`);
+pipelineLogger.info(`Starting...`);
 
-pipelineLogger.info(`Starting IoT Event Analytics Pipeline...`);
-
-const ing = new Ingestion(config.get('mqtt.connectionString'));
-const enc = new Encoding(config.get('mqtt.connectionString'));
-const rou = new Routing(config.get('mqtt.connectionString'), platformId);
+const ing = new Ingestion(config.get('protocolGateway'), platformId);
+const enc = new Encoding(config.get('protocolGateway'));
+const rou = new Routing(config.get('protocolGateway'), platformId);
 
 ing.start(path.resolve(__dirname, 'config', 'channels'))
     .then(() => enc.start())

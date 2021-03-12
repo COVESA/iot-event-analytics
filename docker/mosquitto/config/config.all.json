@@ -12,7 +12,6 @@
         "all"
     ],
     "mqtt": {
-        "ns": "iotea/",
         "port": 1883,
         "caCert": "/test1",
         "serverCert": "/test2",
@@ -20,31 +19,5 @@
     },
     "ws": {
         "port": 9001
-    },
-    "platformId": "ABCDE",
-    "bridges": [
-        {
-            "platformIdSuffix": "br-1",
-            "address": "localhost:1884",
-            "auth": {
-                "type": "certificate",
-                "caCert": "/my",
-                "clientCert": "/test",
-                "clientKey": "/key"
-            }
-        },
-        {
-            "platformIdSuffix": "br-2",
-            "address": "localhost:1885",
-            "auth": {
-                "type": "basic",
-                "username": "hello",
-                "password": "world"
-            }
-        },
-        {
-            "platformIdSuffix": "br-3",
-            "address": "localhost:1886"
-        }
-    ]
+    }
 }

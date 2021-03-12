@@ -11,7 +11,6 @@
 const jsonata = require('jsonata');
 
 const Logger = require('./util/logger');
-const { NamedMqttBroker } = require('./util/mqttBroker');
 const InstanceManager = require('./instanceManager');
 
 const {
@@ -30,24 +29,25 @@ const {
 const equals = require('./util/equals');
 const jsonQuery = require('./util/jsonQuery');
 const clone = require('./util/clone');
+const ProtocolGateway = require('./protocolGateway');
 
 module.exports = class Encoding {
-    constructor(connectionString) {
+    constructor(protocolGatewayConfig) {
         this.logger = new Logger('Encoding');
-        this.broker = new NamedMqttBroker('Encoding', connectionString);
-        this.instanceManager = new InstanceManager(connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, 'Encoding', true);
+        this.instanceManager = new InstanceManager(protocolGatewayConfig);
     }
 
     start() {
         return this.instanceManager.start()
-            .then(() => this.broker.subscribeJson(`$share/encoding/${ENCODING_TOPIC}`, this.__onEvent.bind(this)))
+            .then(() => this.pg.subscribeJsonShared('encoding', ENCODING_TOPIC, this.__onEvent.bind(this)))
             .then(() => {
                 this.logger.info('Encoding started successfully');
             });
     }
 
-    async __onEvent(event) {
-        await this.__handleEvent(event);
+    async __onEvent(ev) {
+        await this.__handleEvent(ev);
     }
 
     async __handleEvent(ev) {
@@ -98,7 +98,7 @@ module.exports = class Encoding {
 
         try {
             this.logger.verbose(`Forwarding event to routing stage ${JSON.stringify(ev)}`, evtctx);
-            await this.broker.publishJson(ROUTING_TOPIC, ev);
+            await this.pg.publishJson(ROUTING_TOPIC, ev);
         }
         catch(err) {
             this.logger.warn(err.message, evtctx, err);

@@ -8,7 +8,11 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-const { MqttBroker, NamedMqttBroker } = require('./core/util/mqttBroker');
+const {
+    MqttClient,
+    NamedMqttClient,
+    MqttProtocolAdapter
+} = require('./core/util/mqttClient');
 const Logger = require('./core/util/logger');
 
 const MetadataManager = require('./core/metadataManager');
@@ -19,7 +23,7 @@ const FunctionTalent = require('./core/talent.func');
 const {
     TestSetTalent,
     TestRunnerTalent
-} = require('./core/talent.test')
+} = require('./core/talent.test');
 
 
 const {
@@ -98,6 +102,8 @@ const {
     VssPathTranslator
 } = require('./adapter/vss/vss.adapter');
 
+const ProtocolGateway = require('./core/protocolGateway');
+
 const VssWebsocket = require('./adapter/vss/vss.websocket');
 
 const {
@@ -122,8 +128,9 @@ module.exports = {
         }
     },
     util: {
-        MqttBroker,
-        NamedMqttBroker,
+        MqttClient,
+        NamedMqttClient,
+        MqttProtocolAdapter,
         Logger,
         JsonModel,
         jsonQuery
@@ -170,6 +177,7 @@ module.exports = {
     OrRules,
     Rule,
     ChangeConstraint,
+    ProtocolGateway,
     OpConstraint,
     NelsonAlterConstraint,
     NelsonBiasConstraint,

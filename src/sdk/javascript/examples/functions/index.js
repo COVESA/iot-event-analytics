@@ -39,17 +39,21 @@ const {
 
 const InstanceManager = require('../../../../core/instanceManager');
 
-const { NamedMqttBroker } = require('../../../../core/util/mqttBroker');
+const {
+    NamedMqttClient,
+    MqttProtocolAdapter
+} = require('../../../../core/util/mqttClient');
+
+const ProtocolGateway = require('../../../../core/protocolGateway');
+
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration(true);
+const protocolGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
 
 class MathFunctions extends FunctionTalent {
-    constructor(connectionString) {
-        super('math', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('math', protocolGatewayConfig);
         this.registerFunction('multiply', this.__multiply.bind(this));
         this.registerFunction('fibonacci', this.__fibonacci.bind(this));
-    }
-
-    isRemote() {
-        return false;
     }
 
     callees() {
@@ -84,8 +88,8 @@ class MathFunctions extends FunctionTalent {
 }
 
 class TempTalent extends Talent {
-    constructor(connectionString) {
-        super('temp-talent', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('temp-talent', protocolGatewayConfig);
     }
 
     callees() {
@@ -118,9 +122,9 @@ class TempTalent extends Talent {
     }
 }
 
-const cf = new ConfigManager('mqtt://localhost:1883', '123456');
+const cf = new ConfigManager(protocolGatewayConfig, '123456');
 
-const instanceManager = new InstanceManager('mqtt://localhost:1883');
+const instanceManager = new InstanceManager(protocolGatewayConfig);
 const instanceApi = new InstanceApi(instanceManager);
 const metadataApi = new MetadataApi(cf.getMetadataManager());
 
@@ -129,7 +133,7 @@ app.use('/metadata/api/v1', metadataApi.createApiV1());
 app.use('/data/api/v1', instanceApi.createApiV1());
 app.listen(8080);
 
-const broker = new NamedMqttBroker('PlatformEvents', 'mqtt://localhost:1883');
+const broker = new NamedMqttClient('PlatformEvents', 'mqtt://localhost:1883');
 const platformEventLogger = new Logger('PlatformEvents');
 
 broker.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
@@ -137,12 +141,12 @@ broker.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
     platformEventLogger.verbose(JSON.stringify(ev.data));
 });
 
-const ing = new Ingestion('mqtt://localhost:1883');
-const enc = new Encoding('mqtt://localhost:1883');
-const rou = new Routing('mqtt://localhost:1883', '123456');
-const mathFunctions1 = new MathFunctions('mqtt://localhost:1883');
-const mathFunctions2 = new MathFunctions('mqtt://localhost:1883');
-const tempTalent = new TempTalent('mqtt://localhost:1883');
+const ing = new Ingestion(protocolGatewayConfig);
+const enc = new Encoding(protocolGatewayConfig);
+const rou = new Routing(protocolGatewayConfig, '123456');
+const mathFunctions1 = new MathFunctions(protocolGatewayConfig);
+const mathFunctions2 = new MathFunctions(protocolGatewayConfig);
+const tempTalent = new TempTalent(protocolGatewayConfig);
 const platformLogger = new Logger('Platform');
 
 mathFunctions1.start()

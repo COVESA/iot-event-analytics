@@ -13,13 +13,14 @@ const path = require('path');
 const Ajv = require('ajv');
 
 const Logger = require('./util/logger');
-const { NamedMqttBroker } = require('./util/mqttBroker');
+const validatePlatformId = require('./util/validatePlatformId');
 const FieldGraph = require('./util/featureGraph');
-const RulesManager = require('./rulesManager');
+const TalentConfigManager = require('./talentConfigManager');
 const MetadataManager = require('./metadataManager');
 const Talent = require('./talent');
 const PlatformEvents = require('./platformEvents');
 const Logo = require('./logo');
+const ProtocolGateway = require('./protocolGateway');
 
 const ErrorMessageFormatter = require('./util/errorMessageFormatter');
 
@@ -47,17 +48,20 @@ const {
  const RulesLoader = require('./rules.loader');
 
 module.exports = class ConfigManager {
-    constructor(connectionString, platformId = '') {
+    constructor(protocolGatewayConfig, platformId) {
+        validatePlatformId(platformId);
+
         this.logger = new Logger('ConfigManager');
 
         Logo.print();
 
-        PlatformEvents.init(connectionString);
+        PlatformEvents.init(protocolGatewayConfig);
 
-        this.broker = new NamedMqttBroker('ConfigManager', connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, 'ConfigManager');
+
         this.platformId = platformId;
-        this.metadataManager = new MetadataManager(connectionString, new Logger('ConfigManager.MetadataManager'));
-        this.rulesManager = new RulesManager(connectionString);
+        this.metadataManager = new MetadataManager(protocolGatewayConfig, new Logger('ConfigManager.MetadataManager'));
+        this.talentConfigManager = new TalentConfigManager(protocolGatewayConfig);
         this.discoveryTimeout = null;
         this.discoveryCache = [];
         this.registeredTalentIds = [];
@@ -66,9 +70,9 @@ module.exports = class ConfigManager {
 
     start(discoveryIntervalMs = TALENT_DISCOVERY_INTERVAL_MS, typesConfigPath, uomConfigPath) {
         return this.metadataManager.startAsMaster(typesConfigPath, uomConfigPath)
-            .then(() => this.rulesManager.start())
+            .then(() => this.talentConfigManager.start())
             // Subscribe to talent discovery response
-            .then(() => this.broker.subscribeJson(this.__prefixPlatformId(TALENTS_DISCOVERY_RETURN_TOPIC), this.__onTalentDiscovery.bind(this)))
+            .then(() => this.pg.subscribeJson(this.__prefixPlatformId(TALENTS_DISCOVERY_RETURN_TOPIC), this.__onTalentDiscovery.bind(this)))
             .then(() => {
                 this.logger.info('ConfigManager started');
             })
@@ -95,18 +99,18 @@ module.exports = class ConfigManager {
         this.logger.info('Starting talent discovery...');
 
         // TODO: discovery filter based on some features
-        return this.broker.publishJson(TALENTS_DISCOVERY_TOPIC, {
+        return this.pg.publishJson(TALENTS_DISCOVERY_TOPIC, {
             msgType: MSG_TYPE_DISCOVERY,
             version: JSON_API_VERSION,
             returnTopic: this.__prefixPlatformId(TALENTS_DISCOVERY_RETURN_TOPIC)
-        })
+        }, ProtocolGateway.createPublishOptions(false))
             .then(() => {
                 // Listen for discovery responses for a given time
                 this.discoveryTimeout = setTimeout(async () => {
                     if (this.discoveryCache.length === 0) {
                         // Clear all rules
                         this.logger.debug(`Clearing all rules`);
-                        await this.rulesManager.clearRules();
+                        await this.talentConfigManager.clearAll();
                         // No talent was found
                         // Reduce the interval and search again
                         this.logger.info(`No talent was discovered. Restart discovery now.`);
@@ -124,9 +128,11 @@ module.exports = class ConfigManager {
             });
     }
 
-    __onTalentDiscovery(discovery) {
+    __onTalentDiscovery(discovery, topic, adapterId) {
         if (Date.now() < this.discoveryEndsAt) {
             this.logger.info('Discovered talent ' + discovery.id);
+            // Extend the configuration for this talent with the adapterId it is attached to
+            discovery.config.$adapterId = adapterId;
             this.discoveryCache.push(discovery);
         }
     }
@@ -172,7 +178,7 @@ module.exports = class ConfigManager {
             // Keep the current state of the graph
             fg.freeze();
 
-            const outputs = discovery.outputs;
+            const outputs = discovery.config.outputs;
 
             if (!Object.keys(outputs).reduce((acc, outputFeature) => acc && Talent.isValidTalentFeature(outputFeature, discovery.id), true)) {
                 // Outputs, which are not prefixed correctly will rejected
@@ -183,10 +189,10 @@ module.exports = class ConfigManager {
                 continue;
             }
 
-            if (discovery.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] !== true) {
+            if (discovery.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] !== true) {
                 const outputFeatures = Object.keys(outputs).map(feature => (outputs[feature].type || DEFAULT_TYPE) + '.' + feature);
 
-                const rules = RulesLoader.load(discovery.rules);
+                const rules = RulesLoader.load(discovery.config.rules);
                 const typeFeatures = rules.getUniqueTypeFeatures();
 
                 const inputFeatures = [];
@@ -194,7 +200,7 @@ module.exports = class ConfigManager {
                 const addInputFeature = ((type, feature, features) => {
                     const typeFeature = `${type}.${feature}`;
 
-                    if (Array.isArray(discovery.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK]) && discovery.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK].indexOf(typeFeature) > -1) {
+                    if (Array.isArray(discovery.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK]) && discovery.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK].indexOf(typeFeature) > -1) {
                         // Skip cycle check for the given field
                         return;
                     }
@@ -263,7 +269,7 @@ module.exports = class ConfigManager {
             try {
                 await this.metadataManager.registerTalentOutputFeatures(outputs);
 
-                await this.rulesManager.setRules(discovery.id, discovery.rules, discovery.remote);
+                await this.talentConfigManager.setConfig(discovery.id, discovery.config);
 
                 this.logger.info(`Registered talent ${discovery.id} successfully`);
             }
@@ -285,7 +291,7 @@ module.exports = class ConfigManager {
             .forEach(async removedTalentId => {
                 // Check which talents have been removed
                 this.logger.debug(`Removing rules for talent ${removedTalentId}`);
-                await this.rulesManager.unsetRules(removedTalentId);
+                await this.talentConfigManager.removeConfig(removedTalentId);
             });
 
         this.registeredTalentIds = registeredTalentIds;
@@ -302,7 +308,7 @@ module.exports = class ConfigManager {
     async __publishTalentDiscoveryError(discovery, code) {
         try {
             // Send event straight back to plugin
-            await this.broker.publishJson(Talent.getTalentTopic(discovery.id, discovery.remote === true), {
+            await this.pg.publishJson(Talent.getTalentTopic(discovery.id), {
                 code,
                 msgType: MSG_TYPE_ERROR
             });

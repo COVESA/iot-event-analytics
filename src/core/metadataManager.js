@@ -13,11 +13,12 @@ const path = require('path');
 const Ajv = require('ajv');
 
 const Logger = require('./util/logger');
-const { NamedMqttBroker } = require('./util/mqttBroker');
 const equals = require('./util/equals');
 const UomManager = require('./uomManager');
 
 const ErrorMessageFormatter = require('./util/errorMessageFormatter');
+
+const ProtocolGateway = require('./protocolGateway');
 
 const {
     DEFAULT_SEGMENT,
@@ -26,7 +27,7 @@ const {
 } = require('./constants');
 
 class MetadataManager {
-    constructor(connectionString, logger = new Logger('MetadataManager')) {
+    constructor(protocolGatewayConfig, logger = new Logger('MetadataManager')) {
         this.logger = logger;
 
         /*
@@ -40,7 +41,7 @@ class MetadataManager {
         */
         this.types = {};
 
-        this.broker = new NamedMqttBroker(this.logger.name, connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.logger.name, true);
 
         this.version = 0;
 
@@ -48,8 +49,9 @@ class MetadataManager {
     }
 
     start() {
-        this.ready = this.broker.subscribeJson(UPDATE_TYPES_TOPIC, data => {
-            this.logger.debug(`Types Update v${data.version} received`);
+        this.ready = this.pg.subscribeJson(UPDATE_TYPES_TOPIC, data => {
+            this.logger.info(`Types Update v${data.version} received`);
+            this.logger.info(JSON.stringify(data.types));
             this.version = data.version;
             this.types = data.types;
         })
@@ -70,9 +72,7 @@ class MetadataManager {
             // Master reads the initial configuration from a file
             .then(() => this.__loadConfiguration(typesConfigPath))
             .then(config => this.__initFromConfig(config))
-            .then(() => this.__publishTypes({
-                retain: true
-            }))
+            .then(() => this.__publishTypes())
             .then(() => {
                 this.logger.info(`Metadata manager principal started successfully`);
             });
@@ -237,7 +237,7 @@ class MetadataManager {
                 }
 
                 return typeMap;
-            })
+            });
     }
 
     getVersion() {
@@ -264,6 +264,7 @@ class MetadataManager {
             }
 
             this.version++;
+
             await this.__publishTypes();
         }
         catch(err) {
@@ -281,11 +282,14 @@ class MetadataManager {
         throw new Error(`Feature at index ${idx} of type ${type} does not exist`);
     }
 
-    __publishTypes(options = {}) {
-        return this.broker.publishJson(UPDATE_TYPES_TOPIC, {
+    __publishTypes() {
+        const publishOptions = ProtocolGateway.createPublishOptions(true);
+        publishOptions.retain = true;
+
+        return this.pg.publishJson(UPDATE_TYPES_TOPIC, {
             version: this.version,
             types: this.types
-        }, options);
+        }, publishOptions);
     }
 
     __loadConfiguration(typesConfigPath) {

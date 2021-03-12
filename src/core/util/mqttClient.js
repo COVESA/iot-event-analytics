@@ -12,9 +12,87 @@ const uuid = require('uuid');
 const mqtt = require('mqtt');
 
 const Logger = require('./logger');
+const JsonModel = require('./jsonModel');
 
-class MqttBroker {
-    constructor(connectionString, topicNs = process.env.MQTT_TOPIC_NS, checkMqtt5Compatibility = true, logger = null, clientId = MqttBroker.createClientId('MqttBroker')) {
+class MqttProtocolAdapter {
+    constructor(config, displayName = null) {
+        this.client = null;
+
+        this.config = new JsonModel(config);
+
+        this.brokerUrl = this.config.get('brokerUrl');
+
+        this.topicNs = this.config.get('topicNamespace', null);
+
+        this.checkMqtt5Compatibility = this.config.get('mqtt5Only', true) !== false;
+
+        if (displayName === null) {
+            this.client = new MqttClient(
+                this.brokerUrl,
+                this.topicNs,
+                this.checkMqtt5Compatibility
+            );
+        } else {
+            this.client = new NamedMqttClient(
+                displayName,
+                this.brokerUrl,
+                this.topicNs,
+                this.checkMqtt5Compatibility
+            );
+        }
+    }
+
+    publish(topic, message, publishOptions) {
+        const options = {
+            retain: publishOptions.retain === true
+        };
+
+        return this.client.publish([ this.__prefixTopicNs(topic) ], message, options);
+    }
+
+    subscribe(topic, callback) {
+        return this.client.subscribe(this.__prefixTopicNs(topic), callback);
+    }
+
+    subscribeShared(group, topic, callback) {
+        if (!this.checkMqtt5Compatibility) {
+            return Promise.reject(new Error(`Shared subscriptions only possible, if MQTT5 compatibility is checked. Set "mqtt5Only" to true in your protocol configuration`));
+        }
+
+        return this.client.subscribe(`$share/${group}/${this.__prefixTopicNs(topic)}`, callback);
+    }
+
+    getId() {
+        return this.brokerUrl;
+    }
+
+    __prefixTopicNs(topic) {
+        if (this.topicNs === null) {
+            return topic;
+        }
+
+        return topic.replace(new RegExp(`^(\\$share\\/[^\\/]+\\/)?(?:${this.topicNs})?(.+)$`), `$1${this.topicNs}$2`);
+    }
+}
+
+MqttProtocolAdapter.createDefaultConfiguration = function createDefaultConfiguration(isPlatformProtocol = false, brokerUrl = 'mqtt://localhost:1883') {
+    return {
+        platform: isPlatformProtocol,
+        module: {
+            // From perspective of protocolGateway.js, since require(<module.name>) is called from there
+            name: './util/mqttClient',
+            class: 'MqttProtocolAdapter'
+        },
+        config: {
+            brokerUrl,
+            topicNamespace: 'iotea/',
+            mqtt5Only: true
+        }
+    };
+};
+
+class MqttClient {
+    constructor(brokerUrl, topicNs = null, checkMqtt5Compatibility = true, logger = null, clientId = MqttClient.createClientId('MqttClient')) {
         if (logger === null) {
             logger = new Logger(clientId)
         }
@@ -41,7 +119,7 @@ class MqttBroker {
 
         this.__client = null;
 
-        this.connectionString = connectionString;
+        this.brokerUrl = brokerUrl;
         this.clientPromise = null;
 
         this.checkMqtt5Compatibility = checkMqtt5Compatibility;
@@ -191,7 +269,7 @@ class MqttBroker {
         }
 
         // Client will reconnect and resubscribe automatically
-        this.__client = mqtt.connect(this.connectionString, { clientId: this.clientId, clean: true, resubscribe: true, reconnectPeriod: 1000 });
+        this.__client = mqtt.connect(this.brokerUrl, { clientId: this.clientId, clean: true, resubscribe: true, reconnectPeriod: 1000 });
 
         this.clientPromise = Promise.resolve(this.__client)
             .then(async client => {
@@ -230,7 +308,7 @@ class MqttBroker {
     }
 
     __prefixTopicNs(topic) {
-        return MqttBroker.prefixTopicNs(topic, this.topicNs);
+        return MqttClient.prefixTopicNs(topic, this.topicNs);
     }
 
     __prepareRegexForTopic(topic) {
@@ -304,7 +382,7 @@ class MqttBroker {
     }
 }
 
-MqttBroker.prefixTopicNs = function prefixTopicNs(topic, topicNs) {
+MqttClient.prefixTopicNs = function prefixTopicNs(topic, topicNs) {
     if (topicNs === null) {
         return topic;
     }
@@ -312,7 +390,7 @@ MqttBroker.prefixTopicNs = function prefixTopicNs(topic, topicNs) {
     return topic.replace(new RegExp(`^(\\$share\\/[^\\/]+\\/)?(?:${topicNs})?(.+)$`), `$1${topicNs}$2`);
 };
 
-MqttBroker.createClientId = function createClientId(prefix = null) {
+MqttClient.createClientId = function createClientId(prefix = null) {
     const uniquePart = uuid.v4().substring(0, 8);
 
     if (prefix === null) {
@@ -322,13 +400,14 @@ MqttBroker.createClientId = function createClientId(prefix = null) {
     return [prefix, uniquePart].join('-');
 };
 
-class NamedMqttBroker extends MqttBroker {
-    constructor(name, connectionString, topicNs, checkMqtt5Compatibility, __clientId = MqttBroker.createClientId(`${name}.MqttBroker`)) {
-        super(connectionString, topicNs, checkMqtt5Compatibility, new Logger(__clientId), __clientId);
+class NamedMqttClient extends MqttClient {
+    constructor(name, brokerUrl, topicNs, checkMqtt5Compatibility, __clientId = MqttClient.createClientId(`${name}.MqttClient`)) {
+        super(brokerUrl, topicNs, checkMqtt5Compatibility, new Logger(__clientId), __clientId);
     }
 }
 
 module.exports = {
-    MqttBroker,
-    NamedMqttBroker
+    MqttClient,
+    NamedMqttClient,
+    MqttProtocolAdapter
 };

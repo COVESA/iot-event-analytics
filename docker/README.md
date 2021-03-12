@@ -3,8 +3,7 @@
 ## Prerequisites
 
 - On Windows, make sure, you have the latest version of Docker for Windows installed and you use WSL2 to "host" the Docker daemon (do not use Hyper-V, since docker buildx is not working behind a proxy in this configuration properly)
-- __Assumption__: You are working on Windows, and your non-auth proxy (CNTLM, px) is reachable on port 3128 (here: `http://docker.for.win.localhost:3128`)
-  - __>> Linux only: <<__ Use _[http://172.17.0.1:3128](http://172.17.0.1:3128)_ as proxy address
+- __Assumption__: You are working behind a non-auth proxy (CNTLM, px) and it's reachable on port 3128 i.e. `http://host.docker.internal:3128`
 
 ## >> ARM64 target platform only <<
 

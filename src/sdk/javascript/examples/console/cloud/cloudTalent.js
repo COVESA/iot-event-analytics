@@ -46,10 +46,6 @@ module.exports = class CloudTalent extends Talent {
         });
     }
 
-    isRemote() {
-        return true;
-    }
-
     getRules() {
         const rules = new AndRules([
             new Rule(

@@ -62,11 +62,18 @@ const {
 
 const InstanceManager = require('../../../../core/instanceManager');
 
-const { NamedMqttBroker } = require('../../../../core/util/mqttBroker');
+const ProtocolGateway = require('../../../../core/protocolGateway');
 
+const {
+    NamedMqttClient,
+    MqttProtocolAdapter
+} = require('../../../../core/util/mqttClient');
+
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration(true);
+const protocolGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
 class MyTalent extends Talent {
-    constructor(connectionString) {
-        super('my-talent-id', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('my-talent-id', protocolGatewayConfig);
 
         this.count = 0;
 
@@ -75,7 +82,9 @@ class MyTalent extends Talent {
             history: 10,
             encoding: {
                 type: ENCODING_TYPE_NUMBER,
-                encoder: ENCODING_ENCODER_DELTA
+                encoder: ENCODING_ENCODER_DELTA,
+                min: 0,
+                max: 100
             },
             unit: {
                 fac: 1,
@@ -106,8 +115,8 @@ class MyTalent extends Talent {
 }
 
 class MyTalent2 extends Talent {
-    constructor(connectionString) {
-        super('my-talent2-id', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('my-talent2-id', protocolGatewayConfig);
         this.uuid = uuid();
     }
 
@@ -136,9 +145,9 @@ class MyTalent2 extends Talent {
     }
 }
 
-const cf = new ConfigManager('mqtt://localhost:1883', '123456');
+const cf = new ConfigManager(protocolGatewayConfig, '123456');
 
-const instanceManager = new InstanceManager('mqtt://localhost:1883');
+const instanceManager = new InstanceManager(protocolGatewayConfig);
 const instanceApi = new InstanceApi(instanceManager);
 const metadataApi = new MetadataApi(cf.getMetadataManager());
 
@@ -147,20 +156,21 @@ app.use('/metadata/api/v1', metadataApi.createApiV1());
 app.use('/data/api/v1', instanceApi.createApiV1());
 app.listen(8080);
 
-const broker = new NamedMqttBroker('PlatformEvents', 'mqtt://localhost:1883');
+const client = new NamedMqttClient('PlatformEvents', 'mqtt://localhost:1883');
 const platformEventLogger = new Logger('PlatformEvents');
 
-broker.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
+client.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
     platformEventLogger.verbose(`Received platform event of type ` + ev.type);
     platformEventLogger.verbose(JSON.stringify(ev.data));
 });
 
-const ing = new Ingestion('mqtt://localhost:1883');
-const enc = new Encoding('mqtt://localhost:1883');
-const rou = new Routing('mqtt://localhost:1883', '123456');
-const t1 = new MyTalent('mqtt://localhost:1883');
-const t2 = new MyTalent2('mqtt://localhost:1883');
-const t21 = new MyTalent2('mqtt://localhost:1883');
+const ing = new Ingestion(protocolGatewayConfig);
+const enc = new Encoding(protocolGatewayConfig);
+const rou = new Routing(protocolGatewayConfig, '123456');
+const t1 = new MyTalent(protocolGatewayConfig);
+const t2 = new MyTalent2(protocolGatewayConfig);
+const t21 = new MyTalent2(protocolGatewayConfig);
+
 const platformLogger = new Logger('Platform');
 
 cf.start(TALENT_DISCOVERY_INTERVAL_MS, path.resolve(__dirname, 'config', 'types.json'), path.resolve(__dirname, 'config', 'uom.json'))

@@ -6,22 +6,25 @@ const Logger = iotea.util.Logger;
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
 const {
+    MqttProtocolAdapter
+} = iotea.util;
+
+const {
     Talent,
     OpConstraint,
-    ChangeConstraint,
     Rule,
     AndRules,
-    OrRules
+    ProtocolGateway,
+    TalentInput
 } = iotea;
 
 const {
-    VALUE_TYPE_RAW,
-    VALUE_TYPE_ENCODED
+    VALUE_TYPE_RAW
 } = iotea.constants;
 
 class MyTalent extends Talent {
-    constructor(connectionString) {
-        super('some-unique-talent-id', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('some-unique-talent-id', protocolGatewayConfig);
     }
 
     getRules() {
@@ -31,9 +34,13 @@ class MyTalent extends Talent {
     }
 
     async onEvent(ev, evtctx) {
-        this.logger.info(`${JSON.stringify(ev.value)}`, evtctx);
+        this.logger.info(`${TalentInput.getRawValue(ev)}`, evtctx);
     }
 }
 
-/* Update the port, if you specified a different one in your configuration !!!*/
-new MyTalent('mqtt://localhost:1883').start();
+// Update mqttAdapterConfig.config.brokerUrlt, if you specified a different one in your configuration !!!
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration();
+
+new MyTalent(
+    ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ])
+).start();

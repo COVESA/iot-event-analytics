@@ -1,23 +1,6 @@
 version: '3.2'
 services:
-  mosquitto-remote:
-    build:
-      context: ../docker/mosquitto
-      labels:
-        iotea.mosquitto.version: "1.6.12"
-      dockerfile: Dockerfile.amd64
-      args:
-        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
-        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - MQTT_PORT=${MQTT_REMOTE_PORT-1884}
-    hostname: mosquitto-remote
-    ports:
-      - "${MQTT_REMOTE_PORT-1884}:${MQTT_REMOTE_PORT-1884}"
-    volumes:
-      - type: bind
-        source: "${MOSQUITTO_CONFIG_DIR-./mosquitto}/remote"
-        target: "/mosquitto/config"
-  mosquitto-local:
+  mosquitto:
     build:
       context: ../docker/mosquitto
       labels:
@@ -27,9 +10,7 @@ services:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
         - MQTT_PORT=${MQTT_PORT-1883}
-    depends_on:
-      - mosquitto-remote
-    hostname: mosquitto-local
+    hostname: mosquitto
     ports:
       - "${MQTT_PORT-1883}:${MQTT_PORT-1883}"
     volumes:

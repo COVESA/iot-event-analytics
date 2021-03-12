@@ -120,12 +120,6 @@
                     "default": 1883,
                     "description": "MQTT Port"
                 },
-                "iotea.platform.mqtt.remote-port": {
-                    "scope": "machine-overridable",
-                    "type": "number",
-                    "default": 1884,
-                    "description": "MQTT port for remote-broker"
-                },
                 "iotea.platform.api.port": {
                     "scope": "machine-overridable",
                     "type": "number",
@@ -142,7 +136,7 @@
                     "scope": "machine-overridable",
                     "type": "string",
                     "default": "",
-                    "description": "The http(s) proxy used during creation of the platforms docker images"
+                    "description": "The http(s) proxy used during creation of the platforms docker images (e.g. http://host.docker.internal:3128)"
                 },
                 "iotea.vss.path.separator": {
                     "scope": "machine-overridable",

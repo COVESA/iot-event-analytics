@@ -38,10 +38,6 @@ class RemoteTalent extends Talent {
         super('js-remote-talent', connectionString);
     }
 
-    isRemote() {
-        return true;
-    }
-
     getRules() {
         const rules = new AndRules([
             new Rule(

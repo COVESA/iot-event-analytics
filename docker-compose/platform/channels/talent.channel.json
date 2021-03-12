@@ -1,6 +1,0 @@
-[
-    {
-        "type": "validate",
-        "path": "./talent.schema.json"
-    }
-]
