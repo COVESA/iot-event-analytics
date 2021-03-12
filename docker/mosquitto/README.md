@@ -18,15 +18,12 @@
 
 ## Build
 
-- Clone the IoT Event Analytics repository from [here](https://github.com/GENIVI/iot-event-analytics)
-- Go folder, into which you cloned the project will be referred to as `<iotea project folder>`
 - Open the folder `<iotea project folder>/docker/mosquitto` in a terminal
 - `<version>` will reference the version of the base image in the Dockerfile (`Dockerfile.*64`)
 - You can specify the following build arguments:
-  - __>> AMD64 target platform only <<__<br>
-    _HTTP\_PROXY_ and _HTTPS\_PROXY_: Specify these variables if the internet is only reachable via a proxy. (optional)
   - _WS\_PORT_: Port, which will be exposed for Websocket interface
   - _MQTT\_PORT_: Port, which will be exposed for MQTT Interface
+- __For further information how to build the images (especially, if you are working behind a proxy), please see [here](../README.md)__
 
 ### >> ARM64 target platform only <<
 

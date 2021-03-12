@@ -15,14 +15,15 @@ with open('README.md', 'r') as fh:
 
 setup(
     name="boschio-iotea",
-    version="2.2.0",
+    version="2.2.1",
     author="Bosch.IO GmbH",
     description="Core library for Talent development",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/GENIVI/iot-event-analytics",
     packages=[
-        "iotea.core"
+        "iotea.core",
+        "iotea.core.util"
     ],
     install_requires=[
         "hbmqtt==0.9.6"

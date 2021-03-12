@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-import time
 import asyncio
 import functools
 import os
@@ -21,6 +20,7 @@ from .rules import OrRules, Rule, OpConstraint, Constraint
 from .mqtt_broker import NamedMqttBroker
 from .logger import Logger
 from .json_query import json_query_first
+from .util import time_ms
 
 class DeferredCall:
     def __init__(self, call_id, timeout_ms):
@@ -143,7 +143,7 @@ class Talent(IOFeatures):
                 'chnl': self.chnl,
                 'call': call_id
             },
-            'whenMs': round(time.time() * 1000)
+            'whenMs': time_ms.time_ms()
         }
 
         self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms)
@@ -180,7 +180,7 @@ class Talent(IOFeatures):
 
         for out_event in out_events:
             if 'whenMs' not in out_event:
-                out_event['whenMs'] = round(time.time_ns() / 1000)
+                out_event['whenMs'] = time_ms.time_ms()
 
             await self.broker.publish_json(topic, out_event)
 

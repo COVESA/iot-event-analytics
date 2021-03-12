@@ -25,73 +25,56 @@ This folder contains docker-compose configurations (*.yml) for mqtt and platform
     - Docker Engine v19.03.6
     - Compose 1.27.4
 
+## Use the example configuration
+
+Just continue with the _Build & Run (from within the ./docker-compose directory)_ section
+
 ## Setup custom configuration
 
-If you want to create a custom configuration, create a config folder at _\<YOUR CONFIG PATH\>_, and copy the following files/folders into it
+- If you want to create a custom configuration, create a config folder at _\<YOUR CONFIG PATH\>_, and copy the following files/folders into it
+  - _./mosquitto_
+  - _./platform_ (Only needs to be copied, if you want to use _docker-compose.platform.yml_)
+  - _./.env_
+- Your configuration directories should now look like this
 
-- ./_mosquitto_
-- ./_platform_ (Only needs to be copied, if you want to use _docker-compose.platform.yml_)
-- ./.env
+  ```code
+  .env                           Copy from docker-compose/.env
 
-Adapt the configuration files as needed and update the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` variable within the copied _.env_ file
+  <mosquitto configuration dir>  Copy from docker-compose/mosquitto
+  |- remote
+  |  L- config.json
+  L- config.json
 
-- _PLATFORM_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/platform_
-- _MQTT_CONFIG_DIR_ needs to point to _\<YOUR CONFIG PATH\>/mosquitto_
+  <platform configuration dir>   Copy from docker-compose/platform
+  |- channels
+  |  |- talent.channel.json
+  |  L- talent.schema.json
+  |- config.json
+  |- types.json
+  L- uom.json
+  ```
 
-__The paths within the _.env_ file need to be relative to the _docker-compose_ folder__
+- You can now adapt the _types.json_ document to fit your needs. Do not make any changes but the `loglevel` to the _config.json_ when you are using `docker_compose`
+- The _.env_ file should contain the following and the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` should be the absolute paths to _\<YOUR CONFIG PATH\>/platform_ and _\<YOUR CONFIG PATH\>/mosquitto_
 
-### (Optional) Linux px proxy configuration
+  ```code
+  DOCKER_HTTP_PROXY=http://docker.for.win.localhost:3128   (Proxy configuration)
+  DOCKER_HTTPS_PROXY=http://docker.for.win.localhost:3128  (Proxy configuration)
+  MOSQUITTO_CONFIG_DIR=                                    (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
+  MQTT_PORT=1883                                           (MQTT port for the local broker)
+  MQTT_REMOTE_PORT=1884                                    (MQTT port for the remote broker - is automatically bridged from the local broker)
+  PLATFORM_CONFIG_DIR=                                     (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
+  API_PORT=8080                                            (Port, which is used to expose the platform REST APIs)
+  ```
 
-If you are running behind a px-proxy on Linux (e.g. using [Bosch Open Source desktop](https://inside-docupedia.bosch.com/confluence/x/nRujEQ)) you need to ensure the binding between your docker network and proxy is configured.
+__The paths within the _.env_ file need to be relative to the _docker-compose_ folder or absolute paths__
 
-1.) __~/.px/config.ini:__ Ensure binding ___"binds = [...], \<docker network proxy\>___ (e.g. 172.17.0.1:3128) exists
-
-`[server]
-binds = 127.0.0.1:3128, 172.17.0.1:3128#`
-
-If not, add it and restart your proxy (e.g. via _osd-proxy-restart_ for osd)
-
-To check that the binding exists you can call for your proxy port (e.g. 3128):
-`netstat -ntlpn | grep -i 3128`
-
-Which should show the your docker-network proxy (e.g. 172.17.0.1:3128):
-`tcp       0     0 172.17.0.1:3128        0.0.0.0:*              LISTEN     12391/python3`
-
-2.) __~/.docker/config.json:__ Ensure _http(s)Proxys_ in your docker-network have the same port as your host proxy (e.g. [http://172.17.0.1:3128])
-
-```json
-{
- "proxies":
- {
-   "default":
-   {
-     "httpProxy": "http://172.17.0.1:3128",
-     "httpsProxy": "http://172.17.0.1:3128"
-   }
- }
-}
-```
-
-3.) __/etc/systemd/system/docker.service.d/http_proxy.conf__: Ensure that the http(s)_proxies are set
-
-```code
-[Service]
-Environment=HTTP_PROXY=http://localhost:3128/
-Environment=HTTPS_PROXY=http://localhost:3128/
-```
-
-Afterwards you have to restart your docker daemon:
-`sudo systemctl daemon-reload`
-`sudo systemctl restart docker`
-
-To check your env-variables for docker you can call:
-`sudo systemctl show --property=Environment docker`
+Continue with the _Build & Run (from within the ./docker-compose directory with custom configuration)_
 
 ## Setup
 
-- If you are behind a corporate proxy, update DOCKER_HTTP_PROXY and DOCKER_HTTPS_PROXY in the _.env_ file. __If NOT, remove these lines completly from the .env file__
-  - __>> Windows only: <<__ Use `docker.for.win.localhost` to refer to your computer i.e. _[http://docker.for.win.localhost:3128](http://docker.for.win.localhost:3128)_ assuming your proxy is running locally on Port 3128
-  - __>> Linux only: <<__ Use _[http://172.17.0.1:3128](http://172.17.0.1:3128)_ as proxy address
+- If you are behind a corporate proxy, update DOCKER_HTTP_PROXY and DOCKER_HTTPS_PROXY in the _.env_ file.
+  - __For further information how to configure and setup the Proxy, please see [here](../docker/README.md)__
 
 ## Build & Run (from within the _./docker-compose_ directory)
 
@@ -104,7 +87,7 @@ Platform containers can be run with this command: \
 Mosquitto MQTT broker containers (local and local-remote) can be run and built with this command: \
 ```docker-compose -f docker-compose.mosquitto.yml up --build```
 
-## Build & Run (from within the _./docker-compose_ directory with custom environment configuration)
+## Build & Run (from within the _./docker-compose_ directory with custom configuration)
 
 ```docker-compose -f docker-compose.mosquitto.yml --env-file <YOUR CONFIG PATH>/.env up --build```
 
@@ -145,4 +128,4 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
 
 ## Hints
 
-If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port
+If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by modifying `MQTT_PORT` in the _.env_ file

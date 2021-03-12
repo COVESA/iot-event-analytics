@@ -60,66 +60,16 @@ L- docs        Documentation
   - `conda activate <name-of-choice>`
 - Install all necessary packages using `pip install -r requirements.dev.txt` in the project root
 
-## Build
+## Build and Run
 
-The recommended way of quickstarting the platform is to use docker-compose where available. If not installed, all components can be built manually using the given build instructions under _./docker/*_
+The recommended way of quickstarting the platform is to use docker-compose where available. If not installed, all components can be built and run manually using the given build instructions under _./docker/README.md_ and _./docker/*/README.md_
+For further information how to start the platform using docker-compose see [here](./docker-compose/README.md)
 
-### >> @Corprate-Proxy only <<
+## Run an example/your own Talent on your machine
 
-If you are working behind a corporate proxy, make sure you have a local non-auth proxy running on port 3128 to be able to connect to the internet without any further manual authentication
-
-- Go into the _./docker-compose_ subdirectory
-- Run `docker-compose -f docker-compose.platform.yml build`
-
-## Configure
-
-The platform will spin up together with Mosquitto MQTT brokers
-
-- Run `docker-compose -f docker-compose/docker-compose.platform.yml up`
-
-- __Important:__ If you want to specify an alternative configuration directory for the IoT Event Analytics Platform and/or the MQTT Broker, you can create alternative configuration folders in a different directory<br>
-Your configuration directories should look like this
-
-  ```code
-  .env                           Copy from docker-compose/.env
-
-  <mosquitto configuration dir>  Copy from docker-compose/mosquitto
-  |- remote
-  |  L- config.json
-  L- config.json
-
-  <platform configuration dir>   Copy from docker-compose/platform
-  |- channels
-  |  |- talent.channel.json
-  |  L- talent.schema.json
-  |- config.json
-  |- types.json
-  L- uom.json
-  ```
-
-  You can now adapt the _types.json_ document to fit your needs. Do not make any changes but the `loglevel` to the _config.json_ when you are using `docker_compose`
-
-The _.env_ file should contain the following
-
-```code
-DOCKER_HTTP_PROXY=http://docker.for.win.localhost:3128   (Proxy configuration)
-DOCKER_HTTPS_PROXY=http://docker.for.win.localhost:3128  (Proxy configuration)
-MOSQUITTO_CONFIG_DIR=                                    (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
-MQTT_PORT=1883                                           (MQTT port for the local broker)
-MQTT_REMOTE_PORT=1884                                    (MQTT port for the remote broker - is automatically bridged from the local broker)
-PLATFORM_CONFIG_DIR=                                     (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
-API_PORT=8080                                            (Port, which is used to expose the platform REST APIs)
-```
-
-## Run the configured platform
-
-`docker-compose -f docker-compose.platform.yml --env-file <relative path to your env-file from docker-compose folder or absolute path> up --remove-orphans`
-
-## Run a talent on your machine
-
-- Simply create your first python or NodeJS talent following the examples given in _src/sdk/(javascript|python|cpp)/examples<br>
-- Start you talent by connecting it to `mqtt://localhost:1883` or a locally running remote talent by connecting it to `mqtt://localhost:1884`.<br>
-- There are examples, which start a platform instance by themselves. They only need an MQTT Broker running. To achieve this, simply run<br>
+- Simply create your first python or NodeJS talent following the examples given in _src/sdk/(javascript|python|cpp)/examples_<br>
+- Start you talent by connecting it to `mqtt://localhost:1883` or a locally running remote talent by connecting it to `mqtt://localhost:1884`. (Has to match your port configuration for the MQTT Broker)<br>
+- There are examples, which start a platform instance by themselves. They only need an MQTT Broker running. To achieve this, simply run from within the _./docker-compose_ directory<br>
 `docker-compose -f docker-compose.mosquitto.yml up`
 
 ## Run a talent as AWS Lambda function
