@@ -2,7 +2,6 @@
     "name": "iotea",
     "displayName": "IoT Event Analytics",
     "description": "Provides scaffolding, code completion for developing Talents for IoT Event Analytcis",
-    "icon": "resources/icon.png",
     "categories": [
         "Snippets"
     ],
