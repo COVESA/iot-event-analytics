@@ -25,6 +25,8 @@ This folder contains docker-compose configurations (*.yml) for mqtt and platform
     - Docker Engine v19.03.6
     - Compose 1.27.4
 
+For installation instructions on Linux systems, see [Hints](#Hints)
+
 ## Use the example configuration
 
 Just continue with the _Build & Run (from within the ./docker-compose directory)_ section
@@ -128,4 +130,12 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
 
 ## Hints
 
-If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by modifying `MQTT_PORT` in the _.env_ file
+- If you run the platform containers then please ensure that there is no other MQTT broker (e.g. mosquitto) is running on the same machine on localhost with the same port. Otherwise, configure another port by modifying `MQTT_PORT` in the _.env_ file
+- Make sure docker-compose is installed on your system `docker-compose --version`
+  - __>> Linux only <<__ To install missing docker-compose<br>
+    `sudo apt-get -y -q install docker-compose`<br>
+    If docker-compose packgage is missing or too old, directly download the binary<br>
+
+    ```text
+    sudo curl -q -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
