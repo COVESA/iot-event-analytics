@@ -2,3 +2,6 @@ __pycache__
 node_modules/
 *.tar
 .vscode/extensions.json
+src/sdk/python/lib
+src/sdk/javascript/lib
+src/sdk/vscode/lib
