@@ -12,6 +12,7 @@
 
 ## Build
 
+- Create an empty _./lib_ folder folder if not exists
 - Go into the _./pkg_ folder
 
 ### Build Source distribution package
