@@ -13,8 +13,6 @@
 Bosch.IO GmbH
 under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
-![Image of IoTea](./assets/iotea.jpg)
-
 ## Talents
 
 Talents encapsulate the data demand for a functional processing unit. Each Talent just has to define its required as well as offered data and services results. How a request or a reply reaches the consumer is managed by  at least one __Instance-Manager__ core talent. This enables the concept of non-blocking channeling ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html)) IO.
