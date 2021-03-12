@@ -313,7 +313,7 @@ class Rule {
             // Check if the given instanceId of the current features is matching the instanceIdMatcher
             // Check if the instance of the current feature is not already in the instances array
             if (instanceId.match(instanceIdMatcher) !== null && instances.find(instance => instance.type === type && instance.id === instanceId) === undefined) {
-                instances.push(new Instance(type, instanceId));
+                instances.push(new Instance(type, instanceId, Rule.logger));
             }
         }
 

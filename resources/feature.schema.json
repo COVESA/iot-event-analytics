@@ -159,7 +159,8 @@
             "type": "object",
             "required": [
                 "type",
-                "encoder"
+                "encoder",
+                "max"
             ],
             "properties": {
                 "encoder": {
@@ -175,6 +176,12 @@
                 },
                 "reduce": {
                     "type": "string"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
                 }
             }
         },

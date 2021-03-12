@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.2 [2021-03-09]
+  - Fix JSON serialization bug for MQTT Publisher, where empty spaces led to separation of command line arguments
+
 - 0.9.1 [2021-02-23]
   - Display a non-technical error message in case the docker version cannot be retrieved as JSON
 

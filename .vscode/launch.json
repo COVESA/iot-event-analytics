@@ -1,7 +1,6 @@
 {
     "version": "0.2.0",
     "configurations": [
-
         {
             "type": "node",
             "request": "attach",
@@ -23,17 +22,15 @@
             "remoteRoot": "/app"
         },
         {
-            "name": "Launch SDK Extension Tests",
+            "name": "Launch IoT Event Analytics Extension",
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/src/sdk/vscode",
-                "--extensionTestsPath=${workspaceFolder}/src/sdk/vscode/out/test/suite/index"
+               "--extensionDevelopmentPath=${workspaceFolder}/src/sdk/vscode",
             ],
             "outFiles": [
-                "${workspaceFolder}/src/sdk/vscode/out/test/**/*.js"
-            ],
-            "preLaunchTask": "${defaultBuildTask}"
+                "${workspaceFolder}/out/**/*.js"
+            ]
         },
         {
             "name": "Launch current NodeJS module",

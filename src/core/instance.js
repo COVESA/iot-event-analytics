@@ -14,13 +14,15 @@ const {
 } = require('./constants');
 const jsonQuery = require('./util/jsonQuery');
 const clone = require('./util/clone');
+const Logger = require('./util/logger');
 
 class Instance {
-    constructor(type, id) {
+    constructor(type, id, logger = null) {
         this.id = id;
         this.type = type;
         this.features = [];
         this.featureHelper = {};
+        this.logger = logger || new Logger('Instance');
     }
 
     getFeatures() {
@@ -44,7 +46,7 @@ class Instance {
     updateFeatureAt(idx, encodedValue, rawValue, whenMs, maxHistoryLength = DEFAULT_HISTORY_LENGTH, ttlMs = DEFAULT_FEATURE_TTL_MS, now = Date.now()) {
         // Check for invalid parameters >> reject value
         if (whenMs === undefined || encodedValue === undefined || rawValue === undefined) {
-            // console.log('WhenMs, encodedValue and rawValue must not be undefined');
+            this.logger.verbose(`(instance id=${this.id} type=${this.type}) whenMs, encodedValue and rawValue must not be undefined`);
             return null;
         }
 
@@ -56,7 +58,7 @@ class Instance {
         // Does the raw event value contain a partial value?
         if (this.__shouldProcessPartialValueAt(idx, rawValue.$part)) {
             // Partial values do not have any history, since only the most recent value is updated according to the given $part(ial) index
-            // console.log(`Updating partial feature at index ${idx} at partial index ${rawValue.$part} to ${rawValue.value}`);
+            this.logger.verbose(`(instance id=${this.id} type=${this.type}) Updating partial feature at index ${idx} at partial index ${rawValue.$part} to ${rawValue.value}`);
             // Update the current value
             this.features[idx].raw[rawValue.$part] = rawValue.value;
             // No encoded features for partial values
@@ -76,13 +78,13 @@ class Instance {
         if (idx < this.features.length && this.features[idx] !== null) {
             if (this.features[idx].whenMs === whenMs) {
                 // If the timestamp already exists for this feature >> reject value
-                console.log(`Timestamp already exists for given value [${idx}]=${rawValue} at ${whenMs}`);
+                this.logger.verbose(`(instance id=${this.id} type=${this.type}) Timestamp already exists for given value [${idx}]=${rawValue} at ${whenMs}`);
                 return null;
             }
 
             if (this.features[idx].history.find(historicalFeature => historicalFeature.whenMs === whenMs)) {
                 // If the timestamp already exists in this features history >> reject value
-                console.log(`Timestamp exists in history for given value [${idx}]=${rawValue} at ${whenMs}`);
+                this.logger.verbose(`(instance id=${this.id} type=${this.type}) Timestamp exists in history for given value [${idx}]=${rawValue} at ${whenMs}`);
                 return null
             }
 
@@ -94,14 +96,14 @@ class Instance {
 
                 if (whenMs + ttlMs < oldestFeature.whenMs) {
                     // The feature would have been pruned, if it had arrived at that given time
-                    // console.log(`Feature would have been pruned already for value [${idx}]=${rawValue} at ${whenMs}`);
+                    this.logger.verbose(`(instance id=${this.id} type=${this.type}) Feature would have been pruned already for value [${idx}]=${rawValue} at ${whenMs}`);
                     return null;
                 }
             }
         } else {
             if (whenMs + ttlMs < now) {
                 // Feature does not exist yet, and the given feature is already invalid
-                // console.log(`Feature does not exist and given feature is alread invalid for value [${idx}]=${rawValue} at ${whenMs}`);
+                this.logger.verbose(`(instance id=${this.id} type=${this.type}) Feature does not exist and given feature is alread invalid for value [${idx}]=${rawValue} at ${whenMs}`);
                 return null;
             }
         }
@@ -206,7 +208,7 @@ class Instance {
 
         if ($hidx >= this.features[idx].history.length) {
             // If the current history entry was inserted out of history bounds and thus deleted again in the prior step
-            // console.log(`Feature has been set out of bounds for value [${idx}]=${rawValue}.history[${$hidx}] at ${whenMs}`);
+            this.logger.verbose(`(instance id=${this.id} type=${this.type}) Feature has been set out of bounds for value [${idx}]=${rawValue}.history[${$hidx}] at ${whenMs}`);
             return null;
         }
 
