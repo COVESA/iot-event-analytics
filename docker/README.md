@@ -11,7 +11,7 @@
 
 - If you are working behind a proxy, you need to specify this within your builder instance.
   - Create a new builder and set it as active build instance
-  `docker buildx create --driver-opt env.http_proxy=http://docker.for.win.localhost:3128 --driver-opt env.https_proxy=http://docker.for.win.localhost:3128 --use --name proxy-builder`
+  `docker buildx create --driver-opt env.http_proxy=http://host.docker.internal:3128 --driver-opt env.https_proxy=http://host.docker.internal:3128 --use --name proxy-builder`
 
 ## Build Docker image
 
@@ -20,12 +20,12 @@
 ### >> ARM64 target platform only <<
 
 - Build and export an image behind a proxy
-  `docker buildx build --platform linux/arm64 -t <Tag> -o type=oci,dest=<path-to-image-file-name>.tar --build-arg HTTP_PROXY=http://docker.for.win.localhost:3128 --build-arg HTTPS_PROXY=http://docker.for.win.localhost:3128 -f <path-to-dockerfile> .`
+  `docker buildx build --platform linux/arm64 -t <Tag> -o type=oci,dest=<path-to-image-file-name>.tar --build-arg HTTP_PROXY=http://host.docker.internal:3128 --build-arg HTTPS_PROXY=http://host.docker.internal:3128 -f <path-to-dockerfile> .`
 
 ### >> AMD64 target platform only <<
 
 - Build an image behind a proxy
-  `docker build -t <Tag> --build-arg HTTP_PROXY=http://docker.for.win.localhost:3128 --build-arg HTTPS_PROXY=http://docker.for.win.localhost:3128 -f <path-to-dockerfile> .`
+  `docker build -t <Tag> --build-arg HTTP_PROXY=http://host.docker.internal:3128 --build-arg HTTPS_PROXY=http://host.docker.internal:3128 -f <path-to-dockerfile> .`
 
 ## (Optional) Linux px proxy configuration
 
