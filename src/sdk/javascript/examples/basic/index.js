@@ -18,9 +18,6 @@
  * // NOK 3, 2, 4, 6 does not fire
  */
 
-// Remove any given MQTT topic namespace from the environment variables
-process.env.MQTT_TOPIC_NS = 'iotea/';
-
 const uuid = require('uuid').v4;
 const path = require('path');
 const express = require('express');
@@ -65,12 +62,15 @@ const InstanceManager = require('../../../../core/instanceManager');
 const ProtocolGateway = require('../../../../core/protocolGateway');
 
 const {
-    NamedMqttClient,
     MqttProtocolAdapter
 } = require('../../../../core/util/mqttClient');
 
-const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration(true);
-const protocolGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
+const { TalentInput } = require('../../../../core/util/talentIO');
+
+const mqttAdapterConfig1 = MqttProtocolAdapter.createDefaultConfiguration(true);
+const platformGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig1 ]);
+const talentGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig1 ]);
+
 class MyTalent extends Talent {
     constructor(protocolGatewayConfig) {
         super('my-talent-id', protocolGatewayConfig);
@@ -139,15 +139,17 @@ class MyTalent2 extends Talent {
     }
 
     async onEvent(ev, evtctx) {
-        this.logger.info(`${this.uuid} ${ev.$feature.raw} ${ev.$feature.enc}`, evtctx);
-        this.logger.info(`History: ${JSON.stringify(ev.$feature.history)}`, evtctx);
-        this.logger.info(`Unit: ${JSON.stringify(ev.$metadata.$unit)}`, evtctx);
+        this.logger.info(`${this.uuid} ${TalentInput.getRawValue(ev)} ${TalentInput.getEncodedValue(ev)}`, evtctx);
+        this.logger.info(`History: ${JSON.stringify(TalentInput.getRawValue(ev, 100, true))}`, evtctx);
+        this.logger.info(`Unit: ${JSON.stringify(TalentInput.getMetadata(ev))}`, evtctx);
     }
 }
 
-const cf = new ConfigManager(protocolGatewayConfig, '123456');
+const PLATFORM_ID = '123456';
 
-const instanceManager = new InstanceManager(protocolGatewayConfig);
+const cf = new ConfigManager(platformGatewayConfig, PLATFORM_ID);
+
+const instanceManager = new InstanceManager(platformGatewayConfig);
 const instanceApi = new InstanceApi(instanceManager);
 const metadataApi = new MetadataApi(cf.getMetadataManager());
 
@@ -156,20 +158,20 @@ app.use('/metadata/api/v1', metadataApi.createApiV1());
 app.use('/data/api/v1', instanceApi.createApiV1());
 app.listen(8080);
 
-const client = new NamedMqttClient('PlatformEvents', 'mqtt://localhost:1883');
 const platformEventLogger = new Logger('PlatformEvents');
+const pg = new ProtocolGateway(platformGatewayConfig, 'PlatformEvents', true);
 
-client.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
-    platformEventLogger.verbose(`Received platform event of type ` + ev.type);
-    platformEventLogger.verbose(JSON.stringify(ev.data));
+pg.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
+    platformEventLogger.info(`Received platform event of type ` + ev.type);
+    platformEventLogger.info(JSON.stringify(ev.data));
 });
 
-const ing = new Ingestion(protocolGatewayConfig);
-const enc = new Encoding(protocolGatewayConfig);
-const rou = new Routing(protocolGatewayConfig, '123456');
-const t1 = new MyTalent(protocolGatewayConfig);
-const t2 = new MyTalent2(protocolGatewayConfig);
-const t21 = new MyTalent2(protocolGatewayConfig);
+const ing = new Ingestion(platformGatewayConfig, PLATFORM_ID);
+const enc = new Encoding(platformGatewayConfig);
+const rou = new Routing(platformGatewayConfig, PLATFORM_ID);
+const t1 = new MyTalent(talentGatewayConfig);
+const t2 = new MyTalent2(talentGatewayConfig);
+const t21 = new MyTalent2(talentGatewayConfig);
 
 const platformLogger = new Logger('Platform');
 
