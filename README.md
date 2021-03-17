@@ -9,8 +9,10 @@
 -->
 
 # IoT Event Analytics
+[![Gitter](https://badges.gitter.im/iot-event-analytics/community.svg)](https://gitter.im/iot-event-analytics/community)
+[![License](https://img.shields.io/badge/License-MPL%202.0-blue.svg)](https://opensource.org/licenses/MPL-2.0)
 
-Bosch.IO GmbH
+(c) Bosch.IO GmbH
 under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 ## Introduction
