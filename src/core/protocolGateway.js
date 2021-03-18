@@ -46,7 +46,7 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (publishToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (publishOptions.adapterId === null || publishOptions.adapterId === adapter.id) {
-                    await adapter.instance.publish(topic, message, publishOptions);
+                    adapter.instance.publish(topic, message, publishOptions);
                 }
             }
         }
@@ -70,7 +70,7 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    await adapter.instance.subscribe(
+                    adapter.instance.subscribe(
                         topic,
                         ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
                         subscribeOptions
@@ -106,8 +106,7 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-
-                    await adapter.instance.subscribeShared(
+                    adapter.instance.subscribeShared(
                         group,
                         topic,
                         ((adapter) => (ev, topic) => callback(ev, topic, adapter))(adapter), // Save adapter in IIFE

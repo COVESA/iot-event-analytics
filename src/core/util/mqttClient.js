@@ -127,6 +127,14 @@ class MqttClient {
     }
 
     publish(topics, message, options = {}) {
+        if (this.clientPromise && this.clientPromise.done === false) {
+            // MQTT client is offline. Do not wait until it is online again.
+            // If we just try to publish it anyway, we end up with a huge stack of unsent messages, which will be published
+            // when the client is reconnected again
+            this.logger.warn(`MQTT Broker ${this.brokerUrl} is offline. Cannot publish message to topics ${topics}`);
+            return;
+        }
+
         if (!Array.isArray(topics)) {
             topics = [ topics ];
         }
@@ -245,7 +253,7 @@ class MqttClient {
                     try {
                         topic = this.__prefixTopicNs(topic);
 
-                        this.logger.verbose(`Publishing ${message} to ${topic}`);
+                        this.logger.verbose(`Publishing ${message} to ${topic} @ ${this.brokerUrl}`);
 
                         client.publish(topic, message, options, (err, packet) => {
                             if (err) {
@@ -303,6 +311,16 @@ class MqttClient {
                         return client;
                     });
             });
+
+        this.__client.on('close', () => {
+            this.clientPromise.done = false;
+        });
+
+        this.__client.on('connect', () => {
+            this.clientPromise.done = true;
+        });
+
+        this.clientPromise.done = false;
 
         return this.clientPromise;
     }
