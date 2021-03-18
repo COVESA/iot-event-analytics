@@ -14,7 +14,7 @@
 
 - Open the _docker-compose_ folder in the project root in a terminal
 - Start a Mosquitto broker by using docker-compose
-  - Run ```docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/platform_only/.env up --remove-orphans --build```
+  - Run ```docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/scalable_platform/.env up --remove-orphans --build```
 
 ## How to start it
 

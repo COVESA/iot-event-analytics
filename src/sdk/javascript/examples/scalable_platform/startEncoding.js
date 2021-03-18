@@ -13,11 +13,10 @@ const JsonModel = require('../../../../core/util/jsonModel');
 
 const config = new JsonModel(require('./config.json'));
 
-process.env.LOG_LEVEL = config.get('routing.loglevel', config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO));
-process.env.MQTT_TOPIC_NS = config.get('mqtt.ns');
+process.env.LOG_LEVEL = config.get('encoding.loglevel', config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO));
 
-const Routing = require('../../../../core/routing');
+const Encoding = require('../../../../core/encoding');
 
 (async () => {
-    await new Routing(config.get('mqtt.connectionString'), config.get('platformId')).start();
+    await new Encoding(config.get('protocolGateway')).start();
 })();

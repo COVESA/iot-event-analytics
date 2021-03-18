@@ -10,8 +10,6 @@
 
 const spawn = require('child_process').spawn;
 
-process.env.MQTT_TOPIC_NS = 'iotea/';
-
 const path = require('path');
 const express = require('express');
 
@@ -24,7 +22,7 @@ process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 const ConfigManager = require('../../../../core/configManager');
 const MetadataApi = require('../../../../core/metadataApi');
 
-const cf = new ConfigManager(config.get('mqtt.connectionString'), config.get('platformId'));
+const cf = new ConfigManager(config.get('protocolGateway'), config.get('platformId'));
 
 const metadataApi = new MetadataApi(cf.getMetadataManager());
 
