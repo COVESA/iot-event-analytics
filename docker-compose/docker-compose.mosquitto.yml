@@ -1,4 +1,4 @@
-version: '3.2'
+version: "3.5"
 services:
   mosquitto:
     build:
@@ -10,10 +10,16 @@ services:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
         - MQTT_PORT=${MQTT_PORT-1883}
-    hostname: mosquitto
+    hostname: ${MOSQUITTO_HOSTNAME-mosquitto}
     ports:
       - "${MQTT_PORT-1883}:${MQTT_PORT-1883}"
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
-        source: "${MOSQUITTO_CONFIG_DIR-./mosquitto}"
+        source: "${MOSQUITTO_CONFIG_DIR-../docker/mosquitto/config}"
         target: "/mosquitto/config"
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

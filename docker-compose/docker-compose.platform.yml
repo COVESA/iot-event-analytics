@@ -1,4 +1,4 @@
-version: '3.2'
+version: "3.5"
 services:
   configmanager:
     build:
@@ -11,13 +11,13 @@ services:
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
         - API_PORT=${API_PORT-8080}
     hostname: configmanager
-    depends_on:
-      - mosquitto
     ports:
       - '${API_PORT-8080}:${API_PORT-8080}'
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
-        source: "${PLATFORM_CONFIG_DIR-./platform}"
+        source: "${PLATFORM_CONFIG_DIR-../docker/platform/config}"
         target: "/app/docker/config/config"
   pipeline:
     build:
@@ -28,9 +28,13 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-    depends_on:
-      - mosquitto
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
-        source: "${PLATFORM_CONFIG_DIR-./platform}"
+        source: "${PLATFORM_CONFIG_DIR-../docker/platform/config}"
         target: "/app/docker/pipeline/config"
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge
