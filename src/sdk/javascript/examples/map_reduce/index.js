@@ -15,32 +15,36 @@
  *
  */
 
-const Logger = require('../../../../../core/util/logger');
+const Logger = require('../../../../core/util/logger');
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
-
-process.env.MQTT_TOPIC_NS = 'iotea/';
 
 const path = require('path');
 
-const ConfigManager = require('../../../../../core/configManager');
-const Ingestion = require('../../../../../core/ingestion');
-const Encoding = require('../../../../../core/encoding');
-const Routing = require('../../../../../core/routing');
-const { Mapper, Worker, Reducer } = require('../../../../../core/talent.mr');
+const ConfigManager = require('../../../../core/configManager');
+const Ingestion = require('../../../../core/ingestion');
+const Encoding = require('../../../../core/encoding');
+const Routing = require('../../../../core/routing');
+const { Mapper, Worker, Reducer } = require('../../../../core/talent.mr');
 
 const {
     Rule,
     OpConstraint
-} = require('../../../../../core/rules');
+} = require('../../../../core/rules');
 
 const {
     VALUE_TYPE_RAW,
     TALENT_DISCOVERY_INTERVAL_MS
-} = require('../../../../../core/constants');
+} = require('../../../../core/constants');
+
+const {
+    MqttProtocolAdapter
+} = require('../../../../core/util/mqttClient');
+
+const ProtocolGateway = require('../../../../core/protocolGateway');
 
 class RandomMapper extends Mapper {
-    constructor(connectionString) {
-        super('mapper', 'reducer', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('mapper', 'reducer', protocolGatewayConfig);
     }
 
     getTriggerRules() {
@@ -57,8 +61,8 @@ class RandomMapper extends Mapper {
 }
 
 class RandomWorker extends Worker {
-    constructor(connectionString) {
-        super('worker', 'mapper', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('worker', 'mapper', protocolGatewayConfig);
     }
 
     work(data) {
@@ -77,8 +81,8 @@ class RandomWorker extends Worker {
 }
 
 class RandomReducer extends Reducer {
-    constructor(connectionString) {
-        super('reducer', 'mapper', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('reducer', 'mapper', protocolGatewayConfig);
     }
 
     async reduce(data) {
@@ -86,14 +90,20 @@ class RandomReducer extends Reducer {
     }
 }
 
-const cf = new ConfigManager('mqtt://localhost:1883', '123456');
-const ing = new Ingestion('mqtt://localhost:1883');
-const enc = new Encoding('mqtt://localhost:1883');
-const rou = new Routing('mqtt://localhost:1883', '123456');
-const mapper = new RandomMapper('mqtt://localhost:1883');
-const w1 = new RandomWorker('mqtt://localhost:1883');
-const w2 = new RandomWorker('mqtt://localhost:1883');
-const reducer = new RandomReducer('mqtt://localhost:1883');
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration(true);
+const platformGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
+const talentGatewayConfig = ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]);
+
+const PLATFORM_ID = '123456';
+
+const cf = new ConfigManager(platformGatewayConfig, PLATFORM_ID);
+const ing = new Ingestion(platformGatewayConfig, PLATFORM_ID);
+const enc = new Encoding(platformGatewayConfig);
+const rou = new Routing(platformGatewayConfig, PLATFORM_ID);
+const mapper = new RandomMapper(talentGatewayConfig);
+const w1 = new RandomWorker(talentGatewayConfig);
+const w2 = new RandomWorker(talentGatewayConfig);
+const reducer = new RandomReducer(talentGatewayConfig);
 const platformLogger = new Logger('Platform');
 
 cf.start(TALENT_DISCOVERY_INTERVAL_MS, path.resolve(__dirname, 'config', 'types.json'), path.resolve(__dirname, 'config', 'uom.json'))
