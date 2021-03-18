@@ -50,8 +50,8 @@ class MetadataManager {
 
     start() {
         this.ready = this.pg.subscribeJson(UPDATE_TYPES_TOPIC, data => {
-            this.logger.info(`Types Update v${data.version} received`);
-            this.logger.info(JSON.stringify(data.types));
+            this.logger.debug(`Types Update v${data.version} received`);
+            this.logger.debug(JSON.stringify(data.types));
             this.version = data.version;
             this.types = data.types;
         })
