@@ -13,7 +13,7 @@
                 "config": {
                     "topicNamespace": "iotea/",
                     "mqtt5Only": true,
-                    "brokerUrl": "mqtt://localhost:1883"
+                    "brokerUrl": "mqtt://mosquitto:1883"
                 }
             }
         ]
