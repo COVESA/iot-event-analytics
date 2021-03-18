@@ -41,8 +41,8 @@ PlatformEvents.ready = new Promise(resolve => {
     PlatformEvents.__onReadyResolve = resolve;
 });
 
-PlatformEvents.init = function(connectionString) {
-    PlatformEvents.__instance = new PlatformEventEmitter(connectionString);
+PlatformEvents.init = function(protocolGatewayConfig) {
+    PlatformEvents.__instance = new PlatformEventEmitter(protocolGatewayConfig);
     PlatformEvents.__onReadyResolve(PlatformEvents.__instance);
 };
 

@@ -116,7 +116,6 @@ module.exports = class TalentConfigManager {
         return {
             talent: id,
             config: {
-                aid: this.configurations[id].aid,
                 rules: this.configurations[id].rules.save()
             }
         };
