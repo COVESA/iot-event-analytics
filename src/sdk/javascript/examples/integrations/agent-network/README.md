@@ -12,7 +12,7 @@
 
 ## Prerequisites
 
-- Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose `docker-compose -f docker-compose.platform.yml up --remove-orphans`
+- Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml up --remove-orphans`
 - Follow the guide in this [README.md](../../../../python/examples/integrations/agent-network/README.md) for running the full example
 
 ## How to start it
