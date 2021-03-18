@@ -28,7 +28,11 @@ const path = require('path');
 const open = require('open');
 const bodyParser = require('body-parser');
 
-const { NamedMqttBroker } = require('../../../../../core/util/mqttBroker');
+const ProtocolGateway = require('../../../../../core/protocolGateway');
+const {
+    MqttProtocolAdapter
+} = require('../../../../../core/util/mqttClient');
+
 const ConfigManager = require('../../../../../core/configManager');
 const Ingestion = require('../../../../../core/ingestion');
 const Encoding = require('../../../../../core/encoding');
@@ -53,8 +57,8 @@ const {
 } = require('../../../../../core/constants');
 
 class VoptTalent extends Talent {
-    constructor(connectionString) {
-        super('vopt-calculation-talent', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('vopt-calculation-talent', protocolGatewayConfig);
 
         this.addOutput('vopt', {
             description: 'Optimal speed in km/h',
@@ -89,17 +93,25 @@ class VoptTalent extends Talent {
         sum += TalentInput.getRawValue(ev, 1, false, 'vmin', 'Car', 'webapp');
         sum += TalentInput.getRawValue(ev, 1, false, 'vmax', 'Car', 'webapp');
 
-        await this.broker.publish('ui/out/vopt', sum + '');
+        await this.pg.publish('ui/out/vopt', sum + '', ProtocolGateway.createPublishOptions(true));
     }
 }
 
-const cf = new ConfigManager('mqtt://localhost:1883', '123456');
-const ing = new Ingestion('mqtt://localhost:1883');
-const enc = new Encoding('mqtt://localhost:1883');
-const rou = new Routing('mqtt://localhost:1883', '123456');
-const t1 = new VoptTalent('mqtt://localhost:1883');
+const mqttAdapterConfig1 = MqttProtocolAdapter.createDefaultConfiguration(true);
+const platformGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig1 ]);
+const talentGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig1 ]);
+
+const PLATFORM_ID = '123456';
+
+const cf = new ConfigManager(platformGatewayConfig, PLATFORM_ID);
+const ing = new Ingestion(platformGatewayConfig, PLATFORM_ID);
+const enc = new Encoding(platformGatewayConfig);
+const rou = new Routing(platformGatewayConfig, PLATFORM_ID);
+const t1 = new VoptTalent(talentGatewayConfig);
 const platformLogger = new Logger('Platform');
-const broker = new NamedMqttBroker('VOptUIAdapter', 'mqtt://localhost:1883');
+
+const pg = new ProtocolGateway(platformGatewayConfig, 'VOptUIAdapter', true);
+
 const app = express();
 
 const values = {
@@ -112,7 +124,7 @@ const apiRouter = express.Router();
 apiRouter.use(bodyParser.json());
 
 apiRouter.post('/event', (req, res) => {
-    broker.publishJson(INGESTION_TOPIC, req.body);
+    pg.publishJson(INGESTION_TOPIC, req.body);
     res.json({});
 });
 
@@ -129,7 +141,7 @@ cf.start(TALENT_DISCOVERY_INTERVAL_MS, path.resolve(__dirname, 'config', 'types.
     .then(() => enc.start())
     .then(() => rou.start())
     .then(() => t1.start())
-    .then(() => broker.subscribe('ui/out/vopt', vopt => {
+    .then(() => pg.subscribe('ui/out/vopt', vopt => {
         values.vopt = parseFloat(vopt);
     }))
     .then(() => {

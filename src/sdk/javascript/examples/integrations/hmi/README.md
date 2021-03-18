@@ -12,7 +12,7 @@
 
 ## Prerequisites
 
-- Create a _lib_ folder insice www and copy _jquery.knob.min.js_ from [https://github.com/aterrien/jQuery-Knob/tree/master/dist](https://github.com/aterrien/jQuery-Knob/tree/master/dist) into this directory
+- Create a _lib_ folder inside _./www_ and copy _jquery.knob.min.js_ from [https://github.com/aterrien/jQuery-Knob/tree/master/dist](https://github.com/aterrien/jQuery-Knob/tree/master/dist) into this directory
 - Open the _docker-compose_ folder in the project root in a terminal
 - Start a Mosquitto broker by using docker-compose
   - Run ```docker-compose -f docker-compose.mosquitto.yml up --remove-orphans```
