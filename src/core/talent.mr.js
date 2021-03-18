@@ -32,8 +32,8 @@ const {
 } = require('./util/talentIO');
 
 class Mapper extends Talent {
-    constructor(id, reducerId, protocolAdapter) {
-        super(id, protocolAdapter);
+    constructor(id, reducerId, protocolGatewayConfig) {
+        super(id, protocolGatewayConfig);
 
         this.reducerId = reducerId;
 
@@ -169,8 +169,8 @@ Mapper.FEATURE_MAP_ASSIGN = 'map_assign';
 Mapper.FEATURE_MAP_PARTIAL = 'map_partial';
 
 class Worker extends Talent {
-    constructor(id, mapperId, protocolAdapter) {
-        super(id, protocolAdapter);
+    constructor(id, mapperId, protocolGatewayConfig) {
+        super(id, protocolGatewayConfig);
         this.mapperId = mapperId;
     }
 
@@ -226,8 +226,8 @@ class Worker extends Talent {
 Worker.ERROR = 'ERROR';
 
 class Reducer extends Talent {
-    constructor(id, mapperId, protocolAdapter) {
-        super(id, protocolAdapter);
+    constructor(id, mapperId, protocolGatewayConfig) {
+        super(id, protocolGatewayConfig);
 
         this.mapperId = mapperId;
 
