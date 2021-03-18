@@ -1,0 +1,5 @@
+# Dapr Adapter
+dapr==1.0.0rc2
+dapr-client==0.4.0b1
+dapr-ext-grpc==1.0.0rc2
+paho-mqtt==1.5.0
