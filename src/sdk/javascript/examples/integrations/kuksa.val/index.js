@@ -39,16 +39,21 @@ const {
 
 const VssWebsocket = require('../../../../../adapter/vss/vss.websocket');
 
+const ProtocolGateway = require('../../../../../core/protocolGateway');
+const {
+    MqttProtocolAdapter
+} = require('../../../../../core/util/mqttClient');
+
 const demoLogger = new Logger('KuksaValDemo');
 
 class VssWorker extends Talent {
-    constructor(connectionString) {
-        super('vss-worker-talent', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('vss-worker-talent', protocolGatewayConfig);
     }
 
     getRules() {
         return new AndRules([
-            new Rule(new OpConstraint('ADAS$ObstacleDetection$IsActive', OpConstraint.OPS.EQUALS, true, 'Vehicle', VALUE_TYPE_RAW))
+            new Rule(new OpConstraint('Acceleration$Longitudinal', OpConstraint.OPS.ISSET, null, 'Vehicle', VALUE_TYPE_RAW))
         ]);
     }
 
@@ -59,7 +64,7 @@ class VssWorker extends Talent {
 
         const to = new TalentOutput();
 
-        to.addFor(ev.subject, ev.type, ev.instance, 'ADAS$ObstacleDetection$Error', VssOutputValue.create(this, VssInputValue.getSubscription(rawValue), false))
+        to.addFor(ev.subject, ev.type, ev.instance, 'Vehicle.Acceleration.Lateral', VssOutputValue.create(this, VssInputValue.getSubscription(rawValue), rawValue.value));
 
         return to.toJson();
     }
@@ -69,24 +74,25 @@ const config = new JsonModel(require('./config.json'));
 
 const vssws = new VssWebsocket(config.get('vss.ws'), config.get('vss.jwt'));
 
-let odIsActive = false;
+let accLon = 0;
 
-async function publishObstacleDetectionToVssIndefinitly() {
-    demoLogger.info(`Publishing ${odIsActive} to Vehicle.ADAS.ObstacleDetection.IsActive...`);
+async function publishAccLonToVssIndefinitly() {
+    demoLogger.info(`Publishing ${accLon} to Vehicle.Acceleration.Longitudinal...`);
 
-    await vssws.publish('Vehicle.ADAS.ObstacleDetection.IsActive', odIsActive);
-
-    odIsActive = !odIsActive;
+    await vssws.publish('Vehicle.Acceleration.Longitudinal', accLon++);
 
     setTimeout(() => {
-        publishObstacleDetectionToVssIndefinitly();
+        publishAccLonToVssIndefinitly();
     }, 2500);
 }
 
-new VssWorker('mqtt://localhost:1883').start()
-    .then(() => vssws.subscribe('Vehicle.ADAS.ObstacleDetection.Error', msg => {
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration();
+const talentGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
+
+new VssWorker(talentGatewayConfig).start()
+    .then(() => vssws.subscribe('Vehicle.Acceleration.Lateral', msg => {
         demoLogger.info(`Received ${msg.value} from ${msg.path}`);
     }))
     .then(() => {
-        publishObstacleDetectionToVssIndefinitly();
+        publishAccLonToVssIndefinitly();
     });

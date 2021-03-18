@@ -22,5 +22,5 @@
 ## How to start it
 
 - Open the _docker-compose_ folder in the project root in a terminal and start the whole environment using docker-compose<br>
-  `docker-compose -f docker-compose.platform.yml -f ../src/sdk/javascript/examples/integrations/kuksa.val/docker-compose.kuksa2iotea.yml --env-file ../src/sdk/javascript/examples/integrations/kuksa.val/.env --project-name iotea-sdk-javascript-example up --remove-orphans --build`
+  `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f ../src/sdk/javascript/examples/integrations/kuksa.val/docker-compose.kuksa2iotea.yml --env-file ../src/sdk/javascript/examples/integrations/kuksa.val/.env --project-name kuksa-val-stack up --remove-orphans --build`
 - Start the actual example it by running ```node index.js```
