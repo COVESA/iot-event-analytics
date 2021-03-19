@@ -9,5 +9,5 @@ transitions==0.8.6
 websockets==8.1
 # Python SDK example agent-network
 jwcrypto==0.8
-requests==2.18.4
-cryptography==3.2.1
+requests>=2.20.0
+cryptography>=3.3.2
