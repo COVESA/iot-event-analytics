@@ -15,9 +15,11 @@ const path = require('path');
 var HttpsProxyAgent = require('https-proxy-agent');
 
 (async () => {
-    await download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.2/iotea-0.9.2.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib'))
-        .then(() => download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.2.1/boschio_iotea-0.2.1-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')))
-        .then(() => download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.2.1/boschio.iotea-0.2.1.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib')))
+    await Promise.all([
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.2/iotea-0.9.2.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.2.1/boschio_iotea-0.2.1-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.2.1/boschio.iotea-0.2.1.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
+    ])
         .catch(err => {
             console.error(`ERROR: ${err.message}`);
         });
@@ -39,7 +41,7 @@ function urlToHttpOptions(url) {
 function download(url, outDir) {
     console.log(`Downloading library from ${url}...`);
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             try {
                 fs.mkdirSync(outDir);
@@ -64,36 +66,61 @@ function download(url, outDir) {
 
             console.log(`Saving library to ${absOutPath}...`);
 
-            const outFile = fs.createWriteStream(absOutPath);
+            const outStream = fs.createWriteStream(absOutPath);
 
-            const options = urlToHttpOptions(new URL(url));
-
-            if (process.env.HTTPS_PROXY) {
-                options.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
+            try {
+                await httpsGet(url, outStream);
+                resolve('OK');
             }
-
-            https.get(options, response => {
-                if (response.statusCode !== 200) {
-                    outFile.close();
-                    fs.unlinkSync(absOutPath);
-                    reject(new Error(`Received status ${response.statusCode} for GET ${url}. Expected 200`));
-                    return;
-                }
-
-                response.pipe(outFile);
-                outFile.on('finish', function() {
-                    outFile.close(() => {
-                        console.log(`Downloaded successfully`);
-                        resolve();
-                    });
-                });
-            }).on('error', err => {
+            catch (err) {
                 fs.unlinkSync(absOutPath);
-                reject(err)
-            });
+                reject(err);
+                return;
+            }
         }
-        catch(err) {
+        catch (err) {
             reject(err);
         }
+    });
+}
+
+function httpsGet(url, outStream) {
+    return new Promise((resolve, reject) => {
+        const options = urlToHttpOptions(new URL(url));
+
+        if (process.env.HTTPS_PROXY) {
+            options.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
+        }
+
+        https.get(options, async response => {
+            if (response.statusCode >= 400) {
+                outStream.close();
+                reject(new Error(`Received status ${response.statusCode} for GET ${url}. Expected < 400`));
+                return;
+            }
+
+            if (response.statusCode === 301 || response.statusCode === 302) {
+                try {
+                    response = await httpsGet(response.headers.location, outStream);
+                }
+                catch (err) {
+                    reject(err);
+                }
+                finally {
+                    return;
+                }
+            }
+
+            response.pipe(outStream);
+
+            outStream.on('finish', function () {
+                outStream.close(() => {
+                    console.log(`Download complete`);
+                    resolve();
+                });
+            });
+        }).on('error', err => {
+            reject(err)
+        });
     });
 }

@@ -19,6 +19,25 @@ IoT Event Analytics, is a complex and freely scalable event processing and agent
 Thus, a talent is always an event consumer and may also be an event producer. The event-driven business logic can be implemented using one of our SDKs for JavaScript, Python or C++.
 There are more features which can be explored unsing various examples for the different SDKs.
 
+## Prerequisites
+
+### NodeJS
+
+- Install Node.js >=12.13.0
+- Install all dependencies using yarn package manager
+  - If yarn is not available on your system, install it using `npm install -g yarn`
+    - Please make sure, you use the latest version of yarn
+  - Run `yarn` in the project root
+
+### Python
+
+- If using Anaconda to manage your Python environments, create a new one
+  - `conda create --name <name-of-choice> python=3.7`
+    - Python needs to be at at version >=3.6.8
+    - Pick a name of choice
+  - `conda activate <name-of-choice>`
+- Install all necessary packages using `pip install -r requirements.dev.txt` in the project root
+
 ## tldr - get it running - asap
 
 - Install the latest IoT Event Analytics VSCode extension from _src/sdk/vscode/lib/*.vsix_
@@ -39,32 +58,6 @@ src
 |- resources   JSON schemas for object validations
 L- docs        Documentation
 ```
-
-## Prerequisites
-
-### NodeJS
-
-- Have NodeJS >=12.13.0 installed
-  - __>> Linux only <<__ To update old/missing NodeJS<br>
-
-    ```text
-    sudo apt install npm nodejs -y
-    sudo npm install -g n
-    sudo n latest
-    ```
-
-- Install all dependencies using yarn package manager
-  - If yarn is not available on your system, install it using `npm install -g yarn`
-  - Run `yarn` in the project root
-
-### Python
-
-- If using Anaconda to manage your Python environments, create a new one
-  - `conda create --name <name-of-choice> python=3.7`
-    - Python needs to be at at version >=3.6
-    - Pick a name of choice
-  - `conda activate <name-of-choice>`
-- Install all necessary packages using `pip install -r requirements.dev.txt` in the project root
 
 ## Build and Run
 
