@@ -1,0 +1,9 @@
+name: pr-check-signoff
+description: Checks whether all commits in a given PR are signed off
+inputs:
+  github-token:
+    description: The GitHub token used to create an authenticated client
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

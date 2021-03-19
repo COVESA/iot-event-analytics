@@ -1,0 +1,12 @@
+{
+  "name": "github-action-pr-check-signoff",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "https://github.com/GENIVI/iot-event-analytics",
+  "author": "Bosch.IO GmbH",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  }
+}
