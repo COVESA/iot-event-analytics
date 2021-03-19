@@ -12,8 +12,8 @@
 
 ## Features/Components
 
-- Can be deployed in the cloud (e.g. Kubernetes, Any nodeJS capable runtime, via Docker-compose)
-- Can be deployed on the edge device itself --> Traffic to cloud (for cloud talents) is reduced to a minimum by using smart message routing via mosquitto
+- Can be deployed in the cloud (e.g. Kubernetes, Any Node.js capable runtime, via Docker-compose)
+- Can be deployed on the edge device itself --> Traffic to cloud (for cloud talents) is reduced to a minimum by using ProtocolGateway-based routing.
 
 ### Config-Manager
 
@@ -67,8 +67,8 @@
 
 ### Talent
 
-- Supports local and cloud talents (using FAAS)
-  - Automatically syncs to cloud message broker via mosquitto bridging
+- Supports local and cloud talents (using FAAS like Lambda functions)
+  - Automatically syncs to cloud message brokers via ProtocolGateway
 - Encapsulates business logic
 - Programming language agnostic (Only JSON processing required)
 - Map-Reduce support by using Mapper, Workers and Reducer
