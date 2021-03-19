@@ -24,7 +24,7 @@ private:
     unsigned int echoCount_{0};
 
 public:
-    EchoProvider(std::shared_ptr<Publisher> publisher)
+    explicit EchoProvider(std::shared_ptr<Publisher> publisher)
         : FunctionTalent(TALENT_NAME, publisher) {
         RegisterFunction(FUNC_ECHO,
                          [this](const json& args, const CallContext& context) { Echo(args, context); });

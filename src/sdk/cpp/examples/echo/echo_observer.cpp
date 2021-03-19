@@ -20,13 +20,12 @@ static const std::string SUBSCRIBED_COUNT_EVENT(PROVIDER_TALENT_NAME+".echoCount
 
 class EchoObserver : public Talent {
    public:
-    EchoObserver(std::shared_ptr<Publisher> publisher)
+    explicit EchoObserver(std::shared_ptr<Publisher> publisher)
         : Talent(TALENT_NAME, publisher) {
     }
 
     schema::rules_ptr OnGetRules() const override {
-        return OrRules({IsSet(SUBSCRIBED_ECHO_EVENT),
-                        IsSet(SUBSCRIBED_COUNT_EVENT)});
+        return OrRules(IsSet(SUBSCRIBED_ECHO_EVENT), IsSet(SUBSCRIBED_COUNT_EVENT));
     }
 
     void OnEvent(const Event& event, EventContext context) override {

@@ -17,7 +17,6 @@
 #include <string>
 #include <thread>
 
-#include "logging.hpp"
 #include "util.hpp"
 
 namespace iotea {
@@ -26,8 +25,9 @@ namespace core {
 using namespace std::chrono_literals;
 
 const int QOS = 1;
-const char DISCOVER_TOPIC[] = "configManager/talents/discover";
-const char INGESTION_TOPIC[] = "ingestion/events";
+const char TALENTS_DISCOVERY_TOPIC[] = "configManager/talents/discover";
+const char INGESTION_EVENTS_TOPIC[] = "ingestion/events";
+const char PLATFORM_EVENTS_TOPIC[] = "platform/$events";
 const char MQTT_TOPIC_NS[] = "MQTT_TOPIC_NS";
 
 MqttClient::MqttClient(const std::string& server_address, const std::string& client_id)
@@ -37,7 +37,6 @@ MqttClient::MqttClient(const std::string& server_address, const std::string& cli
     next_state_ = State::kDisconnected;
 
     reconnect_delay_seconds_ = 0;
-    discover_topic_ = mqtt_topic_ns_ + "/" + DISCOVER_TOPIC;
 
     connOpts_.set_keep_alive_interval(20);
     connOpts_.set_automatic_reconnect(false);
@@ -68,17 +67,20 @@ void MqttClient::Run() {
                 case State::kConnected: {
                     log::Info() << "Connected";
                     connect_token = nullptr;
-                    for (auto talent : talents_) {
+                    for (const auto& talent : talents_) {
                         auto discover_topic = GetDiscoverTopic();
+                        auto platform_topic = GetPlatformEventsTopic();
                         auto shared_prefix = GetSharedPrefix(talent.second->GetId());
                         auto event_topic = GetEventTopic(talent.second->GetId());
 
                         // Discover
                         client_.subscribe(shared_prefix + "/" + discover_topic, QOS);
+                        // Platform
+                        client_.subscribe(shared_prefix + "/" + platform_topic, QOS);
                         // Event
                         client_.subscribe(shared_prefix + "/" + event_topic, QOS);
                         // Call
-                        client_.subscribe(event_topic + "/" + talent.second->GetChannel() + "/+", QOS);
+                        client_.subscribe(event_topic + "/" + talent.second->GetChannelId() + "/+", QOS);
                     }
                 } break;
                 case State::kDisconnected:
@@ -170,12 +172,6 @@ void MqttClient::OnMessage(mqtt::const_message_ptr msg) {
     log::Debug() << "\ttopic: '" << msg->get_topic() << "'";
     log::Debug() << "\tpayload: '" << msg->to_string();
 
-    // Forward discovery request
-    if (msg->get_topic() == GetDiscoverTopic()) {
-        OnDiscover(msg);
-        return;
-    }
-
     std::cmatch m;
 
     // Forward event
@@ -197,6 +193,18 @@ void MqttClient::OnMessage(mqtt::const_message_ptr msg) {
         return;
     }
 
+    // Forward discovery request
+    if (msg->get_topic() == GetDiscoverTopic()) {
+        OnDiscover(msg);
+        return;
+    }
+
+    // Forward platform request
+    if (msg->get_topic() == GetPlatformEventsTopic()) {
+        OnPlatformEvent(msg);
+        return;
+    }
+
     // TODO log error: could not make sense of topic
 }
 
@@ -204,8 +212,17 @@ void MqttClient::OnDiscover(mqtt::const_message_ptr msg) {
     log::Debug() << "Received discovery message.";
     auto payload = msg->to_string();
 
-    for (auto talent : talents_) {
+    for (const auto& talent : talents_) {
         talent.second->HandleDiscover(payload);
+    }
+}
+
+void MqttClient::OnPlatformEvent(mqtt::const_message_ptr msg) {
+    log::Debug() << "Received platform message.";
+    auto payload = msg->to_string();
+
+    for (const auto& talent : talents_) {
+        talent.second->HandlePlatformEvent(payload);
     }
 }
 
@@ -226,14 +243,14 @@ void MqttClient::OnDeferredCall(const std::string& talent_id, const std::string&
 
     auto talent = talents_.find(talent_id);
     if (talent != talents_.end()) {
-        talent->second->HandleDeferredCall(channel_id, call_id, payload);
+        talent->second->HandleReply(channel_id, call_id, payload);
         return;
     }
 
     log::Info() << "Received reply destined for unregistered talent";
 }
 
-std::string MqttClient::GetDiscoverTopic() const { return mqtt_topic_ns_ + "/" + DISCOVER_TOPIC; }
+std::string MqttClient::GetDiscoverTopic() const { return mqtt_topic_ns_ + "/" + TALENTS_DISCOVERY_TOPIC; }
 
 std::string MqttClient::GetSharedPrefix(const std::string& talent_id) const { return "$share/" + talent_id; }
 
@@ -241,14 +258,18 @@ std::string MqttClient::GetEventTopic(const std::string& talent_id) const {
     return mqtt_topic_ns_ + "/talent/" + talent_id + "/events";
 }
 
+std::string MqttClient::GetPlatformEventsTopic() const {
+    return mqtt_topic_ns_+ "/" + PLATFORM_EVENTS_TOPIC;
+}
+
 void MqttClient::Publish(const std::string& topic, const std::string& data) {
     log::Debug() << "Publishing message.";
-    log::Debug() << "\ttopic: '" << GetIngestionTopic() << "'";
+    log::Debug() << "\ttopic: '" << GetIngestionEventsTopic() << "'";
     log::Debug() << "\tpayload: '" << data << "'";
     client_.publish(topic, data);
 }
 
-std::string MqttClient::GetIngestionTopic() const { return GetNamespace() + "/" + INGESTION_TOPIC; }
+std::string MqttClient::GetIngestionEventsTopic() const { return GetNamespace() + "/" + INGESTION_EVENTS_TOPIC; }
 
 std::string MqttClient::GetNamespace() const { return mqtt_topic_ns_; }
 

@@ -35,7 +35,7 @@ class MqttClient : public Publisher {
 
     // Publisher
     void Publish(const std::string& topic, const std::string& data) override;
-    std::string GetIngestionTopic() const override;
+    std::string GetIngestionEventsTopic() const override;
     std::string GetNamespace() const override;
 
    private:
@@ -62,6 +62,7 @@ class MqttClient : public Publisher {
     void ChangeState(State state);
     void OnMessage(mqtt::const_message_ptr msg);
     void OnDiscover(mqtt::const_message_ptr msg);
+    void OnPlatformEvent(mqtt::const_message_ptr msg);
     void OnEvent(const std::string& talent_id, mqtt::const_message_ptr msg);
     void OnDeferredCall(const std::string& talent_id, const std::string& channel_id, const std::string& call_id,
                         mqtt::const_message_ptr msg);
@@ -69,6 +70,7 @@ class MqttClient : public Publisher {
     std::string GetSharedPrefix(const std::string& talent_id) const;
     std::string GetDiscoverTopic() const;
     std::string GetEventTopic(const std::string& talent_id) const;
+    std::string GetPlatformEventsTopic() const;
 
     std::string get_event_topic(std::shared_ptr<Talent> talent);
 

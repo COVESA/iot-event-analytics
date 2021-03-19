@@ -83,12 +83,12 @@ LoggerFriend::LoggerFriend(const LoggerFriend& other)
 
 LoggerFriend::~LoggerFriend() {
     if (call_depth_ == 0) {
-        operator<<('\n');
+        *this << '\n';
     }
     logger_->mutex_.unlock();
 }
 
-LoggerFriend& LoggerFriend::operator<<(std::ostream& (*f)(std::ostream&)) {
+LoggerFriend& LoggerFriend::operator<<(const std::ostream& (*f)(std::ostream&)) {
     if (logger_->GetLevel() <= level_) {
         logger_->GetStream() << f;
     }
@@ -112,15 +112,16 @@ LoggerFriend Log(const Level level) {
     struct tm t;
     ::localtime_r(&now, &t);
 
-    // From man (3) asctime_r
-    // asctime_r .. stores the string in a user-supplied buffer which should
-    // have room for at least 26 bytes
     char tbuf[26];
-    ::asctime_r(&t, tbuf);
 
-    // The string returned by asctime_r ends with a \n
-    std::string timestamp{tbuf};
-    timestamp = timestamp.substr(0, timestamp.length() - 1);
+    // %a: The abbreviated name of the day of the week according to the current locale.
+    // %b: The abbreviated month name according to the current locale.
+    // %d: The day of the month as a decimal number (range 01 to 31).
+    // %H: The hour as a decimal number using a 24-hour clock (range 00 to 23).
+    // %M: The minute as a decimal number (range 00 to 59).
+    // %S: The second as a decimal number (range 00 to 60).
+    // %Y; The year as a decimal number including the century.
+    strftime(tbuf, sizeof(tbuf)/sizeof(tbuf[0]), "%a %b %d %H:%M:%S %Y", &t);
 
     static const char* tags[]{
         " [DEBUG] ",
@@ -129,7 +130,7 @@ LoggerFriend Log(const Level level) {
         " [ERROR] ",
     };
 
-    p << timestamp << tags[static_cast<int>(level)];
+    p << tbuf << tags[static_cast<int>(level)];
 
     return p;
 }

@@ -67,7 +67,7 @@ class Opt {
         : is_set_(false)
         , value_{T()} {}
 
-    Opt(const T& value) noexcept
+    explicit Opt(const T& value) noexcept
         : is_set_{true}
         , value_{value} {}
 
@@ -384,7 +384,7 @@ class RegexMatch : public OpConstraint {
 
 class ChangeConstraint : public Constraint {
    public:
-    ChangeConstraint(const std::string& feature, const std::string& type_selector = DEFAULT_TYPE,
+    explicit ChangeConstraint(const std::string& feature, const std::string& type_selector = DEFAULT_TYPE,
                               const ValueEncoding value_encoding = ValueEncoding::ENCODED,
                               const std::string& path = Constraint::PATH_IDENTITY,
                               const std::string& instance_filter = Constraint::ALL_INSTANCE_FILTERS,
@@ -444,8 +444,12 @@ class Rules : public Rule {
 
     explicit Rules(const std::string& type);
 
+    template<typename T, typename... Args>
+    explicit Rules(const T& type, Args... args)
+    : type_{type}
+    , rules_{args...} {}
+
    public:
-    void Add(rule_ptr rule);
     void Add(const rule_vec& rules);
     void Add(const rules_ptr rules);
     json Json() const override;
@@ -453,16 +457,16 @@ class Rules : public Rule {
 
 class AndRules : public Rules {
    public:
-    explicit AndRules(const rule_vec& rules);
-    explicit AndRules(rules_ptr rules);
-    explicit AndRules(std::initializer_list<rule_ptr> rules);
+    template<typename... Args>
+    explicit AndRules(Args... args)
+        : Rules{"and", args...} {}
 };
 
 class OrRules : public Rules {
    public:
-    explicit OrRules(const rule_vec& rules);
-    explicit OrRules(rules_ptr rules);
-    explicit OrRules(std::initializer_list<rule_ptr> rules);
+    template<typename... Args>
+    explicit OrRules(Args... args)
+        : Rules{"or", args...} {}
 };
 
 class OutputEncoder : public SchemaEntity {
@@ -515,7 +519,9 @@ class SkipCycleCheckType : public SchemaEntity {
    public:
     SkipCycleCheckType();
     explicit SkipCycleCheckType(bool skip);
-    explicit SkipCycleCheckType(const std::vector<std::string>& names);
+    template<typename ...Args>
+    explicit SkipCycleCheckType(Args... args)
+        : names_{args...} {}
     json Json() const override;
 };
 
@@ -642,8 +648,15 @@ class Event {
 
 }  // namespace schema
 
-schema::rules_ptr OrRules(std::initializer_list<schema::rule_ptr> rules);
-schema::rules_ptr AndRules(std::initializer_list<schema::rule_ptr> rules);
+template<typename... Args>
+schema::rules_ptr OrRules(Args... args) {
+    return std::make_shared<schema::OrRules>(args...);
+}
+
+template<typename... Args>
+schema::rules_ptr AndRules(Args... args) {
+    return std::make_shared<schema::AndRules>(args...);
+}
 
 schema::rule_ptr IsSet(const std::string& feature, const std::string& type_selector = schema::DEFAULT_TYPE,
                        const schema::ValueEncoding value_encoding = schema::ValueEncoding::RAW,
