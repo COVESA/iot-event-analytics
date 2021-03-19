@@ -983,7 +983,7 @@ class Talent {
     void HandleDiscover(const std::string& data);
 
     /**
-     * @brief Handle incoming platorm event by forwading it ot OnPlatformEvent
+     * @brief Handle incoming platorm event and forwading it to OnPlatformEvent
      * with the associated payload.
      *
      * @param data Payload
@@ -991,7 +991,7 @@ class Talent {
     void HandlePlatformEvent(const std::string& data);
 
     /**
-     * @brief Handle replies to function calls by unmarshalling the result and
+     * @brief Handle a reply to function calls by unmarshalling the result and
      * forwarding it and the associated context to the appropriate callback.
      * Not to be used by external subsclasses.
      *

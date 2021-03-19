@@ -10,11 +10,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "util.hpp"
-
 #include <cstdlib>
 #include <string>
 #include <atomic>
+
+#include "util.hpp"
 
 namespace iotea {
 namespace core {
@@ -34,12 +34,6 @@ std::string GenerateUUID() {
     if (!flag.test_and_set()) {
         auto seed =  static_cast<unsigned int>(getpid());
         srand(seed);
-    }
-
-    static std::atomic_flag flag = ATOMIC_FLAG_INIT;
-
-    if (!flag.test_and_set()) {
-        srand(static_cast<unsigned int>(getpid()));
     }
 
     for (size_t s = 0; s < sizeof(seglens) / sizeof(seglens[0]); s++) {

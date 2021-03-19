@@ -15,7 +15,7 @@ namespace core {
 class Publisher : public iotea::core::Publisher {
     public:
         MOCK_METHOD(void, Publish, (const std::string& topic, const std::string& data), (override));
-        MOCK_METHOD(std::string, GetIngestionTopic, (), (const, override));
+        MOCK_METHOD(std::string, GetIngestionEventsTopic, (), (const, override));
         MOCK_METHOD(std::string, GetNamespace, (), (const, override));
 };
 

@@ -75,7 +75,7 @@ if(BUILD_TESTING)
     add_subdirectory(mocks)
 
     add_executable(testrunner
-        tests/test_talent.cpp
+        tests/test_iotea.cpp
         tests/test_schema.cpp
     )
 

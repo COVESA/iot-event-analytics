@@ -183,17 +183,20 @@ void TestSetTalent::RegisterTest(const std::string& name, const json& expect, co
     // This is the function that we will delegate to when the runner ask us to
     // run the test called "name"
     //
-    auto func = [name, callee, args](const core::CallContext& context) {
+    auto func = [name, callee, args](core::CallContext context) {
 
         auto start = std::chrono::high_resolution_clock::now();
+        auto t = callee.Call(args, context);
 
-        callee.Call(args, context, [name, start, context](const json& result, core::EventContext) {
+        context.GatherAndReply([name, start](std::vector<std::pair<json, core::EventContext>> replies) {
             auto stop = std::chrono::high_resolution_clock::now();
             auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
             auto duration = static_cast<int32_t>(delta);
 
-            context.Reply(TestResult{name, result, duration}.Json());
-        });
+            auto result = replies[0].first;
+
+            return TestResult{name, result, duration}.Json();
+        }, {t});
     };
 
     test_set_info_.AddTest(name, expect, func, timeout);

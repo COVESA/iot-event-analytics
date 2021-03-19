@@ -404,7 +404,7 @@ void Talent::AddOutput(const std::string& feature, const schema::Metadata& metad
 }
 
 EventContext Talent::NewEventContext(const std::string& subject) {
-    return EventContext{talent_id_, channel_id_, subject, publisher_->GetIngestionTopic(), call_handler_, publisher_};
+    return EventContext{talent_id_, channel_id_, subject, publisher_->GetIngestionEventsTopic(), call_handler_, publisher_};
 }
 
 schema::rules_ptr Talent::GetRules() const {
@@ -415,7 +415,7 @@ schema::rules_ptr Talent::GetRules() const {
     auto rules = schema::rule_vec{};
     auto chan_expr = "^/" + channel_id_ + "/.*";
 
-    for (const auto& c : callees) {
+    for (const auto& c : callees_) {
         auto r = std::make_shared<schema::Rule>(std::make_shared<schema::RegexMatch>(
             c + "-out", chan_expr, schema::DEFAULT_TYPE, schema::ValueEncoding::RAW, "/$tsuffix"));
         rules.push_back(r);
@@ -583,7 +583,7 @@ void FunctionTalent::HandleEvent(const Event& event) {
     }
 
     auto args = event.GetValue()["args"];
-    auto context = CallContext{static_cast<Talent&>(*this), publisher_, GetOutputName(item->first), event};
+    auto context = CallContext{GetId(), GetChannelId(), GetOutputName(item->first), event, call_handler_, publisher_};
     item->second(args, context);
 }
 
