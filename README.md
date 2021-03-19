@@ -91,35 +91,51 @@ For further information how to start the platform using docker-compose see [here
   ```javascript
   const iotea = require('boschio.iotea');
 
-  process.env.MQTT_TOPIC_NS = 'iotea/';
-  process.env.LOG_LEVEL = 'DEBUG';
+  const Logger = iotea.util.Logger;
+  process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
-  class TestTalent extends iotea.Talent {
-    constructor(connectionString) {
-      super('my-test-talent', connectionString);
-    }
+  const {
+      MqttProtocolAdapter
+  } = iotea.util;
 
-    getRules() {
-      return new iotea.AndRules([
-        new iotea.Rule(
-          new iotea.OpConstraint('anyfeature', iotea.OpConstraint.OPS.ISSET, null, 'anytype', VALUE_TYPE_RAW)
-        )
-      ]);
-    }
+  const {
+      Talent,
+      OpConstraint,
+      Rule,
+      AndRules,
+      ProtocolGateway,
+      TalentInput
+  } = iotea;
 
-    async onEvent(ev, evtctx) {
-      this.logger.info(`${JSON.stringify(iotea.TalentInput.getRawValue(ev))}`, evtctx);
-    }
+  const {
+      VALUE_TYPE_RAW
+  } = iotea.constants;
+
+  class MyTalent extends Talent {
+      constructor(protocolGatewayConfig) {
+          super('some-unique-talent-id', protocolGatewayConfig);
+      }
+
+      getRules() {
+          return new AndRules([
+              new Rule(new OpConstraint('anyfeature', OpConstraint.OPS.ISSET,  null, 'anytype', VALUE_TYPE_RAW))
+          ]);
+      }
+
+      async onEvent(ev, evtctx) {
+          this.logger.info(`${TalentInput.getRawValue(ev)}`, evtctx);
+      }
   }
 
-  new TestTalent('mqtt://localhost:1883').start();
+  // Update mqttAdapterConfig.config.brokerUrl, if you specified a different one in your configuration !!!
+  const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration();
+
+  new MyTalent(
+      ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ])
+  ).start();
   ```
 
 - Run `node index.js` to start the test talent.
-
-## Run a talent as AWS Lambda function
-
-You have to provide a custom MQTT configuration as mentioned above to configure the certificate based authentication and the remote broker. You can see a preconfigured example [here](./src/sdk/javascript/examples/console/cloud/config/mosquitto/config.json). For further advice how to get a Talent running e.g. on AWS use this [Talent2Cloud converter guide](./src/tools/t2c) or look at the example [Cloud Console Output](./src/sdk/javascript/examples/console/cloud)
 
 ## Dependencies
 

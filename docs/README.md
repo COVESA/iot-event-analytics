@@ -33,7 +33,7 @@ Talent examples are given for
 
 The core components providing the platform layer on top of a publish-subscribe network protocol.
 
-- Can be deployed in the cloud (e.g. Kubernetes, Any nodeJS capable runtime, via Docker-compose)
+- Can be deployed in the cloud (e.g. Kubernetes, Any Node.js capable runtime, via Docker-compose)
 - Can be deployed on the edge device itself --> Traffic to cloud (for cloud talents) is reduced to a minimum by using smart message routing via mosquitto
 
 #### Config-Manager (1 or many)
@@ -459,11 +459,9 @@ The following tools support the development and integration:
 
 - All JSON Schema can be found [here](..\src\resources\).
 - Node-Red input and output node: [here](..\src\sdk\node-red\).
-- MS Visual Studio Code Plugin: [here](..\src\sdk\vscode\).
+- Microsoft Visual Studio Code Plugin: [here](..\src\sdk\vscode\).
 - Message publishing e.g. used for passing the event, located in the events.txt files, parallel to each example: [here](..\src\tools\mqtt).
-- Talent 2 Cloud: [here](..\src\tools\t2c).
-- Unit of measurement tool converting Bosch units into a JSON representation: [here](..\src\tools\uom).
-- VSS tooling for converting VSS yaml files into IoT Event Analytics types and unit of measurement representation: [here](..\src\tools\vss).
+- VSS tooling for converting VSS JSON files into IoT Event Analytics types and features: [here](..\src\tools\vss).
 - Adapter
   - DAPR integration for consuming data points and calling services: [here](..\src\adapter\dapr).
   - VSS integration for bidirectional data passing with Eclipse KUKSA.VAL: [here](..\src\adapter\vss).

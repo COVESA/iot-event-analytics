@@ -15,7 +15,7 @@
 - Open the _docker-compose_ folder in the project root in a terminal
   - Start the platform and the MQTT broker by using docker-compose `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --project-name=platform --env-file ../src/sdk/javascript/examples/protocols/.env.platform up --remove-orphans --build`<br>
   - Start the platform and the MQTT broker by using docker-compose `docker-compose -f docker-compose.mosquitto.yml --project-name=broker --env-file ../src/sdk/javascript/examples/protocols/.env.broker up --remove-orphans --build`
-- Start the local cloud output talent by running `node index.js`
+- Start the talent by running `node index.js`
 
 ## How to test it
 

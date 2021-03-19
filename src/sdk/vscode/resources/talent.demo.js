@@ -1,7 +1,5 @@
 const iotea = require('boschio.iotea');
 
-process.env.MQTT_TOPIC_NS = 'iotea/';
-
 const Logger = iotea.util.Logger;
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
@@ -38,7 +36,7 @@ class MyTalent extends Talent {
     }
 }
 
-// Update mqttAdapterConfig.config.brokerUrlt, if you specified a different one in your configuration !!!
+// Update mqttAdapterConfig.config.brokerUrl, if you specified a different one in your configuration !!!
 const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration();
 
 new MyTalent(
