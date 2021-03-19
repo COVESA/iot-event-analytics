@@ -30,8 +30,8 @@ const {
 } = require('./constants');
 
 module.exports = class FunctionTalent extends Talent {
-    constructor(id, connectionString, disableMqtt5Support) {
-        super(id, connectionString, disableMqtt5Support);
+    constructor(id, protocolGatewayConfig) {
+        super(id, protocolGatewayConfig);
         this.functions = {};
     }
 

@@ -4,20 +4,31 @@
     "type": "object",
     "required": [
       "id",
-      "outputs",
-      "options"
+      "config"
     ],
     "properties": {
       "id": {
         "type": "string",
         "pattern": "^[^\\.]+$"
       },
-      "remote": {
-        "type": "boolean"
-      },
-      "options": {
+      "config": {
         "type": "object",
+        "required": [
+          "rules"
+        ],
         "properties": {
+          "outputs": {
+            "type": "object",
+            "patternProperties": {
+              "^(?:[^\\.]+\\.[^\\.]+)$": {
+                "$ref": "feature.schema.json#/definitions/feature"
+              }
+            },
+            "additionalProperties": false
+          },
+          "rules": {
+            "$ref": "rules.schema.json"
+          },
           "scc": {
             "oneOf": [
               {
@@ -32,20 +43,7 @@
               }
             ]
           }
-        },
-        "additionalProperties": false
-      },
-      "outputs": {
-        "type": "object",
-        "patternProperties": {
-          "^(?:[^\\.]+\\.[^\\.]+)$": {
-            "$ref": "feature.schema.json#/definitions/feature"
-          }
-        },
-        "additionalProperties": false
-      },
-      "rules": {
-        "$ref": "rules.schema.json"
+        }
       }
     },
     "additionalProperties": false

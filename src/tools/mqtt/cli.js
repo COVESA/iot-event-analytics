@@ -13,7 +13,7 @@ process.env['NODE_NO_WARNINGS'] = 1;
 process.env.MQTT_TOPIC_NS = 'iotea/';
 
 const yargs = require('yargs');
-const { NamedMqttBroker } = require('../../core/util/mqttBroker');
+const { NamedMqttClient } = require('../../core/util/mqttClient');
 const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
@@ -86,7 +86,7 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
 
 (async argv => {
     // Do NOT use any topic namespace
-    const broker = new NamedMqttBroker('CLI', argv.connectionString, null);
+    const broker = new NamedMqttClient('CLI', argv.connectionString, null);
 
     try {
         let totalMessageCount = 0;

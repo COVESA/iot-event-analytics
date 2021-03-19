@@ -41,7 +41,7 @@ export async function getAndUpdateDockerProxy(): Promise<string> {
 
     dockerProxy = await vscode.window.showInputBox({
         value: dockerProxy || '',
-        prompt: 'Specify the http(s) proxy, which is used within your Docker environment to connect to the internet. Leave it blank or just cancel this dialog for no proxy'
+        prompt: 'Specify the http(s) proxy, to connect to the internet (e.g. http://host.docker.internal:3128). Leave it blank or just cancel this dialog for no proxy'
     });
 
     dockerProxy = (dockerProxy || '').trim();

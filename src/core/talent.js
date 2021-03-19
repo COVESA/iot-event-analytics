@@ -11,10 +11,11 @@
 const uuid = require('uuid');
 const Logger = require('./util/logger');
 const jsonQuery = require('./util/jsonQuery');
+const clone = require('./util/clone');
 const {
     TalentOutput
 } = require('./util/talentIO');
-const { NamedMqttBroker } = require('./util/mqttBroker');
+const ProtocolGateway = require('./protocolGateway');
 
 const {
     TALENTS_DISCOVERY_TOPIC,
@@ -45,7 +46,7 @@ class OutputFeature {
 
 class IOFeatures {
     constructor() {
-        this.options = {};
+        this.config = {};
         this.outputFeatures = [];
     }
 
@@ -57,22 +58,22 @@ class IOFeatures {
         }
 
         // Also overwrite given typeFeatures
-        this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = true;
+        this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = true;
     }
 
     skipCycleCheckFor() {
-        if (this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] === true) {
+        if (this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] === true) {
             // Skip, since cycle check is disabled anyway
             return;
         }
 
-        if (!Array.isArray(this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK])) {
-            this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = [...arguments];
+        if (!Array.isArray(this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK])) {
+            this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = [...arguments];
             return;
         }
 
         // Ensure unique typeFeatures in Array
-        this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = Array.from(new Set([...this.options[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK], ...arguments]));
+        this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK] = Array.from(new Set([...this.config[TALENT_DISCOVERY_OPTIONS.SKIP_CYCLE_CHECK], ...arguments]));
     }
 
     addOutput(feature, metadata) {
@@ -85,21 +86,26 @@ class IOFeatures {
 }
 
 class Talent extends IOFeatures {
-    constructor(id, connectionString, disableMqtt5Support = false) {
+    constructor(id, protocolGatewayConfig, talentConfig = {}) {
         super();
         this.id = id;
         this.uid = Talent.createUid(this.id);
         this.logger = new Logger(`Talent.${this.uid}`);
-        this.connectionString = connectionString;
-        this.disableMqtt5Support = disableMqtt5Support;
-        this.broker = this.__createMessageBroker(`Talent.${this.uid}`, this.connectionString);
+        // Clone to ensure config consistency
+        this.config = clone(Object.assign(talentConfig || {}, this.config));
+
+        if (ProtocolGateway.getAdapterCount(protocolGatewayConfig) !== 1) {
+            throw new Error(`Invalid Talent ProtocolGateway Configuration. Specify a single adapter in your ProtocolGateway configuration`);
+        }
+
+        // We already ensured one Adapter
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.logger.name);
+
         this.ioFeatures = new IOFeatures();
         this.deferredCalls = {};
 
         // Common channel Id
         this.chnl = uuid.v4();
-
-        this.logger.info(`*****INFO***** Is remote talent? ${this.isRemote()}`);
 
         for (const callee of this.callees()) {
             // If functions should be called, skip cycle check for their return value
@@ -109,20 +115,14 @@ class Talent extends IOFeatures {
     }
 
     start() {
-        let eventSubscriptionTopic = Talent.getTalentTopic(this.id);
-
-        if (!this.disableMqtt5Support) {
-            eventSubscriptionTopic = `$share/${this.id}/${eventSubscriptionTopic}`;
-        }
-
         // remote/ prefix do not have to be prepended for Remote talents subscriptions. Talents always receive their events, as if it runs locally
         // For more information see local mosquitto bridging configuration
-        // Shared subscription for default events
-        return this.__createMessageBroker(`Talent.${this.uid}`, this.connectionString).subscribeJson(eventSubscriptionTopic, this.__onEvent.bind(this))
-            // Common subscription for specific events, so that all instances of a talent get the event and can decide whether to use it or not
-            .then(() => this.__createMessageBroker(`Talent.${this.uid}`, this.connectionString).subscribeJson(`${Talent.getTalentTopic(this.id)}/${this.chnl}/+`, this.__onCommonEvent.bind(this)))
-            // Sufficient if one gets it
-            .then(() => this.__createMessageBroker(`Talent.${this.uid}`, this.connectionString).subscribeJson(`$share/${this.id}/${TALENTS_DISCOVERY_TOPIC}`, this.__onDiscover.bind(this)))
+        // Shared telemetry event subscription for all Talent instances sharing the same id
+        return this.pg.subscribeJsonShared(this.id, Talent.getTalentTopic(this.id), this.__onEvent.bind(this))
+            // Subscription for Talent instance specific events
+            .then(() => this.pg.subscribeJson(`${Talent.getTalentTopic(this.id)}/${this.chnl}/+`, this.__onCommonEvent.bind(this)))
+            // Sufficient if one Talent instance gets it
+            .then(() => this.pg.subscribeJsonShared(this.id, TALENTS_DISCOVERY_TOPIC, this.__onDiscover.bind(this)))
             .then(() => {
                 this.logger.info(`Talent ${this.uid} started successfully`);
             });
@@ -170,7 +170,7 @@ class Talent extends IOFeatures {
 
             this.logger.verbose(`Sending function call to ${JSON.stringify(ev)} to ${returnTopic}...`);
 
-            return this.broker.publishJson([ returnTopic ], ev)
+            return this.pg.publishJson(returnTopic, ev)
                 .then(() => {
                     this.logger.verbose(`Successfully sent function call`);
                 });
@@ -183,10 +183,6 @@ class Talent extends IOFeatures {
         throw new Error('Override getRules() and return an instance of Rules');
     }
 
-    isRemote() {
-        return false;
-    }
-
     getFullFeature(talentId, feature, type) {
         return `${type ? `${type}.` : ''}${talentId}.${feature}`;
     }
@@ -197,7 +193,7 @@ class Talent extends IOFeatures {
     }
 
     async __onDiscover(ev) {
-        await this.broker.publishJson(ev.returnTopic, this.__createDiscoveryResponse());
+        await this.pg.publishJson(ev.returnTopic, this.__createDiscoveryResponse());
     }
 
     __getRules() {
@@ -230,10 +226,10 @@ class Talent extends IOFeatures {
 
         return {
             id: this.id,
-            remote: this.isRemote(),
-            options: this.options,
-            outputs: this.getOutputFeatures(this.id),
-            rules: rules.save()
+            config: Object.assign(this.config, {
+                outputs: this.getOutputFeatures(this.id),
+                rules: rules.save()
+            })
         };
     }
 
@@ -284,26 +280,12 @@ class Talent extends IOFeatures {
                     }
                 });
 
-                await this.broker.publishJson(ev.returnTopic, outEvents);
+                await this.pg.publishJson(ev.returnTopic, outEvents);
             }
         }
         catch(err) {
             this.logger.error(err.message, evtctx, err);
         }
-    }
-
-    __createMessageBroker(name, connectionString) {
-        let checkMqtt5Compatibility = true;
-
-        if (this.disableMqtt5Support) {
-            if (!this.isRemote()) {
-                throw new Error(`Disabling MQTT5 support is only supported for remote talents`);
-            }
-
-            checkMqtt5Compatibility = false;
-        }
-
-        return new NamedMqttBroker(name, connectionString, process.env.MQTT_TOPIC_NS, checkMqtt5Compatibility);
     }
 }
 
@@ -317,15 +299,8 @@ Talent.createUid = function createUid(prefix = null) {
     return [prefix, uniquePart].join('-');
 };
 
-Talent.getTalentTopic = (talentId, isRemote = false, suffix = '') => {
-    let topic = `talent/${talentId}/events${suffix}`;
-
-    if (isRemote === true) {
-        // Prefix with remote to bridge them to the remote host
-        return `remote/${topic}`
-    }
-
-    return topic;
+Talent.getTalentTopic = (talentId, suffix = '') => {
+    return `talent/${talentId}/events${suffix}`;
 };
 
 Talent.isValidTalentFeature = function isValidTalentFeature(talentFeature, talentId) {

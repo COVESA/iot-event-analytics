@@ -70,7 +70,6 @@ class TimeseriesConstraint extends Constraint {
             return valueFoundForPath;
         }
         catch(err) {
-            console.log(err);
             return false;
         }
     }

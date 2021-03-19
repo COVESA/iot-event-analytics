@@ -39,17 +39,20 @@ const {
 
 const InstanceManager = require('../../../../core/instanceManager');
 
-const { NamedMqttBroker } = require('../../../../core/util/mqttBroker');
+const {
+    MqttProtocolAdapter
+} = require('../../../../core/util/mqttClient');
+
+const ProtocolGateway = require('../../../../core/protocolGateway');
+
+const mqttAdapterConfig = MqttProtocolAdapter.createDefaultConfiguration(true);
+const platformGatewayConfig = ProtocolGateway.createDefaultConfiguration([ mqttAdapterConfig ]);
 
 class MathFunctions extends FunctionTalent {
-    constructor(connectionString) {
-        super('math', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('math', protocolGatewayConfig);
         this.registerFunction('multiply', this.__multiply.bind(this));
         this.registerFunction('fibonacci', this.__fibonacci.bind(this));
-    }
-
-    isRemote() {
-        return false;
     }
 
     callees() {
@@ -59,7 +62,7 @@ class MathFunctions extends FunctionTalent {
     }
 
     async __multiply(a, b, ev, evtctx) {
-        this.logger.debug(`Multiplying numbers ${a} and ${b}...`, evtctx);
+        this.logger.info(`Multiplying numbers ${a} and ${b}...`, evtctx);
 
         await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
 
@@ -84,8 +87,8 @@ class MathFunctions extends FunctionTalent {
 }
 
 class TempTalent extends Talent {
-    constructor(connectionString) {
-        super('temp-talent', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('temp-talent', protocolGatewayConfig);
     }
 
     callees() {
@@ -118,9 +121,11 @@ class TempTalent extends Talent {
     }
 }
 
-const cf = new ConfigManager('mqtt://localhost:1883', '123456');
+const PLATFORM_ID = '123456';
 
-const instanceManager = new InstanceManager('mqtt://localhost:1883');
+const cf = new ConfigManager(platformGatewayConfig, PLATFORM_ID);
+
+const instanceManager = new InstanceManager(platformGatewayConfig);
 const instanceApi = new InstanceApi(instanceManager);
 const metadataApi = new MetadataApi(cf.getMetadataManager());
 
@@ -129,20 +134,20 @@ app.use('/metadata/api/v1', metadataApi.createApiV1());
 app.use('/data/api/v1', instanceApi.createApiV1());
 app.listen(8080);
 
-const broker = new NamedMqttBroker('PlatformEvents', 'mqtt://localhost:1883');
 const platformEventLogger = new Logger('PlatformEvents');
+const pg = new ProtocolGateway(platformGatewayConfig, 'PlatformEvents', true);
 
-broker.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
-    platformEventLogger.verbose(`Received platform event of type ` + ev.type);
-    platformEventLogger.verbose(JSON.stringify(ev.data));
+pg.subscribeJson(PLATFORM_EVENTS_TOPIC, ev => {
+    platformEventLogger.info(`Received platform event of type ` + ev.type);
+    platformEventLogger.info(JSON.stringify(ev.data));
 });
 
-const ing = new Ingestion('mqtt://localhost:1883');
-const enc = new Encoding('mqtt://localhost:1883');
-const rou = new Routing('mqtt://localhost:1883', '123456');
-const mathFunctions1 = new MathFunctions('mqtt://localhost:1883');
-const mathFunctions2 = new MathFunctions('mqtt://localhost:1883');
-const tempTalent = new TempTalent('mqtt://localhost:1883');
+const ing = new Ingestion(platformGatewayConfig, PLATFORM_ID);
+const enc = new Encoding(platformGatewayConfig);
+const rou = new Routing(platformGatewayConfig, PLATFORM_ID);
+const mathFunctions1 = new MathFunctions(platformGatewayConfig);
+const mathFunctions2 = new MathFunctions(platformGatewayConfig);
+const tempTalent = new TempTalent(platformGatewayConfig);
 const platformLogger = new Logger('Platform');
 
 mathFunctions1.start()

@@ -43,8 +43,6 @@ Just continue with the _Build & Run (from within the ./docker-compose directory)
   .env                           Copy from docker-compose/.env
 
   <mosquitto configuration dir>  Copy from docker-compose/mosquitto
-  |- remote
-  |  L- config.json
   L- config.json
 
   <platform configuration dir>   Copy from docker-compose/platform
@@ -60,13 +58,12 @@ Just continue with the _Build & Run (from within the ./docker-compose directory)
 - The _.env_ file should contain the following and the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` should be the absolute paths to _\<YOUR CONFIG PATH\>/platform_ and _\<YOUR CONFIG PATH\>/mosquitto_
 
   ```code
-  DOCKER_HTTP_PROXY=http://docker.for.win.localhost:3128   (Proxy configuration)
-  DOCKER_HTTPS_PROXY=http://docker.for.win.localhost:3128  (Proxy configuration)
-  MOSQUITTO_CONFIG_DIR=                                    (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
-  MQTT_PORT=1883                                           (MQTT port for the local broker)
-  MQTT_REMOTE_PORT=1884                                    (MQTT port for the remote broker - is automatically bridged from the local broker)
-  PLATFORM_CONFIG_DIR=                                     (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
-  API_PORT=8080                                            (Port, which is used to expose the platform REST APIs)
+  DOCKER_HTTP_PROXY=http://host.docker.internal:3128   (Proxy configuration)
+  DOCKER_HTTPS_PROXY=http://host.docker.internal:3128  (Proxy configuration)
+  MOSQUITTO_CONFIG_DIR=                                (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
+  MQTT_PORT=1883                                       (MQTT port for the local broker)
+  PLATFORM_CONFIG_DIR=                                 (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
+  API_PORT=8080                                        (Port, which is used to expose the platform REST APIs)
   ```
 
 __The paths within the _.env_ file need to be relative to the _docker-compose_ folder or absolute paths__
@@ -81,17 +78,17 @@ Continue with the _Build & Run (from within the ./docker-compose directory with 
 ## Build & Run (from within the _./docker-compose_ directory)
 
 Platform containers can be build with this command: \
-```docker-compose -f docker-compose.platform.yml build```
+```docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml build```
 
 Platform containers can be run with this command: \
-```docker-compose -f docker-compose.platform.yml up```
+```docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml up```
 
-Mosquitto MQTT broker containers (local and local-remote) can be run and built with this command: \
+Mosquitto MQTT broker container can be run and built with this command: \
 ```docker-compose -f docker-compose.mosquitto.yml up --build```
 
 ## Build & Run (from within the _./docker-compose_ directory with custom configuration)
 
-```docker-compose -f docker-compose.mosquitto.yml --env-file <YOUR CONFIG PATH>/.env up --build```
+```docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file <YOUR CONFIG PATH>/.env up --build```
 
 ## Debug
 
@@ -124,7 +121,7 @@ Mosquitto MQTT broker containers (local and local-remote) can be run and built w
   }
   ```
 
-- Start the containers using `docker-compose -f docker-compose.platform.yml -f docker-compose.platform.debug.yml --env-file <YOUR CONFIG PATH>/.env up --build`<br>
+- Start the containers using `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.platform.debug.yml --env-file <YOUR CONFIG PATH>/.env up --build`<br>
   This will start NodeJS with inspect-brk option using default Port _9229_ for the pipeline and _9230_ for the ConfigManager.
 - Go to the debug view again and select one of the above configurations from the list to attach the debugger to the container. Now you are able to use e.g. breakpoints directly in the source code
 

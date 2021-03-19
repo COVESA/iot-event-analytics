@@ -118,19 +118,19 @@ export class IoTeaUtils {
     }
 
     public startIoTeaPlatform(envFile: string | undefined): Promise<void> {
-        return this.startComposeInTerminal(IoTeaUtils.IOTEA_PLATFORM_TERMINAL_NAME, 'docker-compose.platform.yml', envFile);
+        return this.startComposeInTerminal(IoTeaUtils.IOTEA_PLATFORM_TERMINAL_NAME, [ 'docker-compose.mosquitto.yml', 'docker-compose.platform.yml' ], envFile);
     }
 
     public stopIoTeaPlatform(terminal: vscode.Terminal | undefined): Promise<void> {
-        return this.stopComposeInTerminal(IoTeaUtils.IOTEA_PLATFORM_TERMINAL_NAME, 'docker-compose.platform.yml', terminal);
+        return this.stopComposeInTerminal(IoTeaUtils.IOTEA_PLATFORM_TERMINAL_NAME, [ 'docker-compose.mosquitto.yml', 'docker-compose.platform.yml' ], terminal);
     }
 
     public startIoTeaMqttBroker(envFile: string | undefined): Promise<void> {
-        return this.startComposeInTerminal(IoTeaUtils.MOSQUITTO_BROKER_TERMINAL_NAME, 'docker-compose.mosquitto.yml', envFile);
+        return this.startComposeInTerminal(IoTeaUtils.MOSQUITTO_BROKER_TERMINAL_NAME, [ 'docker-compose.mosquitto.yml' ], envFile);
     }
 
     public stopIoTeaMqttBroker(terminal: vscode.Terminal | undefined): Promise<void> {
-        return this.stopComposeInTerminal(IoTeaUtils.MOSQUITTO_BROKER_TERMINAL_NAME, 'docker-compose.mosquitto.yml', terminal);
+        return this.stopComposeInTerminal(IoTeaUtils.MOSQUITTO_BROKER_TERMINAL_NAME, [ 'docker-compose.mosquitto.yml' ], terminal);
     }
 
     private startCreateIoTeaJsTalentProjectFlow(): Thenable<void> {
@@ -198,29 +198,24 @@ export class IoTeaUtils {
             // Prepare the directory to have all configuration files, which are needed to start the IoTea platform
             const ioteaProjectRootDir: any = getIoTeaRootDir();
             const mqttPort = vscode.workspace.getConfiguration('iotea').get<number>('platform.mqtt.port');
-            const remoteMqttPort = vscode.workspace.getConfiguration('iotea').get<number>('platform.mqtt.remote-port');
             const platformApiPort = vscode.workspace.getConfiguration('iotea').get<number>('platform.api.port');
 
             // Copy the configuration for the mosquitto brokers in the project directory
             const mosquittoConfigDir = path.resolve(talentProjectDir, 'config/mosquitto');
-            copyDirContentsSync(path.resolve(ioteaProjectRootDir, 'docker-compose/mosquitto'), mosquittoConfigDir)
+            copyDirContentsSync(path.resolve(ioteaProjectRootDir, 'docker/mosquitto/config'), mosquittoConfigDir)
 
             // Update mosquitto configuration files and apply port configuration
             updateJsonFileAt(path.resolve(mosquittoConfigDir, 'config.json'), {
-                'mqtt.port': mqttPort,
-                'bridges[0].address': `mosquitto-remote:${remoteMqttPort}`
-            });
-            updateJsonFileAt(path.resolve(mosquittoConfigDir, 'remote', 'config.json'), {
-                'mqtt.port': remoteMqttPort
+                'mqtt.port': mqttPort
             });
 
             // Copy the configurations for the platform into the project directory
             const platformConfigDir = path.resolve(talentProjectDir, 'config/platform');
-            copyDirContentsSync(path.resolve(ioteaProjectRootDir, 'docker-compose/platform'), platformConfigDir);
+            copyDirContentsSync(path.resolve(ioteaProjectRootDir, 'docker/platform/config'), platformConfigDir);
 
             // Update platform configuration file and apply port configuration
             updateJsonFileAt(path.resolve(platformConfigDir, 'config.json'), {
-                'mqtt.connectionString': `mqtt://mosquitto-local:${mqttPort}`,
+                'protocolGateway.adapters[0].config.connectionString': `mqtt://mosquitto:${mqttPort}`,
                 'api.port': platformApiPort
             });
 
@@ -242,7 +237,6 @@ export class IoTeaUtils {
             envFileContents += `MOSQUITTO_CONFIG_DIR=${mosquittoConfigDir}${os.EOL}`;
             envFileContents += `PLATFORM_CONFIG_DIR=${platformConfigDir}${os.EOL}`;
             envFileContents += `MQTT_PORT=${mqttPort}${os.EOL}`;
-            envFileContents += `MQTT_REMOTE_PORT=${remoteMqttPort}${os.EOL}`;
             envFileContents += `API_PORT=${platformApiPort}`;
 
             fs.writeFileSync(path.resolve(talentProjectDir, '.env'), envFileContents, {
@@ -259,7 +253,7 @@ export class IoTeaUtils {
         });
     }
 
-    private async startComposeInTerminal(terminalName: string, composeFile: string, envFile: string | undefined) {
+    private async startComposeInTerminal(terminalName: string, composeFiles: string[], envFile: string | undefined) {
         const ioteaProjectRootDir: any = getIoTeaRootDir();
 
         if (envFile === undefined) {
@@ -286,12 +280,12 @@ export class IoTeaUtils {
             name: terminalName
         });
 
-        terminal.sendText(`${getDockerComposeCmd()} -f ${composeFile} --project-name vscode-ext --env-file=${envFile} up --build --remove-orphans`);
+        terminal.sendText(`${getDockerComposeCmd()} ${composeFiles.map(composeFile => `-f "${composeFile}"`).join(' ')} --project-name vscode-ext --env-file="${envFile}" up --build --remove-orphans`);
 
         terminal.show(false);
     }
 
-    private async stopComposeInTerminal(terminalName: string, composeFile: string, terminal: vscode.Terminal | undefined) {
+    private async stopComposeInTerminal(terminalName: string, composeFiles: string[], terminal: vscode.Terminal | undefined) {
         const terminals = [];
 
         if (terminal !== undefined) {
@@ -306,14 +300,14 @@ export class IoTeaUtils {
 
         if (terminals.length === 0) {
             // Ask for the used .env-file, if no terminal is given
-            await this.stopDockerCompose(terminalName, composeFile, await this.chooseComposeEnvFile());
+            await this.stopDockerCompose(terminalName, composeFiles, await this.chooseComposeEnvFile());
             return;
         }
 
         for (let terminal of terminals) {
             try {
                 const envFile = ((terminal.creationOptions as vscode.TerminalOptions).env as any)._ENV_FILE;
-                await this.stopDockerCompose(terminalName, composeFile, envFile);
+                await this.stopDockerCompose(terminalName, composeFiles, envFile);
             }
             finally {
                 terminal.dispose();
@@ -321,7 +315,7 @@ export class IoTeaUtils {
         }
     }
 
-    private stopDockerCompose(terminalName: string, composeFile: string, envFile: string): Promise<string> {
+    private stopDockerCompose(terminalName: string, composeFiles: string[], envFile: string): Promise<string> {
         this.reportProgress(`Stopping ${terminalName}`);
 
         const ioteaProjectRootDir: any = getIoTeaRootDir();
@@ -336,9 +330,20 @@ export class IoTeaUtils {
 
         return terminal.executeCommand(
             getDockerComposeCmd(),
-            ['-f', composeFile, '--project-name', 'vscode-ext', '--env-file', envFile, 'down'],
+            [
+                ...composeFiles.reduce((acc: string[], composeFile: string) => {
+                    acc.push('-f');
+                    acc.push(composeFile);
+                    return acc;
+                }, []),
+                '--project-name',
+                'vscode-ext',
+                '--env-file',
+                envFile,
+                'down'
+            ],
             path.resolve(ioteaProjectRootDir,'docker-compose'),
-            message => { this.reportProgress(message); },
+            message => this.reportProgress(message),
             env
         );
     }

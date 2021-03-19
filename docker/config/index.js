@@ -19,28 +19,14 @@ process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.WARN);
 
 const InstanceManager = require('../../src/core/instanceManager');
 
-try {
-    process.env.MQTT_TOPIC_NS = config.get('mqtt.ns');
-}
-catch(err) {
-    delete process.env.MQTT_TOPIC_NS;
-}
-
 let platformLogger = undefined;
 let platformId = undefined;
 
-try {
-    platformId = config.get('platformId');
-    platformLogger = new Logger(`IoT Event Analytics Platform-${platformId}`);
-    platformLogger.info(`Local client installation ${platformId}`);
-}
-catch(err) {
-    platformLogger = new Logger(`IoT Event Analytics Platform`);
-}
+platformId = config.get('platformId', 'default');
+platformLogger = new Logger(`IoT Event Analytics Config Manager (${platformId})`);
+platformLogger.info(`Starting...`);
 
-platformLogger.info(`Starting IoT Event Analytics ConfigManager...`);
-
-const configManager = new ConfigManager(config.get('mqtt.connectionString'), platformId);
+const configManager = new ConfigManager(config.get('protocolGateway'), platformId);
 
 const app = express();
 
@@ -49,7 +35,7 @@ let apiInstanceManager = null;
 
 try {
     config.get('api.instance');
-    apiInstanceManager = new InstanceManager(config.get('mqtt.connectionString'));
+    apiInstanceManager = new InstanceManager(config.get('protocolGateway'));
     // Reuse the metadata manager for metadata API
     metadataManager = apiInstanceManager.getMetadataManager();
     const instanceApi = new InstanceApi(apiInstanceManager);

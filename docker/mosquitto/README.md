@@ -50,7 +50,7 @@
 
 ## Run
 
-- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" --restart=unless-stopped --name=mosquitto-local-<version> -d=true -v <some folder>:/mosquitto/config iotea-mosquitto-<arch>:<version>`
+- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" --restart=unless-stopped --name=mosquitto -d=true -v <some folder>:/mosquitto/config iotea-mosquitto-<arch>:<version>`
 
 ### >> Linux only <<
 
@@ -58,5 +58,5 @@
 
 ## Good to know
 
-- If you want to run a remote broker locally, simply run the following
+- If you want to start an MQTT broker on another port, simply run the following
   - `docker run -p=1883:1884 -d=true --restart unless-stopped --name=mosquitto-remote eclipse-mosquitto:latest`

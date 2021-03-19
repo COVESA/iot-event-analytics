@@ -14,9 +14,11 @@ const Logger = require('./util/logger');
 
 const jsonQuery = require('./util/jsonQuery');
 
-const { NamedMqttBroker } = require('./util/mqttBroker');
 const MetadataManager = require('./metadataManager');
 const Channels = require('./channels');
+const ProtocolGateway = require('./protocolGateway');
+
+const validatePlatformId = require('./util/validatePlatformId');
 
 const {
     INGESTION_TOPIC,
@@ -28,10 +30,12 @@ const {
 } = require('./constants');
 
 module.exports = class Ingestion {
-    constructor(connectionString) {
+    constructor(protocolGatewayConfig, platformId) {
+        validatePlatformId(platformId);
+        this.platformId = platformId;
         this.logger = new Logger('Ingestion');
-        this.broker = new NamedMqttBroker('Ingestion', connectionString);
-        this.metadataManager = new MetadataManager(connectionString, new Logger(`${this.logger.name}.MetadataManager`));
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.logger.name);
+        this.metadataManager = new MetadataManager(protocolGatewayConfig, new Logger(`${this.logger.name}.MetadataManager`));
     }
 
     start(channelsConfigDir) {
@@ -40,20 +44,22 @@ module.exports = class Ingestion {
                 this.channels = channels;
             })
             .then(() => this.metadataManager.start())
-            // Events which can be processed by any client --> automatically load-balanced event subscription via shared subscriptions (MQTT5)
-            .then(() => this.broker.subscribeJson(`$share/ingestion/${INGESTION_TOPIC}`, this.__onEvent.bind(this)))
+            // Subscribe for all messages, which are published from the same host as the platform is running on
+            .then(() => this.pg.subscribeJsonShared('global-ingestion', INGESTION_TOPIC, this.__onEvent.bind(this)))
+            // Subscribe for all events, which are sent from talents using the returnTopic
+            .then(() => this.pg.subscribeJsonShared('platform-ingestion', `${this.platformId}/${INGESTION_TOPIC}`, this.__onEvent.bind(this)))
             .then(() => {
                 this.logger.info('Ingestion started successfully');
             });
     }
 
-    async __onEvent(event) {
-        if (Array.isArray(event)) {
-            for (const singleEvent of event) {
+    async __onEvent(ev) {
+        if (Array.isArray(ev)) {
+            for (const singleEvent of ev) {
                 await this.__handleEvent(singleEvent)
             }
         } else {
-            await this.__handleEvent(event);
+            await this.__handleEvent(ev);
         }
     }
 
@@ -90,7 +96,7 @@ module.exports = class Ingestion {
 
                     this.logger.verbose(`Forwarding event to encoding stage ${JSON.stringify(ev)}`, evtctx);
 
-                    await this.broker.publishJson(ENCODING_TOPIC, ev);
+                    await this.pg.publishJson(ENCODING_TOPIC, ev, ProtocolGateway.createPublishOptions(true));
                 }
                 catch(err) {
                     // - Metadata could not be found for the processed Event --> skip event

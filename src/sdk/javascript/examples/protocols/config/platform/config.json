@@ -1,0 +1,37 @@
+{
+    "loglevel": "DEBUG",
+    "platformId": "ABCDE",
+    "talentDiscoveryIntervalMs": 30000,
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "mqtt5Only": true,
+                    "brokerUrl": "mqtt://mqtt1:1883"
+                }
+            },
+            {
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "mqtt5Only": true,
+                    "brokerUrl": "mqtt://mqtt2:1884"
+                }
+            }
+        ]
+    },
+    "api": {
+        "port": 8080,
+        "instance": {},
+        "metadata": {}
+    }
+}

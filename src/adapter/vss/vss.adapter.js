@@ -16,8 +16,7 @@ const MetadataManager = require('../../core/metadataManager');
 const Talent = require('../../core/talent');
 const JsonModel = require('../../core/util/jsonModel');
 const { AndRules, Rule, OpConstraint, ANY_FEATURE, ALL_TYPES } = require('../../core/rules');
-const { NamedMqttBroker } = require('../../core/util/mqttBroker');
-const { PLATFORM_EVENTS_TOPIC } = require('../../core/constants');
+const ProtocolGateway = require('../../core/protocolGateway');
 const Logger = require('../../core/util/logger');
 const { TalentInput } = require('../../core/util/talentIO');
 
@@ -50,17 +49,18 @@ const VSS_PATH_CONFIG = {
 const {
     INGESTION_TOPIC,
     VALUE_TYPE_RAW,
-    PLATFORM_EVENT_TYPE_SET_RULES,
-    PLATFORM_EVENT_TYPE_UNSET_RULES
+    PLATFORM_EVENTS_TOPIC,
+    PLATFORM_EVENT_TYPE_SET_CONFIG,
+    PLATFORM_EVENT_TYPE_UNSET_CONFIG
 } = require('../../core/constants');
 
 class VssAdapter extends Talent {
     // Handles multiple VssWebsocket Connections
-    constructor(connectionString, wsAddress, wsToken, vssSegment, adapterId = uuid(), wsOptions = {}, enableLoopPrevention = false) {
-        super(`vss-adapter-${adapterId}`, connectionString);
+    constructor(protocolGatewayConfig, wsAddress, wsToken, vssSegment, adapterId = uuid(), wsOptions = {}, enableLoopPrevention = false) {
+        super(`vss-adapter-${adapterId}`, protocolGatewayConfig);
 
-        this.broker = new NamedMqttBroker(this.id, connectionString);
-        this.metadataManager = new MetadataManager(connectionString);
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.id);
+        this.metadataManager = new MetadataManager(protocolGatewayConfig);
 
         // Identifies the adapter instance
         this.adapterId = adapterId;
@@ -114,7 +114,7 @@ class VssAdapter extends Talent {
                 })
                 .then(() => this.metadataManager.start())
                 // Subscribe for platform events
-                .then(() => this.broker.subscribeJson(PLATFORM_EVENTS_TOPIC, this.__onPlatformEvent.bind(this)))
+                .then(() => this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.__onPlatformEvent.bind(this)))
                 .then(() => super.start());
         }
         catch(err) {
@@ -220,7 +220,7 @@ class VssAdapter extends Talent {
 
                     this.logger.debug(`Forwarding event to IoT Event Analytics Platform: ${JSON.stringify(msg)}...`);
 
-                    await this.broker.publishJson(INGESTION_TOPIC, msg);
+                    await this.pg.publishJson(INGESTION_TOPIC, msg);
                 }, err => {
                     this.logger.error(`Error for subscription on VSS path ${absVssPath}`, null, err);
                 }, true)
@@ -250,9 +250,11 @@ class VssAdapter extends Talent {
             return;
         }
 
-        if (ev.type !== PLATFORM_EVENT_TYPE_SET_RULES && ev.type !== PLATFORM_EVENT_TYPE_UNSET_RULES) {
+        if (ev.type !== PLATFORM_EVENT_TYPE_SET_CONFIG && ev.type !== PLATFORM_EVENT_TYPE_UNSET_CONFIG) {
             return;
         }
+
+        const talentConfig = ev.data.config;
 
         try {
             if (this.vssTypes.length === 0) {
@@ -261,19 +263,19 @@ class VssAdapter extends Talent {
                 this.vssTypes = await this.metadataManager.resolveTypes(this.vssSegment);
             }
 
-            const uniqueVssPaths = this.__extractUniqueVssPathsFromRules(ev.data.rules);
+            const uniqueVssPaths = this.__extractUniqueVssPathsFromRules(talentConfig.rules);
 
             if (uniqueVssPaths.length === 0) {
-                this.logger.info('No VSS Paths found for rules', ev.data.rules);
+                this.logger.info('No VSS Paths found for rules', talentConfig.rules);
                 return;
             }
 
-            if (ev.type === PLATFORM_EVENT_TYPE_SET_RULES) {
+            if (ev.type === PLATFORM_EVENT_TYPE_SET_CONFIG) {
                 this.logger.info(`Subscribing to VSS paths ${uniqueVssPaths}...`);
                 await this.__subscribe(talentId, uniqueVssPaths);
             }
 
-            if (ev.type === PLATFORM_EVENT_TYPE_UNSET_RULES) {
+            if (ev.type === PLATFORM_EVENT_TYPE_UNSET_CONFIG) {
                 this.logger.info(`Unsubscribing from VSS paths ${uniqueVssPaths}...`);
                 await this.__unsubscribe(talentId, uniqueVssPaths);
             }

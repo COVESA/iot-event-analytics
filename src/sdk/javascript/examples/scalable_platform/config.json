@@ -1,0 +1,38 @@
+{
+    "loglevel": "DEBUG",
+    "platformId": "123456",
+    "platformConfigDir": "./config",
+    "talentDiscoveryIntervalMs": 30000,
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "mqtt5Only": true,
+                    "brokerUrl": "mqtt://localhost:1883"
+                }
+            }
+        ]
+    },
+    "api": {
+        "port": 8080,
+        "metadata": {}
+    },
+    "ingestion": {
+        "loglevel": "INFO",
+        "processes": 1
+    },
+    "encoding": {
+        "loglevel": "INFO",
+        "processes": 2
+    },
+    "routing": {
+        "loglevel": "INFO",
+        "processes": 2
+    }
+}

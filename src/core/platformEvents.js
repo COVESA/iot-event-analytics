@@ -9,14 +9,14 @@
  ****************************************************************************/
 
 const Logger = require('./util/logger');
-const { MqttBroker } = require('./util/mqttBroker');
+const ProtocolGateway = require('./protocolGateway');
 const {
     PLATFORM_EVENTS_TOPIC
 } = require('./constants');
 
-class PlatformEventEmitter extends MqttBroker {
-    constructor(connectionString) {
-        super(connectionString);
+class PlatformEventEmitter extends ProtocolGateway {
+    constructor(protocolGatewayConfig) {
+        super(protocolGatewayConfig, 'PlatformEventEmitter');
         this.logger = new Logger('PlatformEventEmitter');
     }
 
@@ -29,7 +29,7 @@ class PlatformEventEmitter extends MqttBroker {
 
         this.logger.verbose(`Sending platform event ${JSON.stringify(ev)}...`);
 
-        return this.publishJson([ PLATFORM_EVENTS_TOPIC ], ev).catch(err => { this.logger.warn(err.message, null, err); });
+        return this.publishJson(PLATFORM_EVENTS_TOPIC, ev).catch(err => { this.logger.warn(err.message, null, err); });
     }
 }
 
@@ -41,8 +41,8 @@ PlatformEvents.ready = new Promise(resolve => {
     PlatformEvents.__onReadyResolve = resolve;
 });
 
-PlatformEvents.init = function(connectionString) {
-    PlatformEvents.__instance = new PlatformEventEmitter(connectionString);
+PlatformEvents.init = function(protocolGatewayConfig) {
+    PlatformEvents.__instance = new PlatformEventEmitter(protocolGatewayConfig);
     PlatformEvents.__onReadyResolve(PlatformEvents.__instance);
 };
 

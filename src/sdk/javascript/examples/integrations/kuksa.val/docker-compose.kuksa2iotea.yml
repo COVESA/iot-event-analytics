@@ -6,6 +6,8 @@ services:
       - KUKSAVAL_OPTARGS=--insecure
     ports:
       - '8090:8090'
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
         source: ${KUKSA_VAL_CONFIG_DIR}
@@ -19,9 +21,15 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+    networks:
+      - iotea-platform-network
     depends_on:
       - kuksa-val
     volumes:
       - type: bind
         source: ${VSS2IOTEA_VAL_CONFIG_DIR}
         target: "/app/docker/vss2iotea/config"
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

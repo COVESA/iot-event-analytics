@@ -17,7 +17,6 @@ The conversion process, does not convert your business logic. It only create a s
 ## Usage
 
 - Implement a JavaScript Talent as usual (subclassing Talent or Worker is supported at the moment)
-  - __Be sure to override the isRemote() function to return true__
 - Use _t2c.js_ to convert the talent into Copy-Paste cloud form<br>
   `node t2c.js -f <some talent>.js -a "mqtt://localhost:1884:string" -p aws -o "<some talent>-aws.js"`<br>
   The parameters are explained here ```node t2c.js --help```

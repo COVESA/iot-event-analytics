@@ -1,41 +1,5 @@
-version: '3.2'
+version: "3.5"
 services:
-  mosquitto-remote:
-    build:
-      context: ../docker/mosquitto
-      labels:
-        iotea.mosquitto.version: "1.6.12"
-      dockerfile: Dockerfile.amd64
-      args:
-        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
-        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - MQTT_PORT=${MQTT_REMOTE_PORT-1884}
-    hostname: mosquitto-remote
-    ports:
-      - '${MQTT_REMOTE_PORT-1884}:${MQTT_REMOTE_PORT-1884}'
-    volumes:
-      - type: bind
-        source: "${MOSQUITTO_CONFIG_DIR-./mosquitto}/remote"
-        target: "/mosquitto/config"
-  mosquitto-local:
-    build:
-      context: ../docker/mosquitto
-      labels:
-        iotea.mosquitto.version: "1.6.12"
-      dockerfile: Dockerfile.amd64
-      args:
-        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
-        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - MQTT_PORT=${MQTT_PORT-1883}
-    depends_on:
-      - mosquitto-remote
-    hostname: mosquitto-local
-    ports:
-      - '${MQTT_PORT-1883}:${MQTT_PORT-1883}'
-    volumes:
-      - type: bind
-        source: "${MOSQUITTO_CONFIG_DIR-./mosquitto}"
-        target: "/mosquitto/config"
   configmanager:
     build:
       context: ..
@@ -47,13 +11,13 @@ services:
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
         - API_PORT=${API_PORT-8080}
     hostname: configmanager
-    depends_on:
-      - mosquitto-local
     ports:
       - '${API_PORT-8080}:${API_PORT-8080}'
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
-        source: "${PLATFORM_CONFIG_DIR-./platform}"
+        source: "${PLATFORM_CONFIG_DIR-../docker/platform/config}"
         target: "/app/docker/config/config"
   pipeline:
     build:
@@ -64,9 +28,13 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-    depends_on:
-      - mosquitto-local
+    networks:
+      - iotea-platform-network
     volumes:
       - type: bind
-        source: "${PLATFORM_CONFIG_DIR-./platform}"
+        source: "${PLATFORM_CONFIG_DIR-../docker/platform/config}"
         target: "/app/docker/pipeline/config"
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

@@ -16,8 +16,8 @@ const {
     RUN_TEST_METHOD_NAME,
     TEST_ERROR,
     PLATFORM_EVENTS_TOPIC,
-    PLATFORM_EVENT_TYPE_SET_RULES,
-    PLATFORM_EVENT_TYPE_UNSET_RULES
+    PLATFORM_EVENT_TYPE_SET_CONFIG,
+    PLATFORM_EVENT_TYPE_UNSET_CONFIG
 } = require('./constants');
 
 const Logger = require('./util/logger');
@@ -57,12 +57,12 @@ class TalentDependencies {
     }
 
     async __onPlatformEvent(ev) {
-        if (ev.type == PLATFORM_EVENT_TYPE_SET_RULES) {
+        if (ev.type == PLATFORM_EVENT_TYPE_SET_CONFIG) {
             if (this.talentDependencies.has(ev.data.talent)) {
                 this.talentDependencies.set(ev.data.talent, true);
             }
 
-        } else if (ev.type == PLATFORM_EVENT_TYPE_UNSET_RULES) {
+        } else if (ev.type == PLATFORM_EVENT_TYPE_UNSET_CONFIG) {
             if (this.talentDependencies.has(ev.data.talent)) {
                 this.talentDependencies.set(ev.data.talent, false);
             }
@@ -94,8 +94,8 @@ class TestSetInfo {
 }
 
 class TestRunnerTalent extends Talent {
-    constructor(name, testSetList, connectionString) {
-        super(name, connectionString);
+    constructor(name, testSetList, protocolAdapter) {
+        super(name, protocolAdapter);
 
         // Define run-tests feature for this test runner automatically at runtime
         this.addOutput('run-tests', {
@@ -221,7 +221,7 @@ class TestRunnerTalent extends Talent {
         return result;
     }
 
-    async onEvent(ev, evtctx) {
+    async onEvent(ev) {
         let unmetDependencies = this.talentDependencies.checkAll();
 
         if (unmetDependencies.length > 0) {
@@ -236,8 +236,8 @@ class TestRunnerTalent extends Talent {
 }
 
 class TestSetTalent extends FunctionTalent {
-    constructor(testSetName, connectionString) {
-        super(testSetName, connectionString)
+    constructor(testSetName, protocolAdapter) {
+        super(testSetName, protocolAdapter)
 
         this.registerTestAPIFunctions();
         this.testSetInfo = new TestSetInfo(testSetName);
@@ -255,7 +255,7 @@ class TestSetTalent extends FunctionTalent {
     }
 
 
-    registerTestAPIFunctions(self) {
+    registerTestAPIFunctions() {
         this.registerFunction(GET_TEST_INFO_METHOD_NAME, this.getTestSetInfo.bind(this));
         this.registerFunction(PREPARE_TEST_SET_METHOD_NAME, this.prepare.bind(this));
         this.registerFunction(RUN_TEST_METHOD_NAME, this.runTest.bind(this));

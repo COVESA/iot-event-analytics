@@ -27,11 +27,17 @@ const {
     DEFAULT_TYPE
 } = require('../../../../../core/constants');
 
+const ProtocolGateway = require('../../../../../core/protocolGateway');
+
+const {
+    MqttProtocolAdapter
+} = require('../../../../../core/util/mqttClient');
+
 const credentialJaguar = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZWxlbTpyb3BzdGVuOkVpQnZrNUNlQUVOLTF6dmxHVFhGSXFhNS1sR212V2Z0WHJwdHBYNFIyY3dVOVEjeGIzY1FtTF96X0VvLU1xMXJVU3Y1Vk9lNG1IZUNIMkR4U05sb0pkZmxEMCJ9.eyJAY29udGV4dCI6IFsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiXSwgInR5cGUiOiBbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwgIlZlaGljbGVDZXJ0aWZpY2F0ZUNyZWRlbnRpYWwiXSwgImlzc3VlciI6IHsiaWQiOiAiZGlkOmVsZW06cm9wc3RlbjpFaUJ2azVDZUFFTi0xenZsR1RYRklxYTUtbEdtdldmdFhycHRwWDRSMmN3VTlRIiwgIm5hbWUiOiAiSmFndWFyIn0sICJjcmVkZW50aWFsU3ViamVjdCI6IHsiaWQiOiAiZGlkOmVsZW06cm9wc3RlbjpFaURkdWFOUmpCTkNWSTgwOXpBbm4yalUwM0dicjF5OFBOZ0s0YlNDQldfenZRIiwgInZlaGljbGUiOiB7Im1hbnVmYWN0dXJlciI6ICJKYWd1YXIiLCAidHlwZSI6ICJJLVBBQ0UiLCAibWF4Y2hhcmdpbmciOiB7InJhdGUiOiAiMTAwIiwgInVuaXQiOiAia1cifSwgInZpbiI6ICJTQURIRDJTMTJLMUYxMjM0NSJ9fX0.yxFqyFMHjQMEIfcE3SQD-hx-7BjPjZx7b-pvUZlmHLNRYcmC-rWTdRf16kA02EGKX5VFqya6AoiSgErT0sJh7A'
 
 class ChargeApiTalent extends FunctionTalent {
-    constructor(connectionString) {
-        super('ChargeAPI', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('ChargeAPI', protocolGatewayConfig);
 
         this.offers = [];
 
@@ -110,6 +116,7 @@ class ChargeApiTalent extends FunctionTalent {
             this.logger.info(`Too expensive. Costs are ${offer.centsPerKWh}Cents/KWh`);
             return false;
         }
+
         return true;
     }
 
@@ -118,7 +125,9 @@ class ChargeApiTalent extends FunctionTalent {
             this.logger.warn(`__onGetCredential: Session with id ${sessionId} not found`);
             return false;
         }
+
         this.logger.info('__onGetCredential called successfully');
+
         return credentialJaguar;
     }
 
@@ -150,4 +159,6 @@ class ChargeApiTalent extends FunctionTalent {
     }
 }
 
-new ChargeApiTalent('mqtt://localhost:1883').start();
+const protocolGatewayConfig = ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(true) ]);
+
+new ChargeApiTalent(protocolGatewayConfig).start();

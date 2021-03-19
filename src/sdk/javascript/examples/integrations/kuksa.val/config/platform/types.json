@@ -4,26 +4,20 @@
         "types": {
             "Vehicle": {
                 "features": {
-                    "ADAS$ObstacleDetection$IsActive": {
+                    "Acceleration$Longitudinal": {
                         "idx": 0,
-                        "description": "Indicates if obstacle sensor system is enabled. True = Enabled. False = Disabled.",
+                        "description": "Vehicle acceleration in X (longitudinal acceleration).",
                         "encoding": {
-                            "type": "boolean",
-                            "encoder": "category",
-                            "enum": [
-                                true, false
-                            ]
+                            "type": "number",
+                            "encoder": null
                         }
                     },
-                    "ADAS$ObstacleDetection$Error": {
+                    "Acceleration$Lateral": {
                         "idx": 1,
-                        "description": "Indicates if obstacle sensor system incurred an error condition. True = Error. False = No Error.",
+                        "description": "Vehicle acceleration in Y (lateral acceleration).",
                         "encoding": {
-                            "type": "boolean",
-                            "encoder": "category",
-                            "enum": [
-                                true, false
-                            ]
+                            "type": "number",
+                            "encoder": null
                         }
                     }
                 }

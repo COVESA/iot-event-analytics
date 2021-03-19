@@ -11,7 +11,7 @@
 const uuid = require('uuid').v4;
 
 const Logger = require('./util/logger');
-const { NamedMqttBroker } = require('./util/mqttBroker');
+const ProtocolGateway = require('./protocolGateway');
 const MetadataManager = require('./metadataManager');
 const clone = require('./util/clone');
 const Instance = require('./instance');
@@ -23,17 +23,17 @@ const {
 } = require('./constants');
 
 module.exports = class InstanceManager {
-    constructor(connectionString) {
+    constructor(protocolGatewayConfig) {
         this.uid = uuid();
         this.logger = new Logger(`InstanceManager.${this.uid}`);
-        this.broker = new NamedMqttBroker(this.logger.name, connectionString);
-        this.metadataManager = new MetadataManager(connectionString, new Logger(`${this.logger.name}.MetadataManager`));
+        this.pg = new ProtocolGateway(protocolGatewayConfig, this.logger.name, true);
+        this.metadataManager = new MetadataManager(protocolGatewayConfig, new Logger(`${this.logger.name}.MetadataManager`));
         this.subjects = {};
     }
 
     start() {
         return this.metadataManager.start()
-            .then(() => this.broker.subscribeJson(UPDATE_FEATURE_TOPIC, this.__onFeatureUpdate.bind(this)))
+            .then(() => this.pg.subscribeJson(UPDATE_FEATURE_TOPIC, this.__onFeatureUpdate.bind(this)))
             .then(() => {
                 this.logger.info(`Instance manager ${this.uid} started successfully`);
             });
@@ -141,7 +141,7 @@ module.exports = class InstanceManager {
                     return updateResult;
                 }
 
-                return this.broker.publishJson(UPDATE_FEATURE_TOPIC, {
+                return this.pg.publishJson(UPDATE_FEATURE_TOPIC, {
                     sender: this.uid,
                     subject,
                     instanceId,
