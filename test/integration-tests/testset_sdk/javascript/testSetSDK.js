@@ -1,16 +1,21 @@
-const iotea = require('../../../../src/module.js'); //TODO: we need to fix this Jochen 
-//const iotea = require('boschio.iotea'); 
+const iotea = require('../../../../src/module.js');
+// const iotea = require('boschio.iotea');
 
-process.env.MQTT_TOPIC_NS = 'iotea/';
+const {
+    TestSetTalent,
+    ProtocolGateway
+} = iotea;
 
-const Logger = iotea.util.Logger;
-const TestSetTalent = iotea.TestSetTalent;
+const {
+    Logger
+    MqttProtocolAdapter
+} = iotea.util;
 
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
 class TestSetSDK extends TestSetTalent {
-    constructor(connectionString) {
-        super('testSet-sdk-js', connectionString);
+    constructor(protocolGatewayConfig) {
+        super('testSet-sdk-js', protocolGatewayConfig);
 
         // Register Tests
 
@@ -41,7 +46,7 @@ class TestSetSDK extends TestSetTalent {
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoBoolean(ev, evctx) {
@@ -51,7 +56,7 @@ class TestSetSDK extends TestSetTalent {
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoInteger(ev, evctx) {
@@ -61,7 +66,7 @@ class TestSetSDK extends TestSetTalent {
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoDouble(ev, evctx) {
@@ -71,7 +76,7 @@ class TestSetSDK extends TestSetTalent {
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoEmptyList(ev, evctx) {
@@ -81,37 +86,37 @@ class TestSetSDK extends TestSetTalent {
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoIntegerList(ev, evctx) {
-        let result = await this.call('function-provider-js','echo', 
+        let result = await this.call('function-provider-js','echo',
                                 [ [1, 2, 3] ],
                                 ev.subject,
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoMixedList(ev, evctx) {
-        let result = await this.call('function-provider-js','echo', 
+        let result = await this.call('function-provider-js','echo',
                                 [ [1, 'Hello World', 3.21] ],
                                 ev.subject,
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async test_echoDeepList(ev, evctx) {
-        let result = await this.call('function-provider-js','echo', 
+        let result = await this.call('function-provider-js','echo',
                                 [ [1, [2, [3, [4, [5]]]]] ],
                                 ev.subject,
                                 ev.returnTopic,
                                 500);
 
-        return result; 
+        return result;
     }
 
     async prepare(ev, evctx) {
@@ -121,5 +126,6 @@ class TestSetSDK extends TestSetTalent {
     }
 }
 
-const talent = new TestSetSDK('mqtt://localhost:1883');
-talent.start()
+const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+
+tss.start();
