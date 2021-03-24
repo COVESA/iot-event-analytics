@@ -19,7 +19,7 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 IoT Event Analytics, is a complex and freely scalable event processing and agent network platform. The platform is basically build around so called __Talents__ which form a distributed network. Each talent is a unit of work and can interact with other Talents via events. The platform itself orchestrates the flow of events and offers additional services, like an in-memory digital twin, calculation of statistical data based on given event histories and complex rule evaluation of when to inform a Talent, that something happened, that the Talent "is interested in".
 Thus, a talent is always an event consumer and may also be an event producer. The event-driven business logic can be implemented using one of our SDKs for JavaScript, Python or C++.
-There are more features which can be explored unsing various examples for the different SDKs.
+There are more features which can be explored using various examples for the different SDKs.
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ For further information how to start the platform using docker-compose see [here
 ## Run an example/your own Talent on your machine (within the project)
 
 - Simply create your first python or NodeJS talent following the examples given in _src/sdk/(javascript|python|cpp)/examples_<br>
-- Start you talent by connecting it to `mqtt://localhost:1883`<br>
+- Start your talent by connecting it to `mqtt://localhost:1883`<br>
 - There are examples, which start a platform instance by themselves. They only need an MQTT Broker running. To achieve this, simply run from within the _./docker-compose_ directory<br>
 `docker-compose -f docker-compose.mosquitto.yml up`
 
