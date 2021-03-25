@@ -178,7 +178,7 @@ class SchemaConstraint extends Constraint {
     }
 
     __evaluate(value) {
-        SchemaConstraint.logger.verbose(`Evaluating ${value} using template ${JSON.stringify(this.value)}...`);
+        SchemaConstraint.logger.verbose(`Evaluating ${JSON.stringify(value)} using template ${JSON.stringify(this.value)} for feature ${this.feature}...`);
         return this.validator(value);
     }
 }
@@ -490,9 +490,69 @@ class Rule {
 Rule.logger = new Logger('Rule');
 
 class Rules extends Rule {
-    constructor() {
+    constructor(excludeOn = null) {
         super();
         this.rules = [];
+        this.excludeOn = null;
+
+        if (excludeOn !== null) {
+            if (!Array.isArray(excludeOn)) {
+                throw new Error(`excludeOn parameter of Rules must be either null or an Array of strings`);
+            }
+
+            if (excludeOn.length > 0) {
+                this.excludeOn = excludeOn;
+            }
+        }
+
+        this.init();
+    }
+
+    init() {
+        if (this.excludeOn === null) {
+            return;
+        }
+
+        // Stores the processed excludeOn entries
+        this.__excludeOn = [];
+
+        // eslint-disable-next-line no-useless-escape
+        const regex = new RegExp(/^([^\.]+)\.([^\.]+)(?:\.([^\.]+))?$/, 'm');
+
+        for (let typeFeatureSelector of this.excludeOn) {
+            const matches = typeFeatureSelector.match(regex);
+
+            regex.lastIndex = 0;
+
+            if (matches === null) {
+                throw new Error(`Invalid typeFeature selector "${typeFeatureSelector}" found in excludeOn constraints in given Rules`);
+            }
+
+            const entry = {
+                type: matches[1],
+                feature: matches[2],
+                talentNs: null
+            };
+
+            if (matches[3] !== null) {
+                // Selector for specific talent output given
+                // Only allow default.<talentId>.* and default.<talentId>.<feature>
+                if (matches[1] !== DEFAULT_TYPE) {
+                    // Only allow default as type
+                    throw new Error(`Invalid typeFeature selector "${typeFeatureSelector}". Has to be default type`);
+                }
+
+                if (matches[2] === '*') {
+                    // Given talentId must not be a wildcard
+                    throw new Error(`Talent id has to be defined in typeFeature selector "${typeFeatureSelector}"`);
+                }
+
+                entry.talentNs = matches[2];
+                entry.feature = matches[3];
+            }
+
+            this.__excludeOn.push(entry);
+        }
     }
 
     add(rules) {
@@ -504,6 +564,57 @@ class Rules extends Rule {
         }
 
         return this;
+    }
+
+    shouldExcludeOn(type, feature) {
+        if (this.excludeOn === null) {
+            return false;
+        }
+
+        for (let entry of this.__excludeOn) {
+            if (entry.type !== '*' && entry.type !== type) {
+                // Check for equal types, if type is not a wildcard
+                continue;
+            }
+
+            if (entry.type === '*' && entry.feature === '*') {
+                // *.* -> return true
+                return true;
+            }
+
+            if (entry.talentNs !== null) {
+                if (entry.feature === '*') {
+                    // default.<talentNs>.* -> just check, if given feature starts with "<talentNs>."
+                    if (feature.indexOf(`${entry.talentNs}.`) === 0) {
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                // default.<talentNs>.<feature> -> check type and if given feature equals <talentNs>.<feature>
+                if (feature === `${entry.talentNs}.${entry.feature}`) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (entry.feature === '*') {
+                // <type>.* -> just check if type is equal to given type
+                // Since type was already checked at the beginning and since the type cannot be a wildcard here
+                return true;
+            }
+
+            // *.<feature> -> just check if feature is equal to given feature
+            // <type>.<feature> -> check type and feature to given values
+            // Since type was already checked for equality at the beginning, we do not need to check it again
+            if (entry.feature === feature) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     evaluate() {
@@ -537,7 +648,9 @@ class Rules extends Rule {
     }
 
     save() {
-        return {};
+        return {
+            excludeOn: this.excludeOn
+        };
     }
 }
 
@@ -562,41 +675,55 @@ Rules.typeFeaturesMatch = function typeFeaturesMatch(tf1, tf2) {
 };
 
 class AndRules extends Rules {
-    constructor(rules) {
-        super();
+    constructor(rules, excludeOn) {
+        super(excludeOn);
         this.add(rules);
     }
 
-    async evaluate(subject, type, feature, instance, featureMap, instanceManager) {
+    async evaluate(subject, type, feature, instance, featureMap, instanceManager, parentRule) {
+        if (this.shouldExcludeOn(type, feature)) {
+            return parentRule === null ? false : null;
+        }
+
+        let andFulfilled = true;
+
         for(const rule of this.rules) {
-            if (!(await rule.evaluate(subject, type, feature, instance, featureMap, instanceManager))) {
-                return false;
+            // Iterate through every rule to have a complete featureMap in the end
+            if (await rule.evaluate(subject, type, feature, instance, featureMap, instanceManager, this) === false) {
+                andFulfilled = false;
             }
         }
 
-        return true;
+        return andFulfilled;
     }
 
     save() {
-        return {
-            type: 'and',
-            rules: this.rules.map(rule => rule.save())
-        };
+        return Object.assign(
+            super.save(),
+            {
+                type: 'and',
+                rules: this.rules.map(rule => rule.save())
+            }
+        );
     }
 }
 
 class OrRules extends Rules {
-    constructor(rules) {
-        super();
+    constructor(rules, excludeOn) {
+        super(excludeOn);
         this.add(rules);
     }
 
-    async evaluate(subject, type, feature, instance, featureMap, instanceManager) {
+    async evaluate(subject, type, feature, instance, featureMap, instanceManager, parentRule = null) {
+        if (this.shouldExcludeOn(type, feature)) {
+            return parentRule === null ? false : null;
+        }
+
         let orFulfilled = false;
 
         for(const rule of this.rules) {
             // Iterate through every rule to have a complete featureMap in the end
-            if (await rule.evaluate(subject, type, feature, instance, featureMap, instanceManager)) {
+            if (await rule.evaluate(subject, type, feature, instance, featureMap, instanceManager, this) === true) {
                 orFulfilled = true;
             }
         }
@@ -605,10 +732,15 @@ class OrRules extends Rules {
     }
 
     save() {
-        return {
-            type: 'or',
-            rules: this.rules.map(rule => rule.save())
-        };
+        const result = Object.assign(
+            super.save(),
+            {
+                type: 'or',
+                rules: this.rules.map(rule => rule.save())
+            }
+        );
+
+        return result;
     }
 }
 

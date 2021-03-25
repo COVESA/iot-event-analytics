@@ -15,6 +15,14 @@
           "rules"
         ],
         "properties": {
+          "excludeOn": {
+            "type": [ "array", "null" ],
+            "items": {
+              "type": "string",
+              "pattern": "^([^\\.]+)\\.([^\\.]+)(?:\\.([^\\.]+))?$"
+            },
+            "additionalItems": false
+          },
           "rules": {
             "type": "array",
             "items": {

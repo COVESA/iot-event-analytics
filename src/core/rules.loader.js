@@ -59,10 +59,10 @@ RulesLoader.load = function load(json) {
 }
 
 RulesLoader.__load = function __load(json) {
-    let rules = new AndRules();
+    let rules = new AndRules([], json.excludeOn);
 
     if (json.type === 'or') {
-        rules = new OrRules();
+        rules = new OrRules([], json.excludeOn);
     }
 
     rules.rules = json.rules.map(json => {

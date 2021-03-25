@@ -33,6 +33,7 @@ module.exports = class FunctionTalent extends Talent {
     constructor(id, protocolGatewayConfig) {
         super(id, protocolGatewayConfig);
         this.functions = {};
+        this.functionInputFeatures = [];
     }
 
     registerFunction(name, cb) {
@@ -43,6 +44,9 @@ module.exports = class FunctionTalent extends Talent {
         // Define input parameters as well, so that they exist
         this.addOutput(`${name}-in`, {
             description: `Argument(s) for function ${name}`,
+            // Only exists while the actual event is in the pipeline. Do not store this in the instance
+            ttl: 0,
+            history: 0,
             encoding: {
                 type: ENCODING_TYPE_OBJECT,
                 encoder: null
@@ -52,17 +56,38 @@ module.exports = class FunctionTalent extends Talent {
 
         this.addOutput(`${name}-out`, {
             description: `Result of function ${name}`,
+            // Only exists while the actual event is in the pipeline. Do not store this in the instance
+            ttl: 0,
+            history: 0,
             encoding: {
                 type: ENCODING_TYPE_ANY,
                 encoder: null
             },
             unit: 'ONE'
         });
+
+        this.functionInputFeatures.push(`${this.id}.${name}-in`);
     }
 
-    async onEvent(ev, evtctx) {
+    async __processEvent(ev) {
+        super.__processEvent(ev, this.__processFunctionEvents.bind(this));
+    }
+
+    async __processFunctionEvents(ev, evtctx) {
+        if (this.functionInputFeatures.indexOf(ev.feature) === -1) {
+            try {
+                return await this.onEvent(ev, evtctx);
+            }
+            catch(err) {
+                // onEvent not implemented for function
+                return;
+            }
+        }
+
+        // Process function invocations
         const rawValue = TalentInput.getRawValue(ev);
         const args = rawValue.args;
+
         args.push(ev);
         args.push(evtctx);
 
@@ -90,8 +115,8 @@ module.exports = class FunctionTalent extends Talent {
         return [ result ];
     }
 
-    getRules() {
-        return new OrRules(Object.keys(this.functions).map(func => {
+    __getRules() {
+        const functionInputRules = Object.keys(this.functions).map(func => {
             const eventSchema = {
                 type: 'object',
                 required: [ 'func', 'args', 'chnl', 'call' ],
@@ -114,6 +139,17 @@ module.exports = class FunctionTalent extends Talent {
             };
 
             return new Rule(new SchemaConstraint(`${this.id}.${func}-in`, eventSchema, DEFAULT_TYPE, VALUE_TYPE_RAW));
-        }));
+        });
+
+        try {
+            const talentRules = this.getRules();
+            talentRules.excludeOn = Object.keys(this.functions).map(func => `${DEFAULT_TYPE}.${this.id}.${func}-in`);
+            functionInputRules.push(talentRules);
+        }
+        catch(err) {
+            // Ignore, if no triggers are given. It offers talent functions only now
+        }
+
+        return super.__getRules(new OrRules(functionInputRules));
     }
 };

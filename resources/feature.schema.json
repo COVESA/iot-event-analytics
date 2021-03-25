@@ -45,8 +45,16 @@
                     "minimum": 0
                 },
                 "ttl": {
-                    "type": "number",
-                    "minimum": 1000
+                    "oneOf": [
+                        {
+                            "type": "number",
+                            "const": 0
+                        },
+                        {
+                            "type": "number",
+                            "minimum": 1000
+                        }
+                    ]
                 },
                 "unit": {
                     "oneOf": [

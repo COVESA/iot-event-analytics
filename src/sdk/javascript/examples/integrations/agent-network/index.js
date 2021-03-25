@@ -74,9 +74,30 @@ class ChargeApiTalent extends FunctionTalent {
         return new OrRules([
             new Rule(
                 new OpConstraint(`${this.id}.chargeRequest`, OpConstraint.OPS.ISSET, null, DEFAULT_TYPE, VALUE_TYPE_RAW)
-            ),
-            super.getRules()
+            )
         ]);
+    }
+
+    async onEvent(ev, evtctx) {
+        this.sessionId = uuid.v4();
+
+        this.logger.info(`Starting session ${this.sessionId}`, evtctx);
+
+        const response = {
+            feature: `${this.id}.chargeOffer`,
+            value: {
+                session: this.sessionId,
+                api: {
+                    version: '1.0.0',
+                    endpoint: this.id
+                }
+            },
+            subject: ev.subject
+        }
+
+        this.logger.info(`Returning ${JSON.stringify(this.sessionId)}`, evtctx);
+
+        return [ response ];
     }
 
     __onGetVIN(sessionId) {
@@ -129,33 +150,6 @@ class ChargeApiTalent extends FunctionTalent {
         this.logger.info('__onGetCredential called successfully');
 
         return credentialJaguar;
-    }
-
-
-    async onEvent(ev, evtctx) {
-        if (ev.feature !== `${this.id}.chargeRequest`) {
-            return super.onEvent(ev, evtctx);
-        }
-
-        this.sessionId = uuid.v4();
-
-        this.logger.info(`Starting session ${this.sessionId}`);
-
-        const response = {
-            feature: `${this.id}.chargeOffer`,
-            value: {
-                session: this.sessionId,
-                api: {
-                    version: '1.0.0',
-                    endpoint: this.id
-                }
-            },
-            subject: ev.subject
-        }
-
-        this.logger.info(`Returning ${JSON.stringify(this.sessionId)}`);
-
-        return [ response ];
     }
 }
 
