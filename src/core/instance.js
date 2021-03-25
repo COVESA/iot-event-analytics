@@ -63,10 +63,10 @@ class Instance {
             this.features[idx].raw[rawValue.$part] = rawValue.value;
             // No encoded features for partial values
             this.features[idx].enc = null;
-            // Update the ttl, since the value was updated right now
-            this.features[idx].ttl = now + ttlMs;
+            // Update the exp, since the value was updated right now
+            this.features[idx].exp = now + ttlMs;
 
-            this.featureHelper[idx].ttlMs = this.features[idx].ttlMs;
+            this.featureHelper[idx].exp = this.features[idx].exp;
 
             return {
                 // $hidx is always -1 if a partial value was processed
@@ -112,7 +112,7 @@ class Instance {
         if (this.featureHelper[idx] === undefined) {
             // Initialize feature helper
             this.featureHelper[idx] = {
-                ttlMs: 0
+                exp: 0
             };
 
             if (encodedValue !== null) {
@@ -212,7 +212,7 @@ class Instance {
             return null;
         }
 
-        this.featureHelper[idx].ttlMs = this.features[idx].ttlMs;
+        this.featureHelper[idx].exp = this.features[idx].exp;
 
         return {
             $hidx,
@@ -222,16 +222,16 @@ class Instance {
 
     prune(now = Date.now()) {
         for (let idx of Object.keys(this.featureHelper)) {
-            if (this.featureHelper[idx].ttlMs > 0 && this.featureHelper[idx].ttlMs < now) {
+            if (this.featureHelper[idx].exp > 0 && this.featureHelper[idx].exp < now) {
                 this.features[idx] = null;
                 // Remove the feature helper for this specific feature
                 // All statistical data and history gets deleted
                 // delete this.featureHelper[idx];
-                // Soft-delete by setting featureHelper[idx].ttlMs to 0
+                // Soft-delete by setting featureHelper[idx].exp to 0
                 // May get slow over time, since no feature within the featureHelper gets actually deleted
                 // even though they might be invalid
                 // TODO: Maybe make this configurable in the metadata
-                this.featureHelper[idx].ttl = 0;
+                this.featureHelper[idx].exp = 0;
             }
         }
     }
@@ -261,16 +261,16 @@ class Instance {
     }
 }
 
-Instance.createHistoryFeature = function createHistoryFeature(rawValue, encodedValue, whenMs, ttlMs) {
+Instance.createHistoryFeature = function createHistoryFeature(rawValue, encodedValue, whenMs, exp) {
     // eslint-disable-next-line no-unused-vars
-    const { history, stat, ...historyFeature } = Instance.createFeature(rawValue, encodedValue, whenMs, ttlMs);
+    const { history, stat, ...historyFeature } = Instance.createFeature(rawValue, encodedValue, whenMs, exp);
     return historyFeature;
 };
 
-Instance.createFeature = function createFeature(rawValue, encodedValue, whenMs, ttlMs, history = []) {
+Instance.createFeature = function createFeature(rawValue, encodedValue, whenMs, exp, history = []) {
     return {
         whenMs,
-        ttlMs,
+        exp,
         history,
         raw: rawValue,
         enc: encodedValue,
