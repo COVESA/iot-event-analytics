@@ -127,7 +127,7 @@ class MqttClient {
     }
 
     publish(topics, message, options = {}) {
-        if (this.clientPromise && this.clientPromise.done === false) {
+        if (this.clientPromise && this.clientPromise.done === false && options.stash === false) {
             // MQTT client is offline. Do not wait until it is online again.
             // If we just try to publish it anyway, we end up with a huge stack of unsent messages, which will be published
             // when the client is reconnected again
