@@ -51,7 +51,7 @@ class Instance {
         }
 
         // Prune outdated values
-        this.prune();
+        this.prune(now);
 
         let $hidx = -1;
 
