@@ -64,8 +64,8 @@ export async function ensureDockerConfiguration(): Promise<void> {
 
 export async function ensureComposeVersion(range: semver.Range): Promise<semver.SemVer> {
     return ensureCliVersion(range, getDockerComposeCmd(), [ '--version' ], {}, __dirname, (cliVersion: string) => {
-        // cliVersion >> docker-compose version 1.27.4, build 40524192
-        const composeVersionMatch = (/^.*([0-9]+\.[0-9]+\.[0-9]+)(?:[^0-9]*([0-9]+))$/g).exec(cliVersion);
+        // cliVersion >> docker-compose version 1.27.4, build <commit hash>
+        const composeVersionMatch = (/^.*([0-9]+\.[0-9]+\.[0-9]+).*(?:\s([0-9a-f]+))$/mgi).exec(cliVersion);
 
         if (composeVersionMatch === null) {
             throw new Error(`Cannot parse docker-compose version string "${cliVersion}"`);
@@ -75,7 +75,7 @@ export async function ensureComposeVersion(range: semver.Range): Promise<semver.
             return composeVersionMatch[1];
         }
 
-        return `${composeVersionMatch[1]}+${composeVersionMatch[2]}`;
+        return `${composeVersionMatch[1]}+${composeVersionMatch[2].toLowerCase()}`;
     });
 }
 
@@ -124,16 +124,8 @@ export async function ensurePipVersion(range: semver.Range): Promise<semver.SemV
 }
 
 export async function ensureIoTeaProjectRootDirAt(ioteaProjectRootDir: string): Promise<void> {
-    const terminal = new Terminal();
-
-    const remoteResult: string = await terminal.executeCommand('git', [ 'remote', '-v' ], ioteaProjectRootDir);
-
-    if (remoteResult.trim().indexOf('iotea') === -1) {
-        throw new Error(`Remote origin cannot be verified`);
-    }
-
     if (!fs.existsSync(path.resolve(ioteaProjectRootDir, 'node_modules'))) {
-        throw new Error(`You have to install all dependencies for the IoTea project using yarn`);
+        throw new Error(`You have to install all dependencies for the IoT Event Analytics project using yarn`);
     }
 }
 
