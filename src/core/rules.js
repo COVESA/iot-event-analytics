@@ -683,7 +683,7 @@ class AndRules extends Rules {
         this.add(rules);
     }
 
-    async evaluate(subject, type, feature, instance, featureMap, instanceManager, parentRule) {
+    async evaluate(subject, type, feature, instance, featureMap, instanceManager, parentRule = null) {
         if (this.shouldExcludeOn(type, feature)) {
             return parentRule === null ? false : null;
         }
