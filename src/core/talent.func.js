@@ -69,6 +69,11 @@ module.exports = class FunctionTalent extends Talent {
         this.functionInputFeatures.push(`${this.id}.${name}-in`);
     }
 
+    getRules() {
+        // It's not required to be overridden
+        return null;
+    }
+
     async __processEvent(ev) {
         await super.__processEvent(ev, this.__processFunctionEvents.bind(this));
     }
@@ -117,14 +122,45 @@ module.exports = class FunctionTalent extends Talent {
     }
 
     __getRules() {
-        const functionInputRules = Object.keys(this.functions).map(func => {
+        const functionNames = Object.keys(this.functions);
+
+        if (functionNames.length === 0) {
+            // returns 1) or 2) -> see Talent.__getRules()
+            const rules = super.__getRules();
+
+            if (rules === null) {
+                // getRules() not overridden, callees() returns empty array, no functions registered
+                throw new Error(`You have to at least register a function or override the getRules() method.`);
+            }
+
+            return rules;
+        }
+
+        /**
+         * 3) OR --> Non-triggerable Function Talent, which does not call any functions by itself
+         *      function input rules
+         *
+         * 4) OR --> Triggerable Function Talent, which does not call any functions by itself
+         *      function input rules
+         *      OR/AND [exclude function input rules]
+         *        triggerRules
+         *
+         * 5) OR --> Triggerable Function Talent, which calls one or more functions
+         *      function output rules i.e. callee rules
+         *      OR [exclude function output rules]
+         *        function result rules
+         *        OR/AND [exclude function result rules]
+         *          triggerRules
+         */
+
+        const functionInputRules = new OrRules(functionNames.map(functionName => {
             const eventSchema = {
                 type: 'object',
                 required: [ 'func', 'args', 'chnl', 'call' ],
                 properties: {
                     func: {
                         type: 'string',
-                        const: func
+                        const: functionName
                     },
                     args: {
                         type: 'array'
@@ -139,19 +175,31 @@ module.exports = class FunctionTalent extends Talent {
                 additionalProperties: false
             };
 
-            return new Rule(new SchemaConstraint(`${this.id}.${func}-in`, eventSchema, DEFAULT_TYPE, VALUE_TYPE_RAW));
-        });
+            return new Rule(new SchemaConstraint(`${this.id}.${functionName}-in`, eventSchema, DEFAULT_TYPE, VALUE_TYPE_RAW));
+        }));
 
-        try {
-            const talentRules = this.getRules();
-            talentRules.excludeOn = Object.keys(this.functions).map(func => `${DEFAULT_TYPE}.${this.id}.${func}-in`);
-            functionInputRules.push(talentRules);
-        }
-        catch(err) {
-            // Ignore, if no triggers are given but log the warning anyway, in case an execution error ocurred calling getRules()
-            this.logger.warn(err.message, null, err);
+        let triggerRules = this.getRules();
+        let functionResultRules = this.__getFunctionResultRules();
+
+        if (triggerRules === null && functionResultRules === null) {
+            // return 3)
+            return functionInputRules;
         }
 
-        return super.__getRules(new OrRules(functionInputRules));
+        if (triggerRules !== null) {
+            triggerRules.excludeOn = functionNames.map(functionName => `${DEFAULT_TYPE}.${this.id}.${functionName}-in`)
+            functionInputRules.add(triggerRules);
+
+            if (functionResultRules === null) {
+                // return 4)
+                return functionInputRules;
+            }
+        }
+
+        functionInputRules.excludeOn = this.callees().map(callee => `${DEFAULT_TYPE}.${callee}-out`);
+        functionResultRules.add(functionInputRules);
+
+        // return 5)
+        return functionResultRules;
     }
-};
+}

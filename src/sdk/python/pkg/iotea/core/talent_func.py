@@ -51,17 +51,50 @@ class FunctionTalent(Talent):
 
         self.function_input_features.append(f'{self.id}.{name}-in')
 
-    def _get_rules(self):
-        function_input_rules = []
+    def get_rules(self):
+        # It's not required to be overridden
+        return None
 
-        for func in self.functions:
+    def _get_rules(self):
+        function_names = self.functions.keys()
+
+        if len(function_names) == 0:
+            # returns 1) or 2) -> see Talent._get_rules()
+            rules = super()._get_rules()
+
+            if rules is None:
+                # getRules() not overridden, callees() returns empty array, no functions registered
+                raise Exception('You have to at least register a function or override the get_rules() method.')
+
+            return rules
+
+        """
+        3) OR --> Non-triggerable Function Talent, which does not call any functions by itself
+             function input rules
+
+        4) OR --> Triggerable Function Talent, which does not call any functions by itself
+             function input rules
+             OR/AND [exclude function input rules]
+               triggerRules
+
+        5) OR --> Triggerable Function Talent, which calls one or more functions
+             function output rules i.e. callee rules
+             OR [exclude function output rules]
+               function result rules
+               OR/AND [exclude function result rules]
+                 triggerRules
+        """
+
+        function_input_rules = OrRules([])
+
+        for function_name in function_names:
             event_schema = {
                 'type': 'object',
                 'required': ['func', 'args', 'chnl', 'call'],
                 'properties': {
                     'func': {
                         'type': 'string',
-                        'const': func
+                        'const': function_name
                     },
                     'args': {
                         'type': 'array'
@@ -76,19 +109,30 @@ class FunctionTalent(Talent):
                 'additionalProperties': False
             }
 
-            function_input_rules.append(
-                Rule(SchemaConstraint(f'{self.id}.{func}-in', event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'])),
+            function_input_rules.add(
+                Rule(SchemaConstraint(f'{self.id}.{func}-in', event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW']))
             )
 
-        try:
-            talent_rules = self.get_rules()
-            talent_rules.exclude_on = list(map(lambda func: f'{DEFAULT_TYPE}.{self.id}.{func}-in', self.functions.keys()))
-            function_input_rules.append(talent_rules)
-        except Exception as err:
-            # Ignore, if no triggers are given but log the warning anyway, in case an execution error ocurred calling get_rules()
-            self.logger.warning(err)
+        trigger_rules = self.get_rules()
+        function_result_rules = self._get_function_result_rules()
 
-        return super()._get_rules(OrRules(function_input_rules))
+        if trigger_rules is None and function_result_rules is None:
+            # return 3)
+            return function_input_rules
+
+        if trigger_rules is not None:
+            trigger_rules.exclude_on = list(map(lambda func: f'{DEFAULT_TYPE}.{self.id}.{func}-in', function_names))
+            function_input_rules.add(trigger_rules)
+
+            if function_result_rules is None:
+                # return 4)
+                return function_input_rules
+
+        function_input_rules.exclude_on = list(map(lambda callee: f'{DEFAULT_TYPE}.{callee}-out', self.callees()))
+        function_result_rules.add(function_input_rules)
+
+        # return 5)
+        return function_result_rules
 
     async def _process_event(self, ev, cb = None):
         await super()._process_event(ev, self.__run_in_executor)

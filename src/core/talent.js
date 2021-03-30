@@ -199,22 +199,45 @@ class Talent extends IOFeatures {
         await this.pg.publishJson(ev.returnTopic, this.__createDiscoveryResponse());
     }
 
-    __getRules(triggerRules) {
-        triggerRules = triggerRules || this.getRules();
+    __getRules() {
+        /**
+         * 1) OR -> Triggerable Talent, which does not call any functions
+         *      triggerRules
+         *
+         * 2) OR -> Triggerable Talent, which calls one or more functions
+         *      function result rules
+         *      OR/AND [exclude function result rules]
+         *        triggerRules
+         */
 
-        if (this.callees().length === 0) {
+        const triggerRules = this.getRules();
+
+        const functionResultRules = this.__getFunctionResultRules();
+
+        if (functionResultRules === null) {
+            // returns 1)
             return triggerRules;
         }
 
         triggerRules.excludeOn = this.callees().map(callee => `${DEFAULT_TYPE}.${callee}-out`);
 
+        functionResultRules.add(triggerRules);
+
+        // returns 2)
+        return functionResultRules;
+    }
+
+    __getFunctionResultRules() {
+        if (this.callees().length === 0) {
+            return null;
+        }
+
         return new OrRules([
             // Ensure, that only the talent with the matching channel will receive the response
             // Since the full channel id is unique for a talent instance, this rule would fail, if there are multiple instances of a talent because it would only check for one talent here
-            // --> The rule only checks the talent id prefix, which is common for all scaled Talent instances.
+            // -> The rule only checks the talent id prefix, which is common for all scaled Talent instances.
             // eslint-disable-next-line no-useless-escape
-            ...this.callees().map(callee => new Rule(new OpConstraint(`${callee}-out`, OpConstraint.OPS.REGEX, `^\/${this.id}\.[^\/]+\/.*`, DEFAULT_TYPE, VALUE_TYPE_RAW, '/$tsuffix'))),
-            triggerRules
+            ...this.callees().map(callee => new Rule(new OpConstraint(`${callee}-out`, OpConstraint.OPS.REGEX, `^\/${this.id}\.[^\/]+\/.*`, DEFAULT_TYPE, VALUE_TYPE_RAW, '/$tsuffix')))
         ]);
     }
 

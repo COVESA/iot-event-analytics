@@ -264,21 +264,41 @@ class Talent(IOFeatures):
 
         await self.mqtt_client.publish_json(ev['returnTopic'], discovery_response)
 
-    def _get_rules(self, trigger_rules = None):
+    def _get_rules(self):
+        """
+        1) OR -> Triggerable Talent, which does not call any functions
+             triggerRules
+        2) OR -> Triggerable Talent, which calls one or more functions
+             function result rules
+             OR/AND [exclude function result rules]
+               triggerRules
+        """
         # pylint: disable=assignment-from-no-return
-        if trigger_rules is None:
-            trigger_rules = self.get_rules()
+        trigger_rules = self.get_rules()
 
-        if len(self.callees()) == 0:
+        function_result_rules = self._get_function_result_rules()
+
+        if function_result_rules is None:
+            # returns 1)
             return trigger_rules
 
         trigger_rules.exclude_on = list(map(lambda callee: f'{DEFAULT_TYPE}.{callee}-out', self.callees()))
 
+        function_result_rules.add(trigger_rules)
+
+        # returns 2)
+        return function_result_rules
+
+    def _get_function_result_rules(self):
+        if len(self.callees()) == 0:
+            return None
+
         return OrRules([
-            # pylint: disable=anomalous-backslash-in-string
             # Ensure, that only the talent with the matching channel will receive the response
-            *map(lambda callee: Rule(OpConstraint(f'{callee}-out', OpConstraint.OPS['REGEX'], '^\\/{}\\.[^\\/]+\\/.*'.format(self.id), DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'], '/$tsuffix')), self.callees()),
-            trigger_rules
+            # Since the full channel id is unique for a talent instance, this rule would fail, if there are multiple instances of a talent because it would only check for one talent here
+            # -> The rule only checks the talent id prefix, which is common for all scaled Talent instances.
+            # pylint: disable=anomalous-backslash-in-string
+            *map(lambda callee: Rule(OpConstraint(f'{callee}-out', OpConstraint.OPS['REGEX'], '^\\/{}\\.[^\\/]+\\/.*'.format(self.id), DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'], '/$tsuffix')), self.callees())
         ])
 
     def __create_mqtt_client(self, name, connection_string):

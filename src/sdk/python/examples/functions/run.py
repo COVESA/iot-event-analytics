@@ -45,7 +45,7 @@ class MathFunctions(FunctionTalent):
 
     async def on_event(self, ev, evtctx):
         try:
-            self.logger.info(f'Calling function for {ev['value']}...', extra=self.logger.create_extra(evtctx))
+            self.logger.info(f'Calling function for {ev["value"]}...', extra=self.logger.create_extra(evtctx))
 
             result = await self.call('math', 'fibonacci', [ev['value']], ev['subject'], ev['returnTopic'], 60000)
             # result = await self.call('math', 'sum', [ev['value']], ev['subject'], ev['returnTopic'], 60000)
