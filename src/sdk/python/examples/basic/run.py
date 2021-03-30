@@ -13,9 +13,10 @@ import json
 import os
 import logging
 
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
+from iotea.core.util.talent_io import TalentInput
 logging.setLoggerClass(Logger)
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
@@ -33,7 +34,7 @@ class MyTalent(Talent):
         ])
 
     async def on_event(self, ev, evtctx):
-        print(json.dumps(ev['$feature']))
+        print(f'Raw value {TalentInput.get_raw_value(ev)}')
 
 
 async def main():

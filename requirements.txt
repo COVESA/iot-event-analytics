@@ -7,7 +7,3 @@ PyYAML==5.3.1
 six==1.15.0
 transitions==0.8.6
 websockets==8.1
-# Python SDK example agent-network
-jwcrypto==0.8
-requests>=2.20.0
-cryptography>=3.3.2
