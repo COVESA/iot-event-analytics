@@ -80,10 +80,24 @@ class IOFeatures:
         self.output_features = []
 
     def skip_cycle_check(self, value=True):
-        self.options['scc'] = value
+        if value != True:
+            # Disable cycle check, do nothing
+            # Already existing typeFeatures won't be overwritten
+            return
+
+        self.config['scc'] = True
 
     def skip_cycle_check_for(self, *args):
-        self.options['scc'] = list(args)
+        if 'scc' in self.config and self.config['scc'] == True:
+            # Skip, since cycle check is disabled anyway
+            return
+
+        if 'scc' not in self.config or isinstance(self.config['scc'], list) is False:
+            self.config['scc'] = list(args)
+            return
+
+        # Ensure unique typeFeatures in Array
+        self.config['scc'] = list(set([*self.config['scc'], *args]))
 
     def add_output(self, feature, metadata):
         self.output_features.append(OutputFeature(feature, metadata))
