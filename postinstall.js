@@ -41,7 +41,7 @@ function urlToHttpOptions(url) {
 function download(url, outDir) {
     console.log(`Downloading library from ${url}...`);
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             try {
                 fs.mkdirSync(outDir);
@@ -68,15 +68,12 @@ function download(url, outDir) {
 
             const outStream = fs.createWriteStream(absOutPath);
 
-            try {
-                await httpsGet(url, outStream);
-                resolve('OK');
-            }
-            catch (err) {
-                fs.unlinkSync(absOutPath);
-                reject(err);
-                return;
-            }
+            return httpsGet(url, outStream)
+                .then(() => 'OK')
+                .catch(err => {
+                    fs.unlinkSync(absOutPath);
+                    reject(err);
+                });
         }
         catch (err) {
             reject(err);
@@ -106,9 +103,8 @@ function httpsGet(url, outStream) {
                 catch (err) {
                     reject(err);
                 }
-                finally {
-                    return;
-                }
+
+                return;
             }
 
             response.pipe(outStream);
