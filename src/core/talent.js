@@ -270,10 +270,10 @@ class Talent extends IOFeatures {
     }
 
     async __onEvent(ev) {
-        await this.__processEvent(ev);
+        await this.__processEvent(ev, this.onEvent.bind(this));
     }
 
-    async __processEvent(ev, cb = this.onEvent.bind(this)) {
+    async __processEvent(ev, cb) {
         const evtctx = Logger.createEventContext(ev);
 
         if (ev.msgType === MSG_TYPE_ERROR) {

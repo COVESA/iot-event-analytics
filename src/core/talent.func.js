@@ -70,7 +70,7 @@ module.exports = class FunctionTalent extends Talent {
     }
 
     async __processEvent(ev) {
-        super.__processEvent(ev, this.__processFunctionEvents.bind(this));
+        await super.__processEvent(ev, this.__processFunctionEvents.bind(this));
     }
 
     async __processFunctionEvents(ev, evtctx) {

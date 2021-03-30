@@ -649,7 +649,8 @@ class Rules extends Rule {
 
     save() {
         return {
-            excludeOn: this.excludeOn
+            excludeOn: this.excludeOn,
+            rules: this.rules.map(rule => rule.save())
         };
     }
 }
@@ -701,8 +702,7 @@ class AndRules extends Rules {
         return Object.assign(
             super.save(),
             {
-                type: 'and',
-                rules: this.rules.map(rule => rule.save())
+                type: 'and'
             }
         );
     }
@@ -735,8 +735,7 @@ class OrRules extends Rules {
         const result = Object.assign(
             super.save(),
             {
-                type: 'or',
-                rules: this.rules.map(rule => rule.save())
+                type: 'or'
             }
         );
 
