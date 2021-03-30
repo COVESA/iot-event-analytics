@@ -11,8 +11,7 @@
 import time
 from .json_model import JsonModel
 from .json_query import json_query_first
-from .constants import DEFAULT_TYPE, DEFAULT_INSTANCE, VALUE_TYPE_ENCODED, VALUE_TYPE_RAW
-from .talent import Talent
+from ..constants import DEFAULT_TYPE, DEFAULT_INSTANCE, VALUE_TYPE_ENCODED, VALUE_TYPE_RAW
 
 class TalentIO:
     def __init__(self):
@@ -163,10 +162,8 @@ class TalentOutput:
 
         talent_id = None
 
-        if isinstance(talent, Talent):
+        if talent is not None:
             talent_id = talent.id
-        else:
-            talent_id = talent['id']
 
         if subject is None:
             subject = ev['subject']
@@ -185,7 +182,7 @@ class TalentOutput:
         if not isinstance(subject, str):
             raise Exception('The subject needs to be a string, which identifies the instances affiliation')
 
-        return TalentOutput.create({'id': None}, None, feature, value, subject, _type, instance, timestamp)
+        return TalentOutput.create(None, None, feature, value, subject, _type, instance, timestamp)
 
 # import json
 

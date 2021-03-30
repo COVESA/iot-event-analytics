@@ -36,10 +36,10 @@ class CustomMqttClient(MQTTClient):
 
         return code
 
-class MqttBroker:
+class MqttClient:
     def __init__(self, connection_string, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True, logger=None, client_id=None):
         if client_id is None:
-            client_id = MqttBroker.create_client_id('MqttBroker')
+            client_id = MqttClient.create_client_id('MqttClient')
 
         self.logger = logger
 
@@ -230,10 +230,10 @@ class MqttBroker:
 
         raise Exception('Given JSON document is neither a dictionary nor a list')
 
-class NamedMqttBroker(MqttBroker):
+class NamedMqttClient(MqttClient):
     def __init__(self, name, connection_string, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True):
-        client_id = MqttBroker.create_client_id('{}.MqttBroker'.format(name))
-        super(NamedMqttBroker, self).__init__(connection_string, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
+        client_id = MqttClient.create_client_id('{}.MqttClient'.format(name))
+        super(NamedMqttClient, self).__init__(connection_string, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
 
 class Subscription:
     def __init__(self, topic, cb, to_json=False, qos=0):

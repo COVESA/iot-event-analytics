@@ -10,7 +10,7 @@
 
 TALENTS_DISCOVERY_TOPIC = 'configManager/talents/discover'
 TALENTS_DISCOVERY_RETURN_TOPIC = 'configManager/talent/discover'
-UPDATE_RULES_TOPIC = 'rulesManager/update'
+UPDATE_TALENT_CONFIG_TOPIC = 'talentConfigManager/update'
 UPDATE_TYPES_TOPIC = 'metadataManager/update'
 UPDATE_FEATURE_TOPIC = 'instanceManager/update'
 INGESTION_TOPIC = 'ingestion/events'
@@ -18,8 +18,8 @@ ENCODING_TOPIC = 'encoding/events'
 ROUTING_TOPIC = 'routing/events'
 PLATFORM_EVENTS_TOPIC = 'platform/$events'
 
-PLATFORM_EVENT_TYPE_SET_RULES = 'platform.talent.rules.set'
-PLATFORM_EVENT_TYPE_UNSET_RULES = 'platform.talent.rules.unset'
+PLATFORM_EVENT_TYPE_SET_CONFIG = 'platform.talent.config.set';
+PLATFORM_EVENT_TYPE_UNSET_CONFIG = 'platform.talent.config.unset';
 
 ENCODING_TYPE_NUMBER = 'number'
 ENCODING_TYPE_OBJECT = 'object'

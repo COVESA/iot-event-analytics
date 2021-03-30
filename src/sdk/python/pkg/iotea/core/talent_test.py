@@ -11,21 +11,21 @@
 import time
 
 # pylint: disable=wrong-import-position
-from iotea.core.talent_func import FunctionTalent
-from iotea.core.talent import Talent
-from iotea.core.rules import Rule, OrRules, OpConstraint
+from .talent_func import FunctionTalent
+from .talent import Talent
+from .rules import Rule, OrRules, OpConstraint
 
-from iotea.core.constants import PLATFORM_EVENT_TYPE_SET_RULES
-from iotea.core.constants import PLATFORM_EVENT_TYPE_UNSET_RULES
-from iotea.core.constants import PLATFORM_EVENTS_TOPIC
-from iotea.core.constants import GET_TEST_INFO_METHOD_NAME
-from iotea.core.constants import PREPARE_TEST_SET_METHOD_NAME
-from iotea.core.constants import RUN_TEST_METHOD_NAME
-from iotea.core.constants import ENCODING_TYPE_BOOLEAN
-from iotea.core.constants import TEST_ERROR
-from iotea.core.constants import VALUE_TYPE_RAW
-from iotea.core.constants import DEFAULT_TYPE
-
+from .constants import (
+    PLATFORM_EVENT_TYPE_SET_RULES,
+    PLATFORM_EVENT_TYPE_SET_CONFIG,
+    GET_TEST_INFO_METHOD_NAME,
+    PREPARE_TEST_SET_METHOD_NAME,
+    RUN_TEST_METHOD_NAME,
+    ENCODING_TYPE_BOOLEAN,
+    TEST_ERROR,
+    VALUE_TYPE_RAW,
+    DEFAULT_TYPE
+)
 
 # pylint: disable=too-few-public-methods
 class Test:
