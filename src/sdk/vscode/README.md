@@ -36,7 +36,7 @@ Additionally, all requirements will be checked on the first command invocation a
 
 ## Command usage
 
-- `Strg + Shift + P` > type _iotea_ or _vss_ and you will see all available commands
+- `Strg + ⇧ + P (Windows, Linux)`, `⇧ + ⌘ + P (macOS)` > type _iotea_ or _vss_ and you will see all available commands
 
 ## Talent
 
