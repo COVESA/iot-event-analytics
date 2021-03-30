@@ -58,8 +58,8 @@ Just continue with the _Build & Run (from within the ./docker-compose directory)
 - The _.env_ file should contain the following and the `PLATFORM_CONFIG_DIR` and the `MOSQUITTO_CONFIG_DIR` should be the absolute paths to _\<YOUR CONFIG PATH\>/platform_ and _\<YOUR CONFIG PATH\>/mosquitto_
 
   ```code
-  DOCKER_HTTP_PROXY=http://host.docker.internal:3128   (Proxy configuration)
-  DOCKER_HTTPS_PROXY=http://host.docker.internal:3128  (Proxy configuration)
+  DOCKER_HTTP_PROXY=http://host.docker.internal:3128   (optional Proxy configuration)
+  DOCKER_HTTPS_PROXY=http://host.docker.internal:3128  (optional Proxy configuration)
   MOSQUITTO_CONFIG_DIR=                                (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
   MQTT_PORT=1883                                       (MQTT port for the local broker)
   PLATFORM_CONFIG_DIR=                                 (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
