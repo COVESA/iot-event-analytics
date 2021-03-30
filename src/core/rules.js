@@ -572,18 +572,19 @@ class Rules extends Rule {
         }
 
         for (let entry of this.__excludeOn) {
-            if (entry.type !== '*' && entry.type !== type) {
-                // Check for equal types, if type is not a wildcard
+            if (entry.type !== ALL_TYPES && entry.type !== type) {
+                // Check for equal types, if type is not a wildcard. If types differ, just skip this entry
                 continue;
             }
 
-            if (entry.type === '*' && entry.feature === '*') {
-                // *.* -> return true
+            if (entry.type === ALL_TYPES && entry.feature === ANY_FEATURE) {
+                // *.* -> Exclude on any given type, feature combination -> This rule will never be evaluated
                 return true;
             }
 
             if (entry.talentNs !== null) {
-                if (entry.feature === '*') {
+                if (entry.feature === ANY_FEATURE) {
+                    // The entry only defines a specific type and talent namespace.
                     // default.<talentNs>.* -> just check, if given feature starts with "<talentNs>."
                     if (feature.indexOf(`${entry.talentNs}.`) === 0) {
                         return true;
@@ -592,6 +593,7 @@ class Rules extends Rule {
                     continue;
                 }
 
+                // Entry specifies also the feature
                 // default.<talentNs>.<feature> -> check type and if given feature equals <talentNs>.<feature>
                 if (feature === `${entry.talentNs}.${entry.feature}`) {
                     return true;
@@ -600,7 +602,7 @@ class Rules extends Rule {
                 continue;
             }
 
-            if (entry.feature === '*') {
+            if (entry.feature === ANY_FEATURE) {
                 // <type>.* -> just check if type is equal to given type
                 // Since type was already checked at the beginning and since the type cannot be a wildcard here
                 return true;
