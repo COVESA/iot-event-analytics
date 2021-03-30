@@ -63,7 +63,7 @@ Just continue with the _Build & Run (from within the ./docker-compose directory)
   MOSQUITTO_CONFIG_DIR=                                (Path to you mosquitto configuration folder - relative from docker-compose directory or absolute path)
   MQTT_PORT=1883                                       (MQTT port for the local broker)
   PLATFORM_CONFIG_DIR=                                 (Path to you platform configuration folder - relative from docker-compose directory or absolute path. Not needed if you only want to configure Mosquitto)
-  API_PORT=8080                                        (Port, which is used to expose the platform REST APIs)
+  API_PORT=8080                                        (Port, which is used to expose the platform REST APIs. Defaults to 8080. Not needed if you only want to configure Mosquitto)
   ```
 
 __The paths within the _.env_ file need to be relative to the _docker-compose_ folder or absolute paths__
