@@ -10,9 +10,18 @@
 
 # IoT Event Analytics VSCode Extension
 
-## Prerequisites
+## Requirements
 
-All requirements will be checked on each command invocation
+Following requirements have to be matched to use this Extension
+
+- Docker >=19.3.13
+- docker-compose >= 1.27.4
+- Node.js >=12.3.0
+- git (CLI) _any version_
+- python >= 3.6.8
+- pip _any version_
+
+Additionally, all requirements will be checked on the first command invocation automatically.
 
 ## Installation
 
@@ -43,7 +52,8 @@ All requirements will be checked on each command invocation
 ## Troubleshooting
 
 - _"Docker version check fails"_<br>
-  Make sure you have the latest Docker version installed, since `docker version --format=json` is used to retrieve the version. In older versions the string "json" was returned
+  Make sure you have the latest Docker version installed. The docker version is retrieved using: `docker version --format={{.Client.Version}}`. Test in your console, if this command returns the version number for your current docker installation.
 - _"Python version check fails"_<br>
   You can specify the Python interpreter and the pip module in the settings. It defaults to `python3` and `pip3` for standalone installations. If you are running a virtual environment setup based on Anaconda, you have to use `python` and `pip`. On Linux-Systems it can be different. Please check in a terminal, which command to use and update the settings accordingly.
-- _"Cannot validate installed modules"_
+- _"Cannot publish MQTT messages"_<br>
+  Make sure you executed `yarn` in the IoT Event Analytics project folder to install all needed dependencies
