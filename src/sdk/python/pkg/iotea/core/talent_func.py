@@ -84,9 +84,9 @@ class FunctionTalent(Talent):
             talent_rules = self.get_rules()
             talent_rules.exclude_on = list(map(lambda func: f'{DEFAULT_TYPE}.{self.id}.{func}-in', self.functions.keys()))
             function_input_rules.append(talent_rules)
-        except:
-            # if no triggers are given. It offers talent functions only now
-            pass
+        except Exception as err:
+            # Ignore, if no triggers are given but log the warning anyway, in case an execution error ocurred calling get_rules()
+            self.logger.warning(err)
 
         return super()._get_rules(OrRules(function_input_rules))
 
@@ -111,9 +111,9 @@ class FunctionTalent(Talent):
             # Throws an error, if not found
             try:
                 await self.on_event(ev, evtctx)
-            except:
-                self.logger.info(f'Error calling on_event')
-                # on_event not implemented for function
+            except Exception as err:
+                # on_event not implemented or execution error occurred calling on_event
+                self.logger.warning(err)
                 return
 
         print(f'Processing function for feature {ev["feature"]}')

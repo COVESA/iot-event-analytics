@@ -79,7 +79,8 @@ module.exports = class FunctionTalent extends Talent {
                 return await this.onEvent(ev, evtctx);
             }
             catch(err) {
-                // onEvent not implemented for function
+                // onEvent not implemented or execution error occurred calling onEvent
+                this.logger.warn(err.message, evtctx, err);
                 return;
             }
         }
@@ -147,7 +148,8 @@ module.exports = class FunctionTalent extends Talent {
             functionInputRules.push(talentRules);
         }
         catch(err) {
-            // Ignore, if no triggers are given. It offers talent functions only now
+            // Ignore, if no triggers are given but log the warning anyway, in case an execution error ocurred calling getRules()
+            this.logger.warn(err.message, null, err);
         }
 
         return super.__getRules(new OrRules(functionInputRules));
