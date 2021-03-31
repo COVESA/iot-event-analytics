@@ -110,7 +110,7 @@ class FunctionTalent(Talent):
             }
 
             function_input_rules.add(
-                Rule(SchemaConstraint(f'{self.id}.{func}-in', event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW']))
+                Rule(SchemaConstraint(f'{self.id}.{function_name}-in', event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW']))
             )
 
         trigger_rules = self.get_rules()
@@ -121,7 +121,7 @@ class FunctionTalent(Talent):
             return function_input_rules
 
         if trigger_rules is not None:
-            trigger_rules.exclude_on = list(map(lambda func: f'{DEFAULT_TYPE}.{self.id}.{func}-in', function_names))
+            trigger_rules.exclude_on = list(map(lambda function_name: f'{DEFAULT_TYPE}.{self.id}.{function_name}-in', function_names))
             function_input_rules.add(trigger_rules)
 
             if function_result_rules is None:
