@@ -7,7 +7,7 @@ const {
 } = iotea;
 
 const {
-    Logger
+    Logger,
     MqttProtocolAdapter
 } = iotea.util;
 
@@ -39,7 +39,7 @@ class TestSetSDK extends TestSetTalent {
         return [ 'function-provider-js.echo' ];
     }
 
-    async test_echoString(ev, evctx) {
+    async test_echoString(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ 'Hello World' ],
                                 ev.subject,
@@ -49,7 +49,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoBoolean(ev, evctx) {
+    async test_echoBoolean(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ true ],
                                 ev.subject,
@@ -59,7 +59,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoInteger(ev, evctx) {
+    async test_echoInteger(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ 123 ],
                                 ev.subject,
@@ -69,7 +69,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoDouble(ev, evctx) {
+    async test_echoDouble(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ 123.456 ],
                                 ev.subject,
@@ -79,7 +79,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoEmptyList(ev, evctx) {
+    async test_echoEmptyList(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ [] ],
                                 ev.subject,
@@ -89,7 +89,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoIntegerList(ev, evctx) {
+    async test_echoIntegerList(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ [1, 2, 3] ],
                                 ev.subject,
@@ -99,7 +99,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoMixedList(ev, evctx) {
+    async test_echoMixedList(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ [1, 'Hello World', 3.21] ],
                                 ev.subject,
@@ -109,7 +109,7 @@ class TestSetSDK extends TestSetTalent {
         return result;
     }
 
-    async test_echoDeepList(ev, evctx) {
+    async test_echoDeepList(ev, evtctx) {
         let result = await this.call('function-provider-js','echo',
                                 [ [1, [2, [3, [4, [5]]]]] ],
                                 ev.subject,
