@@ -16,8 +16,9 @@ from .talent import Talent
 from .rules import Rule, OrRules, OpConstraint
 
 from .constants import (
-    PLATFORM_EVENT_TYPE_SET_RULES,
+    PLATFORM_EVENTS_TOPIC,
     PLATFORM_EVENT_TYPE_SET_CONFIG,
+    PLATFORM_EVENT_TYPE_UNSET_CONFIG,
     GET_TEST_INFO_METHOD_NAME,
     PREPARE_TEST_SET_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
@@ -68,10 +69,10 @@ class TalentDependencies:
     async def on_platform_event(self, ev, evctx):
         talent_id = ev['data']['talent']
 
-        if ev['type'] == PLATFORM_EVENT_TYPE_SET_RULES:
+        if ev['type'] == PLATFORM_EVENT_TYPE_SET_CONFIG:
             if talent_id in self.dependencies:
                 self.dependencies[talent_id] = True
-        elif ev['type'] == PLATFORM_EVENT_TYPE_UNSET_RULES:
+        elif ev['type'] == PLATFORM_EVENT_TYPE_UNSET_CONFIG:
             if talent_id in self.dependencies:
                 self.dependencies[talent_id] = False
 
@@ -102,7 +103,11 @@ class TestRunnerException(Exception):
 
 class TestRunnerTalent(Talent):
     def __init__(self, name, test_sets, connection_string):
-        super().__init__(name, connection_string)
+        methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SET_METHOD_NAME, RUN_TEST_METHOD_NAME]
+
+        self.test_callees = [f'{test_set}.{m}' for m in methods for test_set in test_sets]
+
+        super(TestRunnerTalent, self).__init__(name, connection_string)
 
         # TODO run-tests should be made into constant
         self.add_output('run-tests', {
@@ -113,15 +118,13 @@ class TestRunnerTalent(Talent):
             }
         })
 
-        methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SET_METHOD_NAME, RUN_TEST_METHOD_NAME]
-        self.test_callees = [f'{test_set}.{m}' for m in methods for test_set in test_sets]
         self.test_sets = test_sets[:]
         self.dependencies = TalentDependencies(test_sets)
 
         self.skip_cycle_check(True)
 
     async def start(self):
-        await self.broker.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
+        await self.mqtt_client.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
         await super(TestRunnerTalent, self).start()
 
     def callees(self):
@@ -245,7 +248,7 @@ class TestSetTalent(FunctionTalent):
         self.test_set_info.test_map[test_name] = test
 
     async def start(self):
-        await self.broker.subscribe_json(PLATFORM_EVENTS_TOPIC,
+        await self.mqtt_client.subscribe_json(PLATFORM_EVENTS_TOPIC,
                                          self.talent_dependencies.on_platform_event)
         await super().start()
 
