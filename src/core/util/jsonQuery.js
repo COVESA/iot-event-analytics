@@ -8,17 +8,6 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-// query
-// :<label> > Gets value as is
-// foo.bar:<label> > Gets nested value 'baz' in { foo: { bar: 'baz' }}
-// *.bar:<label> > Gets all nested values 'baz1' and 'baz2' in { foo1: { bar: 'baz1' }, foo2: { bar: 'baz2' }}
-// foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } = 2
-// foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2, 3
-// foo.bar[:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
-// foo.bar[-1]:<label> > Gets last member of array in { foo: { bar: [0, 2, 3] } } > 3
-// foo.bar[-1:0]:<label> > Gets members of array in reverse order { foo: { bar: [0, 2, 3] } } > 3, 2, 0
-// 'foo.bar' > Searches for field 'foo.bar' > The point is masked
-
 const MASKED_FIELD_NAME_MGROUP = 1;
 const FIELD_NAME_MGROUP = 2;
 const SPECIFIC_ARRAY_FIELD_MGROUP = 3;
