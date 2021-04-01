@@ -14,7 +14,7 @@ import os
 import asyncio
 import logging
 
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
@@ -45,7 +45,7 @@ class RandomWorker(Worker):
         if random.random() > 0.95:
             raise Exception('Error computing result')
 
-        self.logger.info('Calculating result for input value {}...'.format(data))
+        self.logger.info(f'Calculating result for input value {data}...')
 
         return data * 10
 
@@ -55,7 +55,7 @@ class RandomReducer(Reducer):
 
     async def reduce(self, data):
         reduced_result = reduce(lambda a, b: a + (b if (isinstance(b, int) or isinstance(b, float)) else 0), data, 0)
-        self.logger.info('Reducer calculated sum {}'.format(reduced_result))
+        self.logger.info(f'Reducer calculated sum {reduced_result}')
 
 async def main():
     mapper = RandomMapper('mqtt://localhost:1883')

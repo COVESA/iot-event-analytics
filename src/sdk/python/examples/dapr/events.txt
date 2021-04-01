@@ -1,1 +1,0 @@
-{ "subject": "someuserid", "type": "anytype", "instance": "4711", "feature": "anyfeature", "value": 9 }

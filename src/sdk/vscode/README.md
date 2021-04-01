@@ -39,3 +39,11 @@ All requirements will be checked on each command invocation
 - `iotea.rule.or` + `Strg + Space` > Create new Or Rule
 - `iotea.rule.op` + `Strg + Space` > Create a new Rule with an Operation Constraint
 - `iotea.rule.change` + `Strg + Space` > Create a new Rule with a Change Constraint
+
+## Troubleshooting
+
+- _"Docker version check fails"_<br>
+  Make sure you have the latest Docker version installed, since `docker version --format=json` is used to retrieve the version. In older versions the string "json" was returned
+- _"Python version check fails"_<br>
+  You can specify the Python interpreter and the pip module in the settings. It defaults to `python3` and `pip3` for standalone installations. If you are running a virtual environment setup based on Anaconda, you have to use `python` and `pip`. On Linux-Systems it can be different. Please check in a terminal, which command to use and update the settings accordingly.
+- _"Cannot validate installed modules"_

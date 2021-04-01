@@ -1,1 +1,7 @@
-{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 6 }
+{ "subject": "someuserid", "type": "kuehlschrank", "instance": "4711", "feature": "temp", "value": 9 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 19 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 20 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 21 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 21 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 19 }
+{ "subject": "someuserid", "type": "default", "instance": "4711", "feature": "triggerable-function.trigger", "value": 22 }

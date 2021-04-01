@@ -189,6 +189,8 @@ class PublishOptions extends PubSubOptions {
         super(platformProtocolOnly, adapterId);
         // Retain this published message
         this.retain = false;
+        // If client / broker is offline, keep these messages stashed until it's online again. Then republish
+        this.stash = true;
     }
 }
 

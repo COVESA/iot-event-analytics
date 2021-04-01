@@ -14,19 +14,23 @@ import functools
 from .talent import Talent
 from .constants import ENCODING_TYPE_OBJECT, ENCODING_TYPE_ANY, DEFAULT_TYPE, MSG_TYPE_ERROR
 from .rules import OrRules, SchemaConstraint, Rule, Constraint
-from .talent_io import TalentInput, TalentOutput
+from .util.talent_io import TalentInput, TalentOutput
 
 class FunctionTalent(Talent):
-    def __init__(self, tid, connection_string, disable_mqtt5_support=False):
-        super(FunctionTalent, self).__init__(tid, connection_string, disable_mqtt5_support)
-        self.skip_cycle_check(True)
+    def __init__(self, tid, connection_string):
+        super(FunctionTalent, self).__init__(tid, connection_string)
         self.functions = {}
+        self.function_input_features = []
 
     def register_function(self, name, callback):
         self.functions[name] = callback
 
-        self.add_output('{}-in'.format(name), {
-            'description': 'Argument(s) for function {}'.format(name),
+        self.skip_cycle_check_for(f'{DEFAULT_TYPE}.{self.id}.{name}-in')
+
+        self.add_output(f'{name}-in', {
+            'description': f'Argument(s) for function {name}',
+            'ttl': 0,
+            'history': 0,
             'encoding': {
                 'type': ENCODING_TYPE_OBJECT,
                 'encoder': None
@@ -34,8 +38,10 @@ class FunctionTalent(Talent):
             'unit': 'ONE'
         })
 
-        self.add_output('{}-out'.format(name), {
-            'description': 'Result of function {}'.format(name),
+        self.add_output(f'{name}-out', {
+            'description': f'Result of function {name}',
+            'ttl': 0,
+            'history': 0,
             'encoding': {
                 'type': ENCODING_TYPE_ANY,
                 'encoder': None
@@ -43,7 +49,120 @@ class FunctionTalent(Talent):
             'unit': 'ONE'
         })
 
-    async def __process_event(self, ev, evtctx):
+        self.function_input_features.append(f'{self.id}.{name}-in')
+
+    def get_rules(self):
+        # It's not required to be overridden
+        return None
+
+    def _get_rules(self):
+        function_names = self.functions.keys()
+
+        if len(function_names) == 0:
+            # returns 1) or 2) -> see Talent._get_rules()
+            rules = super()._get_rules()
+
+            if rules is None:
+                # getRules() not overridden, callees() returns empty array, no functions registered
+                raise Exception('You have to at least register a function or override the get_rules() method.')
+
+            return rules
+
+        """
+        3) OR --> Non-triggerable Function Talent, which does not call any functions by itself
+             function input rules
+
+        4) OR --> Triggerable Function Talent, which does not call any functions by itself
+             function input rules
+             OR/AND [exclude function input rules]
+               triggerRules
+
+        5) OR --> Triggerable Function Talent, which calls one or more functions
+             function output rules i.e. callee rules
+             OR [exclude function output rules]
+               function result rules
+               OR/AND [exclude function result rules]
+                 triggerRules
+        """
+
+        function_input_rules = OrRules([])
+
+        for function_name in function_names:
+            event_schema = {
+                'type': 'object',
+                'required': ['func', 'args', 'chnl', 'call'],
+                'properties': {
+                    'func': {
+                        'type': 'string',
+                        'const': function_name
+                    },
+                    'args': {
+                        'type': 'array'
+                    },
+                    'chnl': {
+                        'type': 'string'
+                    },
+                    'call': {
+                        'type': 'string'
+                    }
+                },
+                'additionalProperties': False
+            }
+
+            function_input_rules.add(
+                Rule(SchemaConstraint(f'{self.id}.{function_name}-in', event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW']))
+            )
+
+        trigger_rules = self.get_rules()
+        function_result_rules = self._get_function_result_rules()
+
+        if trigger_rules is None and function_result_rules is None:
+            # return 3)
+            return function_input_rules
+
+        if trigger_rules is not None:
+            trigger_rules.exclude_on = list(map(lambda function_name: f'{DEFAULT_TYPE}.{self.id}.{function_name}-in', function_names))
+            function_input_rules.add(trigger_rules)
+
+            if function_result_rules is None:
+                # return 4)
+                return function_input_rules
+
+        function_input_rules.exclude_on = list(map(lambda callee: f'{DEFAULT_TYPE}.{callee}-out', self.callees()))
+        function_result_rules.add(function_input_rules)
+
+        # return 5)
+        return function_result_rules
+
+    async def _process_event(self, ev, cb = None):
+        await super()._process_event(ev, self.__run_in_executor)
+
+    async def __run_in_executor(self, ev, evtctx):
+        asyncio.get_running_loop().run_in_executor(None, self.__start_process_event, ev, evtctx)
+
+    def __start_process_event(self, ev, evtctx):
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(functools.partial(self.__process_function_events, ev=ev, evtctx=evtctx)())
+        loop.close()
+
+    async def __process_function_events(self, ev, evtctx):
+        self.logger.info(f'Processing {ev["feature"]}')
+
+        try:
+            self.function_input_features.index(ev['feature'])
+        except:
+            self.logger.info(f'Feature not found in function inputs {self.function_input_features}')
+            # Throws an error, if not found
+            try:
+                await self.on_event(ev, evtctx)
+            except Exception as err:
+                # on_event not implemented or execution error occurred calling on_event
+                self.logger.warning(err)
+                return
+
+        print(f'Processing function for feature {ev["feature"]}')
+
+        # Process function invocations
         raw_value = TalentInput.get_raw_value(ev)
 
         args = [*raw_value['args'], ev, evtctx]
@@ -79,42 +198,3 @@ class FunctionTalent(Talent):
             result_event['msgType'] = MSG_TYPE_ERROR
         finally:
             await self.publish_out_events(ev['returnTopic'], [result_event])
-
-    def __start_process_event(self, ev, evtctx):
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(functools.partial(self.__process_event, ev=ev, evtctx=evtctx)())
-        loop.close()
-
-    async def on_event(self, ev, evtctx):
-        asyncio.get_running_loop().run_in_executor(None, self.__start_process_event, ev, evtctx)
-
-    def get_rules(self):
-        arg_rules = []
-
-        for func in self.functions:
-            event_schema = {
-                'type': 'object',
-                'required': ['func', 'args', 'chnl', 'call'],
-                'properties': {
-                    'func': {
-                        'type': 'string',
-                        'const': func
-                    },
-                    'args': {
-                        'type': 'array'
-                    },
-                    'chnl': {
-                        'type': 'string'
-                    },
-                    'call': {
-                        'type': 'string'
-                    }
-                },
-                'additionalProperties': False
-            }
-
-            arg_rules.append(
-                Rule(SchemaConstraint('{}.{}-in'.format(self.id, func), event_schema, DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'])),
-            )
-
-        return OrRules(arg_rules)

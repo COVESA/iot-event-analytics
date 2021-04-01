@@ -10,12 +10,14 @@
 
 import asyncio
 import logging
+import os
 
 from iotea.core.talent_func import FunctionTalent
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
+os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 class FunctionProvider(FunctionTalent):
     def __init__(self, connection_string):

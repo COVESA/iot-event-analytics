@@ -16,9 +16,9 @@ var HttpsProxyAgent = require('https-proxy-agent');
 
 (async () => {
     await Promise.all([
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.2/iotea-0.9.2.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.2.1/boschio_iotea-0.2.1-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.2.1/boschio.iotea-0.2.1.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.3/iotea-0.9.3.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.4.0/boschio_iotea-0.4.0-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.4.0/boschio.iotea-0.4.0.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
     ])
         .catch(err => {
             console.error(`ERROR: ${err.message}`);
@@ -41,7 +41,7 @@ function urlToHttpOptions(url) {
 function download(url, outDir) {
     console.log(`Downloading library from ${url}...`);
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             try {
                 fs.mkdirSync(outDir);
@@ -68,15 +68,12 @@ function download(url, outDir) {
 
             const outStream = fs.createWriteStream(absOutPath);
 
-            try {
-                await httpsGet(url, outStream);
-                resolve('OK');
-            }
-            catch (err) {
-                fs.unlinkSync(absOutPath);
-                reject(err);
-                return;
-            }
+            return httpsGet(url, outStream)
+                .then(() => 'OK')
+                .catch(err => {
+                    fs.unlinkSync(absOutPath);
+                    reject(err);
+                });
         }
         catch (err) {
             reject(err);
@@ -106,9 +103,8 @@ function httpsGet(url, outStream) {
                 catch (err) {
                     reject(err);
                 }
-                finally {
-                    return;
-                }
+
+                return;
             }
 
             response.pipe(outStream);

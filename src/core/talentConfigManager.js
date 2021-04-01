@@ -31,7 +31,7 @@ module.exports = class TalentConfigManager {
     }
 
     start() {
-        return this.pg.subscribeJson(UPDATE_TALENT_CONFIG_TOPIC, this.__onRulesUpdate.bind(this))
+        return this.pg.subscribeJson(UPDATE_TALENT_CONFIG_TOPIC, this.__onConfigUpdate.bind(this))
             .then(() => {
                 this.logger.info(`TalentConfigManager ${this.uid} started successfully`);
             });
@@ -72,7 +72,7 @@ module.exports = class TalentConfigManager {
         return Object.keys(this.configurations);
     }
 
-    async __onRulesUpdate(data) {
+    async __onConfigUpdate(data) {
         if (data.clear === true) {
             if (data.id === undefined) {
                 for (let id in this.configurations) {

@@ -13,7 +13,7 @@ import json
 import os
 import logging
 
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 
 os.environ['MQTT_TOPIC_NS'] = 'iotea/'

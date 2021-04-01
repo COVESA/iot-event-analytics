@@ -1,10 +1,22 @@
 {
     "loglevel": "INFO",
-    "platformId": "ABCDE",
+    "platformId": "123456",
     "talentDiscoveryIntervalMs": 30000,
-    "mqtt": {
-        "connectionString": "mqtt://mosquitto-local:1883",
-        "ns": "iotea/"
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "mqtt5Only": true,
+                    "brokerUrl": "mqtt://mosquitto:1883"
+                }
+            }
+        ]
     },
     "api": {
         "port": 8080,

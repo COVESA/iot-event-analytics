@@ -7,7 +7,7 @@ const {
 } = iotea;
 
 const {
-    Logger
+    Logger,
     MqttProtocolAdapter
 } = iotea.util;
 
@@ -21,7 +21,7 @@ class FunctionProvider extends FunctionTalent {
         this.registerFunction('echo', this.echo.bind(this));
     }
 
-    async echo(value, ev, evctx) {
+    async echo(value, ev, evtctx) {
         this.logger.debug('Echo called');
         return value;
     }

@@ -127,8 +127,8 @@ class TestRunnerTalent extends Talent {
     }
 
     start() {
-        this.broker.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies));
-        super.start();
+        return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
+            .then(() => super.start());
     }
 
     callees() {
@@ -250,8 +250,8 @@ class TestSetTalent extends FunctionTalent {
     }
 
     start() {
-        this.broker.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies));
-        super.start();
+        return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
+            .then(() => super.start());
     }
 
 
@@ -265,7 +265,7 @@ class TestSetTalent extends FunctionTalent {
         return {
             'name' : this.testSetInfo.name,
             'tests' : this.testSetInfo.getTestList()
-        }
+        };
     }
 
     async runTest(testName, ev, evtctx) {

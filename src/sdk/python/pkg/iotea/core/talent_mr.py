@@ -14,7 +14,7 @@ import json
 from .talent import Talent
 from .rules import Rule, Constraint, OpConstraint, AndRules, OrRules
 from .constants import DEFAULT_TYPE, VALUE_TYPE_RAW, DEFAULT_INSTANCE
-from .talent_io import TalentInput, TalentOutput
+from .util.talent_io import TalentInput, TalentOutput
 
 class Mapper(Talent):
     def __init__(self, mapper_id, reducer_id, connection_string):

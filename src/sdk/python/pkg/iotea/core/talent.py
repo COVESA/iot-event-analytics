@@ -9,17 +9,19 @@
 ##############################################################################
 
 import asyncio
+import threading
 import functools
 import os
 import re
 import logging
 from uuid import uuid4
 
-from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, MSG_TYPE_ERROR
+from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_ERROR
 from .rules import OrRules, Rule, OpConstraint, Constraint
-from .mqtt_broker import NamedMqttBroker
-from .logger import Logger
-from .json_query import json_query_first
+from .util.mqtt_client import NamedMqttClient
+from .util.logger import Logger
+from .util.json_query import json_query_first
+from .util.talent_io import TalentOutput
 from .util import time_ms
 
 class DeferredCall:
@@ -74,14 +76,28 @@ class OutputFeature:
 
 class IOFeatures:
     def __init__(self):
-        self.options = {}
+        self.config = {}
         self.output_features = []
 
     def skip_cycle_check(self, value=True):
-        self.options['scc'] = value
+        if value != True:
+            # Disable cycle check, do nothing
+            # Already existing typeFeatures won't be overwritten
+            return
+
+        self.config['scc'] = True
 
     def skip_cycle_check_for(self, *args):
-        self.options['scc'] = list(args)
+        if 'scc' in self.config and self.config['scc'] == True:
+            # Skip, since cycle check is disabled anyway
+            return
+
+        if 'scc' not in self.config or isinstance(self.config['scc'], list) is False:
+            self.config['scc'] = list(args)
+            return
+
+        # Ensure unique typeFeatures in Array
+        self.config['scc'] = list(set([*self.config['scc'], *args]))
 
     def add_output(self, feature, metadata):
         self.output_features.append(OutputFeature(feature, metadata))
@@ -90,9 +106,8 @@ class IOFeatures:
         outputs = {}
         return functools.reduce(lambda outputs, feature: feature.append_to(talent_id, outputs), self.output_features, outputs)
 
-
 class Talent(IOFeatures):
-    def __init__(self, talent_id, connection_string, disable_mqtt5_support=False):
+    def __init__(self, talent_id, connection_string):
         super(Talent, self).__init__()
         # Unique for different talents
         # pylint: disable=invalid-name
@@ -101,23 +116,19 @@ class Talent(IOFeatures):
         self.uid = Talent.create_uid(self.id)
         self.logger = logging.getLogger('Talent.{}'.format(self.uid))
         self.connection_string = connection_string
-        self.disable_mqtt5_support = disable_mqtt5_support
-        self.broker = self.__create_message_broker('Talent.{}'.format(self.uid), connection_string)
+        self.mqtt_client = self.__create_mqtt_client('Talent.{}'.format(self.uid), connection_string)
         self.io_features = IOFeatures()
         self.deferred_calls = {}
-        self.chnl = str(uuid4())
+        self.chnl = f'{self.id}.{str(uuid4())}'
+        self.lock = threading.Lock()
 
-        self.logger.info('*****INFO***** Talent is deployable as remote?: {}'.format(self.is_remote()))
+        for callee in self.callees():
+            self.skip_cycle_check_for(f'{DEFAULT_TYPE}.{callee}-out')
 
     async def start(self):
-        event_subscription_topic = Talent.get_talent_topic(self.id)
-
-        if self.disable_mqtt5_support is False:
-            event_subscription_topic = '$share/{}/{}'.format(self.id, event_subscription_topic)
-
-        await self.broker.subscribe_json(event_subscription_topic, self.__on_event)
-        await self.broker.subscribe_json('{}/{}/+'.format(Talent.get_talent_topic(self.id), self.chnl), self.__on_common_event)
-        await self.broker.subscribe_json('$share/{}/{}'.format(self.id, TALENTS_DISCOVERY_TOPIC), self.__on_discover)
+        await self.mqtt_client.subscribe_json(f'$share/{self.id}/{Talent.get_talent_topic(self.id)}', self.__on_event)
+        await self.mqtt_client.subscribe_json(f'{Talent.get_talent_topic(self.id)}/{self.chnl}/+', self.__on_common_event)
+        await self.mqtt_client.subscribe_json(f'$share/{self.id}/{TALENTS_DISCOVERY_TOPIC}', self.__on_discover)
 
         self.logger.info('Talent {} started successfully'.format(self.uid))
 
@@ -127,28 +138,27 @@ class Talent(IOFeatures):
     def callees(self):
         return []
 
-    async def call(self, func_talent_id, func, args, subject, return_topic, timeout_ms=10000):
+    async def call(self, id, func, args, subject, return_topic, timeout_ms=10000):
         # Throws an exception if not available
-        self.callees().index('{}.{}'.format(func_talent_id, func))
+        self.callees().index('{}.{}'.format(id, func))
 
         call_id = str(uuid4())
 
-        invocation_event = {
-            'subject': subject,
-            'type': DEFAULT_TYPE,
-            'feature': '{}.{}-in'.format(func_talent_id, func),
-            'value': {
+        ev = TalentOutput.create_for(
+            subject,
+            DEFAULT_TYPE,
+            DEFAULT_INSTANCE,
+            f'{id}.{func}-in', {
                 'func': func,
                 'args': args,
                 'chnl': self.chnl,
                 'call': call_id
-            },
-            'whenMs': time_ms.time_ms()
-        }
+            }
+        )
 
         self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms)
 
-        await self.broker.publish_json([return_topic], invocation_event)
+        await self.mqtt_client.publish_json([return_topic], ev)
 
         self.logger.debug('Successfully sent function call')
 
@@ -157,9 +167,6 @@ class Talent(IOFeatures):
 
         return list(done)[0].result()
 
-    def is_remote(self):
-        return False
-
     def get_rules(self):
         raise Exception('Override get_rules(self) and return an instance of Rules')
 
@@ -167,25 +174,29 @@ class Talent(IOFeatures):
         raise Exception('Override on_event(self, ev, evtctx)')
 
     def get_full_feature(self, talent_id, feature, _type=None):
-        full_feature = '{}.{}'.format(talent_id, feature)
+        full_feature = f'{talent_id}.{feature}'
 
         if _type is None:
             return full_feature
 
-        return '{}.{}'.format(_type, full_feature)
+        return f'{_type}.{full_feature}'
 
     async def publish_out_events(self, topic, out_events):
         if isinstance(out_events, list) is False:
             return
 
-        for out_event in out_events:
-            if 'whenMs' not in out_event:
-                out_event['whenMs'] = time_ms.time_ms()
+        with self.lock:
+            for out_event in out_events:
+                if 'whenMs' not in out_event:
+                    out_event['whenMs'] = time_ms.time_ms()
 
-            await self.broker.publish_json(topic, out_event)
+                await self.mqtt_client.publish_json(topic, out_event)
 
     # pylint: disable=assignment-from-no-return, unused-argument
     async def __on_event(self, ev, topic):
+        await self._process_event(ev, self.on_event)
+
+    async def _process_event(self, ev, cb):
         evtctx = Logger.create_event_context(ev)
 
         if ev['msgType'] == MSG_TYPE_ERROR:
@@ -194,10 +205,10 @@ class Talent(IOFeatures):
 
         out_events = None
 
-        if asyncio.iscoroutinefunction(self.on_event):
-            out_events = await self.on_event(ev, evtctx)
+        if asyncio.iscoroutinefunction(cb):
+            out_events = await cb(ev, evtctx)
         else:
-            out_events = self.on_event(ev, evtctx)
+            out_events = cb(ev, evtctx)
 
         await self.publish_out_events(ev['returnTopic'], out_events)
 
@@ -231,7 +242,7 @@ class Talent(IOFeatures):
         deferred_call.resolve(value)
 
     async def __on_discover(self, ev, topic):
-        rules = self.__get_rules()
+        rules = self._get_rules()
 
         def __on_rule(rule):
             if rule.constraint is None:
@@ -244,38 +255,54 @@ class Talent(IOFeatures):
 
         discovery_response = {
             'id': self.id,
-            'remote': self.is_remote(),
-            'options': self.options,
-            'outputs': self.get_output_features(self.id),
-            'rules': rules.save()
+            'config': {
+                **self.config,
+                'outputs': self.get_output_features(self.id),
+                'rules': rules.save()
+            }
         }
 
-        await self.broker.publish_json(ev['returnTopic'], discovery_response)
+        await self.mqtt_client.publish_json(ev['returnTopic'], discovery_response)
 
-    def __get_rules(self):
+    def _get_rules(self):
+        """
+        1) OR -> Triggerable Talent, which does not call any functions
+             triggerRules
+        2) OR -> Triggerable Talent, which calls one or more functions
+             function result rules
+             OR/AND [exclude function result rules]
+               triggerRules
+        """
         # pylint: disable=assignment-from-no-return
-        rules = self.get_rules()
+        trigger_rules = self.get_rules()
 
+        function_result_rules = self._get_function_result_rules()
+
+        if function_result_rules is None:
+            # returns 1)
+            return trigger_rules
+
+        trigger_rules.exclude_on = list(map(lambda callee: f'{DEFAULT_TYPE}.{callee}-out', self.callees()))
+
+        function_result_rules.add(trigger_rules)
+
+        # returns 2)
+        return function_result_rules
+
+    def _get_function_result_rules(self):
         if len(self.callees()) == 0:
-            return rules
+            return None
 
         return OrRules([
-            # pylint: disable=anomalous-backslash-in-string
             # Ensure, that only the talent with the matching channel will receive the response
-            *map(lambda callee: Rule(OpConstraint('{}-out'.format(callee), OpConstraint.OPS['REGEX'], '^\/{}\/.*'.format(self.chnl), DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'], '/$tsuffix')), self.callees()),
-            rules
+            # Since the full channel id is unique for a talent instance, this rule would fail, if there are multiple instances of a talent because it would only check for one talent here
+            # -> The rule only checks the talent id prefix, which is common for all scaled Talent instances.
+            # pylint: disable=anomalous-backslash-in-string
+            *map(lambda callee: Rule(OpConstraint(f'{callee}-out', OpConstraint.OPS['REGEX'], '^\\/{}\\.[^\\/]+\\/.*'.format(self.id), DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'], '/$tsuffix')), self.callees())
         ])
 
-    def __create_message_broker(self, name, connection_string):
-        check_mqtt5_compatibility = True
-
-        if self.disable_mqtt5_support:
-            if self.is_remote() is False:
-                raise Exception('Disabling MQTT5 support is only supported for remote talents')
-
-            check_mqtt5_compatibility = False
-
-        return NamedMqttBroker(name, connection_string, os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility)
+    def __create_mqtt_client(self, name, connection_string):
+        return NamedMqttClient(name, connection_string, os.environ.get('MQTT_TOPIC_NS', None), True)
 
     @staticmethod
     def create_uid(prefix=None):
@@ -284,13 +311,8 @@ class Talent(IOFeatures):
         if prefix is None:
             return unique_part
 
-        return '{}-{}'.format(prefix, unique_part)
+        return f'{prefix}-{unique_part}'
 
     @staticmethod
-    def get_talent_topic(talent_id, is_remote=False, suffix=''):
-        topic = 'talent/{}/events{}'.format(talent_id, suffix)
-
-        if is_remote:
-            return 'remote/{}'.format(topic)
-
-        return topic
+    def get_talent_topic(talent_id, suffix=''):
+        return f'talent/{talent_id}/events{suffix}'

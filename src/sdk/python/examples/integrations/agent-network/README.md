@@ -62,6 +62,6 @@ You have to start all three talents:
 
 1. ChargeAPI: _node src/sdk/javascript/examples/integrations/agent-network/index.js_
 2. ChargingStationTalent: _python src/sdk/python/examples/integrations/agent-network/charging/run.py_
-3. VerifyTalent: _python src/sdk/python/examples/integrations/agent-network/verify/talent.py_
+3. VerifyTalent: _python src/sdk/python/examples/integrations/agent-network/verify/run.py_
 
 Send the trigger event ChargeApi.chargeRequest which will start the sequence and will print out logs for more information.

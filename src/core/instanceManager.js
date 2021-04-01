@@ -117,6 +117,14 @@ module.exports = class InstanceManager {
 
         return this.metadataManager.resolveMetaFeature(type, feature)
             .then(meta => {
+                if (meta.ttl === 0) {
+                    // Features, with a TTL of 0 are immediately returned as volatile feature
+                    return {
+                        $hidx: -1,
+                        $feature: Instance.createFeature(rawValue, encodedValue, whenMs, whenMs)
+                    };
+                }
+
                 let updateResult = instance.updateFeatureAt(
                     meta.idx,
                     encodedValue,

@@ -181,9 +181,38 @@ class Rule:
 Rule.logger = logging.getLogger('Rule')
 
 class Rules(Rule):
-    def __init__(self):
+    def __init__(self, exclude_on=None):
         super(Rules, self).__init__()
         self.rules = []
+        self.exclude_on = None
+
+        if exclude_on is not None:
+            if not isinstance(exclude_on, list):
+                raise Exception('exclude_on parameter of Rules must be either None or a list of strings')
+
+            if len(exclude_on) > 0:
+                self.exclude_on = exclude_on
+
+        self.init()
+
+    def init(self):
+        if self.exclude_on is None:
+            return
+
+        regex = re.compile('^([^\.]+)\.([^\.]+)(?:\.([^\.]+))?$')
+
+        for type_feature_selector in self.exclude_on:
+            matches = regex.match(self.type_selector)
+
+            if matches is None:
+                raise Exception(f'Invalid typeFeature selector "{type_feature_selector}" found in excludeOn constraints in given Rules')
+
+            if matches[3] is not None:
+                if matches[1] != DEFAULT_TYPE:
+                    raise Exception(f'Invalid typeFeature selector "{typeFeatureSelector}". Has to be default type')
+
+                if matches[2] == '*':
+                    raise Exception(f'Talent id has to be defined in typeFeature selector "{typeFeatureSelector}"')
 
     def add(self, rules):
         if isinstance(rules, list):
@@ -194,7 +223,10 @@ class Rules(Rule):
         return self
 
     def save(self):
-        return {}
+        return {
+            'excludeOn': self.exclude_on,
+            'rules': list(map(lambda rule: rule.save(), self.rules))
+        }
 
     def for_each(self, cb):
         for rule in self.rules:
@@ -213,24 +245,21 @@ class Rules(Rule):
 
 
 class AndRules(Rules):
-    def __init__(self, rules):
-        super(AndRules, self).__init__()
+    def __init__(self, rules, exclude_on=None):
+        super(AndRules, self).__init__(exclude_on)
         self.add(rules)
 
     def save(self):
-        return {
-            'type': 'and',
-            'rules': list(map(lambda rule: rule.save(), self.rules))
-        }
-
+        serialized_rule = super().save()
+        serialized_rule['type'] = 'and'
+        return serialized_rule
 
 class OrRules(Rules):
-    def __init__(self, rules):
-        super(OrRules, self).__init__()
+    def __init__(self, rules, exclude_on=None):
+        super(OrRules, self).__init__(exclude_on)
         self.add(rules)
 
     def save(self):
-        return {
-            'type': 'or',
-            'rules': list(map(lambda rule: rule.save(), self.rules))
-        }
+        serialized_rule = super().save()
+        serialized_rule['type'] = 'or'
+        return serialized_rule

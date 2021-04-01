@@ -98,12 +98,16 @@ module.exports = class ConfigManager {
 
         this.logger.info('Starting talent discovery...');
 
+        const publishOptions = ProtocolGateway.createPublishOptions();
+        // If an adapter is offline, do not stash these messages. Just discard
+        publishOptions.stash = false;
+
         // TODO: discovery filter based on some features
         return this.pg.publishJson(TALENTS_DISCOVERY_TOPIC, {
             msgType: MSG_TYPE_DISCOVERY,
             version: JSON_API_VERSION,
             returnTopic: this.__prefixPlatformId(TALENTS_DISCOVERY_RETURN_TOPIC)
-        }, ProtocolGateway.createPublishOptions(false))
+        }, publishOptions)
             .then(() => {
                 // Listen for discovery responses for a given time
                 this.discoveryTimeout = setTimeout(async () => {

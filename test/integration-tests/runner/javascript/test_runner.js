@@ -7,7 +7,7 @@ const {
 } = iotea;
 
 const {
-    Logger
+    Logger,
     MqttProtocolAdapter
 } = iotea.util;
 

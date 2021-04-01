@@ -18,7 +18,7 @@ os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent_func import FunctionTalent
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 

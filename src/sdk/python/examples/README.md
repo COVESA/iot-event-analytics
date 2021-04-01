@@ -14,9 +14,9 @@
 
 - Open the _docker-compose_ folder in the project root in a terminal and start the platform and the local broker by using docker-compose
   - If there is __no__ _.env_ file within the example folder
-    `docker-compose -f docker-compose.platform.yml up --remove-orphans`
+    `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml up --remove-orphans --build`
   - If there is _.env_ in the folder, run
-    `docker-compose -f docker-compose.platform.yml --env-file ../src/sdk/python/examples/<example>/.env up --remove-orphans`
+    `docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file ../src/sdk/python/examples/<example>/.env up --remove-orphans`
 
 ## How to run the examples
 

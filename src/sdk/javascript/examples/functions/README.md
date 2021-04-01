@@ -19,7 +19,7 @@ ionTalents could be used to offer mathematical functions (event with recursion).
 
 - Open the _docker-compose_ folder in the project root in a terminal
 - Start a Mosquitto broker by using docker-compose
-  - Run `docker-compose -f docker-compose.mosquitto.yml --env-file ../src/sdk/javascript/examples/functions/.env up --remove-orphans`
+  - Run `docker-compose -f docker-compose.mosquitto.yml up --remove-orphans`
 
 ## How to start it
 

@@ -12,6 +12,11 @@
 
 ## [Unreleased]
 
+- 0.9.3 [2021-03-09]
+  - Add troubleshooting section in README.md
+  - Fix version parsing for docker-compose
+  - Fix version parsing for Docker using the template format `docker version --format{{.Client.Version}}`
+
 - 0.9.2 [2021-03-09]
   - Fix JSON serialization bug for MQTT Publisher, where empty spaces led to separation of command line arguments
 

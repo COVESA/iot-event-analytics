@@ -144,7 +144,7 @@ TalentOutput.create = function(talent, ev, feature, value, subject = ev.subject,
         type,
         instance,
         value,
-        feature: [talent.id, feature].filter(s => s !== null).join('.'),
+        feature: [talent !== null ? talent.id : null, feature].filter(s => s !== null).join('.'),
         whenMs: timestamp
     };
 };
@@ -154,7 +154,7 @@ TalentOutput.createFor = function(subject, type, instance, feature, value, times
         throw new Error(`The subject needs to be a string, which identifies the instances affiliation`);
     }
 
-    return TalentOutput.create({ id: null }, null, feature, value, subject, type, instance, timestamp);
+    return TalentOutput.create(null, null, feature, value, subject, type, instance, timestamp);
 };
 
 /*

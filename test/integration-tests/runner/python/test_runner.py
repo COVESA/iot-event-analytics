@@ -10,20 +10,23 @@
 
 import asyncio
 import logging
+import os
 
 from iotea.core.talent_test import TestRunnerTalent
-from iotea.core.logger import Logger
+from iotea.core.util.logger import Logger
 
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
+os.environ['MQTT_TOPIC_NS'] = 'iotea/'
+
 class TestRunner(TestRunnerTalent):
     def __init__(self, connection_string):
-        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js', 'testSet-sdk-cpp'], connection_string)
+        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js'], connection_string)
 
 async def main():
-    testrunner = TestRunner('mqtt://localhost:1883')
-    await testrunner.start()
+    test_runner = TestRunner('mqtt://localhost:1883')
+    await test_runner.start()
 
 if __name__ == '__main__':
     LOOP = asyncio.get_event_loop()

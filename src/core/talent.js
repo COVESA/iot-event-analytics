@@ -105,7 +105,10 @@ class Talent extends IOFeatures {
         this.deferredCalls = {};
 
         // Common channel Id
-        this.chnl = uuid.v4();
+        // Prefixed by talentId to be able to have a function in multiple instances of a Talent, which is calling itself recursively
+        // The rule, which evaluates for events of a function result, just checks for the prefixed talent id and not on the full channel id, since this differs
+        // for multiple talent instances and thus breaks a recursively calculated response
+        this.chnl = `${this.id}.${uuid.v4()}`;
 
         for (const callee of this.callees()) {
             // If functions should be called, skip cycle check for their return value
@@ -197,17 +200,44 @@ class Talent extends IOFeatures {
     }
 
     __getRules() {
-        const rules = this.getRules();
+        /**
+         * 1) OR -> Triggerable Talent, which does not call any functions
+         *      triggerRules
+         *
+         * 2) OR -> Triggerable Talent, which calls one or more functions
+         *      function result rules
+         *      OR/AND [exclude function result rules]
+         *        triggerRules
+         */
 
+        const triggerRules = this.getRules();
+
+        const functionResultRules = this.__getFunctionResultRules();
+
+        if (functionResultRules === null) {
+            // returns 1)
+            return triggerRules;
+        }
+
+        triggerRules.excludeOn = this.callees().map(callee => `${DEFAULT_TYPE}.${callee}-out`);
+
+        functionResultRules.add(triggerRules);
+
+        // returns 2)
+        return functionResultRules;
+    }
+
+    __getFunctionResultRules() {
         if (this.callees().length === 0) {
-            return rules;
+            return null;
         }
 
         return new OrRules([
             // Ensure, that only the talent with the matching channel will receive the response
+            // Since the full channel id is unique for a talent instance, this rule would fail, if there are multiple instances of a talent because it would only check for one talent here
+            // -> The rule only checks the talent id prefix, which is common for all scaled Talent instances.
             // eslint-disable-next-line no-useless-escape
-            ...this.callees().map(callee => new Rule(new OpConstraint(`${callee}-out`, OpConstraint.OPS.REGEX, `^\/${this.chnl}\/.*`, DEFAULT_TYPE, VALUE_TYPE_RAW, '/$tsuffix'))),
-            rules
+            ...this.callees().map(callee => new Rule(new OpConstraint(`${callee}-out`, OpConstraint.OPS.REGEX, `^\/${this.id}\.[^\/]+\/.*`, DEFAULT_TYPE, VALUE_TYPE_RAW, '/$tsuffix')))
         ]);
     }
 
@@ -263,6 +293,10 @@ class Talent extends IOFeatures {
     }
 
     async __onEvent(ev) {
+        await this.__processEvent(ev, this.onEvent.bind(this));
+    }
+
+    async __processEvent(ev, cb) {
         const evtctx = Logger.createEventContext(ev);
 
         if (ev.msgType === MSG_TYPE_ERROR) {
@@ -271,7 +305,7 @@ class Talent extends IOFeatures {
         }
 
         try {
-            const outEvents = await this.onEvent(ev, evtctx);
+            const outEvents = await cb(ev, evtctx);
 
             if (outEvents) {
                 outEvents.forEach(outEvent => {
