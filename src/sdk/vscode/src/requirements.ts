@@ -42,19 +42,8 @@ async function ensureCliVersion(range: semver.Range, cmd: string, args: string[]
 
 export async function ensureDockerVersion(range: semver.Range): Promise<semver.SemVer> {
     // Check Docker Engine version
-    const dockerCmdArgs = getDockerCmdArgs(['version', '-f', 'json']);
-
-    return ensureCliVersion(range, dockerCmdArgs.cmd, dockerCmdArgs.args, dockerCmdArgs.env, __dirname, (cliVersion: string) => {
-        try {
-            // cliVersion >> JSON document
-            const json = JSON.parse(cliVersion);
-            return json.Client.Version;
-        }
-        catch(err) {
-            // -f json is not supported on old Docker Engine versions
-            throw new Error('Please ensure you have the latest Docker version installed on your system.');
-        }
-    });
+    const dockerCmdArgs = getDockerCmdArgs(['version', '--format', '{{.Client.Version}}']);
+    return ensureCliVersion(range, dockerCmdArgs.cmd, dockerCmdArgs.args, dockerCmdArgs.env, __dirname);
 }
 
 export async function ensureDockerConfiguration(): Promise<void> {
