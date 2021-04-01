@@ -12,3 +12,5 @@ docs
 requirements.txt
 requirements.dev.txt
 .pylintrc
+.github
+test/
