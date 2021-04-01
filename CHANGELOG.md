@@ -22,3 +22,4 @@
   - Add bugfixes for Visual Studio Code Extension
     - Fix wrong evaluation of docker-compose build number
     - New troubleshooting section in main documentation
+  - Remove deprecated dapr-adapter and dapr-example
