@@ -157,26 +157,6 @@ TalentOutput.createFor = function(subject, type, instance, feature, value, times
     return TalentOutput.create(null, null, feature, value, subject, type, instance, timestamp);
 };
 
-/*
-const ev = JSON.parse('{"returnTopic":"iotea/ingestion/events","$features":{"Vehicle":{"test.Body$Lights$IsBrakeOn":{"4711":{"$feature":{"whenMs":1606820429584,"ttlMs":1606820459584,"history":[{"whenMs":1606820427604,"ttlMs":1606820457604,"raw":1,"enc":0.3333333333333333},{"whenMs":1606820425626,"ttlMs":1606820455626,"raw":0,"enc":0}],"raw":2,"enc":0.6666666666666666,"stat":{"cnt":3,"mean":0.3333333333333333,"var":0.1111111111111111,"sdev":0.3333333333333333}},"matches":1},"$metadata":{"description":"Is brake light on","idx":0,"history":20,"encoding":{"type":"number","encoder":"minmax","min":0,"max":3},"unit":"µA","$unit":{"fac":0.000001,"unit":"µA","desc":"Mikroampere","base":{"fac":1,"unit":"A","desc":"Ampere"}}}}}},"type":"Vehicle","feature":"test.Body$Lights$IsBrakeOn","value":2,"whenMs":1606820429584,"instance":"4711","subject":"someuserid","now":1606820429587,"msgType":1,"$metadata":{"description":"Is brake light on","idx":0,"history":20,"encoding":{"type":"number","encoder":"minmax","min":0,"max":3},"unit":"µA","$unit":{"fac":0.000001,"unit":"µA","desc":"Mikroampere","base":{"fac":1,"unit":"A","desc":"Ampere"}}},"segment":"100000","cid":"620ab4a4-a461-43b9-9bba-7def876ec696","$feature":{"whenMs":1606820429584,"ttlMs":1606820459584,"history":[{"whenMs":1606820427604,"ttlMs":1606820457604,"raw":1,"enc":0.3333333333333333},{"whenMs":1606820425626,"ttlMs":1606820455626,"raw":0,"enc":0}],"raw":2,"enc":0.6666666666666666,"stat":{"cnt":3,"mean":0.3333333333333333,"var":0.1111111111111111,"sdev":0.3333333333333333}}}');
-
-console.log(TalentInput.getRawValue(ev));
-console.log(TalentInput.getEncodedValue(ev, 10, true));
-console.log(TalentInput.getEncodedValue(ev, 1, true, 'test.Body$Lights$IsBrakeOn', 'Vehicle'));
-console.log(TalentInput.getStats(ev));
-console.log(TalentInput.getInstancesFor(ev));
-console.log(FeatureMetadata.getUnit(TalentInput.getMetadata(ev)));
-
-console.log(TalentOutput.create({id: 'test'}, { subject: 'someuserid'}, 'myfeature', 3));
-console.log(TalentOutput.createFor('someuserid', 'mytype', 'myinstance', 'thefeature', 5));
-
-const to = new TalentOutput();
-to.add({id: 'test2'}, { subject: 'someuserid2'}, 'myfeature2', 1337);
-to.add({id: 'test2'}, { subject: 'someuserid2'}, 'myfeature3', 22);
-to.addFor('someuserid2', 'mytype', 'myinstance', 'myfeature4', 33, Date.now());
-console.log(to.toJson());
-*/
-
 module.exports = {
     TalentIO,
     TalentInput,
