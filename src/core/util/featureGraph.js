@@ -89,6 +89,8 @@ module.exports = class FeatureGraph {
 
         // eslint-disable-next-line no-useless-escape
         const anyFeatureRegex = /^[^\.]+\.\*$/m;
+        // eslint-disable-next-line no-useless-escape
+        const anyTypeRegex = /^\*\.[^\.]+$/m;
 
         const serializePath = path => `"${path.join(' -> ')}"`;
 
@@ -108,8 +110,20 @@ module.exports = class FeatureGraph {
             for (let i = 0; i < path.length; i++) {
                 const pathPart = path[i];
 
+                // Reset regexes
+                anyTypeRegex.lastIndex = 0;
+                anyFeatureRegex.lastIndex = 0;
+
+                // Handle *.<feature> entries
+                if (anyTypeRegex.test(pathPart)) {
+                    // Skip *.feature entries since they cannot be checked. It's unclear, which type they actually belong to
+                    // i.e. *.a -> b -> foo.a
+                    continue;
+                }
+
                 // Handle <type>.* entries
                 if (anyFeatureRegex.test(pathPart)) {
+                    // i.e. b.foo -> c -> b.*
                     const typePrefix = pathPart.slice(0, -1);
 
                     const pathPrefixMatches = path.reduce((acc, otherPathPart, idx) => {
@@ -125,15 +139,8 @@ module.exports = class FeatureGraph {
                         return true;
                     }
                 }
-
-                anyFeatureRegex.lastIndex = 0;
             }
-
-            // *.feature entries cannot be checked, since it's unclear, which type they actually belong to
-            // Simply return false here
-            return false;
         }
-
 
         return this.getAllPaths().reduce((acc, path) => acc || (new Set(path)).size !== path.length, false);
     }
