@@ -1,0 +1,6 @@
+{
+    "bar": {
+        "baz": "Hello World",
+        "bla.blubb": 555
+    }
+}
