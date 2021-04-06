@@ -8,7 +8,8 @@
   "scripts": {
     "yarn": "yarn",
     "postinstall": "node ./postinstall.js || exit 0",
-    "test": "nyc --report-dir=reports/coverage --reporter=cobertura --reporter=html --reporter=text-summary jasmine --config=test/jasmine.json"
+    "test": "nyc --report-dir=reports/coverage --reporter=cobertura --reporter=html --reporter=text-summary jasmine --config=test/jasmine.json",
+    "test.no-coverage": "jasmine --config=test/jasmine.json"
   },
   "private": true,
   "dependencies": {
