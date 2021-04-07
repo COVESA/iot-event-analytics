@@ -42,7 +42,7 @@ class MqttProtocolAdapter {
         }
     }
 
-    publish(topic, message, publishOptions) {
+    publish(topic, message, publishOptions = {}) {
         const options = {
             retain: publishOptions.retain === true
         };
@@ -94,7 +94,7 @@ MqttProtocolAdapter.createDefaultConfiguration = function createDefaultConfigura
 class MqttClient {
     constructor(brokerUrl, topicNs = null, checkMqtt5Compatibility = true, logger = null, clientId = MqttClient.createClientId('MqttClient')) {
         if (logger === null) {
-            logger = new Logger(clientId)
+            logger = new Logger(clientId);
         }
 
         this.logger = logger;
@@ -383,8 +383,8 @@ class MqttClient {
 
                 client.publish(this.__prefixTopicNs(publishTo), 'probe', {}, err => {
                     if (err) {
+                        client.off('message', onMessage);
                         reject(err);
-                        return;
                     }
                 });
             });
