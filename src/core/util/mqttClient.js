@@ -24,20 +24,18 @@ class MqttProtocolAdapter {
 
         this.topicNs = this.config.get('topicNamespace', null);
 
-        this.checkMqtt5Compatibility = this.config.get('mqtt5Only', true) !== false;
-
         if (displayName === null) {
             this.client = new MqttClient(
                 this.brokerUrl,
                 this.topicNs,
-                this.checkMqtt5Compatibility
+                true
             );
         } else {
             this.client = new NamedMqttClient(
                 displayName,
                 this.brokerUrl,
                 this.topicNs,
-                this.checkMqtt5Compatibility
+                true
             );
         }
     }
@@ -55,10 +53,6 @@ class MqttProtocolAdapter {
     }
 
     subscribeShared(group, topic, callback) {
-        if (!this.checkMqtt5Compatibility) {
-            return Promise.reject(new Error(`Shared subscriptions only possible, if MQTT5 compatibility is checked. Set "mqtt5Only" to true in your protocol configuration`));
-        }
-
         return this.client.subscribe(`$share/${group}/${this.__prefixTopicNs(topic)}`, callback);
     }
 
@@ -85,8 +79,7 @@ MqttProtocolAdapter.createDefaultConfiguration = function createDefaultConfigura
         },
         config: {
             brokerUrl,
-            topicNamespace: 'iotea/',
-            mqtt5Only: true
+            topicNamespace: 'iotea/'
         }
     };
 };
