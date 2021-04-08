@@ -21,7 +21,8 @@ class ProtocolGateway {
             }
 
             const module = require(adapterConfigModel.get('module.name'));
-            const Class = module[adapterConfigModel.get('module.class')];
+            const className = adapterConfigModel.get('module.class', null);
+            const Class = className === null ? module : module[className];
 
             const instance = new Class(adapterConfigModel.get('config'), displayName);
 
