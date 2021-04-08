@@ -1,0 +1,46 @@
+name: C++ SDK
+
+on:
+  push:
+    paths:
+    - '.github/workflows/build_and_test_cpp_sdk.yml'
+    - 'src/sdk/cpp/**'
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and run unit tests
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      # Create out-of-source build directory
+      # We'll use this as our working directory for all subsequent commands
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: cmake $GITHUB_WORKSPACE/src/sdk/cpp -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      # Execute the build.
+      run: make -j
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      # Run the test runner
+      run: ./lib/testrunner --gtest_color=yes # ctest -C $BUILD_TYPE

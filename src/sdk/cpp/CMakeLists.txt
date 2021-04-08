@@ -61,13 +61,13 @@ add_subdirectory(${nlohmann_json_SOURCE_DIR} ${nlohmann_json_BINARY_DIR} EXCLUDE
 FetchContent_Populate(googletest)
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
+## enable testing
+include(CTest)
+
 ## examples
 add_subdirectory(examples)
 
 ## lib
 add_subdirectory(lib)
 
-## enable testing
-project(Test)
-include(CTest)
 

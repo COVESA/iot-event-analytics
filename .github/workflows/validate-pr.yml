@@ -1,3 +1,5 @@
+name: PR Validation
+
 on:
   pull_request:
     branches:
@@ -6,7 +8,7 @@ on:
 jobs:
   check_pr:
     runs-on: ubuntu-latest
-    name: Validate all commits in a given PR
+    name: Check sign-off
     steps:
       - name: Checkout Action Repository
         uses: actions/checkout@v2
