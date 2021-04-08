@@ -9,12 +9,21 @@
  ****************************************************************************/
 
 const NullLogger = require('../../../helpers/null.logger');
-require('mock-require')('../../../../src/core/util/logger', NullLogger);
-
+const mock = require('mock-require');
 const importFresh = require('import-fresh');
-const MqttClientMock = require('../../../helpers/mock/mqtt.mock');
 
 describe('core.util.mqttClient', () => {
+    let MqttClientMock = null;
+
+    beforeAll(() => {
+        mock('../../../../src/core/util/logger', NullLogger);
+        MqttClientMock = require('../../../helpers/mock/mqtt.mock');
+    });
+
+    afterAll(() => {
+        mock.stop('../../../../src/core/util/logger');
+    });
+
     let clientMock = null;
 
     function prepareMockedMqttClient(_clientMock = new MqttClientMock()) {
