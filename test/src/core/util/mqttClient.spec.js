@@ -12,12 +12,14 @@ const NullLogger = require('../../../helpers/null.logger');
 const mock = require('mock-require');
 const importFresh = require('import-fresh');
 
+const { prepareMockedMqttClient } = require('../../../helpers/mock/mqtt.mock');
+
 describe('core.util.mqttClient', () => {
     let MqttClientMock = null;
 
     beforeAll(() => {
         mock('../../../../src/core/util/logger', NullLogger);
-        MqttClientMock = require('../../../helpers/mock/mqtt.mock');
+        MqttClientMock = require('../../../helpers/mock/mqtt.mock').MqttClientMock;
     });
 
     afterAll(() => {
@@ -26,22 +28,14 @@ describe('core.util.mqttClient', () => {
 
     let clientMock = null;
 
-    function prepareMockedMqttClient(_clientMock = new MqttClientMock()) {
-        clientMock = _clientMock;
-
-        require('mock-require')('mqtt', {
-            connect: () => _clientMock
-        });
-    }
-
     function createMqttClientWithArgs() {
         let args = Array.from(arguments);
 
         if (args.length > 0 && args[args.length - 1] instanceof MqttClientMock) {
-            prepareMockedMqttClient(args[args.length - 1]);
+            clientMock = prepareMockedMqttClient(args[args.length - 1]);
             args = args.slice(0, -1);
         } else {
-            prepareMockedMqttClient();
+            clientMock = prepareMockedMqttClient();
         }
 
         const {
@@ -91,7 +85,7 @@ describe('core.util.mqttClient', () => {
     it('should reject publish promise, if a publish error occurs', async () => {
         const client = createMqttClientWithArgs('', null, false);
 
-        clientMock.mConnect()
+        clientMock.mConnect();
 
         spyOn(clientMock, 'mPublish').and.callFake((topic, message, options, callback) => {
             if (topic === 'test1') {
@@ -301,7 +295,7 @@ describe('core.util.mqttClient', () => {
         let protocolAdapter = null;
 
         beforeEach(() => {
-            prepareMockedMqttClient();
+            clientMock = prepareMockedMqttClient();
 
             const {
                 MqttProtocolAdapter

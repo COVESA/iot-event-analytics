@@ -1,0 +1,25 @@
+{
+    "adapters": [
+        {
+            "platform": true,
+            "module": {
+                "name": "./util/mqttClient",
+                "class": "MqttProtocolAdapter"
+            },
+            "config": {
+                "topicNamespace": "iotea/",
+                "brokerUrl": "mock-mqtt1"
+            }
+        },
+        {
+            "module": {
+                "name": "./util/mqttClient",
+                "class": "MqttProtocolAdapter"
+            },
+            "config": {
+                "topicNamespace": "iotea/",
+                "brokerUrl": "mock-mqtt2"
+            }
+        }
+    ]
+}

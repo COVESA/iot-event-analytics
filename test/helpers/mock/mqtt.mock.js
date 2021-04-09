@@ -2,6 +2,7 @@ const {
     EventEmitter
 } = require('events');
 
+const mock = require('mock-require');
 class MqttClientMock extends EventEmitter {
     constructor(url, supportsSharedSubscriptions = true) {
         super();
@@ -34,8 +35,10 @@ class MqttClientMock extends EventEmitter {
             subscriptionRegex.lastIndex = 0;
         }
 
-        // {} = Packet
-        callback(undefined, {});
+        setImmediate(() => {
+            // {} = Packet
+            callback(undefined, {});
+        });
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -53,11 +56,20 @@ class MqttClientMock extends EventEmitter {
     subscribe(topic, options, callback) {
         const regex = this.__createRegexForTopic(topic);
 
+        let addedSubscriptionRegex = false;
+
         try {
-            this.subscriptions.push(regex);
+            if (this.subscriptions.findIndex(subscriptionRegex => subscriptionRegex.source === regex.source) === -1) {
+                this.subscriptions.push(regex);
+                addedSubscriptionRegex = true;
+            }
+
             this.mOnSubscription(topic, options, callback);
         } catch(err) {
-            this.subscriptions.splice(0, -1);
+            if (addedSubscriptionRegex) {
+                this.subscriptions.splice(0, -1);
+            }
+
             throw err;
         }
     }
@@ -85,6 +97,7 @@ class MqttClientMock extends EventEmitter {
     __createRegexForTopic(topic) {
         if (this.supportsSharedSubscriptions) {
             // Remove $share/<groupId>/
+            // eslint-disable-next-line no-useless-escape
             topic = topic.replace(/^\$share\/[^\/]+\//, '');
         }
 
@@ -93,4 +106,17 @@ class MqttClientMock extends EventEmitter {
     }
 }
 
-module.exports = MqttClientMock;
+function prepareMockedMqttClient(clientMock = new MqttClientMock()) {
+    mock.stop('mqtt');
+
+    mock('mqtt', {
+        connect: () => clientMock
+    });
+
+    return clientMock;
+}
+
+module.exports = {
+    prepareMockedMqttClient,
+    MqttClientMock
+};
