@@ -1,0 +1,39 @@
+{
+    "100000": {
+        "types": {
+            "test": {
+                "features": {
+                    "feat1": {
+                        "idx": 0,
+                        "description": "1",
+                        "history": 20,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        }
+                    },
+                    "feat2": {
+                        "idx": 1,
+                        "description": "2",
+                        "history": 20,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        }
+                    },
+                    "feat3": {
+                        "idx": 2,
+                        "description": "3",
+                        "history": 20,
+                        "default": 42,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+        "features": {}
+    }
+}

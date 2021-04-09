@@ -19,16 +19,17 @@ require('mock-require')('mqtt', {
 });
 
 module.exports = class MetadataManagerMock extends MetadataManager {
-    constructor() {
+    constructor(typesConfig) {
         super(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(true, '') ]));
         this.ready = Promise.resolve();
+        this.typesConfig = typesConfig;
     }
 
     registerFeature(segment, feature, metadata, type) {
         this.__registerFeature(segment, feature, metadata, type)
     }
 
-    start(typesConfig) {
-        return this.__initFromConfig(typesConfig);
+    start() {
+        return this.__initFromConfig(this.typesConfig);
     }
 };

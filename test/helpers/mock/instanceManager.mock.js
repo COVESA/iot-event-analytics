@@ -20,13 +20,13 @@ require('mock-require')('mqtt', {
 });
 
 module.exports = class InstanceManagerMock extends InstanceManager {
-    constructor() {
+    constructor(typesConfig) {
         super(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(true, '') ]));
-        this.metadataManager = new MetadataManagerMock();
+        this.metadataManager = new MetadataManagerMock(typesConfig);
     }
 
-    start(typesConfig) {
-        return this.metadataManager.start(typesConfig);
+    start() {
+        return this.metadataManager.start();
     }
 
     updateFeature(subject, instanceId, feature, encodedValue, rawValue, whenMs, type = DEFAULT_TYPE) {

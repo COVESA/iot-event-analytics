@@ -45,8 +45,8 @@ describe('core.rules', () => {
     });
 
     beforeEach(async () => {
-        im = new InstanceManagerMock();
-        await im.start(importFresh('../../resources/rules.types.json'));
+        im = new InstanceManagerMock(importFresh('../../resources/rules.types.json'));
+        await im.start();
     });
 
     describe('AndRules', () => {

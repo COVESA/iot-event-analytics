@@ -84,7 +84,7 @@ module.exports = class InstanceManager {
                         throw err;
                     }
 
-                    return Instance.createFeature(metaFeature.default, metaFeature.default, -1, -1);
+                    return Instance.createFeature(metaFeature.default, null, -1, -1);
                 }
 
                 const $feature = instance.getFeatureAt(metaFeature.idx, metaFeature.default);
