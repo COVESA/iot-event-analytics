@@ -41,11 +41,12 @@ class MqttProtocolAdapter {
     }
 
     publish(topic, message, publishOptions = {}) {
-        const options = {
+        // convert PublishOptions to MqttPublishOptions, which are directly sent as argument to client.publish
+        const mqttPublishOptions = {
             retain: publishOptions.retain === true
         };
 
-        return this.client.publish([ this.__prefixTopicNs(topic) ], message, options);
+        return this.client.publish([ this.__prefixTopicNs(topic) ], message, mqttPublishOptions, publishOptions.stash);
     }
 
     subscribe(topic, callback) {
@@ -119,8 +120,8 @@ class MqttClient {
         this.isMqtt5Compatible = false;
     }
 
-    publish(topics, message, options = {}) {
-        if (this.clientPromise && this.clientPromise.done === false && options.stash === false) {
+    publish(topics, message, mqttPublishOptions = {}, stash = true) {
+        if (this.clientPromise && this.clientPromise.done === false && stash === false) {
             // MQTT client is offline. Do not wait until it is online again.
             // If we just try to publish it anyway, we end up with a huge stack of unsent messages, which will be published
             // when the client is reconnected again
@@ -132,14 +133,14 @@ class MqttClient {
             topics = [ topics ];
         }
 
-        return Promise.all(topics.map(topic => this.__publish(topic, message, options)));
+        return Promise.all(topics.map(topic => this.__publish(topic, message, mqttPublishOptions)));
     }
 
-    publishJson(topics, json, options = {}) {
+    publishJson(topics, json, mqttPublishOptions = {}, stash) {
         // Check if it's actually json, which should be sent
         try {
             this.__validateJson(json);
-            return this.publish(topics, JSON.stringify(json), options);
+            return this.publish(topics, JSON.stringify(json), mqttPublishOptions, stash);
         }
         catch(err) {
             return Promise.reject(err);
@@ -239,7 +240,7 @@ class MqttClient {
             });
     }
 
-    __publish(topic, message, options = {}) {
+    __publish(topic, message, mqttPublishOptions = {}) {
         return this.__getClient()
             .then(client => {
                 return new Promise((resolve, reject) => {
@@ -248,7 +249,7 @@ class MqttClient {
 
                         this.logger.verbose(`Publishing ${message} to ${topic} @ ${this.brokerUrl}`);
 
-                        client.publish(topic, message, options, (err, packet) => {
+                        client.publish(topic, message, mqttPublishOptions, (err, packet) => {
                             if (err) {
                                 reject(err);
                                 return;

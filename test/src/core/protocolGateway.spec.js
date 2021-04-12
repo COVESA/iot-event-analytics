@@ -75,6 +75,32 @@ describe('core.protocolGateway', () => {
         expect(adapter2.instance.publish).not.toHaveBeenCalled();
     });
 
+    it('It should not stash', async () => {
+        const pg = createProtocolGateway('default', true);
+
+        spyOn(clientMock, 'mPublish').and.callThrough();
+
+        const adapter1 = pg.adapters[0];
+        spyOn(adapter1.instance.client, 'publish').and.callThrough();
+
+        clientMock.mConnect();
+
+        const options = ProtocolGateway.createPublishOptions();
+        options.stash = false;
+        await pg.publishJson('test', { hello: 123 }, options, true);
+
+        // Disconnect the MQTT client
+        clientMock.mClose();
+
+        await pg.publishJson('test2', { hello: 1234 }, options, true);
+
+        // Check stash flag set to false
+        expect(adapter1.instance.client.publish.calls.mostRecent().args[3]).toBeFalse();
+
+        // Check if latest message was not sent
+        expect(clientMock.mPublish.calls.mostRecent().args[0]).toBe('iotea/test');
+    });
+
     it('It should subscribe a topic from all defined adapters', async () => {
         const pg = createProtocolGateway('default', false);
 

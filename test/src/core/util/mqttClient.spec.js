@@ -73,7 +73,7 @@ describe('core.util.mqttClient', () => {
 
         const p1 = client.publishJson('test1', { hello: 'world' });
         const p2 = client.publishJson('test2', { hello: 'world2' });
-        const p3 = client.publishJson('test3', { hello: 'world3' }, { stash: false });
+        const p3 = client.publishJson('test3', { hello: 'world3' }, {}, false);
 
         setImmediate(() => clientMock.mConnect());
 
