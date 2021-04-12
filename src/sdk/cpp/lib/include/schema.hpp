@@ -1,14 +1,15 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
-#ifndef SCHEMA_HPP
-#define SCHEMA_HPP
+#ifndef IOTEA_SCHEMA_HPP
+#define IOTEA_SCHEMA_HPP
 
 #include <memory>
 #include <regex>
@@ -441,17 +442,19 @@ class Rules : public Rule {
 
    protected:
     rule_vec rules_;
+    std::vector<std::string> exclude_on_;
 
     explicit Rules(const std::string& type);
 
     template<typename T, typename... Args>
-    explicit Rules(const T& type, Args... args)
+    Rules(const T& type, Args... args)
     : type_{type}
     , rules_{args...} {}
 
    public:
-    void Add(const rule_vec& rules);
-    void Add(const rules_ptr rules);
+    void Add(rule_ptr rule);
+    void ExcludeOn(const std::string& feature);
+    void ExcludeOn(const std::vector<std::string>& features);
     json Json() const override;
 };
 
@@ -491,12 +494,15 @@ class OutputEncoding : public SchemaEntity {
 class Metadata : public SchemaEntity {
    private:
     const std::string description_;
+    const int history_;
+    const int ttl_;
     const std::string unit_;
     const OutputEncoding encoding_;
 
    public:
-    explicit Metadata(const std::string& description, const std::string& unit = "ONE",
-                      const OutputEncoding& encoding = OutputEncoding());
+    explicit Metadata(const std::string& description, int history = 0, int ttl = 0,
+            const std::string& unit = "ONE",
+            const OutputEncoding& encoding = OutputEncoding());
     json Json() const override;
 };
 
@@ -513,15 +519,15 @@ class OutputFeature : public SchemaEntity {
 
 class SkipCycleCheckType : public SchemaEntity {
    private:
-    Opt<bool> skip_ = defbool;
-    Opt<std::vector<std::string>> names_ = Opt<std::vector<std::string>>();
+    bool skip_;
+    std::vector<std::string> names_;
 
    public:
     SkipCycleCheckType();
-    explicit SkipCycleCheckType(bool skip);
-    template<typename ...Args>
-    explicit SkipCycleCheckType(Args... args)
-        : names_{args...} {}
+
+    void Skip(const std::string& name);
+    void SkipAll();
+
     json Json() const override;
 };
 
@@ -541,52 +547,33 @@ class FunctionValue : public ObjectType {
     explicit FunctionValue(const std::string& name);
 };
 
-class IOFeatures : public SchemaEntity {
-   protected:
-    std::vector<OutputFeature> output_features_;
-    Options options_;
-    SkipCycleCheckType scc_;
-
-   public:
-    IOFeatures();
-    void SkipCycleCheck(const bool skip = true);
-    void SkipCycleCheckFor(std::initializer_list<std::string> args);
-    void AddOutput(const std::string& feature, const Metadata& metadata);
-    const Options& GetOptions() const;
-    json GetOutputFeatures(const std::string& talent_id) const;
-};
-
 class Schema {
    private:
     const std::string id_;
-    const bool remote_;
-    const Options options_;
     std::vector<OutputFeature> outputs_;
+    options_map options_;
     rule_ptr rules_;
 
    public:
-    Schema(const std::string& id, const bool remote, const Options& options, const std::vector<OutputFeature>& outputs,
-           rule_ptr rules);
+    Schema(const std::string& id, const std::vector<OutputFeature>& outputs,
+           const options_map& options, rule_ptr rules);
     json Json() const;
 };
 
-class Talent : public IOFeatures {
+class Talent {
    private:
-    static std::string CreateUuid(const std::string& prefix);
-    rules_ptr rules_;
-
-   protected:
     const std::string id_;
-    const std::string uid_;
+    std::shared_ptr<SkipCycleCheckType> scc_;
+    options_map options_;
+    std::vector<OutputFeature> output_features_;
     std::set<std::string> callees_;
 
    public:
     explicit Talent(const std::string& id);
-    bool IsRemote() const;
-    std::string GetFullFeature(const std::string& talent_id, const std::string& feature,
-                               const std::string& type = "") const;
-    Schema GetSchema(rules_ptr rules) const;
-    json Json() const override;
+    Schema GetSchema(rule_ptr rules) const;
+    void SkipCycleChecks();
+    void SkipCycleCheckFor(const std::string& feature);
+    void AddOutput(const std::string& feature, const Metadata& metadata);
 };
 
 class Feature : public ObjectType {
@@ -779,4 +766,4 @@ schema::rule_ptr NelsonOut3Se(const std::string& feature, const std::string& typ
 }  // namespace core
 }  // namespace iotea
 
-#endif
+#endif // IOTEA_SCHEMA_HPP_

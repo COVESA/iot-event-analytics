@@ -1,9 +1,19 @@
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
 #include <csignal>
 #include <initializer_list>
 #include <memory>
 
-#include "iotea.hpp"
 #include "nlohmann/json.hpp"
+#include "iotea.hpp"
 #include "logging.hpp"
 #include "mqtt_client.hpp"
 #include "schema.hpp"
@@ -22,10 +32,10 @@ class EventConsumer : public Talent {
     } provider_talent;
 
    public:
-    explicit EventConsumer(std::shared_ptr<Publisher> publisher)
-        : Talent("event_consumer", publisher) {
-        provider_talent.Multiply = CreateCallee("provider_talent", "multiply");
-        provider_talent.Fib = CreateCallee("provider_talent", "fibonacci");
+    EventConsumer()
+        : Talent("event_consumer") {
+        provider_talent.Multiply = RegisterCallee("provider_talent", "multiply");
+        provider_talent.Fib = RegisterCallee("provider_talent", "fibonacci");
     }
 
     void OnEvent(const Event& event, EventContext context) override {
@@ -33,39 +43,45 @@ class EventConsumer : public Talent {
             auto args =
                 json{event.GetValue().get<int>(), json{{"factor", event.GetValue().get<int>()}, {"unit", "thing"}}};
 
-            auto t = provider_talent.Multiply.Call(args, context);
+            auto t = context.Call(provider_talent.Multiply, args);
 
-            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
-                log::Info() << "Multiply result: " << replies[0].first.dump(4);
-            }, {t});
+            context.Gather([](std::vector<json> replies) {
+                log::Info() << "Multiply result: " << replies[0].dump(4);
+            }, nullptr, t);
 
-            auto s = provider_talent.Fib.Call(args, context);
+            auto s = context.Call(provider_talent.Fib, args, 100);
 
-            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
-                log::Info() << "Fibonacci result: " << replies[0].first.dump(4);
-            }, {s});
+            auto handle_result = [](std::vector<json> replies) {
+                log::Info() << "Fibonacci result: " << replies[0].dump(4);
+            };
+            auto handle_timeout = [](){
+                log::Info() << "******* Timed out waiting for result";
+            };
+
+            context.Gather(handle_result, handle_timeout, s);
         } else if (event.GetType() == "blob") {
             log::Info() << "Currently at " << event.GetValue().dump() << " dingdings";
         }
     }
 
-    schema::rules_ptr OnGetRules() const override {
-        return OrRules(AndRules(GreaterThan("temp", 3, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")),
-                        OrRules(IsSet("dingdings", "blob")));
+    schema::rule_ptr OnGetRules() const override {
+        return OrRules(AndRules(GreaterThan("temp", 2, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank")),
+                        IsSet("dingdings", "blob"));
     }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, "event_consumer");
+static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) { client->Stop(); }
+void signal_handler(int signal) {
+    client.Stop();
+}
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<EventConsumer>(client);
-    client->RegisterTalent(talent);
+    auto talent = std::make_shared<EventConsumer>();
+    client.RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);
-
-    client->Run();
+    client.Start();
 
     return 0;
 }

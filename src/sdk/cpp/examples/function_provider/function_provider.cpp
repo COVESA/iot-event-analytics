@@ -1,8 +1,19 @@
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
 #include <csignal>
 #include <iostream>
 #include <memory>
 
 #include "nlohmann/json.hpp"
+#include "iotea.hpp"
 #include "logging.hpp"
 #include "mqtt_client.hpp"
 
@@ -22,17 +33,15 @@ class MathFunctions : public FunctionTalent {
     Callee fib;
 
    public:
-    explicit MathFunctions(std::shared_ptr<Publisher> publisher)
-        : FunctionTalent(FEATURE, publisher) {
+    explicit MathFunctions()
+        : FunctionTalent(FEATURE) {
         RegisterFunction(FUNC_MULTIPLY,
                          [this](const json& args, const CallContext& context) { Multiply(args, context); });
 
         RegisterFunction(FUNC_FIBONACCI,
                 [this](const json& args, const CallContext& context) { Fibonacci(args, context); });
 
-        fib = CreateCallee(FEATURE, FUNC_FIBONACCI);
-
-        SkipCycleCheck(true);
+        fib = RegisterCallee(FEATURE, FUNC_FIBONACCI);
     }
 
     void Multiply(const json& args, const CallContext& context) {
@@ -54,32 +63,33 @@ class MathFunctions : public FunctionTalent {
             return;
         }
 
-        auto t1 = fib.Call(n - 1, context);
-        auto t2 = fib.Call(n - 2, context);
+        auto t1 = context.Call(fib, n - 1);
+        auto t2 = context.Call(fib, n - 2);
 
-        context.GatherAndReply([](std::vector<std::pair<json, EventContext>> replies) {
-                auto n1 = replies[0].first.get<int>();
-                auto n2 = replies[1].first.get<int>();
+        context.GatherAndReply([](std::vector<json> replies) {
+            auto n1 = replies[0].get<int>();
+            auto n2 = replies[1].get<int>();
 
-                return n1 + n2;
-                }, {t1, t2});
+            return n1 + n2;
+        }, nullptr, t1, t2);
     }
 
 
-    schema::rules_ptr OnGetRules() const override { return nullptr; }
+    schema::rule_ptr OnGetRules() const override { return nullptr; }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, "function_provider");
+static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) { client->Stop(); }
+void signal_handler(int signal) {
+    client.Stop();
+}
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<MathFunctions>(client);
-    client->RegisterTalent(talent);
+    auto talent = std::make_shared<MathFunctions>();
+    client.RegisterFunctionTalent(talent);
 
     std::signal(SIGINT, signal_handler);
-
-    client->Run();
+    client.Start();
 
     return 0;
 }

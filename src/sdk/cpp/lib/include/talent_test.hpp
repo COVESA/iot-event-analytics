@@ -1,5 +1,15 @@
-#ifndef TALENT_TEST_HPP
-#define TALENT_TEST_HPP
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
+#ifndef IOTEA_TALENT_TEST_HPP
+#define IOTEA_TALENT_TEST_HPP
 
 #include "iotea.hpp"
 #include "nlohmann/json.hpp"
@@ -83,15 +93,15 @@ class TestSetTalent : public core::FunctionTalent {
     void Run(const json& args, const core::CallContext& context);
 
    public:
-    TestSetTalent(const std::string& name, core::publisher_ptr publisher);
+    TestSetTalent(const std::string& name);
 
     void OnPlatformEvent(const core::PlatformEvent& event) override;
 
-    void RegisterTest(const std::string& name, const json& expect, const core::Callee callee, const json& args, uint32_t timeout);
+    void RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout);
 };
 
 
 } // namespace test
 } // namespace iotea
 
-#endif // TALENT_TEST_HPP
+#endif // IOTEA_TALENT_TEST_HPP
