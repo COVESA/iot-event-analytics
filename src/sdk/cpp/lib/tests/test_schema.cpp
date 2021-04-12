@@ -748,6 +748,7 @@ static schema::rule_ptr create_nelson_constraint(schema::NelsonConstraint::Type 
             return NelsonHighDev(feature, type_selector, instance_filter, limit_feature_selection);
         default:
             assert(0);
+            return nullptr;
     }
 }
 
