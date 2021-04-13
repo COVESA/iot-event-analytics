@@ -25,8 +25,8 @@ module.exports = class MetadataManagerMock extends MetadataManager {
         this.typesConfig = typesConfig;
     }
 
-    registerFeature(segment, feature, metadata, type) {
-        this.__registerFeature(segment, feature, metadata, type)
+    async registerFeature(segment, feature, metadata, type) {
+        await this.__registerFeature(segment, feature, metadata, type);
     }
 
     start() {

@@ -1,0 +1,85 @@
+{
+    "100000": {
+        "types": {
+            "test": {
+                "features": {
+                    "feat1": {
+                        "idx": 1,
+                        "description": "1",
+                        "history": 20,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        }
+                    },
+                    "feat2": {
+                        "idx": 2,
+                        "description": "2",
+                        "history": 20,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        },
+                        "unit": {
+                            "fac": 0.001,
+                            "unit": "mV",
+                            "desc": "Millivolt",
+                            "ref": "V"
+                        }
+                    },
+                    "feat3": {
+                        "idx": 3,
+                        "description": "3",
+                        "history": 20,
+                        "default": 42,
+                        "encoding": {
+                            "encoder": null,
+                            "type": "number"
+                        },
+                        "unit": {
+                            "fac": 1,
+                            "unit": "°Test",
+                            "desc": "Custom test unit"
+                        }
+                    },
+                    "feat0": {
+                        "description": "000",
+                        "history": 5,
+                        "unit": "µA"
+                    }
+                }
+            }
+        },
+        "features": {
+            "feat0": {
+                "idx": 0,
+                "description": "0",
+                "history": 20,
+                "encoding": {
+                    "encoder": null,
+                    "type": "number"
+                },
+                "unit": "ONE"
+            }
+        }
+    },
+    "200000": {
+        "types": {
+            "test2": {
+                "features": {}
+            }
+        },
+        "features": {
+            "test": {
+                "idx": 0,
+                "description": "0",
+                "history": 20,
+                "encoding": {
+                    "encoder": null,
+                    "type": "number"
+                },
+                "unit": "ONE"
+            }
+        }
+    }
+}

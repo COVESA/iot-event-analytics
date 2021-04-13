@@ -19,7 +19,6 @@
     "express": "^4.17.1",
     "jsonata": "^1.8.3",
     "mqtt": "^4.2.1",
-    "nyc": "^15.1.0",
     "openapi-types": "7.0.1",
     "reconnecting-websocket": "4.4.0",
     "swagger-jsdoc": "5.0.1",
@@ -38,7 +37,9 @@
     "minimist": "1.2.5",
     "mock-require": "^3.0.3",
     "mustache": "4.0.1",
+    "nyc": "^15.1.0",
     "open": "7.1.0",
+    "temp": "^0.9.4",
     "xlsx-to-json-lc": "0.5.0",
     "yargs": "16.2.0"
   },

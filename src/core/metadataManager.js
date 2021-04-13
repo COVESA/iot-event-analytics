@@ -45,7 +45,11 @@ class MetadataManager {
 
         this.version = 0;
 
-        this.typesValidator = this.__createTypesValidator();
+        this.typesValidator = this.__createValidatorFor('http://example.com/schemas/types.schema.json');
+
+        this.fullFeatureValidator = this.__createValidatorFor('http://example.com/schemas/fullFeature.schema.json');
+
+        this.fullIndexedFeatureValidator = this.__createValidatorFor('http://example.com/schemas/fullIndexedFeature.schema.json');
     }
 
     start() {
@@ -93,10 +97,6 @@ class MetadataManager {
                 return this.__findFeatureForTypeAt(type, idx);
             }
             catch(err) {
-                if (specificType.inherits === null) {
-                    throw err;
-                }
-
                 return this.__findFeatureForTypeAt(specificType.inherits, idx);
             }
         });
@@ -245,34 +245,34 @@ class MetadataManager {
     }
 
     async registerTalentOutputFeatures(outputFeatureMap) {
-        try {
-            // Validate all features
-            for (let outputFeature of Object.keys(outputFeatureMap)) {
-                this.__validateFeature(DEFAULT_SEGMENT, outputFeature, outputFeatureMap[outputFeature], DEFAULT_TYPE);
-            }
-
-            let typesChanged = false;
-
-            // Register features only if all of them are valid
-            for (let outputFeature of Object.keys(outputFeatureMap)) {
-                typesChanged = this.__registerFeature(DEFAULT_SEGMENT, outputFeature, outputFeatureMap[outputFeature], DEFAULT_TYPE) || typesChanged;
-            }
-
-            // Check if something has changed
-            if (!typesChanged) {
-                return;
-            }
-
-            this.version++;
-
-            await this.__publishTypes();
+        // Validate all features
+        for (let outputFeature of Object.keys(outputFeatureMap)) {
+            await this.__validateFeature(DEFAULT_SEGMENT, outputFeature, outputFeatureMap[outputFeature], DEFAULT_TYPE, true);
         }
-        catch(err) {
-            this.logger.warn(err.message);
+
+        let typesChanged = false;
+
+        // Register features only if ALL of given features are valid i.e. if one feature is invalid, none of the given features should be registered
+        for (let outputFeature of Object.keys(outputFeatureMap)) {
+            typesChanged = await this.__registerFeature(DEFAULT_SEGMENT, outputFeature, outputFeatureMap[outputFeature], DEFAULT_TYPE) || typesChanged;
         }
+
+        // Check if something has changed
+        if (!typesChanged) {
+            return;
+        }
+
+        this.version++;
+
+        await this.__publishTypes();
     }
 
+    // resolves the featurename based on the given index
     __findFeatureForTypeAt(type, idx) {
+        if (typeof type !== 'string') {
+            throw new Error(`__findFeatureForTypeAt(type, idx): "type" argument needs to be a string. Got "${typeof type}"`);
+        }
+
         for (let feature in this.types[type].features) {
             if (this.types[type].features[feature].idx === idx) {
                 return feature;
@@ -282,6 +282,7 @@ class MetadataManager {
         throw new Error(`Feature at index ${idx} of type ${type} does not exist`);
     }
 
+    // publishes a type update to all metadata managers workers
     __publishTypes() {
         const publishOptions = ProtocolGateway.createPublishOptions(true);
         publishOptions.retain = true;
@@ -292,6 +293,7 @@ class MetadataManager {
         }, publishOptions);
     }
 
+    // Loads the configuration from the given path
     __loadConfiguration(typesConfigPath) {
         return new Promise((resolve, reject) => {
             fs.readFile(typesConfigPath, {
@@ -307,35 +309,42 @@ class MetadataManager {
         });
     }
 
+    // Initializes the types configuration from the given configuration
     __initFromConfig(typesConfig) {
         return this.typesValidator(typesConfig)
             .catch(err => {
                 throw new Error(`Validation of types configuration failed. Errors: ${ErrorMessageFormatter.formatAjvValidationError(err)}`);
             })
-            .then(() => {
+            .then(async () => {
                 for(let segment of Object.keys(typesConfig)) {
                     if (segment === DEFAULT_SEGMENT) {
-                        throw new Error(`Dynamic segment ${segment} cannot be configured via configuration file`);
+                        throw new Error(`Dynamic segment "${segment}" cannot be configured within the static types configuration`);
                     }
 
-                    for (let feature of Object.keys(typesConfig[segment].features)) {
-                        this.__registerFeature(segment, feature, typesConfig[segment].features[feature]);
+                    const segmentFeatures = Object.keys(typesConfig[segment].features);
+
+                    for (let segmentFeature of segmentFeatures) {
+                        await this.__registerFeature(segment, segmentFeature, typesConfig[segment].features[segmentFeature]);
                     }
 
                     for (let type of Object.keys(typesConfig[segment].types)) {
                         if (Object.prototype.hasOwnProperty.call(this.types, type)) {
-                            // specific type names have to be unique
-                            throw new Error(`Duplicate type ${type} found in ${segment}`);
+                            // The type needs to be unique. It is not allowed to have the same type in two different segments
+                            throw new Error(`Duplicate type ${type} found in segment ${segment}`);
                         }
 
-                        const features = Object.keys(typesConfig[segment].types[type].features);
+                        const typeFeatures = Object.keys(typesConfig[segment].types[type].features);
 
-                        if (features.length === 0) {
-                            // No specific feature given > register empty type
+                        if (typeFeatures.length === 0) {
+                            if (segmentFeatures.length === 0) {
+                                throw new Error(`Empty type ${type} found in segment ${segment}`);
+                            }
+
+                            // No additional features given. Use only segment features
                             this.__registerType(segment, type);
                         } else {
-                            for (let feature of features) {
-                                this.__registerFeature(segment, feature, typesConfig[segment].types[type].features[feature], type)
+                            for (let typeFeature of typeFeatures) {
+                                await this.__registerFeature(segment, typeFeature, typesConfig[segment].types[type].features[typeFeature], type);
                             }
                         }
                     }
@@ -343,7 +352,8 @@ class MetadataManager {
             });
     }
 
-    __createTypesValidator() {
+    // Creates a validator for types configurations
+    __createValidatorFor(schema) {
         const schemaBasePath = path.normalize(path.join(__dirname, '../../resources'));
 
         return new Ajv({
@@ -352,9 +362,17 @@ class MetadataManager {
                 Object.assign(
                     JSON.parse(fs.readFileSync(path.join(schemaBasePath, 'types.schema.json')), { encoding: 'utf8' }),
                     { $async: true }
+                ),
+                Object.assign(
+                    JSON.parse(fs.readFileSync(path.join(schemaBasePath, 'fullFeature.schema.json')), { encoding: 'utf8' }),
+                    { $async: true }
+                ),
+                Object.assign(
+                    JSON.parse(fs.readFileSync(path.join(schemaBasePath, 'fullIndexedFeature.schema.json')), { encoding: 'utf8' }),
+                    { $async: true }
                 )
             ]
-        }).getSchema('http://example.com/schemas/types.schema.json');
+        }).getSchema(schema);
     }
 
     __hasType(type) {
@@ -365,41 +383,100 @@ class MetadataManager {
         return this.__hasType(type) && this.types[type].features[feature] !== undefined;
     }
 
-    __validateFeature(segment, feature, metadata) {
-        if (!Number.isInteger(metadata.idx)) {
-            // No index is given
-            return;
+    async __validateFeature(segment, feature, metadata, type = null, checkFullFeature = false) {
+        let featureIndex = null;
+
+        if (checkFullFeature) {
+            try {
+                await this.fullFeatureValidator(metadata);
+            }
+            catch(err) {
+                if (type === null) {
+                    throw new Error(`The segment feature ${this.__formatSegmentFeature(segment, feature)} must be a full feature.`);
+                } else {
+                    throw new Error(`The type feature ${this.__formatTypeFeature(segment, type, feature)} must be a full feature.`);
+                }
+            }
         }
 
-        if (this.types[segment] === undefined) {
-            // Segment is not defined
-            return;
+        if (Object.prototype.hasOwnProperty.call(metadata, 'idx')) {
+            // If feature index is given, check if it's an integer
+            if (!Number.isInteger(metadata.idx)) {
+                throw new Error(`Given feature index has to be of type number`);
+            }
+
+            featureIndex = metadata.idx;
+
+            // Once an index is provided, assume, that the given feature is a fully indexed feature
+            try {
+                await this.fullIndexedFeatureValidator(metadata);
+            }
+            catch(err) {
+                if (type === null) {
+                    throw new Error(`The segment feature ${this.__formatSegmentFeature(segment, feature)} must be a fully indexed feature.`);
+                } else {
+                    throw new Error(`The type feature ${this.__formatTypeFeature(segment, type, feature)} must be a fully indexed feature. Remove the idx property, if you want to inherit from a segment feature.`);
+                }
+            }
         }
 
-        if (this.__containsFeatureIndex(segment, metadata.idx)) {
-            throw new Error(`Feature index ${metadata.idx} of feature ${feature} is already defined in segment ${segment}`);
+        if (type === null) {
+            // Check if there is a segment / type feature with the same name and a diverging index
+            for (let next of this.allFeaturesInSegment(segment)) {
+                if (next.feature !== feature) {
+                    // Segment feature OR another feature
+                    continue;
+                }
+
+                if (featureIndex !== next.$feature.idx) {
+                    if (next.type === segment) {
+                        // Segment feature
+                        throw new Error(`Expect segment feature ${this.__formatSegmentFeature(next.type, next.feature)} to have index ${featureIndex}. Found ${next.$feature.idx}`);
+                    } else {
+                        throw new Error(`Expect type feature ${this.__formatTypeFeature(next.segment, next.type, next.feature)} to have index ${featureIndex}. Found ${next.$feature.idx}`);
+                    }
+                }
+
+                // Type feature has same index as corresponding segment feature
+                // Updates of existing segment features are still allowed
+            }
+
+        } else {
+            // Check if there is a segment feature with the same name and a diverging index
+            if (featureIndex !== null && this.__hasFeature(segment, feature)) {
+                const segmentFeatureMeatadata = this.types[segment].features[feature];
+
+                if (segmentFeatureMeatadata.idx !== featureIndex) {
+                    throw new Error(`Expected type feature ${this.__formatTypeFeature(segment, type, feature)} to have index ${segmentFeatureMeatadata.idx}. Found ${featureIndex}`);
+                }
+            }
         }
     }
 
-    __registerFeature(segment, feature, metadata, type) {
+    /* istanbul ignore next */
+    __formatTypeFeature(segment, type, feature) {
+        return `"${segment}".types."${type}".features."${feature}"`;
+    }
+
+    /* istanbul ignore next */
+    __formatSegmentFeature(segment, feature) {
+        return `"${segment}".features."${feature}"`;
+    }
+
+    async __registerFeature(segment, feature, metadata, type = null) {
         if (segment === DEFAULT_SEGMENT) {
+            // Default segment has only the default type
             type = DEFAULT_TYPE;
         }
 
-        this.__validateFeature(segment, feature, metadata, type);
+        await this.__validateFeature(segment, feature, metadata, type);
 
         let typesChanged = this.__registerSegment(segment);
 
-        if (!this.__hasFeature(segment, feature) && (!type || !this.__hasFeature(type, feature))) {
-            // Only assign an index, if
-            // - the feature does not exist in the given segment
-            //   AND
-            //   - the type is not given at all
-            //     OR
-            //   - the feature does not exist in the given type
-            // to ensure, that already defined indices remain at the same index
+        // Only assign a new index for features, which NEITHER exist for the given type nor the given segment
+        if (type !== null && !this.__hasFeature(segment, feature) && !this.__hasFeature(type, feature)) {
             if (!Number.isInteger(metadata.idx)) {
-                // Only change the index, if it is not specified at all
+                // Only create a new index if no index was specified in the metadata of the new feature
                 metadata.idx = this.__getMaxIndex(segment) + 1;
                 typesChanged = true;
             }
@@ -407,7 +484,7 @@ class MetadataManager {
 
         let featureAssignee = this.types[segment];
 
-        if (type) {
+        if (type !== null) {
             typesChanged = this.__registerType(segment, type) || typesChanged;
             featureAssignee = this.types[type];
         }
@@ -432,16 +509,19 @@ class MetadataManager {
                 metadata.$unit = this.uomManager.processBaseReference(metadata.unit);
                 metadata.unit = metadata.$unit.unit;
             }
+        } else {
+            // Set the unit to null
+            metadata.unit = null;
         }
 
-        if (featureAssignee.features[feature] === undefined) {
-            featureAssignee.features[feature] = metadata;
-            typesChanged = true;
-        } else if (segment === DEFAULT_SEGMENT && type === DEFAULT_TYPE) {
-            // Keep the given index but overwrite the rest
+        if (this.__hasFeature(type || segment, feature)) {
+            // Feature is already existing >> update the metadata but not the index (if actually given)
             const $metadata = Object.assign(metadata, { idx: featureAssignee.features[feature].idx });
             typesChanged = !equals(featureAssignee.features[feature], $metadata, { strictArrayOrder: false }) || typesChanged;
             featureAssignee.features[feature] = $metadata;
+        } else {
+            featureAssignee.features[feature] = metadata;
+            typesChanged = true;
         }
 
         return typesChanged;
@@ -479,31 +559,17 @@ class MetadataManager {
         return false;
     }
 
-    __createKeyForInstance(subject, instance) {
-        return [subject, instance].join('/');
-    }
-
-    __containsFeatureIndex(segment, index) {
-        for (let next of this.allFeatureInSegment(segment)) {
-            if (next.feature.idx === index) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     __getMaxIndex(segment) {
         let maxIndex = -1;
 
-        for (let next of this.allFeatureInSegment(segment)) {
-            maxIndex = Math.max(next.feature.idx, maxIndex);
+        for (let next of this.allFeaturesInSegment(segment)) {
+            maxIndex = Math.max(next.$feature.idx, maxIndex);
         }
 
         return maxIndex;
     }
 
-    *allFeatureInSegment(segment) {
+    *allFeaturesInSegment(segment) {
         if (segment === undefined || !this.__hasType(segment)) {
             return;
         }
@@ -522,9 +588,10 @@ class MetadataManager {
         if (type !== undefined && this.__hasType(type)) {
             for (let feature of Object.keys(this.types[type].features)) {
                 yield {
+                    feature,
                     segment: this.types[type].inherits,
                     type: type,
-                    feature: this.types[type].features[feature]
+                    $feature: this.types[type].features[feature]
                 };
             }
         }

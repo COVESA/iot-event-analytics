@@ -11,50 +11,66 @@
     "definitions": {
         "segment": {
             "type": "object",
+            "required": [
+                "features",
+                "types"
+            ],
             "properties": {
                 "features": {
-                    "$ref": "types.schema.json#/definitions/features"
+                    "$ref": "types.schema.json#/definitions/fullIndexedFeatures"
                 },
                 "types": {
                     "$ref": "types.schema.json#/definitions/type"
                 }
-            },
-            "required": [
-                "features",
-                "types"
-            ]
+            }
         },
         "type": {
             "type": "object",
             "patternProperties": {
                 "^[^\\.]+$": {
                     "type": "object",
-                    "properties": {
-                        "features": {
-                            "$ref": "types.schema.json#/definitions/features"
-                        }
-                    },
                     "required": [
                         "features"
-                    ]
+                    ],
+                    "properties": {
+                        "features": {
+                            "$ref": "types.schema.json#/definitions/indexedFeature"
+                        }
+                    }
                 }
             },
             "minProperties": 1,
-            "additionalProperties": false
-        },
-        "features": {
-            "type": "object",
-            "patternProperties": {
-                "^[^\\.]+$": {
-                    "$ref": "types.schema.json#/definitions/indexedFeature"
-                }
-            },
             "additionalProperties": false
         },
         "indexedFeature": {
             "allOf": [
                 {
                     "$ref": "feature.schema.json#/definitions/feature"
+                },
+                {
+                    "required": [],
+                    "properties": {
+                        "idx": {
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    }
+                }
+            ]
+        },
+        "fullIndexedFeatures": {
+            "type": "object",
+            "patternProperties": {
+                "^[^\\.]+$": {
+                    "$ref": "types.schema.json#/definitions/fullIndexedFeature"
+                }
+            },
+            "additionalProperties": false
+        },
+        "fullIndexedFeature": {
+            "allOf": [
+                {
+                    "$ref": "feature.schema.json#/definitions/fullFeature"
                 },
                 {
                     "required": [

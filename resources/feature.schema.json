@@ -2,12 +2,21 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "http://example.com/schemas/feature.schema.json",
     "definitions": {
+        "fullFeature": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/feature"
+                },
+                {
+                    "required": [
+                        "description",
+                        "encoding"
+                    ]
+                }
+            ]
+        },
         "feature": {
             "type": "object",
-            "required": [
-                "description",
-                "encoding"
-            ],
             "properties": {
                 "description": {
                     "type": "string",
@@ -16,19 +25,19 @@
                 "encoding": {
                     "anyOf": [
                         {
-                            "$ref": "feature.schema.json#/definitions/encoding.through"
+                            "$ref": "#/definitions/encoding.through"
                         },
                         {
-                            "$ref": "feature.schema.json#/definitions/encoding.minmax"
+                            "$ref": "#/definitions/encoding.minmax"
                         },
                         {
-                            "$ref": "feature.schema.json#/definitions/encoding.delta"
+                            "$ref": "#/definitions/encoding.delta"
                         },
                         {
-                            "$ref": "feature.schema.json#/definitions/encoding.category"
+                            "$ref": "#/definitions/encoding.category"
                         },
                         {
-                            "$ref": "feature.schema.json#/definitions/encoding.null"
+                            "$ref": "#/definitions/encoding.null"
                         }
                     ]
                 },
@@ -86,8 +95,7 @@
                         }
                     ]
                 }
-            },
-            "additionalProperties": false
+            }
         },
         "encoding.null": {
             "type": "object",

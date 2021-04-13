@@ -98,7 +98,7 @@ describe('core.instanceManager', () => {
     it('should not save a feature in an instance, whose time to live is 0', async () => {
         const now = Date.now();
 
-        mm.registerFeature(DEFAULT_SEGMENT, 'foo.bar', { idx: 0, description: 'a', ttl: 0, encoding: { encoder: null, type: 'number' } }, DEFAULT_TYPE);
+        await mm.registerFeature(DEFAULT_SEGMENT, 'foo.bar', { idx: 0, description: 'a', ttl: 0, encoding: { encoder: null, type: 'number' } }, DEFAULT_TYPE);
 
         let updateResult = await im.updateFeature('somesubject', '4711', 'foo.bar', null, 33, now, DEFAULT_TYPE);
 
