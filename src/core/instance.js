@@ -37,7 +37,7 @@ class Instance {
                 throw new Error(`Feature at index ${idx} is null and no default value was given`);
             }
 
-            return Instance.createFeature(defaultValue, defaultValue, -1, -1)
+            return Instance.createFeature(defaultValue, null, -1, -1)
         }
 
         return this.features[idx];
@@ -241,7 +241,7 @@ class Instance {
             return false;
         }
 
-        if (this.features[idx] === null || !Array.isArray(this.features[idx].raw)) {
+        if (idx >= this.features.length || this.features[idx] === null || !Array.isArray(this.features[idx].raw)) {
             throw new Error(`Partial results need a target feature of type Array.`);
         }
 
@@ -257,7 +257,7 @@ class Instance {
             return true;
         }
 
-        throw new Error(`Invalid index ${idx} given`);
+        throw new Error(`Given index has to be a number greater than 0. Got ${idx}:${typeof idx}`);
     }
 }
 
