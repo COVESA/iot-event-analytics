@@ -7,8 +7,24 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
+/**
+ * Module Equals.
+ * 
+ * @module equals 
+ */
 
-module.exports = function equals(a, b, options = { strictArrayOrder: true }) {
+/**
+ * Checks if two objects are equal. Deep-check is performed with the object properties. The _options_ parameter contains
+ * instructions whether to check the array elements in a strict order. This means that if strictArrayOrder = false,
+ * [1, 2, 3] will be equal to [2, 3, 1].
+ *
+ * @param {*} a - Object to compare.
+ * @param {*} b - Object to compare.
+ * @param {*} [options = { strictArrayOrder: true }] - Contains instructions if arrays with disordered elements should be
+ * considered equal.
+ * @returns true if the objects are equal based on the passed options.
+ */
+ module.exports = function equals(a, b, options = { strictArrayOrder: true }) {
     const aIsArray = Array.isArray(a);
     const bIsArray = Array.isArray(b);
 
@@ -83,3 +99,4 @@ module.exports = function equals(a, b, options = { strictArrayOrder: true }) {
 
     return a === b;
 };
+
