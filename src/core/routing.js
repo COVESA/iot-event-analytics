@@ -94,13 +94,13 @@ module.exports = class Routing {
                 // Just send it to the adapter, the talent is attached to
                 const publishOptions = ProtocolGateway.createPublishOptions(false, config.$adapterId);
 
-                // Remove these two fields from the given event
-                ev.$feature = undefined;
-                ev.$metadata = undefined;
-
                 await this.pg.publishJson(Talent.getTalentTopic(id, ev.value.$tsuffix), Object.assign(
+                    {},
                     ev,
                     {
+                        // Remove $feature and $metadata
+                        $feature: undefined,
+                        $metadata: undefined,
                         returnTopic: `${this.platformId}/${INGESTION_TOPIC}`,
                         $features: featureMap.dump()
                     }
