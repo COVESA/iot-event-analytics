@@ -13,6 +13,7 @@
 [![Gitter](https://badges.gitter.im/iot-event-analytics/community.svg)](https://gitter.im/iot-event-analytics/community)
 [![License](https://img.shields.io/badge/License-MPL%202.0-blue.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Unit tests](https://github.com/GENIVI/iot-event-analytics/actions/workflows/test_js_sdk.yml/badge.svg)](https://github.com/GENIVI/iot-event-analytics/actions/workflows/test_js_sdk.yml)
+[![Integration test](https://github.com/GENIVI/iot-event-analytics/actions/workflows/run_integration_test.yml/badge.svg)](https://github.com/GENIVI/iot-event-analytics/actions/workflows/run_integration_test.yml)
 [![C++ SDK](https://github.com/GENIVI/iot-event-analytics/actions/workflows/build_and_test_cpp_sdk.yml/badge.svg)](https://github.com/GENIVI/iot-event-analytics/actions/workflows/build_and_test_cpp_sdk.yml)
 
 (c) Bosch.IO GmbH

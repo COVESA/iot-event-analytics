@@ -17,7 +17,8 @@ const {
     TEST_ERROR,
     PLATFORM_EVENTS_TOPIC,
     PLATFORM_EVENT_TYPE_SET_CONFIG,
-    PLATFORM_EVENT_TYPE_UNSET_CONFIG
+    PLATFORM_EVENT_TYPE_UNSET_CONFIG,
+    INGESTION_TOPIC
 } = require('./constants');
 
 const Logger = require('./util/logger');
@@ -45,6 +46,7 @@ class TestResult {
 class TalentDependencies {
     constructor() {
         this.talentDependencies = new Map();
+        this.callbacks = [];
     }
 
     addTalent(talentId) {
@@ -67,6 +69,14 @@ class TalentDependencies {
                 this.talentDependencies.set(ev.data.talent, false);
             }
         }
+
+        if (this.checkAll().length == 0) {
+            // Notify those who are waiting for us
+            this.callbacks.forEach( callback => callback())
+
+            // Clear callbacks
+            this.callbacks = [];
+        }
     }
 
     check(talentId) {
@@ -76,6 +86,24 @@ class TalentDependencies {
     checkAll() {
         // Return the names of all unmet dependencies
         return Array.from(this.talentDependencies).filter(e => !e[1]).map(e => e[0]);
+    }
+
+    waitForDependencies(timeoutMs) {
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject('Timeout waiting for dependencies');
+            }, timeoutMs);
+        });
+
+        const dependenciesMetPromise = new Promise((resolve, reject) => {
+            if (this.checkAll().length == 0) {
+                resolve();
+            } else {
+                this.callbacks.push(resolve);
+            }
+        });
+
+        return Promise.race([timeoutPromise, dependenciesMetPromise]);
     }
 }
 
@@ -123,12 +151,25 @@ class TestRunnerTalent extends Talent {
             this.talentDependencies.addTalent(testSetTalentId);
         });
 
+        // Wait for our own registration as well
+        this.talentDependencies.addTalent(name);
+
         this.skipCycleCheck(true);
     }
 
-    start() {
+    start(timeoutMs=60000) {
         return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
-            .then(() => super.start());
+            .then(() => super.start())
+            .then(() => this.talentDependencies.waitForDependencies(timeoutMs))
+            .catch(err => {
+                this.logger.error(err);
+                process.exit(1);
+            })
+            .then(() => this.triggerTestSets())
+            .catch(err => {
+                this.logger.info(`${err}`);
+                process.exit(1);
+            });
     }
 
     callees() {
@@ -136,6 +177,7 @@ class TestRunnerTalent extends Talent {
     }
 
     getRules() {
+        // Not used, but platform requires it?
         return new OrRules([
             new Rule(
                 new OpConstraint(`${this.id}.run-tests`, OpConstraint.OPS.ISSET, 0, DEFAULT_TYPE, VALUE_TYPE_RAW)
@@ -206,6 +248,23 @@ class TestRunnerTalent extends Talent {
         return result;
     }
 
+    async triggerTestSets() {
+        this.logger.info('Start Integration Tests');
+        let initial_ev = {
+            returnTopic: INGESTION_TOPIC,
+            subject: "integration_test"
+        };
+
+        let result = await this.runTestSets(initial_ev);
+        this.logger.info(`Overall test result is ${result}`);
+
+        if (result === true) {
+            process.exit(0);
+        } else {
+            process.exit(1);
+        }
+    }
+
     async runTestSets(ev) {
         var result = true;
 
@@ -222,16 +281,7 @@ class TestRunnerTalent extends Talent {
     }
 
     async onEvent(ev) {
-        let unmetDependencies = this.talentDependencies.checkAll();
-
-        if (unmetDependencies.length > 0) {
-            this.logger.error(`Can't start tests because of not connected TestSetTalent(s): ${unmetDependencies}`);
-            return;
-        }
-
-        this.logger.info('Start Integration Tests');
-        let result = await this.runTestSets(ev);
-        this.logger.info(`Overall test result is ${result}`);
+        // Not used
     }
 }
 
