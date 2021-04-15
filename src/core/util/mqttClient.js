@@ -303,10 +303,13 @@ class MqttClient {
      * Unsubscribes for a list of topics. Each topic is prefixed with the predefined _topicNS_ of this MqttClient
      * instance. 
      *
-     * @param {string[]} topics - Topics to unsubscribe for.
+     * @param {string|string[]} topics - Topic(s) to unsubscribe for.
      * @returns a promise.
      */
     unsubscribe(topics) {
+        if (!Array.isArray(topics)) {
+            topics = [ topics ];
+        }
         return this.__getClient()
             .then(client => {
                 return new Promise((resolve, reject) => {
