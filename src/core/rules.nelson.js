@@ -80,7 +80,7 @@ class NelsonAlterConstraint extends NelsonConstraint {
         let successiveValueCount = 1;
         let isHigh = values[0] > stat.mean;
 
-        for (let i = 1; i < values.length - 1; i++) {
+        for (let i = 1; i < values.length; i++) {
             if (isHigh && values[i] < stat.mean) {
                 successiveValueCount++;
                 isHigh = false;
@@ -103,7 +103,7 @@ class NelsonAlterConstraint extends NelsonConstraint {
 
 class NelsonTrendConstraint extends NelsonConstraint {
     constructor(feature, typeSelector, instanceIdFilter, limitFeatureSelection) {
-        super(feature, NelsonConstraint.NELSON_TYPE.TREND, typeSelector, 6, instanceIdFilter, limitFeatureSelection);
+        super(feature, NelsonConstraint.NELSON_TYPE.TREND, typeSelector, 7, instanceIdFilter, limitFeatureSelection);
     }
 
     __evaluate(values) {
@@ -120,7 +120,8 @@ class NelsonTrendConstraint extends NelsonConstraint {
                 successiveValueCount = successiveValueCount > 0 ? -1 : successiveValueCount - 1;
             }
 
-            if (Math.abs(successiveValueCount) === this.minValueCount) {
+            // Need 7 values, since 6 deltas have to be calculated which requires obviously 7 values
+            if (Math.abs(successiveValueCount) === this.minValueCount - 1) {
                 return true;
             }
         }
