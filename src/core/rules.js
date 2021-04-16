@@ -534,7 +534,7 @@ class Rules extends Rule {
                 talentNs: null
             };
 
-            if (matches[3] !== null) {
+            if (matches[3] !== undefined) {
                 // Selector for specific talent output given
                 // Only allow default.<talentId>.* and default.<talentId>.<feature>
                 if (matches[1] !== DEFAULT_TYPE) {

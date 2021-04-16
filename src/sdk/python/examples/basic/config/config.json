@@ -12,7 +12,6 @@
                 },
                 "config": {
                     "topicNamespace": "iotea/",
-                    "mqtt5Only": true,
                     "brokerUrl": "mqtt://mosquitto:1883"
                 }
             }

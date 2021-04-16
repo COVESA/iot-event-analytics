@@ -21,7 +21,7 @@
             "type": "object",
             "patternProperties": {
               "^(?:[^\\.]+\\.[^\\.]+)$": {
-                "$ref": "feature.schema.json#/definitions/feature"
+                "$ref": "feature.schema.json#/definitions/fullFeature"
               }
             },
             "additionalProperties": false

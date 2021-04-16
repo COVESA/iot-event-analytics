@@ -12,7 +12,6 @@
                 },
                 "config": {
                     "topicNamespace": "iotea/",
-                    "mqtt5Only": true,
                     "brokerUrl": "mqtt://mqtt1:1883"
                 }
             },
@@ -23,7 +22,6 @@
                 },
                 "config": {
                     "topicNamespace": "iotea/",
-                    "mqtt5Only": true,
                     "brokerUrl": "mqtt://mqtt2:1884"
                 }
             }

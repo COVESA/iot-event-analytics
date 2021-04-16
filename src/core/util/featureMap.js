@@ -13,7 +13,7 @@
 
 module.exports = class FeatureMap {
     constructor() {
-        this.entries = {};
+        this.clear();
     }
 
     contains(type, feature, instanceId) {
@@ -24,6 +24,10 @@ module.exports = class FeatureMap {
         catch(err) {
             return false;
         }
+    }
+
+    clear() {
+        this.entries = {};
     }
 
     set(type, feature, instanceId, $feature, $metaFeature) {

@@ -74,6 +74,7 @@ class TimeseriesConstraint extends Constraint {
         }
     }
 
+    /* istanbul ignore next */
     __evaluate() {
         // Parameters: values, stat
         throw new Error(`__evaluate(values, stat) needs to be overridden by a subclass`);

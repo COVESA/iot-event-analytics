@@ -13,34 +13,36 @@ const jsonata = require('jsonata');
 class Logger {
     constructor(name = 'default') {
         this.name = name;
+        this.logFunction = null;
         this.reset();
     }
 
-    verbose(message, ctx) {
-        this.__log(message, Logger.__LOG_LEVEL.VERBOSE, ctx);
+    verbose(message, ctx, now) {
+        this.__log(message, Logger.__LOG_LEVEL.VERBOSE, ctx, null, now);
     }
 
-    debug(message, ctx) {
-        this.__log(message, Logger.__LOG_LEVEL.DEBUG, ctx);
+    debug(message, ctx, now) {
+        this.__log(message, Logger.__LOG_LEVEL.DEBUG, ctx, null, now);
     }
 
-    info(message, ctx) {
-        this.__log(message, Logger.__LOG_LEVEL.INFO, ctx);
+    info(message, ctx, now) {
+        this.__log(message, Logger.__LOG_LEVEL.INFO, ctx, null, now);
     }
 
-    warn(message, ctx, err) {
-        this.__log(message, Logger.__LOG_LEVEL.WARN, ctx, err);
+    warn(message, ctx, err, now) {
+        this.__log(message, Logger.__LOG_LEVEL.WARN, ctx, err, now);
     }
 
-    error(message, ctx, err) {
-        this.__log(message, Logger.__LOG_LEVEL.ERROR, ctx, err);
+    error(message, ctx, err, now) {
+        this.__log(message, Logger.__LOG_LEVEL.ERROR, ctx, err, now);
     }
 
-    always(message, ctx) {
-        this.__log(message, Logger.__LOG_LEVEL.ALWAYS, ctx);
+    always(message, ctx, now) {
+        this.__log(message, Logger.__LOG_LEVEL.ALWAYS, ctx, null, now);
     }
 
     reset() {
+        this.logFunction = null;
         this.setLogLevel(Logger.__LOG_LEVEL.WARN);
         // Set ISO 8601 as default
         this.setDateFormat('[Y0001]-[M01]-[D01]T[H#01]:[m01]:[s01].[f001]Z');
@@ -49,7 +51,8 @@ class Logger {
 
     setDateFormat(picture) {
         // Force UTC
-        this.dateFormat = jsonata(`$now('${picture}', '+0000')`);
+        //this.dateFormat = jsonata(`$now('${picture}', '+0000')`);
+        this.dateFormat = jsonata(`$fromMillis($now, '${picture}', '+0000')`);
     }
 
     setMessageFormat(jna) {
@@ -64,21 +67,27 @@ class Logger {
         this.numericLevel = numericLevel;
     }
 
+    setLogFunction(logFunction) {
+        this.logFunction = logFunction;
+    }
+
     __formatLogLevel(numericLevel) {
         return Object.keys(Logger.__LOG_LEVEL)[Object.values(Logger.__LOG_LEVEL).indexOf(numericLevel)];
     }
 
-    __log(message, numericLevel, ctx = null, err = null) {
+    __log(message, numericLevel, ctx = '', err = null, now = Date.now(), func = this.logFunction) {
         const currentLevel = Logger.__LOG_LEVEL[process.env.LOG_LEVEL] || this.numericLevel;
 
         if (numericLevel < currentLevel) {
             return;
         }
 
-        let func = console.log;
+        if (func === null) {
+            func = console.log;
 
-        if (numericLevel === Logger.__LOG_LEVEL.WARN || numericLevel === Logger.__LOG_LEVEL.ERROR) {
-            func = console.error;
+            if (numericLevel === Logger.__LOG_LEVEL.WARN || numericLevel === Logger.__LOG_LEVEL.ERROR) {
+                func = console.error;
+            }
         }
 
         if (err instanceof Error && err.stack) {
@@ -86,12 +95,33 @@ class Logger {
         }
 
         func(this.messageFormat.evaluate('', Object.assign({
-            message: this.__replaceNewlines(message),
-            name: this.__replaceNewlines(this.name),
-            date: this.dateFormat.evaluate(''),
+            message: this.__replaceNewlines(this.__serializeMessage(message, '<empty message>', '<unserializable message>')),
+            name: this.__replaceNewlines(this.__serializeMessage(this.name, '<empty name>', '<unserializable name>')),
+            date: this.dateFormat.evaluate('', { now }),
             level: this.__formatLogLevel(numericLevel),
-            context: ctx ? this.__replaceNewlines(' ' + ctx.toString()) : ''
+            context: this.__replaceNewlines(this.__serializeMessage(ctx, '<empty context>', '<unserializable context>', ' '))
         })));
+    }
+
+    __serializeMessage(input, emptyInputPlaceholder = '<empty>', nonStringPlaceholder = '<unserializable>', prefix = '') {
+        if (input === null || input === undefined) {
+            return `${prefix}${emptyInputPlaceholder}`;
+        }
+
+        if (typeof input.toString === 'function') {
+            input = input.toString();
+        }
+
+        if (typeof input !== 'string') {
+            return `${prefix}${nonStringPlaceholder}`;
+        }
+
+        if (input === '') {
+            // If it's an empty string, do not add the prefix
+            return '';
+        }
+
+        return `${prefix}${input}`;
     }
 
     __replaceNewlines(input) {

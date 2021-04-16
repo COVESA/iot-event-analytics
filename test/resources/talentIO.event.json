@@ -1,0 +1,119 @@
+{
+    "returnTopic": "iotea/ingestion/events",
+    "$features": {
+        "Vehicle": {
+            "Body$Lights$IsBrakeOn": {
+                "4711": {
+                    "$feature": {
+                        "whenMs": 1606820429584,
+                        "ttlMs": 1606820459584,
+                        "history": [{
+                            "whenMs": 1606820427604,
+                            "ttlMs": 1606820457604,
+                            "raw": 1,
+                            "enc": 0.3333333333333333
+                        }, {
+                            "whenMs": 1606820425626,
+                            "ttlMs": 1606820455626,
+                            "raw": 0,
+                            "enc": 0
+                        }],
+                        "raw": 2,
+                        "enc": 0.6666666666666666,
+                        "stat": {
+                            "cnt": 3,
+                            "mean": 0.3333333333333333,
+                            "var": 0.1111111111111111,
+                            "sdev": 0.3333333333333333
+                        }
+                    }
+                },
+                "$metadata": {
+                    "description": "Is brake light on",
+                    "idx": 0,
+                    "history": 20,
+                    "encoding": {
+                        "type": "number",
+                        "encoder": "minmax",
+                        "min": 0,
+                        "max": 3
+                    },
+                    "unit": "µA",
+                    "$unit": {
+                        "fac": 0.000001,
+                        "unit": "µA",
+                        "desc": "Mikroampere",
+                        "base": {
+                            "fac": 1,
+                            "unit": "A",
+                            "desc": "Ampere"
+                        }
+                    }
+                }
+            },
+            "foo": {
+                "4711": {
+                    "$feature": {
+                        "whenMs": 1606820429584,
+                        "ttlMs": 1606820459584,
+                        "history": [{
+                            "whenMs": 1606820427604,
+                            "ttlMs": 1606820457604,
+                            "raw": {
+                                "$vpath": "val",
+                                "val": 11
+                            },
+                            "enc": null
+                        }, {
+                            "whenMs": 1606820425626,
+                            "ttlMs": 1606820455626,
+                            "raw": {
+                                "$vpath": "val",
+                                "val": 10
+                            },
+                            "enc": null
+                        }],
+                        "raw": {
+                            "$vpath": "val",
+                            "val": 12
+                        },
+                        "enc": null,
+                        "stat": null
+                    }
+                },
+                "$metadata": {
+                    "description": "Is brake light on",
+                    "idx": 0,
+                    "history": 20,
+                    "encoding": {
+                        "type": "number",
+                        "encoder": "minmax",
+                        "min": 0,
+                        "max": 3
+                    },
+                    "unit": "µA",
+                    "$unit": {
+                        "fac": 0.000001,
+                        "unit": "µA",
+                        "desc": "Mikroampere",
+                        "base": {
+                            "fac": 1,
+                            "unit": "A",
+                            "desc": "Ampere"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "type": "Vehicle",
+    "feature": "Body$Lights$IsBrakeOn",
+    "value": 2,
+    "whenMs": 1606820429584,
+    "instance": "4711",
+    "subject": "someuserid",
+    "now": 1606820429587,
+    "msgType": 1,
+    "segment": "100000",
+    "cid": "620ab4a4-a461-43b9-9bba-7def876ec696"
+}

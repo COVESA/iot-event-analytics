@@ -21,7 +21,8 @@ class ProtocolGateway {
             }
 
             const module = require(adapterConfigModel.get('module.name'));
-            const Class = module[adapterConfigModel.get('module.class')];
+            const className = adapterConfigModel.get('module.class', null);
+            const Class = className === null ? module : module[className];
 
             const instance = new Class(adapterConfigModel.get('config'), displayName);
 
@@ -33,7 +34,7 @@ class ProtocolGateway {
         }
     }
 
-    async publish(topic, message, publishOptions = ProtocolGateway.createPublishOptions()) {
+    async publish(topic, message, publishOptions = ProtocolGateway.createPublishOptions(), forceWait = false) {
         let publishToPlatformProtocolOnly = publishOptions.platformProtocolOnly;
 
         if (publishToPlatformProtocolOnly === null) {
@@ -46,18 +47,19 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (publishToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (publishOptions.adapterId === null || publishOptions.adapterId === adapter.id) {
-                    adapter.instance.publish(topic, message, publishOptions);
+                    const p = adapter.instance.publish(topic, message, publishOptions);
+                    forceWait && await p;
                 }
             }
         }
     }
 
-    publishJson(topic, json, publishOptions) {
-        return this.publish(topic, JSON.stringify(json), publishOptions);
+    publishJson(topic, json, publishOptions, forceWait) {
+        return this.publish(topic, JSON.stringify(json), publishOptions, forceWait);
     }
 
     // Callback needs to be (ev, topic) => {}
-    async subscribe(topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions()) {
+    async subscribe(topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions(), forceWait = false) {
         let subscribeToPlatformProtocolOnly = subscribeOptions.platformProtocolOnly;
 
         if (subscribeToPlatformProtocolOnly === null) {
@@ -70,18 +72,19 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    adapter.instance.subscribe(
+                    const p = adapter.instance.subscribe(
                         topic,
                         ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
                         subscribeOptions
                     );
+                    forceWait && await p;
                 }
             }
         }
     }
 
     // Callback needs to be (ev, topic) => {}
-    subscribeJson(topic, callback, subscribeOptions) {
+    subscribeJson(topic, callback, subscribeOptions, forceWait) {
         return this.subscribe(topic, (stringifiedJson, topic, adapterId) => {
             try {
                 callback(this.__tryParseJson(stringifiedJson), topic, adapterId);
@@ -89,11 +92,11 @@ class ProtocolGateway {
             catch(err) {
                 // Could not parse Json from incoming message
             }
-        }, subscribeOptions);
+        }, subscribeOptions, forceWait);
     }
 
     // Callback needs to be (ev, topic) => {}
-    async subscribeShared(group, topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions()) {
+    async subscribeShared(group, topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions(), forceWait = false) {
         let subscribeToPlatformProtocolOnly = subscribeOptions.platformProtocolOnly;
 
         if (subscribeToPlatformProtocolOnly === null) {
@@ -106,19 +109,20 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    adapter.instance.subscribeShared(
+                    const p = adapter.instance.subscribeShared(
                         group,
                         topic,
-                        ((adapter) => (ev, topic) => callback(ev, topic, adapter))(adapter), // Save adapter in IIFE
+                        ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
                         subscribeOptions
                     );
+                    forceWait && await p;
                 }
             }
         }
     }
 
     // Callback needs to be (ev, topic) => {}
-    subscribeJsonShared(group, topic, callback, subscribeOptions) {
+    subscribeJsonShared(group, topic, callback, subscribeOptions, forceWait) {
         return this.subscribeShared(group, topic, (stringifiedJson, topic, adapterId) => {
             try {
                 callback(this.__tryParseJson(stringifiedJson), topic, adapterId);
@@ -126,7 +130,7 @@ class ProtocolGateway {
             catch(err) {
                 // Could not parse JSON from incoming message
             }
-        }, subscribeOptions);
+        }, subscribeOptions, forceWait);
     }
 
     __tryParseJson(stringifiedJson) {

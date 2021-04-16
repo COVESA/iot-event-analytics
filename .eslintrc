@@ -1,11 +1,21 @@
 {
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:jasmine/recommended"
+    ],
     "parserOptions": {
         "ecmaVersion": 2018,
         "ecmaFeatures": {}
     },
+    "plugins": [
+        "jasmine"
+    ],
     "env": {
         "es6": true,
-        "node": true
+        "node": true,
+        "jasmine": true
+    },
+    "rules": {
+        "jasmine/prefer-toHaveBeenCalledWith": 0
     }
 }

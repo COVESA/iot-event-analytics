@@ -45,13 +45,23 @@ class Wildcard {
 }
 
 Wildcard.fromJson = function(json) {
-    try {
-        const model = new JsonModel(json);
-        return new Wildcard().minValues(model.get('nmin')).maxValues(model.get('nmax')).accept(...model.get('accepts')).reject(...model.get('rejects'));
+    const model = new JsonModel(json);
+
+    const wildcard = new Wildcard().minValues(model.get('nmin', 0)).maxValues(model.get('nmax', Number.MAX_SAFE_INTEGER));
+
+    const rejects = model.get('rejects', []);
+
+    if (Array.isArray(rejects)) {
+        wildcard.reject(...rejects);
     }
-    catch(err) {
-        return json;
+
+    const accepts = model.get('accepts', null);
+
+    if (Array.isArray(accepts)) {
+        wildcard.accept(...accepts);
     }
+
+    return wildcard;
 };
 class TreeNode {
     constructor(pi, vi, length) {
@@ -287,48 +297,11 @@ ArrayPatternMatcher.patternFromJson = function(jsonPattern) {
     return pattern;
 };
 
-/*
-    let matchers = [
-        new ArrayPatternMatcher([ new Wildcard(), new Wildcard().accept(2), new Wildcard().minValues(2), new Wildcard(), new Wildcard() ]),
-        new ArrayPatternMatcher([ new Wildcard().minValues(3) ]),
-        new ArrayPatternMatcher([ new Wildcard(), 1, new Wildcard(), 2 ]),
-        new ArrayPatternMatcher([ 3, new Wildcard() ]),
-        new ArrayPatternMatcher([ 3, new Wildcard().reject(5), 19 ]),
-        new ArrayPatternMatcher([ 3, 5, new Wildcard().minValues(3).maxValues(5), 1]),
-        new ArrayPatternMatcher([ new Wildcard().minValues(4) ]),
-        new ArrayPatternMatcher([ 10, new Wildcard(), 20, new Wildcard().reject(3), 19 ]),
-        new ArrayPatternMatcher([ 20, new Wildcard(), 19 ]),
-        new ArrayPatternMatcher([ 3, 5, new Wildcard().minValues(3).maxValues(6).reject(26), 3]),
-        new ArrayPatternMatcher([]),
-        new ArrayPatternMatcher([ 3, 5, new Wildcard().minValues(3).maxValues(6).reject(25), 3]),
-        new ArrayPatternMatcher([ 3, 5, new Wildcard().minValues(3).maxValues(5), 3])
-    ];
-
-    let input = [ 1, 2, 3, 5, 9, 10, 20, 25, 33, 1, 3, 20, 19, 3, 7, 9, 130, 99, 2, 2 ];
-
-    const times = [];
-    for (let i = 0; i < 1000; i++) {
-        const startMatchAtMs = Date.now();
-
-        for (let matcher of matchers) {
-            matcher.booleanMatch(input);
-        }
-
-        times.push(Date.now() - startMatchAtMs);
-    }
-
-    const avgTimeMs = times.reduce((sum, timeMs) => sum + timeMs, 0) / times.length;
-    const avgSingleMatchTimeMs = avgTimeMs / matchers.length;
-
-    console.log(`Average time for ${matchers.length} matchings = ${avgTimeMs}ms`);
-    console.log(`Average time for a single match = ${avgSingleMatchTimeMs}ms`);
-
-    // TODO:
-    // - Integrate jsonQuery to be able to process "complex" values
-    // - Integrate timstamp into Pattern to be able to express "Has to have happened in 5000ms"
-    //   - Have timerange constraints for wildcards with multiple values
-    // - Return segmented pattern instead of boolean containing the total time of the segments (if there is more than one value in a segment. If only one value is available in a segment, one can take the time difference to the next segment)
-*/
+// TODO:
+// - Integrate jsonQuery to be able to process "complex" values
+// - Integrate timstamp into Pattern to be able to express "Has to have happened in 5000ms"
+//   - Have timerange constraints for wildcards with multiple values
+// - Return segmented pattern instead of boolean containing the total time of the segments (if there is more than one value in a segment. If only one value is available in a segment, one can take the time difference to the next segment)
 
 module.exports = {
     ArrayPatternMatcher,
