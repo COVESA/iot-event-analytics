@@ -35,7 +35,7 @@ describe('core.protocolGateway', () => {
         return new ProtocolGateway(importFresh('../../resources/protocolGateway.config.json'), displayName, usePlatformProtocolOnly);
     }
 
-    it('It should publish messages to all defined adapters', async () => {
+    it('should publish messages to all defined adapters', async () => {
         const pg = createProtocolGateway('default', false);
 
         spyOn(clientMock, 'mPublish').and.callThrough();

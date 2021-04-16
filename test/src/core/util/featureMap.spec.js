@@ -1,5 +1,3 @@
-
-
 /*****************************************************************************
  * Copyright (c) 2021 Bosch.IO GmbH
  *
@@ -46,7 +44,7 @@ describe('core.util.featureGraph', () => {
         expect(fm.get('default', 'test', '4711').matches).toBe(1);
     });
 
-    it('should store the metadata on an type.feature level', () => {
+    it('should store the metadata on a type.feature level', () => {
         fm.set('default', 'test', '4711', { foo: 1 }, { bar: 2 });
         const dump = fm.dump();
 

@@ -1,5 +1,3 @@
-
-
 /*****************************************************************************
  * Copyright (c) 2021 Bosch.IO GmbH
  *
@@ -59,14 +57,14 @@ describe('core.util.featureGraph', () => {
         expect(fg.ids).toEqual(['1', '2', '3']);
     });
 
-    it('should also being able to handle wildcard dependency as from dependency', () => {
+    it('should being able to handle wildcard dependency as from dependency', () => {
         fg.addDependency('a.*', 'b');
         fg.addDependency('b', 'a.b');
 
         expect(fg.containsCycles()).toBeTruthy();
     });
 
-    it('should also being able to handle wildcard dependency as to dependency', () => {
+    it('should being able to handle wildcard dependency as to dependency', () => {
         fg.addDependency('a', 'b.*');
         fg.addDependency('b.test', 'a');
 

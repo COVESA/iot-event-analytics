@@ -75,7 +75,7 @@ class Logger {
         return Object.keys(Logger.__LOG_LEVEL)[Object.values(Logger.__LOG_LEVEL).indexOf(numericLevel)];
     }
 
-    __log(message, numericLevel, ctx = null, err = null, now = Date.now(), func = this.logFunction) {
+    __log(message, numericLevel, ctx = '', err = null, now = Date.now(), func = this.logFunction) {
         const currentLevel = Logger.__LOG_LEVEL[process.env.LOG_LEVEL] || this.numericLevel;
 
         if (numericLevel < currentLevel) {
@@ -95,12 +95,33 @@ class Logger {
         }
 
         func(this.messageFormat.evaluate('', Object.assign({
-            message: this.__replaceNewlines(message),
-            name: this.__replaceNewlines(this.name),
+            message: this.__replaceNewlines(this.__serializeMessage(message, '<empty message>', '<unserializable message>')),
+            name: this.__replaceNewlines(this.__serializeMessage(this.name, '<empty name>', '<unserializable name>')),
             date: this.dateFormat.evaluate('', { now }),
             level: this.__formatLogLevel(numericLevel),
-            context: ctx ? this.__replaceNewlines(' ' + ctx.toString()) : ''
+            context: this.__replaceNewlines(this.__serializeMessage(ctx, '<empty context>', '<unserializable context>', ' '))
         })));
+    }
+
+    __serializeMessage(input, emptyInputPlaceholder = '<empty>', nonStringPlaceholder = '<unserializable>', prefix = '') {
+        if (input === null || input === undefined) {
+            return `${prefix}${emptyInputPlaceholder}`;
+        }
+
+        if (typeof input.toString === 'function') {
+            input = input.toString();
+        }
+
+        if (typeof input !== 'string') {
+            return `${prefix}${nonStringPlaceholder}`;
+        }
+
+        if (input === '') {
+            // If it's an empty string, do not add the prefix
+            return '';
+        }
+
+        return `${prefix}${input}`;
     }
 
     __replaceNewlines(input) {

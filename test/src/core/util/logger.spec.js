@@ -117,7 +117,7 @@ describe('core.util.jsonModel', () => {
 
         logger.error(err.message, null, err);
 
-        expect(console.error.calls.mostRecent().args[0]).toMatch(/An error \[Error: .+\]$/g);
+        expect(console.error.calls.mostRecent().args[0]).toMatch(/An error \[Error: .+\] <empty context>$/g);
     });
 
     it('should render an log message console.log', () => {
@@ -127,8 +127,29 @@ describe('core.util.jsonModel', () => {
 
         logger.setLogFunction(null);
 
-        logger.info('Hello world');
+        const nowMs = 1618576287255;
+        logger.info('Hello world', '', nowMs);
 
         expect(console.log).toHaveBeenCalledTimes(1);
+        expect(console.log.calls.mostRecent().args[0]).toBe('2021-04-16T12:31:27.255Z    INFO [test-logger] : Hello world');
+    });
+
+    it('should not crash, if invalid or missing input parameters are given', () => {
+        logger.setLogLevel(Logger.__LOG_LEVEL.INFO);
+
+        const now = 1617712424808;
+
+        logger.info('Hello world', '', now);
+
+        expect(logFunctionSpy.calls.mostRecent().args[0]).toBe('2021-04-06T12:33:44.808Z    INFO [test-logger] : Hello world');
+
+        logger.info(undefined, null, now);
+
+        expect(logFunctionSpy.calls.mostRecent().args[0]).toBe('2021-04-06T12:33:44.808Z    INFO [test-logger] : <empty message> <empty context>');
+
+        logger.warn('A warning', 123, null, now);
+
+        expect(logFunctionSpy.calls.mostRecent().args[0]).toBe('2021-04-06T12:33:44.808Z    WARN [test-logger] : A warning 123');
+
     });
 });

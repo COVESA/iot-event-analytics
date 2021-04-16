@@ -19,11 +19,11 @@ describe('core.util.jsonModel', () => {
         model = new JsonModel(json);
     });
 
-    it('shold return a given value', () => {
+    it('should return a given value', () => {
         expect(model.get('bar.baz')).toBe('Hello World');
     });
 
-    it('shold return the default value in case the path does not exist', () => {
+    it('should return the default value in case the path does not exist', () => {
         expect(model.get('bar.bar', 'Hello')).toBe('Hello');
     });
 
@@ -31,7 +31,7 @@ describe('core.util.jsonModel', () => {
         expect(() => model.get('bar.bar')).toThrow();
     });
 
-    it('it should validate a model, with a given validator function', () => {
+    it('should validate a model, with a given validator function', () => {
         expect(() => {
             new JsonModel(json, () => {
                 return false;
@@ -39,7 +39,7 @@ describe('core.util.jsonModel', () => {
         }).toThrow();
     });
 
-    it('shold return a submodel at a given path', () => {
+    it('should return a submodel at a given path', () => {
         const submodel = model.getSubmodel('bar');
 
         expect(submodel instanceof JsonModel).toBeTruthy();
