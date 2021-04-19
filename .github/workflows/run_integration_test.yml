@@ -57,6 +57,7 @@ jobs:
         python ./testset_sdk/python/test_set_sdk.py 2>&1 >/dev/null &
         python ./testset_sdk/python/function_provider.py 2>&1 >/dev/null &
         node ./testset_sdk/javascript/functionProvider.js 2>&1 >/dev/null &
+        node ./testset_sdk/javascript/eventTester.js 2>&1 >/dev/null &
         node ./testset_sdk/javascript/testSetSDK.js 2>&1 >/dev/null &
         node ./runner/javascript/test_runner.js
       timeout-minutes: 1
