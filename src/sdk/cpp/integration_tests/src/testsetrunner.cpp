@@ -55,8 +55,8 @@ TestRunnerTalent::TestRunnerTalent(const std::string& name, iotea::core::publish
 
 void TestRunnerTalent::Start() {
     core::log::Info() << "TestRunnerTalent::Start()";
-    // TODO subscribe to platform events so that we can update the depencies as
-    // the are registered with the platform.
+    // TODO subscribe to platform events so that we can update the dependencies as
+    // they are registered with the platform.
 }
 
 core::schema::rules_ptr TestRunnerTalent::OnGetRules() const {
@@ -124,7 +124,7 @@ bool TestRunnerTalent::RunTestSets(core::EventContext context) {
 void TestRunnerTalent::OnEvent(const core::Event& event, core::EventContext context) {
     core::log::Info() << "TestRunnerTalent::OnEvent()";
     // We don't really care about what kind of event this is. Since we're only
-    // subscribe to one event it has to be that event.
+    // subscribed to one event it has to be that event.
     (void)event;
 
     if (!dependencies_.CheckAll()) {

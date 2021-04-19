@@ -110,7 +110,9 @@ json TestSetInfo::Json() const {
 // TalentDependencies
 //
 void TalentDependencies::Add(const std::string& talent_id) {
-    dependencies_.insert({talent_id, false});
+    if (dependencies_.count(talent_id) == 0) {
+        dependencies_.insert({talent_id, false});
+    }
 }
 
 bool TalentDependencies::Check(const std::string& talent_id) const {
@@ -207,6 +209,7 @@ void TestSetTalent::RegisterTest(const std::string& name, const json& expect, co
             }, nullptr, t);
     };
 
+    dependencies_.Add(callee.GetTalentId());
     test_set_info_.AddTest(name, expect, func, timeout);
 }
 
