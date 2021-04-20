@@ -6,15 +6,15 @@ const { ValidationError } = require('ajv')
  */
 
 /**
- * ErrorMessageFormatter class.
+ * Utility class to facilitate logging error messages.
  */
 class ErrorMessageFormatter {}
 
 /**
- * Formats an AJV ValidationError object into a string ready to be put in a log message.
+ * Formats an Ajv ValidationError object into a string ready to be put in a log message.
  *
- * @param {object} validationError AJV ValidationError object.
- * @returns a formatted string message if the passed argument is an AJV ValidationError object, validationError.message otherwise.
+ * @param {object} validationError Ajv ValidationError object.
+ * @returns a formatted string message if the passed argument is an Ajv ValidationError object, validationError.message otherwise.
  */
 ErrorMessageFormatter.formatAjvValidationError = function formatAjvValidationError(validationError) {
     if (validationError instanceof ValidationError) {

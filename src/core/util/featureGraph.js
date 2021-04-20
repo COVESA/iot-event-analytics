@@ -188,7 +188,16 @@ class FeatureGraph {
     }
 
     /**
-     * Gets the longest paths in the graph. In cycling paths, the nodes are traversed only once.
+     * Gets the longest paths in the graph. For example:
+     * ```
+     *    featureGraph.addDependency('1', '2');
+     *    featureGraph.addDependency('2', '3');
+     *    featureGraph.addDependency('3', '4');
+     *    console.log(featureGraph.getAllPaths());
+     * ```
+     * will result in [ [ '1', '2', '3', '4' ] ].
+     * <p>
+     * In cycling paths, the nodes are traversed only once.
      * 
      * @returns {Array<Array>} - An array of paths.
      */

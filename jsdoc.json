@@ -11,7 +11,10 @@
     },
     "templates": {
         "cleverLinks": true,
-        "monospaceLinks": true
+        "monospaceLinks": true,
+        "default": {
+            "useLongnameInNav":true
+        }
     },
     "opts": {
         "recurse": true,
