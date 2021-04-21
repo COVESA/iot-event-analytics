@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# Example: Bridging between differend Protocol Adapters
+# Example: Bridging between different Protocol Adapters
 
 ## How to start it
 

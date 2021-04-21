@@ -17,7 +17,7 @@ under [MPL-2.0 licence](https://choosealicense.com/licenses/mpl-2.0/)
 
 Talents encapsulate the data demand for a functional processing unit. Each Talent just has to define its required as well as offered data and services results. How a request or a reply reaches the consumer is managed by  at least one __Instance-Manager__ core talent. This enables the concept of non-blocking channeling ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageChannel.html)) IO.
 
-Each passed data ollows a __request-reply__ ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html)), not a request-response integration ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/EncapsulatedSynchronousIntegration.html)), communication style.
+Each passed data follows a __request-reply__ ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html)), not a request-response integration ([compare](https://www.enterpriseintegrationpatterns.com/patterns/messaging/EncapsulatedSynchronousIntegration.html)), communication style.
 
 By doing so the orchestration is __fault tolerant__ and __high available__, providing full flexibility for __redundancy concepts__ e.g. easily managing off- and online situations, as well as across distributed environmental nodes e.g. across multiple embedded devices and clouds.
 
@@ -52,7 +52,7 @@ Hosts the following capabilities:
 
 - Keeps track of all instances of a given subject
 - Sets and retrieves features from and for instances
-- Keeps timne-to-live, value history and rolling time window for data points
+- Keeps time-to-live, value history and rolling time window for data points
 
 #### Metadata-Manager Worker
 
@@ -66,8 +66,8 @@ Holds:
 #### Ingestion
 
 - Transforms and validates incoming events, configurable as ETL-Pipeline
-- Multi-Channel supports an arbitary amout of paralell ETL-Pipelines
-- Completly configurable via config files (JSONata transformations) and JSON Schema validations
+- Multi-Channel supports an arbitrary amount of parallel ETL-Pipelines
+- Completely configurable via config files (JSON Data transformations) and JSON Schema validations
 - Validates value type against metadata (boolean, string, number, object, any)
 - Validates type against metadata using Metadata-Manager Slave
 - Freely scalable by ingestion instance count
@@ -82,7 +82,7 @@ Holds:
 #### Routing
 
 - Freely scalable by ingestion instance count
-- Uses rules to determine whether an event should be forwareded to a specific talent
+- Uses rules to determine whether an event should be forwarded to a specific talent
   - Rules can be any type of boolean algebra (containing and/or rules)
   - Enriches event with all fields a talent is "interested" in
 
@@ -127,11 +127,11 @@ this.addOutput(this.output, {
 As data points services are ammped via __publish subscribe topics__ and managed via the __core talents__.
 
 - __Consume services:__ The consumed services are to denote via the `callees` interface.
-- __Offer servies:__  The offered service is populated via the `registerFunction` method.
+- __Offer services:__  The offered service is populated via the `registerFunction` method.
 
 ## Common definitions & plain integration
 
-- Data points and services are managed in so called namespaces. Namespaces are prefixes or roots of __sublish subscribe topics__. __STL rules__ do __not__ have access to namespaces.
+- Data points and services are managed in so called namespaces. Namespaces are prefixes or roots of __publish subscribe topics__. __STL rules__ do __not__ have access to namespaces.
 - Platform messages follow fixed [JSON schema](../resources/).
 
 Example message:
@@ -205,7 +205,7 @@ The foundation of the machine learning approaches is the given matrix/ tensor en
 
 ![Image of IoTea](./assets/metamodelEncoding.png)
 
-- __Subjects__ (Instance-level), e.g. a specific vehilce with unique VIN, relate to __Segments__ (Class-level)
+- __Subjects__ (Instance-level), e.g. a specific vehicle with unique VIN, relate to __Segments__ (Class-level)
 - __Subjects__ (Instance-level) contain __Types__ (Class-level) e.g. e.g. steering, braking, powertrain, infotainment for vehicle ECUs
 - __Segments__(Class-level), e.g. a room, a plant [component], a vehicle [ECU], contain __Instances__
 - __Types__ (Class-level) relate to __Instances__(Instance-level) , e.g. braking ECU with serial number XYZ, providing __Features__ (aka datapoints and services)
@@ -214,12 +214,12 @@ __Note:__ __Segments__ and __types__ can define features. A given __type__ inher
 
 ## Data Ingestion
 
-Basically each data point can define an so called __encoding__. Enconding data is about bringing data into the __meta data model__ e.g. translating a given textual sentense into a numerical vector space. For example compare the following [example](..\..\src\sdk\javascript\examples\integrations\vapp\config\types.json).
+Basically each data point can define an so called __encoding__. Encoding data is about bringing data into the __meta data model__ e.g. translating a given textual sentence into a numerical vector space. For example compare the following [example](..\..\src\sdk\javascript\examples\integrations\vapp\config\types.json).
 
-The enconding implicitelly takes places via the core talents, retrieving the configuration on startup via
+The encoding implicitly takes places via the core talents, retrieving the configuration on startup via
 
 - the static respective config file is the __types.json__. For example compare the [VAPP example](..\..\src\sdk\javascript\examples\integrations\vapp\config\types.json) and,
-- the dynamic configuration of each ```addOutput``` methode allowing the following encoding types
+- the dynamic configuration of each ```addOutput``` method allowing the following encoding types
 - leave empty for disabling the encoding
 - __through__ for pre-encoded values in the range [0..1]
 - __minmax__ for numeric values having a minimum and maximum value range e.g. temperature, speed
@@ -230,9 +230,9 @@ Besides the encoding the __ingestion__ follows the Extract-Transform-Load (aka E
 
 ## Data Selection
 
-Data is sourced via the data points and services. The __STL rule__ definition allow to select demanded data. The given data follows an __event sourcing__ retrieval semantic. If e.g. three data points are independendtly requested and an Boolean-OR STL rule, every single datapoint update passed the updated and the the other two last known states.
+Data is sourced via the data points and services. The __STL rule__ definition allow to select demanded data. The given data follows an __event sourcing__ retrieval semantic. If e.g. three data points are independently requested and an Boolean-OR STL rule, every single datapoint update passed the updated and the the other two last known states.
 
-Each __STL rule__ consists of a Boolean expression (AND, OR) orchestrating __contraints__. Every __constraint__ filters on Class-level by
+Each __STL rule__ consists of a Boolean expression (AND, OR) orchestrating __constraints__. Every __constraint__ filters on Class-level by
 
 - __type__ and,
 - __feature__ selector e.g.:
@@ -247,9 +247,9 @@ new Rule(
 
 Per default the __type__ and __feature__ can be the __name__ or the wildcard __*__.
 
-### Contraints
+### Constraints
 
-Contraints offer __operations__ performing the validation to __true__ or __false__,
+Constraints offer __operations__ performing the validation to __true__ or __false__,
 
 - OpConstraint gets trigger when the condition evaluates to __true__
   - ISSET
@@ -270,8 +270,8 @@ Contraints offer __operations__ performing the validation to __true__ or __false
   - OUT2_SE
   - OUT3_SE
   - TREND
-- TimeseriesPatternConstraint gets trigger when the history somewhere contains a specified __data pattern__. The pattern ist described via a JSON array
-  including so called __wildcards__. A wildcard is equal to the regular expression statement __.*__, but can contai any (complex) object definiton. In addition four methods support the wildcard definition flexibility
+- TimeseriesPatternConstraint gets trigger when the history somewhere contains a specified __data pattern__. The pattern is described via a JSON array
+  including so called __wildcards__. A wildcard is equal to the regular expression statement __.*__, but can contain any (complex) object definition. In addition four methods support the wildcard definition flexibility
   - .accept( OBJECT )
   - .reject( OBJECT )
   - .minValues( OBJECTS )
@@ -289,10 +289,10 @@ Each __feature__ keeps five values
 
 ## Parallel Data Processing
 
-Via the Map-Reduce programming model the logic is executed on the server where the data, __may already__, resides and where the massiv computation performance exists.
+Via the Map-Reduce programming model the logic is executed on the server where the data, __may already__, resides and where the massive computation performance exists.
 
 - __Mapping__ is the task of splitting work to __worker__
-- __Worker__ performe the required processings/ calulations
+- __Worker__ performs the required processing/calulations
 - __Reducer__ that the __workers__ result and combines it into a "single" result
 
 Three respective classes encapsulate the required agent network communication:
@@ -311,11 +311,11 @@ Mathematically the following classes are provided:
 
 - __Statistical approaches__ which takes multiple observations of expected observations and the probability (distribution, aka probability density function) of observations into account.
 - __Distance approaches__ which maps the objective into a vector (space) and take norms into account.
-- __Classification approaches__ which extends the considered space by finding regressions, forming cluster by comparing the value with thre regressor. It is the the (statistical) dependence between two or more variables (aka “mutual information”).
+- __Classification approaches__ which extends the considered space by finding regressions, forming cluster by comparing the value with the regressor. It is the the (statistical) dependence between two or more variables (aka “mutual information”).
 - __Spectral approaches__ which performs a dimension reduction, determining the latent (aka hidden) space, describing and may reconstructing the higher dimensional space.
-- __Information theory approaches__ in contrast to the __statistical approaches__ it determins the uncertaincy (aka __relative*__ entropy) in comparison to hypothesis. Entropy quantifies how much information in the variables (event) probability distribution.
+- __Information theory approaches__ in contrast to the __statistical approaches__ it determines the uncertainty (aka __relative*__ entropy) in comparison to hypothesis. Entropy quantifies how much information in the variables (event) probability distribution.
 
-Idenpendend from the applied detection class, the __anomaly quantification__ (aka scoring) of the identity deviation plays a central role. The quantification happens via respective hypothesis testing.
+Independent from the applied detection class, the __anomaly quantification__ (aka scoring) of the identity deviation plays a central role. The quantification happens via respective hypothesis testing.
 
 The root interface below _../src/sdk/python/extensions/_ is:
 
@@ -331,7 +331,7 @@ class IoTeaAnomalyDetection:
         pass
 ```
 
-The methode `checkAnomaly` returns a boolean value if an anomaly exists and the confidence factor.
+The method `checkAnomaly` returns a boolean value if an anomaly exists and the confidence factor.
 
 The amount of considered variables play a central role for applicable detection class:
 
@@ -352,7 +352,7 @@ The amount of considered variables play a central role for applicable detection 
 
   Some basic definition:
   - Preprocessing like normalization, scaling etc. is not made by this library
-  - Multiple learning calls perform a transfer learning and continously learn an existing model
+  - Multiple learning calls perform a transfer learning and continuously learn an existing model
   - The input is always a matrix, each vector represents the dimensionality, multiple vectors represent samples
   - The implementation class name denotes the procedure
     - __Binning__  or __blank__ no binning
@@ -388,22 +388,22 @@ IoT Event Analytics primarily consists of 3 components, except the extensions li
 - __Platform__, containing (exemplary configuration can be found [here name "platform"](../docker/platform/),
   - __Configuration-Manager__ (exemplary configuration can be found [here named "config"](../docker/config/),
   - __MetaData-Manager__ and,
-  - __Instance-Manager__. Often the __Configuration Manager__ is seperatelly deployed, because of the Restful web-service API for __MetaData-Management API__ and __Instance-Management API__.
+  - __Instance-Manager__. Often the __Configuration Manager__ is separately deployed, because of the Restful web-service API for __MetaData-Management API__ and __Instance-Management API__.
 - __Publish-Subscribe system__ which is per default Eclipse Mosquitto (exemplary configuration can be found [here named "mosquitto"](../docker/config/) ). For details on Eclipse Mosquitto please consult the respective Eclipse project documentation.
 
 Generally each component configuration consists of a _config.json_ defining:
 
 - The logging level
-- The platform ID seperating tenants
+- The platform ID separating tenants
 - Broker configuration (wrongly) denoted via a __mqtt__ section
   - A connecting string
   - A namespace (short ns)
 - For the Configuration-Manager also
-  - a talent discovery intervall
+  - a talent discovery interval
   - a web service API definition, mainly the port
 - for the platform also
 
-  - the statically defined meta-model including predefined features (aka datapoints), denoted via the file ```types.json```. The typing defines how the instance behave. Each __segment__ (e.g. "100000" as unique number) of the meta-model contains speacializations, so called __types__. The segment defines __features__ (aka data points) for all related __Types__. Each __Type__ adapt and extend this definition.<br>
+  - the statically defined meta-model including predefined features (aka datapoints), denoted via the file ```types.json```. The typing defines how the instance behave. Each __segment__ (e.g. "100000" as unique number) of the meta-model contains specializations, so called __types__. The segment defines __features__ (aka data points) for all related __Types__. Each __Type__ adapt and extend this definition.<br>
   __Example:__
 
     ```json
@@ -431,7 +431,7 @@ Generally each component configuration consists of a _config.json_ defining:
     }
     ```
 
-  - the statiscally defined unit of measurements, deonted via the file ```uom.json```. The unit of measurement definition forms a tree of conversion factors.<br>
+  - the statistically defined unit of measurements, denoted via the file ```uom.json```. The unit of measurement definition forms a tree of conversion factors.<br>
     Example:
 
     ```json
@@ -468,7 +468,7 @@ The following tools support the development and integration:
 
 # Additional Documentation
 
-Additonal documentation can be found below the topics folder:
+Additional documentation can be found below the topics folder:
 
 - [Components](./topics/iotea-components.md)
 - [Talents](./topics/iotea-talents.md)

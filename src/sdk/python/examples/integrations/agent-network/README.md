@@ -33,7 +33,7 @@ The sequence is:
 
 1. _ChargeRequest_ is received by ChargeApiTalent
 2. ChargeApiTalent send a _ChargeOffer_
-3. _ChargeOffer_ is recieved by ChargingStationTalent and starts the transaction
+3. _ChargeOffer_ is received by ChargingStationTalent and starts the transaction
 3.1. - GetCrendential()
 3.2. - Verify()
 3.3. - PostOfferAccept()

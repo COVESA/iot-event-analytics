@@ -34,7 +34,7 @@
 
 ### Flow
 
-- At the beginning, the platform does not know anything about any talent, so it runs a discovery<br>
+- At the beginning, the platform does not know anything about any talent, so it runs a discovery.<br>
   Thus, you will cyclically receive discovery messages on _Topic A_ with `msgType=2`
 - Your response will have to be sent to the given _returnTopic_ in the message
   - If any error occurs, you will be notified on _Topic B_ with the `msgType=4`
