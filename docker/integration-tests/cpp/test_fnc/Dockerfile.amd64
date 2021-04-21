@@ -1,0 +1,39 @@
+FROM gcc:9 as base_stage
+# TODO Check for smaller / more fitting linux image
+
+ARG INTEGRATION_TEST_PATH
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+
+# Install cmake
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    cmake build-essential
+
+
+FROM base_stage as build_stage
+# Create app directory
+RUN mkdir -p /app
+WORKDIR /app
+
+# Copy C++ SDK sources
+COPY ../src/sdk/cpp ./src/sdk/cpp
+
+# Copy C++ integration-Test sources
+COPY ../${INTEGRATION_TEST_PATH} ./${INTEGRATION_TEST_PATH}
+
+# set the directory for building the cpp app's
+WORKDIR /app/${INTEGRATION_TEST_PATH}
+
+# Compile/Build with cmake tools
+RUN cmake -B build -S .
+RUN cmake --build build --parallel
+
+# TODO for efficiency this runtime layer could be based on alpine for example
+FROM build_stage as runtime_stage
+
+WORKDIR /app/${INTEGRATION_TEST_PATH}/build
+
+CMD ./function_provider_for_test

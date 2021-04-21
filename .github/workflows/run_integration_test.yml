@@ -19,7 +19,7 @@ jobs:
       # Build & run platform.
       # It's run daemonized (docker-compose -d) since a running platform
       # is needed later in the "Run integration tests" step
-      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env up --build -d
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env up --build -d --remove-orphans
 
     - name: Build Node.js SDK
       working-directory: ${{github.workspace}}

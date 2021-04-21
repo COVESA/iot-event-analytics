@@ -1,0 +1,64 @@
+FROM node:15.13.0 as base_stage
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+
+
+
+FROM base_stage as pre-build_stage
+# Create build directory
+RUN mkdir /build
+WORKDIR /build
+
+# use project root level dependencies
+COPY package.json yarn.lock .npmignore ./
+
+# need to copy the whole src directory
+COPY ../src ./src
+
+RUN npm config set strict-ssl false -g
+RUN npm config set maxsockets 5 -g
+
+# Audit all packages for security vulnerabilities - exit early
+RUN yarn audit
+
+
+
+FROM pre-build_stage as build_stage
+# install all dependicies
+RUN yarn
+
+# Create and install latest SDK - platform
+RUN yarn add file:$(npm pack)
+
+
+
+FROM build_stage as tidy-up_stage
+# Shrink node_modules
+RUN curl -sf https://gobinaries.com/tj/node-prune | sh
+
+# Prune node-modules
+RUN node-prune
+
+
+
+FROM node:15.13.0-slim as runtime_stage
+# TODO can add in non-root setup here when needed 
+
+ARG INTEGRATION_TEST_PATH
+
+# Copy in pre-built node modules from base stage
+COPY --from=tidy-up_stage /build .
+
+# Create & set app directory
+RUN mkdir /app
+WORKDIR /app
+
+
+# Copy in test script to run
+COPY ${INTEGRATION_TEST_PATH}/testSetSDK.js .
+
+CMD ["node", "testSetSDK.js"]

@@ -1,0 +1,51 @@
+# STAGE 1: include & install all Build dependencies + OS (TODO local for now) 
+FROM python:3.8-slim-buster as base_stage  
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+
+# Ensures real-time logs and debugging
+ENV PYTHONUNBUFFERED 1
+
+FROM base_stage as pre-build_stage
+
+# Create build directory
+RUN mkdir /build
+WORKDIR /build
+
+# still using a local requirements not root level as we need junit-xml for dev.
+COPY requirements.txt .
+
+# install all project level dependencies
+RUN python -m pip install -r requirements.txt --user
+
+FROM pre-build_stage as build_stage
+
+# need to copy the whole src directory
+COPY ../src ./src
+
+# Create lib directory for building from scratch 
+RUN mkdir -p /build/src/sdk/python/lib
+
+WORKDIR /build/src/sdk/python/pkg
+
+# Build Binary platform library distribution
+RUN python setup.py egg_info --egg-base ../lib bdist_wheel --dist-dir=../lib clean --all
+
+# Now install the latest platform distro just built
+# pip install will take the latest version of boschio.iotea using find-links
+RUN python -m pip install --find-links=file:../lib boschio.iotea --user --force
+
+# STAGE 3: even further speed increase from slim runtime ENV
+FROM build_stage as runtime_stage
+
+ARG INTEGRATION_TEST_PATH
+
+WORKDIR /build/app
+
+COPY ${INTEGRATION_TEST_PATH}/test_set_sdk.py .
+ENTRYPOINT ["python3", "./test_set_sdk.py"]
+

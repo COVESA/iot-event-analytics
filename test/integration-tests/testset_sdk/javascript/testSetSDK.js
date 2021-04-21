@@ -1,7 +1,4 @@
-const { ENCODING_TYPE_STRING } = require('../../../../src/core/constants.js');
-const iotea = require('../../../../src/module.js');
-
-// const iotea = require('boschio.iotea');
+const iotea = require('boschio.iotea');
 
 const {
     TestSetTalent,
@@ -192,6 +189,8 @@ class TestSetSDK extends TestSetTalent {
     }
 }
 
-const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+// TODO Could add some sort of proper configuration here 
+// docker-compose bridged network configuration
+const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
 
 tss.start();

@@ -1,5 +1,4 @@
-const iotea = require('../../../../src/module.js');
-// const iotea = require('boschio.iotea');
+const iotea = require('boschio.iotea');
 
 const {
     FunctionTalent,
@@ -27,6 +26,8 @@ class FunctionProvider extends FunctionTalent {
     }
 }
 
-const fp = new FunctionProvider(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+// TODO Could add some sort of proper configuration here 
+// docker-compose bridged network configuration
+const fp = new FunctionProvider(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
 
 fp.start();

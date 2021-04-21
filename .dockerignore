@@ -1,7 +1,7 @@
 .vscode/
 docs/
 node_modules/
-src/sdk/
+#src/sdk/
 src/tools/
 *.tar
 .git/
