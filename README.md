@@ -148,3 +148,9 @@ For further information how to start the platform using docker-compose see [here
 - List all NodeJS dependencies on stdout `yarn licenses list`
 - List all Python dependencies on stdout `pip-licenses --from=mixed`
   - To have a correct list of packages containing all subpackages needed by this project, make sure that you used a "fresh" environment of conda, where you install the dependencies using `pip install -r requirements.dev.txt`. Otherwise pip will list all packages you have installed in your environment.
+
+## Yarn Scripts
+
+- The jsdoc of iot-event-analytics APIs will be generated in `docs/jsdoc` folder after running `yarn` or `yarn
+  generate-docs`
+- To run the unit tests, use `yarn test`
