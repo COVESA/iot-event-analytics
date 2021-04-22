@@ -8,6 +8,12 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
+
+/**
+ * Module JSON Query.
+ * 
+ * @module jsonQuery
+ */
 const MASKED_FIELD_NAME_MGROUP = 1;
 const FIELD_NAME_MGROUP = 2;
 const SPECIFIC_ARRAY_FIELD_MGROUP = 3;
@@ -15,6 +21,33 @@ const RANGE_MGROUP = 4;
 const START_RANGE_MGROUP = 5;
 const END_RANGE_MGROUP = 6;
 const LABEL_MGROUP = 7;
+
+/**
+ * This is a generator function which applies the _query_ over the json _value_ and returns the result of the query as a
+ * value of the iterated items.
+ *
+ * Examples:
+ * <pre>
+ * query
+ * :<label> > Gets value as is
+ * foo.bar:<label> > Gets nested value 'baz' in { foo: { bar: 'baz' }}
+ * *.bar:<label> > Gets all nested values 'baz1' and 'baz2' in { foo1: { bar: 'baz1' }, foo2: { bar: 'baz2' }}
+ * foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } = 2
+ * foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2, 3
+ * foo.bar[:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
+ * foo.bar[-1]:<label> > Gets last member of array in { foo: { bar: [0, 2, 3] } } > 3
+ * foo.bar[-1:0]:<label> > Gets members of array in reverse order { foo: { bar: [0, 2, 3] } } > 3, 2, 0
+ * 'foo.bar' > Searches for field 'foo.bar' > The point is masked 
+ * </pre>
+ * @param {*} value - A json object.
+ * @param {string} query - Json query.
+ * @param {*} options 
+ * @param {*} regex 
+ * @param {*} normalizedQuery 
+ * @param {*} parent 
+ * @param {*} field 
+ * @returns an iterator.
+ */
 function* jsonQuery(value, query = '', options = { modify: v => v, limit: -1, $cnt: 0 }, regex = __createRegex(), normalizedQuery = '', parent = null, field = null) {
     if (parent === null && field === null) {
         // Initialize $cnt on first function call
@@ -169,6 +202,14 @@ function __wrapIndex(idx, arr) {
     return idx;
 }
 
+/**
+ * @function [jsonQuery.first]
+ * Gets the first match of the applied _query_ against the json _data_ object.
+ * @param {*} data - Json object to be filtered.
+ * @param {string} query - Query to apply against the _data_.
+ * @param {*} [options = {}] - Options utilizing the matching.
+ * @returns an object with properties: _value_, _label_, and _query_.
+ */
 jsonQuery.first = (data, query, options = {}) => {
     for (const result of jsonQuery(data, query, Object.assign(options, { limit: 1 }))) {
         return result;
@@ -177,6 +218,22 @@ jsonQuery.first = (data, query, options = {}) => {
     throw new Error(`No match found for query ${query}`);
 };
 
+/**
+ * @function [jsonQuery.updateFirst]
+ * Applies the _query_ against the _data_ and replaces the first match of the query with the passed _value_.
+ * For example:
+ * <pre>
+ *  const json = {"Feature": {"MyFeature": "value"}};
+ *  const query = "Feature.MyFeature";
+ *  console.log(jsonQuery.updateFirst(json, query, "newValue")); 
+ *  The result is:
+ *  { Feature: { MyFeature: 'newValue' } }
+ * </pre>
+ * @param {*} data - Json object.
+ * @param {string} query - Query to apply against the _data_.
+ * @param {*} value - New value to replace the filtered contents with.
+ * @returns A json object: the _data_ with replaced value.
+ */
 jsonQuery.updateFirst = (data, query, value) => {
     jsonQuery.first(data, query, {
         modify: (v, p, f) => {
@@ -187,6 +244,14 @@ jsonQuery.updateFirst = (data, query, value) => {
     return data;
 };
 
+/**
+ * @function [jsonQuery.updateAll]
+ * Applies the _query_ against the _data_ and replaces all matches of the query with the passed _value_.
+ * @param {*} data - Json object.
+ * @param {string} query - Query to apply against the _data_.
+ * @param {*} value - New value to replace the filtered contents with.
+ * @returns A json object: the _data_ with replaced value.
+ */
 jsonQuery.updateAll = (data, query, value) => {
     Array.from(jsonQuery(data, query, {
         modify: (v, p, f, q) => {

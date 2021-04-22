@@ -98,3 +98,4 @@ We won't implement anything which tailors IoT Event Analytics to be an exact sol
 - As of readme document, these have to be called README.md
 - We are linting our files using markdownlint as VS Code Extension. The configuration can be found in the file _.markdownlintrc_ and must remain unchanged
   - To have a better understanding about the different rules, see [here](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md) for further information
+- For javascript code documentation we use jsdoc with enabled markdown styles

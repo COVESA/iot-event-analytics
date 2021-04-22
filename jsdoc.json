@@ -1,0 +1,24 @@
+{
+    "plugins": [
+        "plugins/markdown"
+    ],
+    "source": {
+        "include": [
+            "src/core/util"
+        ],
+        "includePattern": ".js$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": true,
+        "default": {
+            "useLongnameInNav":true
+        }
+    },
+    "opts": {
+        "recurse": true,
+        "destination": "./docs/jsdoc"
+    },
+    "sourceType": "module"
+}

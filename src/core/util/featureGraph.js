@@ -8,6 +8,11 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
+/**
+ * Module Feature Graph.
+ * 
+ * @module featureGraph
+ */
 const {
     ANY_FEATURE,
     ALL_TYPES
@@ -23,7 +28,14 @@ class FeatureGraphNode {
     }
 }
 
-module.exports = class FeatureGraph {
+/**
+ * The class represents a graph of nodes. It provides methods to add dependencies between nodes, to record the state of
+ * the graph (freeze), to restore the previously saved state (melt), to detect cycles within the graph.
+ */
+class FeatureGraph {
+    /**
+     * Constructs an instance of FeatureGraph with no nodes.
+     */
     constructor() {
         this.ids = [];
         this.nodes = {};
@@ -31,6 +43,10 @@ module.exports = class FeatureGraph {
         this.logger = new Logger('FeatureGraph');
     }
 
+    /**
+     * Stores the current state of the graph. Calling the {@link module:featureGraph~FeatureGraph#melt} method restores
+     * the graph to the last frozen state. Calling freeze() again overwrites the previously frozen state.
+     */
     freeze() {
         const state = {
             nodes: this.ids.reduce((acc, id) => {
@@ -50,6 +66,10 @@ module.exports = class FeatureGraph {
         this.state = state;
     }
 
+    /**
+     * Restores the state of the graph to the previously frozen state. If
+     * {@link module:featureGraph~FeatureGraph#freeze} had not been called before, the method does nothing. 
+     */
     melt() {
         // Go back to the last frozen state if available
         if (this.state === null) {
@@ -62,6 +82,13 @@ module.exports = class FeatureGraph {
         this.state = null;
     }
 
+    /**
+     * Adds a dependency between two nodes in the graph. If the nodes are not existing in the graph yet, they will be
+     * added.
+     *
+     * @param {*} from - Id of the source node.
+     * @param {*} to - Id of the destination node.
+     */
     addDependency(from, to) {
         let fromNode = this.nodes[from];
 
@@ -84,6 +111,17 @@ module.exports = class FeatureGraph {
         }
     }
 
+    /**
+     * Checks if the dependencies of the graph form cycles. For example:
+     * ```
+     *   featureGraph.addDependency('1', '2');
+     *   featureGraph.addDependency('2', '3');
+     *   featureGraph.addDependency('3', '1');
+     *   console.log(featureGraph.containsCycles());
+     * ```
+     * will result in _true_.
+     * @returns {boolean} True if there is a cyclic dependency in the graph.
+     */
     containsCycles() {
         const paths = this.getAllPaths();
 
@@ -149,6 +187,20 @@ module.exports = class FeatureGraph {
         return this.getAllPaths().map(path => path.join('->')).join('\n');
     }
 
+    /**
+     * Gets the longest paths in the graph. For example:
+     * ```
+     *    featureGraph.addDependency('1', '2');
+     *    featureGraph.addDependency('2', '3');
+     *    featureGraph.addDependency('3', '4');
+     *    console.log(featureGraph.getAllPaths());
+     * ```
+     * will result in [ [ '1', '2', '3', '4' ] ].
+     * <p>
+     * In cycling paths, the nodes are traversed only once.
+     * 
+     * @returns {Array<Array>} - An array of paths.
+     */
     getAllPaths() {
         let paths = [];
 
@@ -173,7 +225,7 @@ module.exports = class FeatureGraph {
                 return paths;
             }
 
-            path = [ id ];
+            path = [id];
         }
 
         const node = this.nodes[path[path.length - 1]];
@@ -191,4 +243,6 @@ module.exports = class FeatureGraph {
 
         return paths;
     }
-};
+}
+
+module.exports = FeatureGraph;

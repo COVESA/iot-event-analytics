@@ -13,8 +13,25 @@ const mqtt = require('mqtt');
 
 const Logger = require('./logger');
 const JsonModel = require('./jsonModel');
+/**
+ * MQTT Client Module.
+ * 
+ * @module mqttClient
+ */
 
+/**
+ * The class represents the MQTT communication layer between the platform components.
+ */
 class MqttProtocolAdapter {
+    /**
+     * Constructs an instance of the MqttProtocolAdapter based on a json config. Creates an internal MQTT client to be
+     * used by {@link module:mqttClient~MqttProtocolAdapter#publish} and
+     * {@link module:mqttClient~MqttProtocolAdapter#subscribe} methods.
+     *
+     * @param {*} config - Json object, which carries all settings necessary to establish connection to the broker as
+     * 'brokerUrl', 'mqtt5Only'  and the 'topicNamespace' prefix, prepended to publish and subscription topics.
+     * @param {string} displayName - Descriptive name to identify the module, which uses this MqttProtocolAdapter.
+     */
     constructor(config, displayName = null) {
         this.client = null;
 
@@ -40,6 +57,14 @@ class MqttProtocolAdapter {
         }
     }
 
+    /**
+     * Publishes a message to the underlying MQTT Broker. The topic is prefixed by 'topicNamespace' from the configuration.
+     * 
+     * @param {string} topic  - Topic to publish the message to.
+     * @param {string} message - Message to be published.
+     * @param {*} publishOptions - Connection options.
+     * @returns a promise.
+     */
     publish(topic, message, publishOptions = {}) {
         // convert PublishOptions to MqttPublishOptions, which are directly sent as argument to client.publish
         const mqttPublishOptions = {
@@ -49,14 +74,35 @@ class MqttProtocolAdapter {
         return this.client.publish([ this.__prefixTopicNs(topic) ], message, mqttPublishOptions, publishOptions.stash);
     }
 
-    subscribe(topic, callback) {
+    /**
+     * Subscribes for messages with a specified topic to the MQTT Broker. The topic is prefixed by 'topicNamespace'
+     * from the configuration.
+     *
+     * @param {string} topic - Topic to subscribe for.
+     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @returns a promise.
+     */    
+     subscribe(topic, callback) {
         return this.client.subscribe(this.__prefixTopicNs(topic), callback);
     }
 
+    /**
+     * Creates a shared subscription to the MQTT Broker by constructing a topic '$share/\<group\>/\<topicNamespace\>/\<topic\>'.
+     *
+     * @param {string} group - Group segment of the shared subscription topic.
+     * @param {string} topic - Topic to subscribe for.
+     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @returns a promise.
+     */    
     subscribeShared(group, topic, callback) {
         return this.client.subscribe(`$share/${group}/${this.__prefixTopicNs(topic)}`, callback);
     }
 
+    /**
+     * Gets the unique id that identifies this MqttClient among other MqttClient instances.
+     * 
+     * @returns {string} - The url to the broker.
+     */
     getId() {
         return this.brokerUrl;
     }
@@ -85,7 +131,24 @@ MqttProtocolAdapter.createDefaultConfiguration = function createDefaultConfigura
     };
 };
 
+
+
+
+/**
+ * Instances of this class are used to establish connection to an MQTT Broker, to publish and subscribe for messages. 
+ */
 class MqttClient {
+    /**
+     * Creates an instance of MqttClient with the passed parameters.
+     *
+     * @param {string} brokerUrl - URL to connect to the broker, e.g. mqtt://mosquitto-local:1883.
+     * @param {string} [topicNs = null] - Topic prefix prepended to topics in MqttClient subscribe, unsubscribe and
+     * publish methods. Must end with a slash.
+     * @param {boolean} [checkMqtt5Compatibility = true] - Indicates if an MQTT 5 compatibility check will be performed
+     * upon connection to the broker.
+     * @param {object} [logger = null] - a Logger object to send log messages to.
+     * @param {string} clientId - Client Id to establish connection with. If missing, the MqttClient will generate one.
+     */
     constructor(brokerUrl, topicNs = null, checkMqtt5Compatibility = true, logger = null, clientId = MqttClient.createClientId('MqttClient')) {
         if (logger === null) {
             logger = new Logger(clientId);
@@ -120,6 +183,14 @@ class MqttClient {
         this.isMqtt5Compatible = false;
     }
 
+    /**
+     * Publishes a message under multiple topics to the MQTT Broker. The topics are prefixed by this instance _topicNs_.
+     *
+     * @param {string|string[]} topics - Topic to publish the message to.
+     * @param {string} message - Message to be published.
+     * @param {*} [options = {}] options - Connection options.
+     * @returns a promise for chaining.
+     */    
     publish(topics, message, mqttPublishOptions = {}, stash = true) {
         if (this.clientPromise && this.clientPromise.done === false && stash === false) {
             // MQTT client is offline. Do not wait until it is online again.
@@ -136,6 +207,15 @@ class MqttClient {
         return Promise.all(topics.map(topic => this.__publish(topic, message, mqttPublishOptions)));
     }
 
+    /**
+     * Publishes a json message to the MQTT Broker. The topics are prefixed by _topicNs_. Only valid json messages are
+     * published.
+     *
+     * @param {string|string[]} topics - Topic to publish the message to.
+     * @param {*} json - JSON object to publish as a message.
+     * @param {*} [options = {}] options - Connection options.
+     * @returns a promise for chaining.
+     */    
     publishJson(topics, json, mqttPublishOptions = {}, stash) {
         // Check if it's actually json, which should be sent
         try {
@@ -147,6 +227,14 @@ class MqttClient {
         }
     }
 
+    /**
+     * Subscribes for messages with a specified topic to the MQTT Broker. The topic is prefixed by the
+     * predefined _topicNS_ of this MqttClient instance.
+     *
+     * @param {string} topic - Topic to subscribe for.
+     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @returns a promise.
+     */    
     subscribe(topic, cb) {
         return this.__getClient()
             .then(client => {
@@ -187,6 +275,15 @@ class MqttClient {
             });
     }
 
+    /**
+     * Subscribes for json messages with a specified topic to the MQTT Broker. The topic is prefixed by the predefined
+     * _topicNS_ of this MqttClient object. If a non-json message is received from the subscription, an error will be
+     * logged and the message will not be forwarded to the callback.
+     *
+     * @param {string} topic - Topic to subscribe for.
+     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @returns a promise.
+     */
     subscribeJson(topic, cb) {
         return this.subscribe(topic, (msgString, topic) => {
             try {
@@ -202,7 +299,17 @@ class MqttClient {
         });
     }
 
+    /**
+     * Unsubscribes for a list of topics. Each topic is prefixed with the predefined _topicNS_ of this MqttClient
+     * instance. 
+     *
+     * @param {string|string[]} topics - Topic(s) to unsubscribe for.
+     * @returns a promise.
+     */
     unsubscribe(topics) {
+        if (!Array.isArray(topics)) {
+            topics = [ topics ];
+        }
         return this.__getClient()
             .then(client => {
                 return new Promise((resolve, reject) => {
@@ -223,6 +330,12 @@ class MqttClient {
             });
     }
 
+    /**
+     * Disconnects the MQTT client from the broker.
+     *
+     * @param {boolean} [force = true] - Do not wait for acknowledgement.
+     * @returns a promise.
+     */
     disconnect(force = true) {
         return this.__getClient()
             .then(client => {
@@ -284,7 +397,7 @@ class MqttClient {
                 return new Promise(resolve => {
                     const onConnect = () => {
                         client.off('connect', onConnect);
-                        this.logger.debug('MQTT connection sucessfully established');
+                        this.logger.debug('MQTT connection successfully established');
                         resolve(client);
                     };
 
@@ -364,7 +477,7 @@ class MqttClient {
 
             const timeout = setTimeout(() => {
                 client.off('message', onMessage);
-                reject(new Error(`Probe on topic ${publishTo} was not received on topic ${subscribeTo}. An MQTT5 compilant broker is required`));
+                reject(new Error(`Probe on topic ${publishTo} was not received on topic ${subscribeTo}. An MQTT5 compliant broker is required`));
             }, timeoutMs);
 
             client.subscribe(this.__prefixTopicNs(subscribeTo), {}, (err) => {
@@ -394,6 +507,14 @@ class MqttClient {
     }
 }
 
+/**
+ * Having a prefix _topicNs_ and a _topic_, constructs a new MQTT topic. In case the original topic is a shared one,
+ * having the '$share' prefix, _topicNs_ is inserted at the right place between $share and _topic_.
+ *
+ * @param {string} topic - Topic to be prefixed.
+ * @param {string} topicNs - Prefix to be inserted.
+ * @returns {string}
+ */
 MqttClient.prefixTopicNs = function prefixTopicNs(topic, topicNs) {
     if (topicNs === null) {
         return topic;
@@ -402,6 +523,13 @@ MqttClient.prefixTopicNs = function prefixTopicNs(topic, topicNs) {
     return topic.replace(new RegExp(`^(\\$share\\/[^\\/]+\\/)?(?:${topicNs})?(.+)$`), `$1${topicNs}$2`);
 };
 
+/**
+ * Creates a unique client id to be used when connecting to the MQTT Broker. The id is constructed from a generated UUID
+ * string and prefixed by the optionally passed <prefix> parameter.
+ *
+ * @param {string} [prefix = null] - Prefix to be prepended.
+ * @returns {string}
+ */
 MqttClient.createClientId = function createClientId(prefix = null) {
     const uniquePart = uuid.v4().substring(0, 8);
 
@@ -412,7 +540,21 @@ MqttClient.createClientId = function createClientId(prefix = null) {
     return [prefix, uniquePart].join('-');
 };
 
+/**
+ * Utility class in which the MQTT client Id includes the readable name of the MqttBroker instance.
+ */
 class NamedMqttClient extends MqttClient {
+    /**
+     * Creates an instance of NamedMqttClient with the passed parameters.
+     *
+     * @param {string} name - A readable name to identify, which module uses this NamedMqttBroker instance.
+     * @param {string} brokerUrl - URL to connect to the broker, e.g. mqtt://mosquitto-local:1883.
+     * @param {string} topicNs - Topic prefix prepended to topics in {@link module:mqttClient~MqttClient#subscribe},
+     * {@link module:mqttClient~MqttClient#unsubscribe} and {@link module:mqttClient~MqttClient#publish} methods.
+     * @param {boolean} checkMqtt5Compatibility - Indicates if an MQTT 5 compatibility check will be performed upon
+     * connection to the broker.
+     * @param {string} __clientId - An optional paramter. If missing a client Id will be generated.
+     */
     constructor(name, brokerUrl, topicNs, checkMqtt5Compatibility, __clientId = MqttClient.createClientId(`${name}.MqttClient`)) {
         super(brokerUrl, topicNs, checkMqtt5Compatibility, new Logger(__clientId), __clientId);
     }
