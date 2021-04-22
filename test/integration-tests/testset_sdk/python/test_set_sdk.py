@@ -7,21 +7,27 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
-
 import asyncio
 import logging
+
+# Needed for protocol Gateway configuration file
+# TODO: add dynamic path for directory
+# import os
+import json
+
 from iotea.core.protocol_gateway import ProtocolGateway
 from iotea.core.util.mqtt_client import MqttProtocolAdapter
 
 from iotea.core.talent_test import TestSetTalent
 from iotea.core.util.logger import Logger
+ 
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
 
 class TestSetSDK(TestSetTalent):
-    def __init__(self, pg_config):
-        super(TestSetSDK, self).__init__('testSet-sdk-py', pg_config)
+    def __init__(self, protocol_gateway_config):
+        super(TestSetSDK, self).__init__('testSet-sdk-py', protocol_gateway_config)
 
         # Register Tests
 
@@ -38,7 +44,7 @@ class TestSetSDK(TestSetTalent):
         self.register_test('echoDeepList', [1, [2, [3, [4, [5]]]]], self.test_echo_deep_list, 2000)
 
         self.talent_dependencies.add_talent('function-provider-py')
-
+        
     def callees(self):
         return ['function-provider-py.echo']
 
@@ -114,14 +120,16 @@ class TestSetSDK(TestSetTalent):
                                  500)
         return result
 
+def read_config(abs_path):
+    with open(abs_path, mode='r', encoding='utf-8') as config_file:
+        return json.loads(config_file.read())
 
 async def main():
-    mqtt_config = MqttProtocolAdapter.create_default_configuration()
-    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+    # TODO: add dynamic path for directory
+    pg_config = read_config('../../config/tests/python/config.json')
 
-    talent = TestSetSDK(pg_config)
-    await talent.start()
-
+    test_set = TestSetSDK(pg_config['protocolGateway'])
+    await test_set.start()
 
 if __name__ == '__main__':
     LOOP = asyncio.get_event_loop()

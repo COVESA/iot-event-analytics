@@ -1,11 +1,11 @@
-version: '3.5'
+version: '3.6'
 services:
   
   test_set_js:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.4.0"
+        iotea.iotea.version: "0.5.0"
       dockerfile: ./docker/integration-tests/javascript/test_set/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
@@ -18,8 +18,21 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.4.0"
+        iotea.iotea.version: "0.5.0"
       dockerfile: ./docker/integration-tests/javascript/test_fnc/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/javascript
+    networks:
+      - iotea-platform-network
+
+  test_events_js:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: ./docker/integration-tests/javascript/test_events/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}

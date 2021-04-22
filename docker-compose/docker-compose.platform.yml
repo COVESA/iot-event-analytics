@@ -5,7 +5,7 @@ services:
       context: ..
       labels:
         iotea.platform.version: "0.5.0"
-      dockerfile: docker/config/Dockerfile.amd64
+      dockerfile: docker/config/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
@@ -24,7 +24,7 @@ services:
       context: ..
       labels:
         iotea.platform.version: "0.5.0"
-      dockerfile: docker/pipeline/Dockerfile.amd64
+      dockerfile: docker/pipeline/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}

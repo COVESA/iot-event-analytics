@@ -1,0 +1,25 @@
+{
+    "loglevel": "VERBOSE",
+    "platformId": "integration-tests",
+    "talentDiscoveryIntervalMs": 1000,
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "brokerUrl": "mqtt://mosquitto:1883"
+                }
+            }
+        ]
+    },
+    "api": {
+        "port": 8080,
+        "instance": {},
+        "metadata": {}
+    }
+}

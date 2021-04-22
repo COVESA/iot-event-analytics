@@ -7,28 +7,40 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
-
 import asyncio
 import logging
 
-from iotea.core.talent_test import TestRunnerTalent
-from iotea.core.util.logger import Logger
+# Needed for protocol Gateway configuration file
+# TODO: add dynamic path for directory
+# import os
+import json
+
 from iotea.core.protocol_gateway import ProtocolGateway
 from iotea.core.util.mqtt_client import MqttProtocolAdapter
+
+from iotea.core.talent_test import TestRunnerTalent
+from iotea.core.util.logger import Logger
 
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
 
 class TestRunner(TestRunnerTalent):
-    def __init__(self, pg_config):
-        super().__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js'], pg_config)
+    def __init__(self, protocol_gateway_config):
+        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py'], ['testSet-sdk-js'], ['testSet-sdk-cpp'], protocol_gateway_config)
+
+def read_config(abs_path):
+    with open(abs_path, mode='r', encoding='utf-8') as config_file:
+        return json.loads(config_file.read())
 
 async def main():
-    mqtt_config = MqttProtocolAdapter.create_default_configuration()
-    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+    # TODO: add dynamic path for directory
+    #pg_config = read_config(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json'))
+    
+    # TODO: make this local vs container setup configurable with ifdef
+    pg_config = read_config('../../config/tests/python/config.json')
 
-    test_runner = TestRunner(pg_config)
+    test_runner = TestRunner(pg_config['protocolGateway'])
     await test_runner.start()
 
 if __name__ == '__main__':

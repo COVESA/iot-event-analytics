@@ -1,0 +1,42 @@
+FROM python:3.8-slim-buster as base_stage  
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+
+# Ensures real-time logs and debugging
+
+#RUN python -m venv /opt/venv
+#ENV PATH="/opt/venv/bin:$PATH"
+
+
+# > > > > > > > > > > > > > > > > > > > > > STAGE 1: 
+FROM base_stage as build_stage
+# Copy in python SDK source
+COPY /src/sdk/python ./src/sdk/python
+
+# Create build directory
+RUN mkdir /build
+WORKDIR /build
+
+RUN python -m pip install --upgrade pip --no-cache-dir
+
+# this is needed for building iotea python SDK 
+RUN python -m pip install wheel --no-cache-dir
+
+# Build the latest iotea python SDK - see setup.py for details
+RUN python -m pip install /src/sdk/python/src/ --force --no-cache-dir
+
+
+# > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
+FROM build_stage as runtime_stage
+ARG INTEGRATION_TEST_PATH
+
+WORKDIR /build/app
+
+COPY ${INTEGRATION_TEST_PATH}/test_set_sdk.py .
+
+ENTRYPOINT ["python", "./test_set_sdk.py"]
+

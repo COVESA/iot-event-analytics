@@ -22,10 +22,12 @@ using iotea::core::Client;
 using iotea::core::ProtocolGateway;
 using iotea::test::TestSetTalent;
 
-static constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
-static constexpr char TALENT_NAME[] = "testSet-sdk-cpp";
-static constexpr char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
-static constexpr char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
+//static const char SERVER_ADDRESS[] = "tcp://localhost:1883";
+static const char SERVER_ADDRESS[] = "tcp://mosquitto:1883";
+
+static const char TALENT_NAME[] = "testSet-sdk-cpp";
+static const char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
+static const char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
 class TestSetSDK : public TestSetTalent {
    public:

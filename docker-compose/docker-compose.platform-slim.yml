@@ -1,0 +1,19 @@
+version: "3.6"
+services:
+  platform:
+    build:
+      context: ..
+      labels:
+        iotea.platform.version: "0.5.0"
+      dockerfile: docker/platform/Dockerfile.slim.amd64
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+    volumes:
+      - type: bind
+        source: "${PLATFORM_CONFIG_DIR-../docker/platform/config-slim}"
+        target: "/app/docker/platform/config"
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

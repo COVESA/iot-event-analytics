@@ -7,7 +7,8 @@
 //
 // SPDX-License-Identifier: MPL-2.0
 //##############################################################################
-
+// uncomment for local developer setup
+// const iotea = require('../../../../src/module.js');
 const iotea = require('boschio.iotea');
 
 const {
@@ -17,23 +18,26 @@ const {
 
 const {
     Logger,
-    MqttProtocolAdapter
+    MqttProtocolAdapter,
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
+//process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
 class TestRunner extends TestRunnerTalent {
-    constructor(protocolGatewayConfig) {
+    constructor(name, testSetList, protocolGatewayConfig) {
         // Define your testSetTalent list and set via super constructor
         super('testRunner-js', ['testSet-sdk-js', 'testSet-sdk-py', 'testSet-sdk-cpp'], protocolGatewayConfig);
 
         // you can run singular tests say for development
-        //super('testRunner-js', ['testSet-sdk-js'], protocolGatewayConfig);
+        //super('testRunner-js', ['testSet-sdk-py'], config.get('protocolGateway'));
     }
 }
 
-// TODO Could add some sort of proper configuration here 
-// docker-compose bridged network configuration
-const runner = new TestRunner(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
+// reads config for all integration-test
+pg_config = config.get('protocolGateway');
+const runner = new TestRunner(pg_config);
 
 runner.start();

@@ -1,11 +1,11 @@
-version: '3.5'
+version: '3.6'
 services:
   
   test_set_py:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.4.0"
+        iotea.iotea.version: "0.5.0"
       dockerfile: docker/integration-tests/python/test_set/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
@@ -18,7 +18,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.4.0"
+        iotea.iotea.version: "0.5.0"
       dockerfile: docker/integration-tests/python/test_fnc/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}

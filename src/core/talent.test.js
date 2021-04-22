@@ -80,7 +80,7 @@ class TalentDependencies {
     }
 
     check(talentId) {
-        return this.talendDependencies.get(talentId);
+        return this.talentDependencies.get(talentId);
     }
 
     checkAll() {

@@ -1,6 +1,6 @@
-const { DEFAULT_TYPE, VALUE_TYPE_RAW } = require('../../../../src/core/constants.js');
-const iotea = require('../../../../src/module.js');
-// const iotea = require('boschio.iotea');
+// local developer relative setup
+// const iotea = require('../../../../src/module.js');
+const iotea = require('boschio.iotea');
 
 const {
     FunctionTalent,
@@ -9,6 +9,10 @@ const {
     Rule,
     OpConstraint
 } = iotea;
+
+const {
+    VALUE_TYPE_RAW
+} = iotea.constants;
 
 const {
     Logger,
@@ -45,8 +49,8 @@ class EventTester extends FunctionTalent {
     }
 }
 
-const talent1 = new EventTester('event-tester-1-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
-const talent2 = new EventTester('event-tester-2-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+const talent1 = new EventTester('event-tester-1-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
+const talent2 = new EventTester('event-tester-2-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
 
 talent1.start();
 talent2.start();

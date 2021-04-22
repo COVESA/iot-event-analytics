@@ -1,3 +1,14 @@
+//##############################################################################
+// Copyright (c) 2021 Bosch.IO GmbH
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// SPDX-License-Identifier: MPL-2.0
+//##############################################################################
+// uncomment for local developer setup
+// const iotea = require('../../../../src/module.js');
 const iotea = require('boschio.iotea');
 
 const {
@@ -7,13 +18,15 @@ const {
 
 const {
     Logger,
-    MqttProtocolAdapter
+    MqttProtocolAdapter,
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class FunctionProvider extends FunctionTalent {
-    constructor(protocolGatewayConfig) {
+    constructor(name, protocolGatewayConfig) {
         super('function-provider-js', protocolGatewayConfig);
 
         // Register Functions
@@ -26,8 +39,10 @@ class FunctionProvider extends FunctionTalent {
     }
 }
 
-// TODO Could add some sort of proper configuration here 
-// docker-compose bridged network configuration
-const fp = new FunctionProvider(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
+// TODO: make this local vs container setup configurable with ifdef
+pg_config = config.get('protocolGateway');
+const fp = new FunctionProvider(pg_config);
+
+//const runner = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://localhost:1883") ]));
 
 fp.start();

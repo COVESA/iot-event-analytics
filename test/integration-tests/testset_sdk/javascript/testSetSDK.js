@@ -1,3 +1,14 @@
+//##############################################################################
+// Copyright (c) 2021 Bosch.IO GmbH
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// SPDX-License-Identifier: MPL-2.0
+//##############################################################################
+// local developer relative setup
+// const iotea = require('../../../../src/module.js');
 const iotea = require('boschio.iotea');
 
 const {
@@ -7,10 +18,12 @@ const {
 
 const {
     Logger,
-    MqttProtocolAdapter
+    MqttProtocolAdapter,
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class TestSetSDK extends TestSetTalent {
     constructor(protocolGatewayConfig) {
@@ -189,8 +202,10 @@ class TestSetSDK extends TestSetTalent {
     }
 }
 
-// TODO Could add some sort of proper configuration here 
-// docker-compose bridged network configuration
-const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
+// TODO: make this local vs container setup configurable with ifdef
+pg_config = config.get('protocolGateway');
+const tss = new TestSetSDK(pg_config)
+
+//const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://localhost:1883") ]));
 
 tss.start();
