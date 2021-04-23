@@ -1,0 +1,22 @@
+{
+    "id":"test-talent",
+    "config":{
+       "outputs": {},
+       "rules":{
+          "excludeOn": null,
+          "rules":[
+             {
+                "feature":"temp",
+                "path":"",
+                "op":1,
+                "value": null,
+                "valueType":0,
+                "typeSelector":"kuehlschrank",
+                "instanceIdFilter":".*",
+                "limitFeatureSelection":true
+             }
+          ],
+          "type":"and"
+       }
+    }
+ }
