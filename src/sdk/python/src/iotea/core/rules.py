@@ -202,17 +202,17 @@ class Rules(Rule):
         regex = re.compile('^([^\.]+)\.([^\.]+)(?:\.([^\.]+))?$')
 
         for type_feature_selector in self.exclude_on:
-            matches = regex.match(self.type_selector)
+            matches = regex.match(type_feature_selector)
 
             if matches is None:
                 raise Exception(f'Invalid typeFeature selector "{type_feature_selector}" found in excludeOn constraints in given Rules')
 
             if matches[3] is not None:
                 if matches[1] != DEFAULT_TYPE:
-                    raise Exception(f'Invalid typeFeature selector "{typeFeatureSelector}". Has to be default type')
+                    raise Exception(f'Invalid typeFeature selector "{type_feature_selector}". Has to be default type')
 
                 if matches[2] == '*':
-                    raise Exception(f'Talent id has to be defined in typeFeature selector "{typeFeatureSelector}"')
+                    raise Exception(f'Talent id has to be defined in typeFeature selector "{type_feature_selector}"')
 
     def add(self, rules):
         if isinstance(rules, list):

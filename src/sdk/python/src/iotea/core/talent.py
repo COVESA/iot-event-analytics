@@ -242,6 +242,9 @@ class Talent(IOFeatures):
         deferred_call.resolve(value)
 
     async def __on_discover(self, ev, topic):
+        await self.mqtt_client.publish_json(ev['returnTopic'], self.__create_discovery_response())
+
+    def __create_discovery_response(self):
         rules = self._get_rules()
 
         def __on_rule(rule):
@@ -253,7 +256,7 @@ class Talent(IOFeatures):
         self.logger.info('{} depends on the following feature(s):'.format(self.id))
         rules.for_each(__on_rule)
 
-        discovery_response = {
+        return {
             'id': self.id,
             'config': {
                 **self.config,
@@ -261,8 +264,6 @@ class Talent(IOFeatures):
                 'rules': rules.save()
             }
         }
-
-        await self.mqtt_client.publish_json(ev['returnTopic'], discovery_response)
 
     def _get_rules(self):
         """

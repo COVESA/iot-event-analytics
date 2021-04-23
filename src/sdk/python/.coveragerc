@@ -1,0 +1,5 @@
+[html]
+directory = reports/coverage
+
+[xml]
+output = reports/coverage/cobertura-coverage.xml

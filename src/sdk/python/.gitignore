@@ -1,2 +1,4 @@
+.pytest_cache
+.coverage
 **__pycache__
 **/*.egg-info

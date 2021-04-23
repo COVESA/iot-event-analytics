@@ -73,7 +73,7 @@ def __int_range(start, end):
     return rng
 
 def __check_if_match_exists_at(match, index):
-    return match[index] is not ''
+    return match[index] != ''
 
 # pylint: disable=unused-argument
 def __replace_value_at_path(replacement, value, parent, field, query):
@@ -124,10 +124,10 @@ def json_query(value, query='', options=None, match_index=0, normalized_query=''
         if not __check_if_match_exists_at(match, MASKED_FIELD_NAME_MGROUP):
             field_match = match[FIELD_NAME_MGROUP]
 
-        if field_match is not '':
+        if field_match != '':
             if field_match == '*':
-                for key in value.keys():
-                    json_query(value[key], query, options, i + 1, '{}.{}'.format(normalized_query, __mask_key(key)), value, key, matches, result)
+                for key in value:
+                    json_query(value[key], query, options, i + 1, f'{normalized_query}.{__mask_key(key)}', value, key, matches, result)
 
                 return result
 
@@ -148,7 +148,7 @@ def json_query(value, query='', options=None, match_index=0, normalized_query=''
 
         if __check_if_match_exists_at(match, SPECIFIC_ARRAY_FIELD_MGROUP):
             idx = __wrap_index(__parse_int(match[SPECIFIC_ARRAY_FIELD_MGROUP]), value)
-            normalized_query = '{}[{}]'.format(normalized_query, idx)
+            normalized_query = f'{normalized_query}[{idx}]'
             parent = value
             field = idx
             value = value[idx]
@@ -164,7 +164,7 @@ def json_query(value, query='', options=None, match_index=0, normalized_query=''
         end_range = __wrap_index(__parse_int(match[END_RANGE_MGROUP], len(value) - 1), value)
 
         for idx in __int_range(start_range, end_range):
-            json_query(value[idx], query, options, match_index + 1, '{}[{}]'.format(normalized_query, idx), value, idx, matches, result)
+            json_query(value[idx], query, options, i + 1, '{}[{}]'.format(normalized_query, idx), value, idx, matches, result)
 
         return result
 
