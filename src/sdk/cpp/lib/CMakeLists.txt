@@ -42,6 +42,7 @@ add_library(iotea_sdk_cpp
     src/schema.cpp
     src/talent_test.cpp
     src/mqtt_client.cpp
+    src/jsonquery.cpp
 )
 target_code_coverage(iotea_sdk_cpp)
 
