@@ -10,7 +10,7 @@
 
 # IoT Event Analytics Feature Engineering
 
-80% of the [Machine Learning](./machine-learning.md) work is typically spend for data sourcing and feature engineering. IoT Event Analytics does the work for you.
+80% of the [Machine Learning](./machine-learning.md) work is typically spent on data sourcing and feature engineering. IoT Event Analytics does the work for you.
 
 ## The ingestion
 
@@ -18,9 +18,9 @@ Due to the fact that IoT Event Analytics internally has a harmonized event repre
 
 ## The encoding
 
-Enconding data is about bringing data into a different representation, having huge impact on content semantic and model performance.
+Encoding data is about bringing data into a different representation, having a huge impact on content semantic and model performance.
 
-For each data point (aka signal) can be encoded in the following manner:
+Each data point (aka signal) can be encoded in the following manner:
 
 - "through", for pre-encoded values in the range [0..1]
 - "minmax", for numeric values having a minimum and maximum value range e.g. temperature, speed

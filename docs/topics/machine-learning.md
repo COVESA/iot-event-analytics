@@ -12,7 +12,7 @@
 
 The foundation of the machine learning approaches is the given matrix/ tensor encoding of IoT Event Analytics. For further details compare the [feature engineering part](./iotea-feature-engineering.md)
 
-With a given matrix it is quite easy to determine the identity. Identity is one core pillar of machine learning, because it help to determine the distance and due to that do respective optimization steps (loss or gain based).
+With a given matrix it is quite easy to determine the identity. Identity is one core pillar of machine learning, because it helps to determine the distance and due to that do respective optimization steps (loss or gain based).
 
 ## Identity
 
@@ -30,16 +30,16 @@ In addition to the identity arithmetical operations help to easily applied domai
 
 ### Connectivity
 
-Besides the identity and arithmetic specific distance functions could be activated on __feature__ level. For each feature a separate neural networks (NN) is learned. The NN topology is (pre-) determined by IoT Event Analytics. This feature e.g. helps to solve __feature__ connectivity issues; also compare the following [article](https://sakhawathsumit.github.io/sumit.log/2018/07/21/drawbacks-of-convolutional-neural-networks.html)
+Besides the identity and arithmetic, specific distance functions could be activated on __feature__ level. For each feature a separate neural networks (NN) is learned. The NN topology is (pre-) determined by IoT Event Analytics. This feature e.g. helps to solve __feature__ connectivity issues; also compare the following [article](https://sakhawathsumit.github.io/sumit.log/2018/07/21/drawbacks-of-convolutional-neural-networks.html)
 
 ## Event sourcing
 
 Often event processing struggle with sourcing multiple events into a consistent picture e.g.
 
-- Multiple events describing an natural person e.g. event no. 1 containing the given name, event no 2. containing the family name, etc.
+- Multiple events describing a natural person e.g. event no. 1 containing the given name, event no 2. containing the family name, etc.
 - Multiple CAN signals events representing one message e.g. in case of *J1939*, *ISO-TP*
 
-IoT Event Analytics offers event sourcing out of the box. Just select required __feature__ out of the event/ message history.
+IoT Event Analytics offers event sourcing out of the box. Just select the required __feature__ out of the event/ message history.
 
 ## Probability distribution
 
@@ -57,7 +57,7 @@ Besides the commonly given properties of __feature__, statistical statements can
 
 ## Gaussian
 
-Based on given dat points the whole space is interpolated based on the Gaussian normal distribution. After the first (learned) interpolation each further given data point gets optional metadata information reflecting the:
+Based on given data points the whole space is interpolated based on the Gaussian normal distribution. After the first (learned) interpolation each further given data point gets optional metadata information reflecting the:
 
 - is outside 3 sigma
 - uncertainty

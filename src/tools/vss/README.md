@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# Convert the Genivi VSS JSON data model into IoT Event Analytics Segment and Type representation
+# Convert the GENIVI VSS JSON data model into IoT Event Analytics Segment and Type representation
 
 ## Prerequisites
 

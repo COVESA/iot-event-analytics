@@ -11,7 +11,7 @@
 # IoT Event Analytics internals
 
 IoT Event Analytics is a broker based complex event processing platform interacting through publish subscribe topics.
-To provide the maximum flexibilty the work is distributed between the broker and the paricipating entities.
+To provide the maximum flexibility the work is distributed between the broker and the paricipating entities.
 
 Broker has to know the
 
@@ -19,8 +19,8 @@ Broker has to know the
 2. the needed __capability__.
 
 Capability plus participant group allocates the publishing as well as subscribing peers. Possible values are
-$share/\<group id\> our /\<group id\>. $share denots that more than one subscriber is possible aka
-broadcast like communication, in round robbin manner.
+$share/\<group id\> our /\<group id\>. $share denotes that more than one subscriber is possible aka
+broadcast-like communication, in a round-robin manner.
 
 The topic follows a basic schema of
 
@@ -30,7 +30,7 @@ Possible sharing modes are:
 
 1. < blank > , direct broker connection
 2. __remote__ , connected via a broker bridging e.g. for failover
-3. __ingestion__ , data what is coming from outside the platform and may not following data schema
+3. __ingestion__ , data that is coming from outside the platform and might not follow data schema
 4. __configManager__, for discovering purposes
 
 Talent ID is the unique participant identified and purpose is the communication reason
@@ -39,4 +39,4 @@ Talent ID is the unique participant identified and purpose is the communication 
 2. __/events/+__ for __distributed__ RPC
 3. __/discover__ for discovering other participants
 
-Each passed message/event contains a attribute called __returnTopic__ which denots where to pass the (__optional__) result to.
+Each passed message/event contains a attribute called __returnTopic__ which denotes where to pass the (__optional__) result to.
