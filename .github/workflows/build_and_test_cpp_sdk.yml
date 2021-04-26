@@ -5,6 +5,10 @@ on:
     paths:
     - '.github/workflows/build_and_test_cpp_sdk.yml'
     - 'src/sdk/cpp/**'
+  pull_request:
+    paths:
+    - '.github/workflows/build_and_test_cpp_sdk.yml'
+    - 'src/sdk/cpp/**'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
