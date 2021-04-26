@@ -1,4 +1,4 @@
-import os
+from os import path
 import pytest
 from unittest import TestCase
 from src.iotea.core.util.json_model import JsonModel
@@ -10,7 +10,7 @@ def test_case():
 
 @pytest.fixture
 def model():
-    json = load_json(os.path.realpath('tests/resources/jsonModel.input.json'))
+    json = load_json(path.normpath(path.join(path.dirname(__file__), '../../../resources/jsonModel.input.json')))
     return JsonModel(json)
 
 class TestJsonModel:

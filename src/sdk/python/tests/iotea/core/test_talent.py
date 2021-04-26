@@ -1,4 +1,4 @@
-import os
+from os import path
 import pytest
 from unittest import TestCase
 from src.iotea.core.talent import Talent
@@ -31,5 +31,5 @@ class TestTalent:
     def test_create_discovery_response(self, talent, test_case):
         test_case.assertDictEqual(
             talent._Talent__create_discovery_response(),
-            load_json(os.path.realpath('tests/resources/talent.discovery-response.json'))
+            load_json(path.normpath(path.join(path.dirname(__file__), '../../resources/talent.discovery-response.json')))
         )
