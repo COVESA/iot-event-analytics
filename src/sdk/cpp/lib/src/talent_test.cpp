@@ -144,11 +144,16 @@ void TalentDependencies::Update(const core::PlatformEvent& event) {
     }
 
     dependencies_[talent] = is_set;
-    n_dep_met_ += is_set ? 1 : -1;
 }
 
 bool TalentDependencies::CheckAll() const {
-    return n_dep_met_ == dependencies_.size();
+    for (const auto& dep : dependencies_) {
+        if (!dep.second) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 json TalentDependencies::Json() const {

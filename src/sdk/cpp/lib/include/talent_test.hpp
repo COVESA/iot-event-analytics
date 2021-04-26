@@ -67,7 +67,6 @@ class TestSetInfo {
 class TalentDependencies {
    private:
     std::unordered_map<std::string, bool> dependencies_;
-    size_t n_dep_met_;
 
    public:
     void Add(const std::string& talent_id);
