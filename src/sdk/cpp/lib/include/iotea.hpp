@@ -1033,7 +1033,7 @@ class Talent {
      * rule set over time. Override in order to subscribe to events.
      *
      * @code
-       schema::rules_ptr OnGetRules() const override {
+       schema::rule_ptr OnGetRules() const override {
            // Subscribe to the "temperature" feature of the "device" type that are in the range (3, 10).
            return AndRules{GreaterThan("temperature", 3, "device"),
                            LessThan("temperature", 10, "device")};
