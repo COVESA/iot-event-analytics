@@ -1,3 +1,13 @@
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
 #include <csignal>
 #include <initializer_list>
 #include <memory>
@@ -20,11 +30,11 @@ static const std::string SUBSCRIBED_COUNT_EVENT(PROVIDER_TALENT_NAME+".echoCount
 
 class EchoObserver : public Talent {
    public:
-    explicit EchoObserver(std::shared_ptr<Publisher> publisher)
-        : Talent(TALENT_NAME, publisher) {
+    EchoObserver()
+        : Talent(TALENT_NAME) {
     }
 
-    schema::rules_ptr OnGetRules() const override {
+    schema::rule_ptr OnGetRules() const override {
         return OrRules(IsSet(SUBSCRIBED_ECHO_EVENT), IsSet(SUBSCRIBED_COUNT_EVENT));
     }
 
@@ -41,17 +51,18 @@ class EchoObserver : public Talent {
     }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, TALENT_NAME);
+static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) { client->Stop(); }
+void signal_handler(int signal) {
+    client.Stop();
+}
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<EchoObserver>(client);
-    client->RegisterTalent(talent);
+    auto talent = std::make_shared<EchoObserver>();
+    client.RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);
-
-    client->Run();
+    client.Start();
 
     return 0;
 }

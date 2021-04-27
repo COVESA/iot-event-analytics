@@ -14,24 +14,22 @@
 #include "nlohmann/json.hpp"
 #include "iotea.hpp"
 #include "talent_test.hpp"
-#include "logging.hpp"
-#include "mqtt_client.hpp"
 
 using json = nlohmann::json;
 using namespace iotea::core;
 using namespace iotea::test;
 
 
-static const char SERVER_ADDRESS[] = "tcp://localhost:1883";
-static const char TALENT_NAME[] = "testSet-sdk-cpp";
-static const char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
-static const char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
+static constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
+static constexpr char TALENT_NAME[] = "testSet-sdk-cpp";
+static constexpr char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
+static constexpr char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
 class TestSetSDK : public TestSetTalent {
    public:
-    explicit TestSetSDK(std::shared_ptr<Publisher> publisher)
-        : TestSetTalent(TALENT_NAME, publisher) {
-        auto callee = CreateCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
+    explicit TestSetSDK()
+        : TestSetTalent(TALENT_NAME) {
+        auto callee = RegisterCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
 
         auto timeout = 500;
 
@@ -43,22 +41,21 @@ class TestSetSDK : public TestSetTalent {
         RegisterTest("echoIntegerList", {1, 2, 3}, callee, {{1, 2, 3}}, timeout);
         RegisterTest("echoMixedList", {1, "Hello World", 3.21}, callee, {{1, "Hello World", 3.21}}, timeout);
         RegisterTest("echoDeepList", {1, {2, {3, {4, {5}}}}}, callee, {{1, {2, {3, {4, {5}}}}}}, timeout);
-
-        SkipCycleCheck(true);
     }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, TALENT_NAME);
+static Client client(SERVER_ADDRESS);
 
-void signal_handler(int signal) { client->Stop(); }
+void signal_handler(int signal) { client.Stop(); }
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<TestSetSDK>(client);
-    client->RegisterTalent(talent);
+    auto talent = std::make_shared<TestSetSDK>();
+
+    client.RegisterFunctionTalent(talent);
 
     std::signal(SIGINT, signal_handler);
 
-    client->Run();
+    client.Start();
 
     return 0;
 }

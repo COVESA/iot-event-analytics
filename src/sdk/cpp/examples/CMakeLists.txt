@@ -1,3 +1,7 @@
 add_subdirectory(event_consumer)
 add_subdirectory(function_provider)
 add_subdirectory(echo)
+add_subdirectory(callback_mode)
+add_subdirectory(subclass_mode)
+add_subdirectory(basic)
+add_subdirectory(functions)

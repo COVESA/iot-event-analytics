@@ -1,11 +1,12 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
 #include "iotea.hpp"
 
@@ -16,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 #include <algorithm>
 
 #include "schema.hpp"
@@ -23,6 +25,11 @@
 
 namespace iotea {
 namespace core {
+
+static constexpr char MQTT_TOPIC_NS[] = "iotea";
+static constexpr char INGESTION_EVENTS_TOPIC[] = "ingestion/events";
+static constexpr char PLATFORM_EVENTS_TOPIC[] = "platform/$events";
+static constexpr char TALENTS_DISCOVERY_TOPIC[] = "configManager/talents/discover";
 
 // Message
 //
@@ -95,15 +102,15 @@ timepoint_t PlatformEvent::GetTimestamp() const { return timestamp_; }
 PlatformEvent::Type PlatformEvent::GetType() const { return type_; }
 
 PlatformEvent PlatformEvent::FromJson(const json& j) {
-    static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.rules.set";
-    static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.rules.unset";
+    static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.config.set";
+    static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.config.unset";
 
     auto type_name = j["type"].get<std::string>();
 
     auto type = PlatformEvent::Type::UNDEF;
-    if (type_name.c_str() == PLATFORM_EVENT_TYPE_SET_RULES) {
+    if (type_name == PLATFORM_EVENT_TYPE_SET_RULES) {
         type = PlatformEvent::Type::TALENT_RULES_SET;
-    } else if (type_name.c_str() == PLATFORM_EVENT_TYPE_UNSET_RULES) {
+    } else if (type_name == PLATFORM_EVENT_TYPE_UNSET_RULES) {
         type = PlatformEvent::Type::TALENT_RULES_UNSET;
     }
 
@@ -167,6 +174,15 @@ std::string Event::GetInstance() const { return instance_; }
 
 timepoint_t Event::GetWhen() const { return when_; }
 
+bool Event::operator==(const Event& other) const {
+    return GetSubject() == other.GetSubject()
+        && GetFeature() == other.GetFeature()
+        && GetValue() == other.GetValue()
+        && GetType() == other.GetType()
+        && GetInstance() == other.GetInstance()
+        && GetReturnTopic() == other.GetReturnTopic();
+}
+
 json Event::Json() const {
     auto duration = when_.time_since_epoch();
     auto when_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
@@ -208,60 +224,194 @@ json OutgoingCall::Json() const {
     return json{{"subject", subject_},
                 {"feature", talent_id_ + "." + func_ + "-in"},
                 {"type", type_},
-                {"value", json{{"func", func_}, {"args", args_}, {"call", call_id_}, {"chnl", channel_id_}}},
+                {"value", json{
+                      {"func", func_},
+                      {"args", args_},
+                      {"call", call_id_},
+                      {"chnl", channel_id_}}
+                },
                 {"whenMs", now_ms}};
+}
+
+//
+// CallToken
+//
+CallToken::CallToken(const std::string& call_id, int64_t timeout)
+    : call_id_{call_id}
+    , timeout_{timeout} {}
+
+std::string CallToken::GetCallId() const {
+    return call_id_;
+}
+
+int64_t CallToken::GetTimeout() const {
+    return timeout_;
 }
 
 //
 // EventContext
 //
 EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
-                           const std::string& return_topic, call_handler_ptr call_handler, publisher_ptr publisher)
+                           const std::string& return_topic, call_handler_ptr call_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
     : talent_id_{talent_id}
     , channel_id_{channel_id}
     , subject_{subject}
     , return_topic_{return_topic}
     , call_handler_{call_handler}
-    , publisher_{publisher} {}
-
-EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const Event& event,
-                           call_handler_ptr call_handler, publisher_ptr publisher)
-    : EventContext(talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), call_handler, publisher) {}
-
-std::string EventContext::GetTalentId() const { return talent_id_; }
+    , publisher_{publisher}
+    , uuid_gen_{uuid_gen} {}
 
 std::string EventContext::GetChannelId() const { return channel_id_; }
 
 std::string EventContext::GetSubject() const { return subject_; }
 
-std::string EventContext::GetReturnTopic() const { return return_topic_; }
+std::string EventContext::GetReturnTopic() const {
+    // Currently the return topic sent by the platform does not contain a
+    // namespace prefix so we have to add it or else the event doesn't get
+    // routed properly.
+    // TODO Figure out if this is a bug in the platform or not.
+    //return return_topic_;
 
-void EventContext::Gather(gather_func_ptr func, const std::vector<call_token_t>& tokens) {
-    call_handler_->Gather(func, *this, tokens);
+    return GetEnv(MQTT_TOPIC_NS, MQTT_TOPIC_NS) + "/" + return_topic_;
+}
+
+CallToken EventContext::Call(const Callee& callee, const json& args, const int64_t& timeout) const {
+    if (!callee.IsRegistered()) {
+        log::Warn() << "Tried to call unregistered Callee";
+
+        // TODO how do we best report an error in this case? We would like to avoid using exceptions.
+        return CallToken{"", -1};
+    }
+
+    auto call_id = uuid_gen_();
+
+    auto j = args.is_array() ? args : json::array({args});
+    auto c = OutgoingCall{callee.GetTalentId(), GetChannelId(), call_id, callee.GetFunc(), j, GetSubject(), callee.GetType()};
+
+    publisher_->Publish(GetReturnTopic(), c.Json().dump());
+
+    return CallToken{call_id, timeout};
 }
 
 //
 // CallContext
 //
 CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                         const Event& event, call_handler_ptr call_handler, publisher_ptr publisher)
-    : EventContext{talent_id, channel_id, event, call_handler, publisher}
+                         const Event& event, call_handler_ptr call_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
+    : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), call_handler, publisher, uuid_gen}
     , feature_{feature}
     , channel_{event.GetValue()["chnl"].get<std::string>()}
     , call_{event.GetValue()["call"].get<std::string>()} {}
 
+
 void CallContext::Reply(const json& value) const {
-    auto result = json{{"$tsuffix", "/" + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
+    //auto result = json{{"$tsuffix", "/" + talent_id_ + "." + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
+    auto result = json{{"$tsuffix", std::string("/") + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
 
-    auto event = Event{subject_, feature_, result};
+    //auto event = Event{subject_, "math." + feature_, result};
+    auto event = Event{subject_, talent_id_ + "." + feature_, result};
 
-    publisher_->Publish(return_topic_, event.Json().dump());
+    // Currently the return topic sent by the platform does not contain a
+    // namespace prefix so we have to add it or else the event doesn't get
+    // routed properly.
+    // TODO Figure out if this is a bug in the platform or not.
+    auto prefixed_return_topic_ = GetEnv(MQTT_TOPIC_NS, MQTT_TOPIC_NS) + "/" + return_topic_;
+
+    log::Info() << "Reply to " << prefixed_return_topic_;
+    publisher_->Publish(prefixed_return_topic_, event.Json().dump());
 }
 
-void CallContext::GatherAndReply(gather_and_reply_func_ptr func, const std::vector<call_token_t>& tokens) {
-    call_handler_->GatherAndReply(func, *this, tokens);
+//
+// Gatherer
+//
+Gatherer::Gatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms)
+    : timeout_func_{timeout_func} {
+
+    auto smallest_timeout = int64_t{-1};
+
+    for (const auto& t : tokens) {
+        tokens_.insert(t.GetCallId());
+
+        auto token_timeout = t.GetTimeout();
+        if (token_timeout > 0) {
+            smallest_timeout = smallest_timeout < 0 ? token_timeout : std::min(smallest_timeout, token_timeout);
+        }
+    }
+
+    if (smallest_timeout <= 0) {
+        // No timeout was set
+        timeout_ = 0;
+        return;
+    }
+
+    timeout_ = now_ms + smallest_timeout;
 }
 
+bool Gatherer::CheckTimeout(const int64_t& now) {
+    if (timeout_ <= 0 || now < timeout_) {
+        return false;
+    }
+
+    if (timeout_func_) {
+        timeout_func_();
+    }
+    return true;
+}
+
+bool Gatherer::Wants(const std::string& token) {
+    return tokens_.find(token) != tokens_.end();
+}
+
+bool Gatherer::Gather(const std::string& token, const json& reply) {
+    if (tokens_.find(token) == tokens_.end()) {
+        log::Error() << "Unrecognized call id " << token;
+        return false;
+    }
+
+    replies_[token] = reply;
+    if (tokens_.size() != replies_.size()) {
+        return false;
+    }
+
+    Call();
+    return true;
+}
+
+//
+// SinkGatherer
+//
+SinkGatherer::SinkGatherer(gather_func_ptr func, timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms)
+            : Gatherer{timeout_func, tokens, now_ms}
+            , func_{func} {}
+
+void SinkGatherer::Call() const {
+    auto args = std::vector<json>{};
+
+    for (const auto& t : tokens_) {
+        args.push_back(replies_.find(t)->second);
+    }
+
+    func_(args);
+}
+
+//
+// ReplyGatherer
+//
+ReplyGatherer::ReplyGatherer(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const CallContext& ctx, const std::vector<CallToken>& tokens, int64_t now_ms)
+    : Gatherer{timeout_func, tokens, now_ms}
+    , func_{func}
+    , ctx_{ctx} {}
+
+void ReplyGatherer::Call() const {
+    auto args = std::vector<json>{};
+
+    for (const auto& t : tokens_) {
+        args.push_back(replies_.find(t)->second);
+    }
+
+    auto value = func_(args);
+    ctx_.Reply(value);
+}
 
 //
 // Callee
@@ -269,30 +419,11 @@ void CallContext::GatherAndReply(gather_and_reply_func_ptr func, const std::vect
 Callee::Callee()
     : registered_(false) {}
 
-Callee::Callee(const std::string& talent_id, const std::string& func, const std::string& type, publisher_ptr publisher)
+Callee::Callee(const std::string& talent_id, const std::string& func, const std::string& type)
     : talent_id_{talent_id}
     , func_{func}
-    , type_{type}
-    , publisher_{publisher} {
+    , type_{type} {
     registered_ = true;  // Should probably be deferred until talent is actually registered
-}
-
-call_token_t Callee::Call(const json& args, const EventContext& ctx) const {
-    if (!registered_) {
-        log::Warn() << "Tried to call unregistered Callee";
-
-        // TODO how do we best report an error in this case? We would like to avoid using exceptions.
-        return static_cast<call_token_t>("");
-    }
-
-    auto call_id = GenerateUUID();
-
-    auto j = args.is_array() ? args : json::array({args});
-    auto c = OutgoingCall(talent_id_, ctx.GetChannelId(), call_id, func_, j, ctx.GetSubject(), type_);
-
-    publisher_->Publish(ctx.GetReturnTopic(), c.Json().dump());
-
-    return static_cast<call_token_t>(call_id);
 }
 
 std::string Callee::GetFeature() const { return talent_id_ + "." + func_; }
@@ -303,108 +434,91 @@ std::string Callee::GetTalentId() const { return talent_id_; }
 
 std::string Callee::GetType() const { return type_; }
 
+bool Callee::IsRegistered() const {
+    return registered_;
+}
+
 //
 // CallHandler
 //
-void CallHandler::Gather(gather_func_ptr func, const EventContext& ctx, std::vector<call_token_t> tokens) {
-    auto gatherer = std::make_shared<ReplyGatherer<gather_func_ptr, EventContext>>(func, ctx, tokens);
-    for (const auto& t : tokens) {
-        gatherer_map_[t] = gatherer;
-    }
+void CallHandler::Gather(gather_func_ptr func, timeout_func_ptr timeout_func, std::vector<CallToken> tokens) {
+    auto now_ms = GetNowMs();
+    auto gatherer = std::make_shared<SinkGatherer>(func, timeout_func, tokens, now_ms);
+    gatherers_.push_back(gatherer);
 }
 
-void CallHandler::GatherAndReply(gather_and_reply_func_ptr func, const CallContext& ctx, std::vector<call_token_t> tokens) {
-    auto gatherer = std::make_shared<ReplyGatherer<gather_and_reply_func_ptr, CallContext>>(func, ctx, tokens);
-    for (const auto& t : tokens) {
-        gatherer_and_reply_map_[t] = gatherer;
-    }
+void CallHandler::GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const CallContext& ctx, std::vector<CallToken> tokens) {
+    auto now_ms = GetNowMs();
+    auto gatherer = std::make_shared<ReplyGatherer>(func, timeout_func,  ctx, tokens, now_ms);
+    gatherers_.push_back(gatherer);
 }
 
-void CallHandler::HandleGather(std::shared_ptr<ReplyGatherer<gather_func_ptr, EventContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply) {
-    gatherer->Gather(token, reply);
+void CallHandler::HandleReply(const std::string& call_id, const json& reply) {
+    auto it = std::find_if(gatherers_.begin(), gatherers_.end(), [call_id](const auto& g) {
+        return g->Wants(call_id);
+    });
 
-    if (!gatherer->IsDone()) {
+    if (it == gatherers_.end()) {
+        log::Debug() << "Could not find gatherer of call id " << call_id;
         return;
     }
 
-    auto tokens = gatherer->GetReplies();
-    std::vector<std::pair<json, EventContext>> replies;
-    for (const auto& t : tokens) {
-        gatherer_map_.erase(t.first);
-        replies.push_back(t.second);
+    if ((*it)->Gather(call_id, reply)) {
+        gatherers_.erase(it);
     }
-
-    auto func = gatherer->GetFunc();
-
-    func(replies);
 }
 
-void CallHandler::HandleGatherAndReply(std::shared_ptr<ReplyGatherer<gather_and_reply_func_ptr, CallContext>> gatherer, const call_token_t& token, const std::pair<json, EventContext>& reply) {
-    gatherer->Gather(token, reply);
-
-    if (!gatherer->IsDone()) {
-        return;
-    }
-
-    auto tokens = gatherer->GetReplies();
-    std::vector<std::pair<json, EventContext>> replies;
-    for (const auto& t : tokens) {
-        gatherer_and_reply_map_.erase(t.first);
-        replies.push_back(t.second);
-    }
-
-    auto func = gatherer->GetFunc();
-    auto ctx = gatherer->GetContext();
-
-    auto freply = func(replies);
-    ctx.Reply(freply);
+int64_t CallHandler::GetNowMs() const {
+    auto now = std::chrono::steady_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 }
 
-void CallHandler::HandleReply(const call_token_t& token, const std::pair<json, EventContext>& reply) {
-    auto g_entry = gatherer_map_.find(token);
-    if (g_entry != gatherer_map_.end()) {
-        HandleGather(g_entry->second, token, reply);
-        return;
-    }
-
-    auto gar_entry = gatherer_and_reply_map_.find(token);
-    if (gar_entry != gatherer_and_reply_map_.end()) {
-        HandleGatherAndReply(gar_entry->second, token, reply);
-        return;
-    }
-
-    log::Warn() << "Could not find gatherer of call id " << token;
+void CallHandler::HandleTick(const int64_t& ts) {
+    auto it_end = std::remove_if(gatherers_.begin(), gatherers_.end(), [ts](const auto& g) {
+            return g->CheckTimeout(ts);
+        });
+    gatherers_.erase(it_end, gatherers_.end());
 }
-
 
 //
 // Talent
 //
-Talent::Talent(const std::string& talent_id, publisher_ptr publisher)
-    : talent_id_{talent_id}
-    , channel_id_{GenerateUUID()}
-    , publisher_{publisher}
-    , schema_{schema::Talent{talent_id_}}
-    , call_handler_{std::make_shared<CallHandler>()} {}
+Talent::Talent(const std::string& talent_id)
+    : schema_{schema::Talent{talent_id}}
+    , talent_id_{talent_id} {}
+
+void Talent::Initialize(call_handler_ptr call_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen) {
+    call_handler_ = call_handler;
+    context_gen_ = context_gen;
+    uuid_gen_ = uuid_gen;
+
+    channel_id_ = GetId() + "." + uuid_gen_();
+}
 
 std::string Talent::GetId() const { return talent_id_; }
 
-Callee Talent::CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type) {
-    auto c = Callee(talent_id, func, type, publisher_);
-    callees_.insert(c.GetFeature());
+Callee Talent::RegisterCallee(const std::string& talent_id, const std::string& func,
+       const std::string& type) {
+    auto c = Callee{talent_id, func, type};
+    callees_.push_back(c);
+
+    auto feature_out = GetOutputName(DEFAULT_TYPE, talent_id_, func);
+    schema_.SkipCycleCheckFor(feature_out);
     return c;
 }
 
-std::string Talent::GetChannelId() const { return channel_id_; }
+std::vector<Callee> Talent::GetCallees() {
+    return callees_;
+}
 
-publisher_ptr Talent::GetPublisher() const { return publisher_; }
+std::string Talent::GetChannelId() const { return channel_id_; }
 
 void Talent::AddOutput(const std::string& feature, const schema::Metadata& metadata) {
     schema_.AddOutput(feature, metadata);
 }
 
 EventContext Talent::NewEventContext(const std::string& subject) {
-    return EventContext{talent_id_, channel_id_, subject, publisher_->GetIngestionEventsTopic(), call_handler_, publisher_};
+    return context_gen_(subject);
 }
 
 schema::rules_ptr Talent::GetRules() const {
@@ -413,11 +527,12 @@ schema::rules_ptr Talent::GetRules() const {
     }
 
     auto rules = schema::rule_vec{};
-    auto chan_expr = "^/" + channel_id_ + "/.*";
+    auto chan_expr = R"(^\/)" + talent_id_ + R"(\.[^\/]+\/.*)";
 
     for (const auto& c : callees_) {
+        auto output_feature = GetOutputName(c.GetFeature());
         auto r = std::make_shared<schema::Rule>(std::make_shared<schema::RegexMatch>(
-            c + "-out", chan_expr, schema::DEFAULT_TYPE, schema::ValueEncoding::RAW, "/$tsuffix"));
+            output_feature, chan_expr, schema::DEFAULT_TYPE, schema::ValueEncoding::RAW, "/$tsuffix"));
         rules.push_back(r);
     }
 
@@ -425,171 +540,494 @@ schema::rules_ptr Talent::GetRules() const {
 }
 
 schema::Schema Talent::GetSchema() const {
-    auto rules = GetRules();
-    auto external_rules = OnGetRules();
+    auto callee_rules = GetRules();
+    auto trigger_rules = OnGetRules();
 
-    if (rules) {
-        if (external_rules) {
-            rules->Add(external_rules);
-        }
-    } else if (external_rules) {
-        rules = external_rules;
+    if (!callee_rules && !trigger_rules) {
+        log::Error() << "At least one callee or trigger rule must be defined";
+        // TODO better error handling required
+        assert(0);
     }
 
-    // TODO what to do if there are no internal and no external rules?
+    if (!trigger_rules) {
+        return schema_.GetSchema(callee_rules);
+    }
 
-    return schema_.GetSchema(rules);
+    if (!callee_rules) {
+        if (std::dynamic_pointer_cast<schema::Rules>(trigger_rules)) {
+            return schema_.GetSchema(trigger_rules);
+        }
+
+        return schema_.GetSchema(OrRules(trigger_rules));
+    }
+
+    auto wrapped_trigger_rules =  OrRules(trigger_rules);
+
+    // Exclude function outputs from the trigger rules
+    std::for_each(callees_.begin(), callees_.end(), [this, &wrapped_trigger_rules](const auto& c) {
+        //wrapped_trigger_rules->ExcludeOn(c.GetFeature() + "-out");
+        wrapped_trigger_rules->ExcludeOn(GetOutputName(DEFAULT_TYPE, c.GetTalentId(), c.GetFunc()));
+    });
+
+    callee_rules->Add(wrapped_trigger_rules);
+
+    return schema_.GetSchema(callee_rules);
 }
 
-void Talent::HandleEvent(const std::string& data) {
+void Talent::OnError(const ErrorMessage&) { }
+
+schema::rule_ptr Talent::OnGetRules() const {
+    return rules_;
+}
+
+void Talent::OnEvent(const Event& event, EventContext context) {
+    if (on_event_) {
+        on_event_(event, context);
+    }
+}
+
+void Talent::OnPlatformEvent(const PlatformEvent&) {}
+
+void Talent::SetExternalEventHandler(on_event_func_ptr on_event, schema::rule_ptr rules) {
+    on_event_ = on_event;
+    rules_ = rules;
+}
+
+std::string Talent::GetInputName(const std::string& feature) const {
+    return  feature + "-in";
+}
+
+std::string Talent::GetInputName(const std::string& talent_id, const std::string& feature) const {
+    return talent_id + "." + GetInputName(feature);
+}
+
+std::string Talent::GetInputName(const std::string& type, const std::string& talent_id, const std::string& feature) const {
+    return type + "." + GetInputName(talent_id, feature);
+}
+
+std::string Talent::GetOutputName(const std::string& feature) const {
+    return feature + "-out";
+}
+
+std::string Talent::GetOutputName(const std::string& talent_id, const std::string& feature) const {
+    return talent_id + "." + GetOutputName(feature);
+}
+
+std::string Talent::GetOutputName(const std::string& type, const std::string& talent_id, const std::string& feature) const {
+    return type + "." + GetOutputName(talent_id, feature);
+}
+
+//
+// FunctionTalent
+//
+FunctionTalent::FunctionTalent(const std::string& id)
+    : Talent{id} {}
+
+void FunctionTalent::RegisterFunction(const std::string& name, const func_ptr func) {
+    funcs_[name] = func;
+
+    AddOutput(name + "-in", schema::Metadata("Argument(s) for function " + name, 0, 0, "ONE",
+                                             schema::OutputEncoding(schema::OutputEncoding::Type::Object)));
+    AddOutput(name + "-out", schema::Metadata("Result of function " + name, 0, 0, "ONE",
+                                              schema::OutputEncoding(schema::OutputEncoding::Type::Any)));
+
+    auto feature_in = GetInputName(DEFAULT_TYPE, GetId(), name);
+    schema_.SkipCycleCheckFor(feature_in);
+}
+
+void FunctionTalent::SkipCycleChecks() { schema_.SkipCycleChecks(); }
+
+schema::rules_ptr FunctionTalent::GetRules() const {
+    auto function_rules = std::make_shared<schema::OrRules>();
+    for (auto func : funcs_) {
+        auto x = std::make_unique<schema::FunctionValue>(func.first);
+
+        auto feature = GetInputName(GetId(), func.first);
+        auto constraint = std::make_unique<schema::SchemaConstraint>(feature, std::move(x), schema::DEFAULT_TYPE,
+                                                                     schema::ValueEncoding::RAW);
+        auto rule = std::make_shared<schema::Rule>(std::move(constraint));
+        function_rules->Add(rule);
+    }
+
+    return function_rules;
+}
+
+schema::Schema FunctionTalent::GetSchema() const {
+    // If no functions have been registered then our schema is no different
+    // from that of a regular Talent
+    if (funcs_.empty()) {
+        return Talent::GetSchema();
+    }
+
+    // Generate the rules for events representing calls to our registered functions
+    schema::rules_ptr call_input_rules = std::make_shared<schema::OrRules>();
+    std::vector<std::string> call_input_excludes;
+    std::vector<std::string> trigger_excludes;
+    for (const auto& func : funcs_) {
+        auto name = func.first;
+        auto value = std::make_unique<schema::FunctionValue>(name);
+
+        auto feature_in = GetInputName(GetId(), name);
+        auto constraint = std::make_unique<schema::SchemaConstraint>(feature_in, std::move(value), schema::DEFAULT_TYPE,
+                                                                     schema::ValueEncoding::RAW);
+        auto rule = std::make_shared<schema::Rule>(std::move(constraint));
+        call_input_rules->Add(rule);
+
+        call_input_excludes.push_back(GetOutputName(schema::DEFAULT_TYPE, GetId(), name));
+        trigger_excludes.push_back(GetInputName(schema::DEFAULT_TYPE, GetId(), name));
+    }
+
+    // Get the trigger rules from the subclass.
+    auto trigger_rules = OnGetRules();
+
+    // Get the rules for the events representing output from functions we call
+    auto call_output_rules = Talent::GetRules();
+
+    if (!trigger_rules && !call_output_rules) {
+        // We only accept incoming function calls
+        return schema_.GetSchema(call_input_rules);
+    }
+
+    auto root = call_input_rules;
+    if (call_output_rules) {
+        // We also accept function call output results, i.e. this
+        // FunctionTalent calls other functions
+        root = call_output_rules;
+
+        call_input_rules->ExcludeOn(call_input_excludes);
+        root->Add(call_input_rules);
+    }
+
+    if (trigger_rules) {
+        // We also accept triggers, i.e. this FunctionTalent subscribes to
+        // events.
+        // If the subclass returned a single rule (i.e. not wrapped in
+        // an And-Or-Rule) then we wrap it in an OrRule
+        auto wrap = OnGetRules();
+        schema::rules_ptr trigger_rules;
+        if (wrap && !(trigger_rules = std::dynamic_pointer_cast<schema::Rules>(wrap))) {
+            trigger_rules = OrRules(wrap);
+        }
+
+        trigger_rules->ExcludeOn(trigger_excludes);
+        call_input_rules->Add(trigger_rules);
+    }
+
+    return schema_.GetSchema(root);
+}
+
+function_map FunctionTalent::GetFunctions() const {
+    return funcs_;
+}
+
+//
+// Service
+//
+Service::Service(const std::string& name)
+    : talent_{std::make_shared<FunctionTalent>(name)} {}
+
+void Service::RegisterFunction(const std::string& name, func_ptr callback) {
+    talent_->RegisterFunction(name, callback);
+}
+
+std::shared_ptr<FunctionTalent> Service::GetTalent() const { return talent_; }
+
+//
+// Client
+//
+Client::Client(const std::string& connection_string)
+    : mqtt_client_{new MqttClient(connection_string, GenerateUUID())}
+    , callee_talent_(new CalleeTalent{})
+    , call_handler_{std::make_shared<CallHandler>()}
+    , mqtt_topic_ns_{GetEnv(MQTT_TOPIC_NS, "iotea")} {
+
+    mqtt_client_->OnMessage = [this](mqtt::const_message_ptr msg) {
+        Receive(msg->get_topic(), msg->get_payload());
+    };
+    mqtt_client_->OnTick = [this](const std::chrono::steady_clock::time_point ts) {
+        HandleTick(ts);
+    };
+}
+
+void Client::Start() {
+    callee_talent_->Initialize(call_handler_, nullptr, GenerateUUID);
+    SubscribeInternal(callee_talent_);
+
+    static auto context_creator = [this](const std::string& subject) {
+        auto ingenstion_events_topic = mqtt_topic_ns_ + "/" + INGESTION_EVENTS_TOPIC;
+        return EventContext{callee_talent_->GetId(),
+            callee_talent_->GetChannelId(), subject, ingenstion_events_topic,
+            call_handler_, mqtt_client_, GenerateUUID};
+    };
+
+    for (const auto& ft_pair : function_talents_) {
+        ft_pair.second->Initialize(call_handler_, context_creator, GenerateUUID);
+        SubscribeInternal(ft_pair.second);
+    }
+    for (const auto& st_pair : subscription_talents_) {
+        st_pair.second->Initialize(call_handler_, context_creator, GenerateUUID);
+        SubscribeInternal(st_pair.second);
+    }
+
+    mqtt_client_->Run();
+}
+
+void Client::Stop() {
+    mqtt_client_->Stop();
+}
+
+void Client::Register(const Service& service) {
+    auto t = service.GetTalent();
+    function_talents_[t->GetId()] = t;
+}
+
+void Client::RegisterFunctionTalent(std::shared_ptr<FunctionTalent> t) {
+    function_talents_[t->GetId()] = t;
+}
+
+void Client::RegisterTalent(std::shared_ptr<Talent> t) {
+    subscription_talents_[t->GetId()] = t;
+}
+
+ void Client::SubscribeInternal(std::shared_ptr<Talent> t) {
+    auto talent_id = t->GetId();
+    auto channel_id = t->GetChannelId();
+    auto shared_prefix = GetSharedPrefix(talent_id);
+
+    mqtt_client_->Subscribe(shared_prefix + "/" + GetDiscoverTopic());
+    mqtt_client_->Subscribe(shared_prefix + "/" + GetPlatformEventsTopic());
+
+    mqtt_client_->Subscribe(shared_prefix + "/" + mqtt_topic_ns_ + "/talent/" + talent_id + "/events");
+    mqtt_client_->Subscribe(mqtt_topic_ns_ + "/talent/" + talent_id + "/events/" + channel_id + "/+");
+ }
+
+ Callee Client::CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type) {
+    return callee_talent_->RegisterCallee(talent_id, func, type);
+ }
+
+void Client::Subscribe(schema::rule_ptr rules, const OnEvent callback) {
+    auto t = std::make_shared<Talent>(GenerateUUID());
+    t->SetExternalEventHandler(callback, rules);
+    RegisterTalent(t);
+}
+
+void Client::HandleDiscover(const std::string& msg) {
+    log::Debug() << "Received discovery message.";
+    auto payload = json::parse(msg);
+    auto dmsg = DiscoverMessage::FromJson(payload);
+    auto return_topic = mqtt_topic_ns_ + "/" + dmsg.GetReturnTopic();
+
+    callee_talent_->ClearCallees();
+
+    for (const auto& talent : function_talents_) {
+        auto callees = talent.second->GetCallees();
+        callee_talent_->AddCallees(callees);
+
+        auto schema = talent.second->GetSchema().Json().dump();
+        mqtt_client_->Publish(return_topic, schema);
+    }
+
+    for (const auto& talent : subscription_talents_) {
+        auto callees = talent.second->GetCallees();
+        callee_talent_->AddCallees(callees);
+
+        auto schema = talent.second->GetSchema().Json().dump();
+        mqtt_client_->Publish(return_topic, schema);
+    }
+
+    if (callee_talent_->HasSchema()) {
+        auto schema = callee_talent_->GetSchema().Json().dump();
+        mqtt_client_->Publish(return_topic, schema);
+    }
+}
+
+void Client::HandlePlatformEvent(const std::string& msg) {
+    log::Debug() << "Received platform message.";
+    auto payload = json::parse(msg);
+    auto event = PlatformEvent::FromJson(payload);
+
+    for (const auto& talent : function_talents_) {
+        talent.second->OnPlatformEvent(event);
+    }
+
+    for (const auto& talent : subscription_talents_) {
+        talent.second->OnPlatformEvent(event);
+    }
+
+    if (OnPlatformEvent) {
+        OnPlatformEvent(event);
+    }
+}
+
+void Client::HandleError(const ErrorMessage& err) {
+    std::for_each(function_talents_.begin(), function_talents_.end(), [err](const auto& pair) {
+        pair.second->OnError(err);
+    });
+    std::for_each(subscription_talents_.begin(), subscription_talents_.end(), [err](const auto& pair) {
+        pair.second->OnError(err);
+    });
+
+    if (OnError) {
+        OnError(err);
+    }
+}
+
+bool Client::HandleAsCall(std::shared_ptr<FunctionTalent> t, const Event& event) {
+    // Find function matching the event feature name
+    auto funcs = t->GetFunctions();
+    auto it = std::find_if(funcs.begin(), funcs.end(), [t, event](const auto& p) {
+        return t->GetInputName(t->GetId(), p.first) == event.GetFeature();
+    });
+
+    if (it == funcs.end()) {
+        // No function found
+        return false;
+    }
+
+    // Invoke the callback function corresponding to the feature name
+    //auto ctx = CallContext{callee_talent_->GetId(), callee_talent_->GetChannelId(), t->GetOutputName(it->first), event, call_handler_, mqtt_client_, GenerateUUID};
+    auto ctx = CallContext{t->GetId(), t->GetChannelId(), t->GetOutputName(it->first), event, call_handler_, mqtt_client_, GenerateUUID};
+    auto args = event.GetValue()["args"];
+    it->second(args, ctx);
+    return true;
+}
+
+void Client::HandleEvent(const std::string& talent_id, const std::string& msg) {
+    Event event;
+
     try {
         log::Debug() << "Parse payload.";
-        auto payload = json::parse(data);
+        auto payload = json::parse(msg);
 
         // First check if this is an error message
         auto msg = Message::FromJson(payload);
         if (msg.IsError()) {
             log::Debug() << "Create error message from payload.";
-            OnError(ErrorMessage::FromJson(payload));
+            auto err = ErrorMessage::FromJson(payload);
+
+            HandleError(err);
             return;
         }
 
         log::Debug() << "Create event from payload.";
-        auto event = Event::FromJson(payload);
-        HandleEvent(event);
+        event = Event::FromJson(payload);
     } catch (const json::parse_error& e) {
         log::Error() << "Failed to parse event message.";
+        return;
     } catch (const json::type_error& e) {
         log::Error() << "Unexpected content in event message: " << e.what();
-    }
-}
-
-void Talent::HandleEvent(const Event& event) {
-    auto context = EventContext{talent_id_, channel_id_, event, call_handler_, publisher_};
-    OnEvent(event, context);
-}
-
-void Talent::OnError(const ErrorMessage& msg) { (void)msg; }
-
-schema::rules_ptr Talent::OnGetRules() const { return nullptr; }
-
-void Talent::OnEvent(const Event& event, EventContext context) {
-    (void)event;
-    (void)context;
-}
-
-void Talent::OnPlatformEvent(const PlatformEvent& event) {
-    (void)event;
-}
-
-void Talent::HandleDiscover(const std::string& data) {
-    try {
-        auto payload = json::parse(data);
-        auto dmsg = DiscoverMessage::FromJson(payload);
-        auto return_topic = publisher_->GetNamespace() + "/" + dmsg.GetReturnTopic();
-        auto response = GetSchema().Json().dump();
-
-        log::Debug() << "Publishing response.";
-        log::Debug() << "\ttopic: '" << return_topic << "'";
-        log::Debug() << "\tpayload: '" << response << "'\n";
-        publisher_->Publish(return_topic, response);
-    } catch (const json::parse_error& e) {
-        log::Error() << "Failed to parse discovery message.";
-    } catch (const json::type_error& e) {
-        log::Error() << "Unexpected content in discovery message: " << e.what();
-    }
-}
-
-void Talent::HandlePlatformEvent(const std::string& data) {
-    try {
-        auto payload = json::parse(data);
-        auto event = PlatformEvent::FromJson(payload);
-
-        OnPlatformEvent(event);
-    } catch (const json::parse_error& e) {
-        log::Error() << "Failed to parse platform event.";
-    } catch (const json::type_error& e) {
-        log::Error() << "Unexpected content in platform event: " << e.what();
-    }
-}
-
-void Talent::HandleReply(const std::string& channel_id, const std::string& call_id, const std::string& data) {
-    if (channel_id_ != channel_id) {
-        log::Info() << "Unexpected channel id " << channel_id;
         return;
     }
 
-    auto payload = json::parse(data);
-    auto event = Event::FromJson(payload);
-    auto value = event.GetValue()["value"];
-    auto context = EventContext(talent_id_, channel_id , event, call_handler_, publisher_);
+    log::Debug() << "HandleEvent, talent_id=" << talent_id << ", feature=" << event.GetFeature();
 
-    call_handler_->HandleReply(static_cast<call_token_t>(call_id), std::make_pair(value, context));
-}
-
-call_handler_ptr Talent::GetCallHandler() const { return call_handler_; }
-
-
-//
-// FunctionTalent
-//
-FunctionTalent::FunctionTalent(const std::string& id, publisher_ptr publisher)
-    : Talent{id, publisher} {}
-
-void FunctionTalent::RegisterFunction(const std::string& name, const func_ptr func) {
-    funcs_[name] = func;
-
-    AddOutput(name + "-in", schema::Metadata("Argument(s) for function " + name, "ONE",
-                                             schema::OutputEncoding(schema::OutputEncoding::Type::Object)));
-    AddOutput(name + "-out", schema::Metadata("Results of function " + name, "ONE",
-                                              schema::OutputEncoding(schema::OutputEncoding::Type::Any)));
-}
-
-void FunctionTalent::SkipCycleCheck(bool skip) { schema_.SkipCycleCheck(skip); }
-
-schema::rules_ptr FunctionTalent::GetRules() const {
-    auto talent_rules = Talent::GetRules();
-
-    schema::rule_vec rules;
-    for (auto func : funcs_) {
-        auto x = std::make_unique<schema::FunctionValue>(func.first);
-
-        // auto feature = id_ + "." + func.first + "-in";
-        auto feature = GetInputName(func.first);
-        auto constraint = std::make_unique<schema::SchemaConstraint>(feature, std::move(x), schema::DEFAULT_TYPE,
-                                                                     schema::ValueEncoding::RAW);
-        auto rule = std::make_shared<schema::Rule>(std::move(constraint));
-        rules.push_back(rule);
-    }
-
-    if (talent_rules) {
-        talent_rules->Add(rules);
-    } else {
-        talent_rules = std::make_shared<schema::OrRules>(rules);
-    }
-    return talent_rules;
-}
-
-void FunctionTalent::HandleEvent(const Event& event) {
-    auto feature = event.GetFeature();
-
-    auto item = std::find_if(funcs_.begin(), funcs_.end(), [this, feature](const std::pair<std::string, func_ptr>& p) {
-        return GetInputName(p.first) == feature;
+    // Is it a function talent?
+    auto ft_iter = std::find_if(function_talents_.begin(), function_talents_.end(), [talent_id](const auto& item) {
+        return item.first == talent_id;
     });
 
-    if (item == funcs_.end()) {
-        Talent::HandleEvent(event);
+    if (ft_iter != function_talents_.end()) {
+        // Attempt to treat the event as a function call
+        if (HandleAsCall(ft_iter->second, event)) {
+            return;
+        }
+
+        // It wasn't a call, treat it as an event instead
+        auto ctx = EventContext{callee_talent_->GetId(), callee_talent_->GetChannelId(), event.GetSubject(), event.GetReturnTopic(), call_handler_, mqtt_client_, GenerateUUID};
+        ft_iter->second->OnEvent(event, ctx);
         return;
     }
 
-    auto args = event.GetValue()["args"];
-    auto context = CallContext{GetId(), GetChannelId(), GetOutputName(item->first), event, call_handler_, publisher_};
-    item->second(args, context);
+    auto st_iter = std::find_if(subscription_talents_.begin(), subscription_talents_.end(), [talent_id](const auto& item) {
+        return item.first == talent_id;
+    });
+
+    if (st_iter != subscription_talents_.end()) {
+        // Found event handler
+        auto t = st_iter->second;
+        auto ctx = EventContext{callee_talent_->GetId(), callee_talent_->GetChannelId(), event.GetSubject(), event.GetReturnTopic(), call_handler_, mqtt_client_, GenerateUUID};
+        t->OnEvent(event, ctx);
+        return;
+    }
+
+    if (callee_talent_->GetId() == talent_id) {
+        auto ctx = EventContext{callee_talent_->GetId(), callee_talent_->GetChannelId(), event.GetSubject(), event.GetReturnTopic(), call_handler_, mqtt_client_, GenerateUUID};
+        callee_talent_->OnEvent(event, ctx);
+        return;
+    }
+
+    log::Info() << "Received event for unregistered talent";
 }
 
-std::string FunctionTalent::GetInputName(const std::string& feature) const { return GetId() + "." + feature + "-in"; }
+void Client::HandleCallReply(const std::string& talent_id, const std::string&
+        channel_id, const std::string& call_id, const std::string& msg) {
+    log::Debug() << "Received reply, talent_id: " << talent_id << ", channel_id=" << channel_id << " call_id=" << call_id; 
 
-std::string FunctionTalent::GetOutputName(const std::string& feature) const { return GetId() + "." + feature + "-out"; }
+    auto payload = json::parse(msg);
+    auto event = Event::FromJson(payload);
+    auto value = event.GetValue()["value"];
 
+    call_handler_->HandleReply(static_cast<call_token_t>(call_id), value);
+}
+
+std::string Client::GetDiscoverTopic() const { return mqtt_topic_ns_ + "/" + TALENTS_DISCOVERY_TOPIC; }
+
+std::string Client::GetSharedPrefix(const std::string& talent_id) const { return "$share/" + talent_id; }
+
+std::string Client::GetEventTopic(const std::string& talent_id) const {
+    return mqtt_topic_ns_ + "/talent/" + talent_id + "/events";
+}
+
+std::string Client::GetPlatformEventsTopic() const {
+    return mqtt_topic_ns_+ "/" + PLATFORM_EVENTS_TOPIC;
+}
+
+void Client::Receive(const std::string& topic, const std::string& msg) {
+    log::Debug() << "Message arrived.";
+    log::Debug() << "\ttopic: '" << topic << "'";
+    log::Debug() << "\tpayload: '" << msg;
+
+    std::cmatch m;
+
+    // Forward event
+    // Received events look like this {MQTT_TOPIC_NS}/talent/<talentId>/events
+    // In the regex below we assume that both instance of <talentId> are the same
+    static const auto event_expr = std::regex{"^" + mqtt_topic_ns_ + R"(/talent/([^/]+)/events$)"};
+    if (std::regex_match(topic.c_str(), m, event_expr)) {
+        HandleEvent(m[1], msg);
+        return;
+    }
+
+    // iotea/talent/event_consumer/events/channel/callid
+    // Forward deferred call response
+    // talent/<talentId>/events/<callChannelId>.<deferredCallId>
+    // talent/<talentId>/events/<talentId>.<callChannelId>/<callId>
+    static const auto call_expr =
+        std::regex{"^" + mqtt_topic_ns_ + R"(/talent/[^/]+/events/([^\.]+)\.([^/]+)/(.+)$)"};
+    if (std::regex_match(topic.c_str(), m, call_expr)) {
+        HandleCallReply(m[1], m[2], m[3], msg);
+        return;
+    }
+
+    // Forward discovery request
+    if (topic == GetDiscoverTopic()) {
+        HandleDiscover(msg);
+        return;
+    }
+
+    // Forward platform request
+    if (topic == GetPlatformEventsTopic()) {
+        HandlePlatformEvent(msg);
+        return;
+    }
+
+    log::Error() << "Unexpected topic: << " << topic;
+}
+
+void Client::HandleTick(const std::chrono::steady_clock::time_point& ts) {
+    auto ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(ts.time_since_epoch()).count();
+    call_handler_->HandleTick(ts_ms);
+}
 }  // namespace core
 }  // namespace iotea
+

@@ -1,13 +1,15 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
-#ifndef LOGGING_HPP
-#define LOGGING_HPP
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
+#ifndef IOTEA_LOGGING_HPP
+#define IOTEA_LOGGING_HPP
 
 #include <iostream>
 #include <mutex>
@@ -92,4 +94,4 @@ LoggerFriend Error();
 }  // namespace core
 }  // namespace iotea
 
-#endif  // LOGGING_HPP
+#endif  // IOTEA_LOGGING_HPP

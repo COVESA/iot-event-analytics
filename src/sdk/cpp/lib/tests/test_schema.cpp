@@ -1,11 +1,12 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
 #include <iostream>
 
@@ -246,109 +247,106 @@ TEST(Schema, ArrayType) {
 
 TEST(Schema, Property) {
     struct {
-		std::string name;
-		schema::value_ptr value;
+        std::string name;
+        schema::value_ptr value;
 
         json want;
     } tests[] {
-		{
-			"boolean_property",
-			std::make_shared<schema::BooleanType>(),
-			json::parse(R"({"boolean_property":{"type":"boolean"}})"),
-		},
-		{
-			"number_property",
-			std::make_shared<schema::NumberType>(),
-			json::parse(R"({"number_property":{"type":"number"}})"),
-		},
-	};
+        {
+            "boolean_property",
+            std::make_shared<schema::BooleanType>(),
+            json::parse(R"({"boolean_property":{"type":"boolean"}})"),
+        },
+        {
+            "number_property",
+            std::make_shared<schema::NumberType>(),
+            json::parse(R"({"number_property":{"type":"number"}})"),
+        },
+    };
 
-	for (const auto& t : tests) {
-		auto have = schema::Property(t.name, t.value);
-		ASSERT_EQ(have.Json(), t.want);
-	}
+    for (const auto& t : tests) {
+        auto have = schema::Property(t.name, t.value);
+        ASSERT_EQ(have.Json(), t.want);
+    }
 }
 
 TEST(Schema, Properties) {
-	auto p1 = std::make_pair(std::string{"alpha"}, schema::Property{"boolean_property", std::make_shared<schema::BooleanType>()});
-	auto p2 = std::make_pair(std::string{"beta"}, schema::Property{"number_property", std::make_shared<schema::NumberType>()});
+    auto p1 = std::make_pair(std::string{"alpha"}, schema::Property{"boolean_property", std::make_shared<schema::BooleanType>()});
+    auto p2 = std::make_pair(std::string{"beta"}, schema::Property{"number_property", std::make_shared<schema::NumberType>()});
 
-	auto have = schema::Properties{p1, p2};
+    auto have = schema::Properties{p1, p2};
 
-	auto want = json::parse(R"({"alpha":{"boolean_property":{"type":"boolean"}},"beta":{"number_property":{"type":"number"}}})");
+    auto want = json::parse(R"({"alpha":{"boolean_property":{"type":"boolean"}},"beta":{"number_property":{"type":"number"}}})");
 
-	ASSERT_EQ(have.Json(), want);
+    ASSERT_EQ(have.Json(), want);
 }
 
 TEST(Schema, ObjectType) {
-	struct {
-		schema::property_map properties;
-		std::vector<std::string> required;
-		bool additional_properties;
-		json want;
-	} tests[] {
-		{
+    struct {
+        schema::property_map properties;
+        std::vector<std::string> required;
+        bool additional_properties;
+        json want;
+    } tests[] {
+        {
             {},
             {},
             {},
-			json::parse(R"({"additionalProperties":false,"properties":null,"type":"object"})"),
-		},
-		{
-			{
-				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
-			},
+            json::parse(R"({"additionalProperties":false,"properties":null,"type":"object"})"),
+        },
+        {
+            {
+                {std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
+            },
             {},
             {},
-			json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"type":"object"})"),
-		},
-		{
-			{
-				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
-			},
-			{"boolean_property"},
-			false,
-			json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"required":["boolean_property"],"type":"object"})"),
-		},
-		{
-			{
-				{std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
-				{std::string{"number_property"}, std::make_shared<schema::NumberType>()}
-			},
-			{"boolean_property", "number_property"},
-			true,
+            json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"type":"object"})"),
+        },
+        {
+            {
+                {std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
+            },
+            {"boolean_property"},
+            false,
+            json::parse(R"({"additionalProperties":false,"properties":{"boolean_property":{"type":"boolean"}},"required":["boolean_property"],"type":"object"})"),
+        },
+        {
+            {
+                {std::string{"boolean_property"}, std::make_shared<schema::BooleanType>()},
+                {std::string{"number_property"}, std::make_shared<schema::NumberType>()}
+            },
+            {"boolean_property", "number_property"},
+            true,
 
-			json::parse(R"({"additionalProperties":true,"properties":{"boolean_property":{"type":"boolean"},"number_property":{"type":"number"}},"required":["boolean_property","number_property"],"type":"object"})"),
-		}
-	};
+            json::parse(R"({"additionalProperties":true,"properties":{"boolean_property":{"type":"boolean"},"number_property":{"type":"number"}},"required":["boolean_property","number_property"],"type":"object"})"),
+        }
+    };
 
-	for (const auto& t : tests) {
-		auto have = schema::ObjectType{t.properties, t.required, t.additional_properties};
-		ASSERT_EQ(have.Json(), t.want);
-	}
+    for (const auto& t : tests) {
+        auto have = schema::ObjectType{t.properties, t.required, t.additional_properties};
+        ASSERT_EQ(have.Json(), t.want);
+    }
 }
 
 
 static json constraint_json_builder(const std::string& feature,
-		const schema::ConstraintType constraint_type,
-		std::shared_ptr<schema::SchemaEntity> value, const std::string& type_selector,
-		const schema::ValueEncoding value_encoding, const std::string& path,
-		const std::string& instance_filter,
-		const bool limit_feature_selection) {
-	auto j = json{
-		{"feature", feature},
-		{"op", constraint_type},
-		{"typeSelector", type_selector},
-		{"valueType", value_encoding},
-		{"path", path},
-		{"instanceIdFilter", instance_filter},
-		{"limitFeatureSelection", limit_feature_selection},
-	};
+        const schema::ConstraintType constraint_type,
+        std::shared_ptr<schema::SchemaEntity> value, const std::string& type_selector,
+        const schema::ValueEncoding value_encoding, const std::string& path,
+        const std::string& instance_filter,
+        const bool limit_feature_selection) {
+    auto j = json{
+        {"feature", feature},
+        {"op", constraint_type},
+        {"typeSelector", type_selector},
+        {"valueType", value_encoding},
+        {"value", value ? value->Json() : json(nullptr)},
+        {"path", path},
+        {"instanceIdFilter", instance_filter},
+        {"limitFeatureSelection", limit_feature_selection},
+    };
 
-	if (value) {
-		j["value"] = value->Json();
-	}
-
-	return j;
+    return j;
 }
 
 template <typename T>
@@ -806,214 +804,360 @@ TEST(Schema, NelsonConstraints) {
 }
 
 TEST(Schema, Rule) {
-	auto have = schema::Rule(nullptr);
-	auto want = json(nullptr);
+    auto have = schema::Rule(nullptr);
+    auto want = json(nullptr);
 
-	ASSERT_EQ(have.Json(), want);
+    ASSERT_EQ(have.Json(), want);
 
-	auto c = std::make_shared<schema::ChangeConstraint>("test_feature");
-	have = schema::Rule(c);
-	ASSERT_EQ(have.Json(), c->Json());
+    auto c = std::make_shared<schema::ChangeConstraint>("test_feature");
+    have = schema::Rule(c);
+    ASSERT_EQ(have.Json(), c->Json());
 }
 
 TEST(Schema, AndRules) {
-	auto c1 = std::make_shared<schema::ChangeConstraint>("test_feature1");
-	auto c2 = std::make_shared<schema::ChangeConstraint>("test_feature2");
-	auto c3 = std::make_shared<schema::ChangeConstraint>("test_feature3");
-	auto r1 = std::make_shared<schema::Rule>(c1);
-	auto r2 = std::make_shared<schema::Rule>(c2);
-	auto r3 = std::make_shared<schema::Rule>(c3);
-
-	auto have = schema::AndRules{r1, r2, r3};
-
-	auto want = json::parse(R"(
-		{
-			"rules": [
-				{
-					"feature": "test_feature1",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				},
-				{
-					"feature": "test_feature2",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				},
-				{
-					"feature": "test_feature3",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				}
-			],
-			"type": "and"
-		}
-	)");
-
-
-	ASSERT_EQ(have.Json(), want);
-}
-
-TEST(Schema, OrRules) {
-	auto c1 = std::make_shared<schema::ChangeConstraint>("test_feature1");
-	auto c2 = std::make_shared<schema::ChangeConstraint>("test_feature2");
-	auto c3 = std::make_shared<schema::ChangeConstraint>("test_feature3");
-	auto r1 = std::make_shared<schema::Rule>(c1);
-	auto r2 = std::make_shared<schema::Rule>(c2);
-	auto r3 = std::make_shared<schema::Rule>(c3);
-
-	auto have = schema::OrRules{r1, r2, r3};
-
-	auto want = json::parse(R"(
-		{
-			"rules": [
-				{
-					"feature": "test_feature1",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				},
-				{
-					"feature": "test_feature2",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				},
-				{
-					"feature": "test_feature3",
-					"instanceIdFilter": ".*",
-					"limitFeatureSelection": true,
-					"op": 1,
-					"path": "",
-					"typeSelector": "default",
-					"valueType": 1
-				}
-			],
-			"type": "or"
-		}
-	)");
-
-
-	ASSERT_EQ(have.Json(), want);
-}
-
-TEST(Schema, OutputEncoding) {
-	struct {
-		schema::OutputEncoding::Type type;
-		json want;
-	} tests[] {
-		{
-			schema::OutputEncoding::Type::Number,
-			json::parse(R"({"encoder":null,"type":"number"})")
-		},
-		{
-			schema::OutputEncoding::Type::Boolean,
-			json::parse(R"({"encoder":null,"type":"boolean"})")
-		},
-		{
-			schema::OutputEncoding::Type::String,
-			json::parse(R"({"encoder":null,"type":"string"})")
-		},
-		{
-			schema::OutputEncoding::Type::Object,
-			json::parse(R"({"encoder":null,"type":"object"})")
-		},
-		{
-			schema::OutputEncoding::Type::Any,
-			json::parse(R"({"encoder":null,"type":"any"})")
-		},
-	};
-
-
-	for (const auto& t : tests) {
-		auto have = schema::OutputEncoding{t.type};
-
-		ASSERT_EQ(have.Json(), t.want);
-	}
-}
-
-TEST(Schema, Metadata) {
-	auto m1 = schema::Metadata{"metadata1"};
-	auto want1 = json::parse(R"({"description":"metadata1","encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
-
-	auto m2 = schema::Metadata{"metadata2", "kilogram"};
-	auto want2 = json::parse(R"({"description":"metadata2","encoding":{"encoder":null,"type":"object"},"unit":"kilogram"})");
-
-	auto m3 = schema::Metadata{"metadata3", "kilogram", schema::OutputEncoding{schema::OutputEncoding::Type::Number}};
-	auto want3 = json::parse(R"({"description":"metadata3","encoding":{"encoder":null,"type":"number"},"unit":"kilogram"})");
-
-	ASSERT_EQ(m1.Json(), want1);
-	ASSERT_EQ(m2.Json(), want2);
-	ASSERT_EQ(m3.Json(), want3);
-}
-
-TEST(Schema, OutputFeature) {
-	auto have = schema::OutputFeature{"output_feature", schema::Metadata{"metadata"}};
-	auto want = json::parse(R"({"description":"metadata","encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
-
-	ASSERT_EQ(have.Json(), want);
-}
-
-TEST(Schema, SkipCycleCheckType) {
     struct {
-        schema::Opt<bool> skip;
-        schema::Opt<std::vector<std::string>> names;
+        std::vector<schema::rule_ptr> ctor_rules;
+        std::vector<schema::rule_ptr> add_rules;
+        std::vector<std::string> exclude_on;
 
         json want;
     } tests[] {
         {
-            schema::Opt<bool>{},
-            schema::Opt<std::vector<std::string>>{},
-            json::parse(R"(false)"),
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature1"))
+            },
+            { },
+            { },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "ctor_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+                    }
+                ],
+                "type": "and",
+                "excludeOn": null
+            })")
         },
         {
-            schema::Opt<bool>{false},
-            schema::Opt<std::vector<std::string>>{},
-            json::parse(R"(false)"),
+            { },
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature1"))
+            },
+            { },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "add_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    }
+                ],
+                "type": "and",
+                "excludeOn": null
+            })")
         },
         {
-            schema::Opt<bool>{true},
-            schema::Opt<std::vector<std::string>>{},
-            json::parse(R"(true)"),
-        },
-        {
-            schema::Opt<bool>{},
-            schema::Opt<std::vector<std::string>>{std::vector<std::string>{"alpha"}},
-            json::parse(R"(["alpha"])"),
-        },
-        {
-            schema::Opt<bool>{},
-            schema::Opt<std::vector<std::string>>{std::vector<std::string>{"alpha", "beta", "gamma"}},
-            json::parse(R"(["alpha", "beta", "gamma"])"),
-        },
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature1")),
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature2"))
+            },
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature1")),
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature2"))
+            },
+            { "exclude-1", "exclude-2", "exclude-3" },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "ctor_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "ctor_feature2",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "add_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "add_feature2",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    }
+                ],
+                "type": "and",
+                "excludeOn": ["exclude-1", "exclude-2", "exclude-3"]
+            })")
+        }
     };
 
     for (const auto& t : tests) {
-        schema::SkipCycleCheckType have;
+        auto have = schema::AndRules(t.ctor_rules);
 
-        if (t.skip) {
-            have = schema::SkipCycleCheckType(t.skip.Get());
-        } else if (t.names) {
-            have = schema::SkipCycleCheckType(t.names.Get());
+        for (const auto& r : t.add_rules) {
+            have.Add(r);
+        }
+        for (const auto& ex : t.exclude_on) {
+            have.ExcludeOn(ex);
         }
 
-       ASSERT_EQ(have.Json(), t.want);
+        ASSERT_EQ(have.Json(), t.want);
     }
 }
+
+TEST(Schema, OrRules) {
+    struct {
+        std::vector<schema::rule_ptr> ctor_rules;
+        std::vector<schema::rule_ptr> add_rules;
+        std::vector<std::string> exclude_on;
+
+        json want;
+    } tests[] {
+        {
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature1"))
+            },
+            { },
+            { },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "ctor_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    }
+                ],
+                "type": "or",
+                "excludeOn": null
+            })")
+        },
+        {
+            { },
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature1"))
+            },
+            { },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "add_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    }
+                ],
+                "type": "or",
+                "excludeOn": null
+            })")
+        },
+        {
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature1")),
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("ctor_feature2"))
+            },
+            {
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature1")),
+                std::make_shared<schema::Rule>(std::make_shared<schema::ChangeConstraint>("add_feature2"))
+            },
+            { "exclude-1", "exclude-2", "exclude-3" },
+            json::parse(R"({
+                "rules": [
+                    {
+                        "feature": "ctor_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "ctor_feature2",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "add_feature1",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    },
+                    {
+                        "feature": "add_feature2",
+                        "instanceIdFilter": ".*",
+                        "limitFeatureSelection": true,
+                        "op": 1,
+                        "path": "",
+                        "typeSelector": "default",
+                        "valueType": 1,
+                        "value": null
+
+                    }
+                ],
+                "type": "or",
+                "excludeOn": ["exclude-1", "exclude-2", "exclude-3"]
+            })")
+        }
+    };
+
+    for (const auto& t : tests) {
+        auto have = schema::OrRules(t.ctor_rules);
+
+        for (const auto& r : t.add_rules) {
+            have.Add(r);
+        }
+        for (const auto& ex : t.exclude_on) {
+            have.ExcludeOn(ex);
+        }
+
+        ASSERT_EQ(have.Json(), t.want);
+    }
+}
+
+TEST(Schema, OutputEncoding) {
+    struct {
+        schema::OutputEncoding::Type type;
+        json want;
+    } tests[] {
+        {
+            schema::OutputEncoding::Type::Number,
+            json::parse(R"({"encoder":null,"type":"number"})")
+        },
+        {
+            schema::OutputEncoding::Type::Boolean,
+            json::parse(R"({"encoder":null,"type":"boolean"})")
+        },
+        {
+            schema::OutputEncoding::Type::String,
+            json::parse(R"({"encoder":null,"type":"string"})")
+        },
+        {
+            schema::OutputEncoding::Type::Object,
+            json::parse(R"({"encoder":null,"type":"object"})")
+        },
+        {
+            schema::OutputEncoding::Type::Any,
+            json::parse(R"({"encoder":null,"type":"any"})")
+        },
+    };
+
+
+    for (const auto& t : tests) {
+        auto have = schema::OutputEncoding{t.type};
+
+        ASSERT_EQ(have.Json(), t.want);
+    }
+}
+
+TEST(Schema, Metadata) {
+    auto m1 = schema::Metadata{"metadata1"};
+    auto want1 = json::parse(R"({"description":"metadata1","history":0,"ttl":0,"encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+    auto m2 = schema::Metadata{"metadata2", 10};
+    auto want2 = json::parse(R"({"description":"metadata2","history":10,"ttl":0,"encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+    auto m3 = schema::Metadata{"metadata3", 10, 30};
+    auto want3 = json::parse(R"({"description":"metadata3","history":10,"ttl":30,"encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+    auto m4 = schema::Metadata{"metadata4", 10, 30, "kilogram"};
+    auto want4 = json::parse(R"({"description":"metadata4","history":10,"ttl":30,"encoding":{"encoder":null,"type":"object"},"unit":"kilogram"})");
+
+    auto m5 = schema::Metadata{"metadata5", 10, 30, "kilogram", schema::OutputEncoding{schema::OutputEncoding::Type::Number}};
+    auto want5 = json::parse(R"({"description":"metadata5","history":10,"ttl":30,"encoding":{"encoder":null,"type":"number"},"unit":"kilogram"})");
+
+    ASSERT_EQ(m1.Json(), want1);
+    ASSERT_EQ(m2.Json(), want2);
+    ASSERT_EQ(m3.Json(), want3);
+    ASSERT_EQ(m4.Json(), want4);
+    ASSERT_EQ(m5.Json(), want5);
+}
+
+TEST(Schema, OutputFeature) {
+    auto have = schema::OutputFeature{"output_feature", schema::Metadata{"metadata"}};
+    auto want = json::parse(R"({"description":"metadata","history":0,"ttl":0,"encoding":{"encoder":null,"type":"object"},"unit":"ONE"})");
+
+    ASSERT_EQ(have.Json(), want);
+}
+
+TEST(Schema, SkipCycleCheckType) {
+    auto scc_empty = schema::SkipCycleCheckType();
+    ASSERT_EQ(scc_empty.Json(), json::parse("[]"));
+
+    auto scc_skip_all = schema::SkipCycleCheckType();
+    scc_skip_all.SkipAll();
+    ASSERT_EQ(scc_skip_all.Json(), json(true));
+
+    auto scc_skip_some = schema::SkipCycleCheckType();
+    scc_skip_some.Skip("alpha");
+    ASSERT_EQ(scc_skip_some.Json(), json::parse(R"(["alpha"])"));
+    scc_skip_some.Skip("beta");
+    ASSERT_EQ(scc_skip_some.Json(), json::parse(R"(["alpha", "beta"])"));
+    scc_skip_some.Skip("gamma");
+    ASSERT_EQ(scc_skip_some.Json(), json::parse(R"(["alpha", "beta", "gamma"])"));
+}
+

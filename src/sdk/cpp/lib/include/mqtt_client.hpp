@@ -1,24 +1,33 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
-#ifndef MQTT_CLIENT_HPP
-#define MQTT_CLIENT_HPP
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
-#include <mqtt/async_client.h>
+#ifndef IOTEA_MQTT_CLIENT_HPP
+#define IOTEA_MQTT_CLIENT_HPP
 
+#include <chrono>
 #include <functional>
 #include <list>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <string>
+#include <utility>
+#include <vector>
 
-#include "iotea.hpp"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <mqtt/async_client.h>
+#pragma GCC diagnostic pop
+
+
+#include "interface.hpp"
+#include "logging.hpp"
 
 namespace iotea {
 namespace core {
@@ -31,12 +40,12 @@ class MqttClient : public Publisher {
     void Run();
     void Stop();
 
-    void RegisterTalent(std::shared_ptr<Talent> talent);
-
     // Publisher
     void Publish(const std::string& topic, const std::string& data) override;
-    std::string GetIngestionEventsTopic() const override;
-    std::string GetNamespace() const override;
+    void Subscribe(const std::string& topic, const int qos = 1);
+
+    std::function<void(mqtt::const_message_ptr)> OnMessage;
+    std::function<void(const std::chrono::steady_clock::time_point& ts)> OnTick;
 
    private:
     enum class State {
@@ -54,30 +63,15 @@ class MqttClient : public Publisher {
     mqtt::async_client client_;
 
     int reconnect_delay_seconds_;
-    std::string discover_topic_;
+    std::chrono::steady_clock::time_point prev_tick_;
 
-    std::map<std::string, std::shared_ptr<Talent>> talents_;
+    std::vector<std::pair<std::string, int>> topics_;
 
    private:
     void ChangeState(State state);
-    void OnMessage(mqtt::const_message_ptr msg);
-    void OnDiscover(mqtt::const_message_ptr msg);
-    void OnPlatformEvent(mqtt::const_message_ptr msg);
-    void OnEvent(const std::string& talent_id, mqtt::const_message_ptr msg);
-    void OnDeferredCall(const std::string& talent_id, const std::string& channel_id, const std::string& call_id,
-                        mqtt::const_message_ptr msg);
-
-    std::string GetSharedPrefix(const std::string& talent_id) const;
-    std::string GetDiscoverTopic() const;
-    std::string GetEventTopic(const std::string& talent_id) const;
-    std::string GetPlatformEventsTopic() const;
-
-    std::string get_event_topic(std::shared_ptr<Talent> talent);
-
-    const std::string mqtt_topic_ns_;
 };
 
 }  // namespace core
 }  // namespace iotea
 
-#endif // MQTT_CLIENT_HPP
+#endif // IOTEA_MQTT_CLIENT_HPP

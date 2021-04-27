@@ -31,12 +31,21 @@ jobs:
         pip install wheel
         pip install ${{github.workspace}}/src/sdk/python/lib/boschio_iotea-0.4.0-py3-none-any.whl
 
+    - name: Build C++ tests
+      working-directory: ${{github.workspace}}/test/integration-tests/testset_sdk/cpp
+      shell: bash
+      run: |
+        cmake -B build -S .
+        cmake --build build --parallel
+
     - name: Run integration tests
       working-directory: ${{github.workspace}}/test/integration-tests
       shell: bash
       # The required "test talents" are started manually as background
       # jobs before finally invoking the test runner.
       run: |
+        ./testset_sdk/cpp/build/function_provider_for_test 2>&1 >/dev/null &
+        ./testset_sdk/cpp/build/testset_sdk 2>&1 >/dev/null &
         source .venv/bin/activate
         python ./testset_sdk/python/test_set_sdk.py 2>&1 >/dev/null &
         python ./testset_sdk/python/function_provider.py 2>&1 >/dev/null &

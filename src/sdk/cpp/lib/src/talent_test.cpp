@@ -1,3 +1,13 @@
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -100,7 +110,9 @@ json TestSetInfo::Json() const {
 // TalentDependencies
 //
 void TalentDependencies::Add(const std::string& talent_id) {
-    dependencies_.insert({talent_id, false});
+    if (dependencies_.count(talent_id) == 0) {
+        dependencies_.insert({talent_id, false});
+    }
 }
 
 bool TalentDependencies::Check(const std::string& talent_id) const {
@@ -132,11 +144,16 @@ void TalentDependencies::Update(const core::PlatformEvent& event) {
     }
 
     dependencies_[talent] = is_set;
-    n_dep_met_ += is_set ? 1 : -1;
 }
 
 bool TalentDependencies::CheckAll() const {
-    return n_dep_met_ == dependencies_.size();
+    for (const auto& dep : dependencies_) {
+        if (!dep.second) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 json TalentDependencies::Json() const {
@@ -158,8 +175,8 @@ json TalentDependencies::Json() const {
 //
 // TestSetTalent
 //
-TestSetTalent::TestSetTalent(const std::string& name, core::publisher_ptr publisher)
-    : core::FunctionTalent{name, publisher}
+TestSetTalent::TestSetTalent(const std::string& name)
+    : core::FunctionTalent{name}
     , test_set_info_{name} {
 
     RegisterFunction(PREPARE_TEST_SET_METHOD_NAME, [this](const json& args, const core::CallContext& context) {
@@ -179,26 +196,25 @@ void TestSetTalent::OnPlatformEvent(const core::PlatformEvent& event) {
     dependencies_.Update(event);
 }
 
-void TestSetTalent::RegisterTest(const std::string& name, const json& expect, const core::Callee callee, const json& args, uint32_t timeout) {
+void TestSetTalent::RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout) {
     // This is the function that we will delegate to when the runner ask us to
     // run the test called "name"
     //
     auto func = [name, callee, args](core::CallContext context) {
 
         auto start = std::chrono::high_resolution_clock::now();
-        auto t = callee.Call(args, context);
+        auto t = context.Call(callee, args);
 
-        context.GatherAndReply([name, start](std::vector<std::pair<json, core::EventContext>> replies) {
-            auto stop = std::chrono::high_resolution_clock::now();
-            auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
-            auto duration = static_cast<int32_t>(delta);
+        context.GatherAndReply([name, start](std::vector<json> replies) {
+                auto stop = std::chrono::high_resolution_clock::now();
+                auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
+                auto duration = static_cast<int32_t>(delta);
 
-            auto result = replies[0].first;
-
-            return TestResult{name, result, duration}.Json();
-        }, {t});
+                return TestResult{name, replies[0], duration}.Json();
+            }, nullptr, t);
     };
 
+    dependencies_.Add(callee.GetTalentId());
     test_set_info_.AddTest(name, expect, func, timeout);
 }
 

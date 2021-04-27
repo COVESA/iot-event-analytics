@@ -1,11 +1,12 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
 #include "schema.hpp"
 
@@ -270,9 +271,7 @@ json Constraint::Json() const {
         {"limitFeatureSelection", limit_feature_selection_},
     };
 
-    if (value_) {
-        j["value"] = value_->Json();
-    }
+    j["value"] = value_ ? value_->Json() : json(nullptr);
 
     return j;
 }
@@ -371,7 +370,9 @@ json NelsonConstraint::Json() const {
 Rule::Rule(std::shared_ptr<Constraint> constraint)
     : constraint_{constraint} {}
 
-json Rule::Json() const { return constraint_.get() == nullptr ? json(nullptr) : constraint_->Json(); }
+json Rule::Json() const {
+    return constraint_.get() == nullptr ? json(nullptr) : constraint_->Json();
+}
 
 //
 // Rules
@@ -379,9 +380,13 @@ json Rule::Json() const { return constraint_.get() == nullptr ? json(nullptr) : 
 Rules::Rules(const std::string& type)
     : type_{type} {}
 
-void Rules::Add(const rule_vec& rules) { rules_.insert(rules_.end(), rules.begin(), rules.end()); }
+void Rules::Add(rule_ptr rule) { rules_.push_back(rule); }
 
-void Rules::Add(const rules_ptr rules) { rules_.insert(rules_.end(), rules->rules_.begin(), rules->rules_.end()); }
+void Rules::ExcludeOn(const std::string& feature) { exclude_on_.push_back(feature); }
+
+void Rules::ExcludeOn(const std::vector<std::string>& features) {
+    exclude_on_.insert(exclude_on_.end(), features.begin(), features.end());
+}
 
 json Rules::Json() const {
     auto array = json::array();
@@ -390,6 +395,7 @@ json Rules::Json() const {
 
     return json{
         {"type", json(type_)},
+        {"excludeOn", exclude_on_.empty() ? json(nullptr) : json(exclude_on_)},
         {"rules", array},
     };
 }
@@ -432,13 +438,20 @@ json OutputEncoding::Json() const {
 //
 // Metadata
 //
-Metadata::Metadata(const std::string& description, const std::string& unit, const OutputEncoding& encoding)
+Metadata::Metadata(const std::string& description, int history, int ttl, const std::string& unit, const OutputEncoding& encoding)
     : description_{description}
+    , history_{history}
+    , ttl_{ttl}
     , unit_{unit}
     , encoding_{encoding} {}
 
 json Metadata::Json() const {
-    return json{{"description", json(description_)}, {"encoding", encoding_.Json()}, {"unit", json(unit_)}};
+    return json{
+        {"description", description_},
+        {"history", history_},
+        {"ttl", ttl_},
+        {"encoding", encoding_.Json()},
+        {"unit", unit_}};
 }
 
 //
@@ -458,20 +471,23 @@ json OutputFeature::Json() const { return metadata_.Json(); }
 SkipCycleCheckType::SkipCycleCheckType()
     : skip_{false} {}
 
-SkipCycleCheckType::SkipCycleCheckType(bool skip)
-    : skip_{skip} {}
+
+void SkipCycleCheckType::Skip(const std::string& name) {
+    if (std::find(names_.begin(), names_.end(), name) == names_.end()) {
+        names_.push_back(name);
+    }
+}
+
+void SkipCycleCheckType::SkipAll() {
+    skip_ = true;
+}
 
 json SkipCycleCheckType::Json() const {
     if (skip_) {
-        return json(skip_.Get());
+        return skip_;
     }
 
-    if (names_) {
-        return json(names_.Get());
-    }
-
-    // There should never be a situation where neither skip_ nor names_ holds a value
-    return json{};
+    return names_;
 }
 
 //
@@ -505,43 +521,12 @@ FunctionValue::FunctionValue(const std::string& name)
                  std::vector<std::string>({"func", "args", "chnl", "call"})) {}
 
 //
-// IOFeatures
-//
-IOFeatures::IOFeatures()
-    : options_{options_map{{"scc", std::make_shared<SkipCycleCheckType>()}}} {}
-
-void IOFeatures::SkipCycleCheck(const bool skip) { options_["scc"] = std::make_shared<SkipCycleCheckType>(skip); }
-
-void IOFeatures::SkipCycleCheckFor(std::initializer_list<std::string> args) {
-    options_["scc"] = std::make_shared<SkipCycleCheckType>(std::vector<std::string>(args.begin(), args.end()));
-}
-
-void IOFeatures::AddOutput(const std::string& feature, const Metadata& metadata) {
-    // TODO handle situation where the same feature is added twice
-    output_features_.push_back(OutputFeature(feature, metadata));
-}
-
-const Options& IOFeatures::GetOptions() const { return options_; }
-
-json IOFeatures::GetOutputFeatures(const std::string& talent_id) const {
-    json features;
-
-    for (auto o : output_features_) {
-        features[talent_id + "." + o.GetFeature()] = o.Json();
-    }
-
-    return features;
-}
-
-//
 // Schema
 //
-Schema::Schema(const std::string& id, const bool remote, const Options& options,
-               const std::vector<OutputFeature>& outputs, rule_ptr rules)
+Schema::Schema(const std::string& id, const std::vector<OutputFeature>& outputs, const options_map& options, rule_ptr rules)
     : id_{id}
-    , remote_{remote}
-    , options_{options}
     , outputs_{outputs}
+    , options_{options}
     , rules_{rules} {}
 
 json Schema::Json() const {
@@ -551,53 +536,42 @@ json Schema::Json() const {
         features[id_ + "." + o.GetFeature()] = o.Json();
     }
 
-    return json{{"id", id_},
-                {"remote", remote_},
-                {"options", options_.Json()},
-                {"outputs", features},
-                {"rules", rules_->Json()}};
+    auto config = json{
+        {"outputs", features},
+        {"rules", rules_->Json()}
+    };
+
+    for (const auto& opt : options_) {
+        config[opt.first] = opt.second->Json();
+    }
+
+    return json{
+        {"id", id_},
+        {"config", config}
+    };
 }
 
 //
 // Talent
 //
-std::string Talent::CreateUuid(const std::string& prefix) {
-    auto uuid = GenerateUUID();
-    if (prefix.empty()) {
-        return uuid;
-    }
-
-    return prefix + "-" + uuid;
-}
-
 Talent::Talent(const std::string& id)
     : id_{id}
-    , uid_{CreateUuid(id)} {}
+    , scc_{std::make_shared<SkipCycleCheckType>()}
+    , options_{{"scc", scc_}} {}
 
-bool Talent::IsRemote() const {
-    // TODO figure out when it is actually remote
-    return false;
+Schema Talent::GetSchema(rule_ptr rules) const { return Schema(id_, output_features_, options_, rules); }
+
+void Talent::SkipCycleChecks() {
+    scc_->SkipAll();
 }
 
-std::string Talent::GetFullFeature(const std::string& talent_id, const std::string& feature,
-                                   const std::string& type) const {
-    auto full_feature = talent_id + "." + feature;
-
-    if (type == "") {
-        return full_feature;
-    }
-
-    return type + "." + full_feature;
+void Talent::SkipCycleCheckFor(const std::string& feature) {
+    scc_->Skip(feature);
 }
 
-Schema Talent::GetSchema(rules_ptr rules) const { return Schema(id_, IsRemote(), options_, output_features_, rules); }
-
-json Talent::Json() const {
-    return json{{"id", json(id_)},
-                {"remote", json(IsRemote())},
-                {"options", GetOptions().Json()},
-                {"outputs", GetOutputFeatures(id_)},
-                {"rules", rules_ ? rules_->Json() : json(nullptr)}};
+void Talent::AddOutput(const std::string& feature, const Metadata& metadata) {
+    // TODO handle situation where the same feature is added twice
+    output_features_.push_back(OutputFeature(feature, metadata));
 }
 
 //

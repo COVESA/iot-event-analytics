@@ -1,3 +1,13 @@
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
+
 #include <csignal>
 #include <initializer_list>
 #include <memory>
@@ -26,16 +36,20 @@ class EchoConsumer : public Talent {
     } echo_provider;
 
    public:
-    explicit EchoConsumer(std::shared_ptr<Publisher> publisher)
-        : Talent(TALENT_NAME, publisher) {
-        AddOutput(PROVIDED_FEATURE_NAME, schema::Metadata("Message to be forwarded to echo provider", "ONE",
+    EchoConsumer()
+        : Talent(TALENT_NAME) {
+
+        int ttl = 1000;
+        int history = 30;
+        AddOutput(PROVIDED_FEATURE_NAME, schema::Metadata("Message to be forwarded to echo provider", history, ttl, "ONE",
                                                           schema::OutputEncoding(schema::OutputEncoding::Type::String)));
-        echo_provider.echo = CreateCallee(CALLED_TALENT_NAME, CALLED_METHOD_NAME);
+
+        echo_provider.echo = RegisterCallee(CALLED_TALENT_NAME, CALLED_METHOD_NAME);
         schema_.SkipCycleCheckFor({PROVIDED_FETAURE_TYPE+"."+TALENT_NAME+"."+PROVIDED_FEATURE_NAME});
     }
 
-    schema::rules_ptr OnGetRules() const override {
-        return OrRules(IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME));
+    schema::rule_ptr OnGetRules() const override {
+        return IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME);
     }
 
     void OnEvent(const Event& event, EventContext context) override {
@@ -43,11 +57,11 @@ class EchoConsumer : public Talent {
             auto message = json{event.GetValue().get<std::string>()};
             log::Info() << "Received message:  '" << message << "'";
 
-            auto t = echo_provider.echo.Call(message, context);
+            auto t = context.Call(echo_provider.echo, message);
 
-            context.Gather([](std::vector<std::pair<json, EventContext>> replies) {
-                    log::Info() << "Received echo:     '" << replies[0].first.dump(4) << "'";
-                }, {t});
+            context.Gather([](std::vector<json> replies) {
+                    log::Info() << "Received echo:     '" << replies[0].dump(4) << "'";
+                }, nullptr, t);
 
             log::Info() << "Forwarded message: '" << message << "'";
         } else {
@@ -56,17 +70,18 @@ class EchoConsumer : public Talent {
     }
 };
 
-static std::shared_ptr<MqttClient> client = std::make_shared<MqttClient>(SERVER_ADDRESS, TALENT_NAME);
+static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) { client->Stop(); }
+void signal_handler(int signal) {
+    client.Stop();
+}
 
 int main(int argc, char* argv[]) {
-    auto talent = std::make_shared<EchoConsumer>(client);
-    client->RegisterTalent(talent);
+    auto talent = std::make_shared<EchoConsumer>();
+    client.RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);
-
-    client->Run();
+    client.Start();
 
     return 0;
 }
