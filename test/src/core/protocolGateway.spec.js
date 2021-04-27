@@ -121,8 +121,8 @@ describe('core.protocolGateway', () => {
 
         expect(spy.calls.count()).toBe(2);
 
-        expect(spy.calls.argsFor(0)).toEqual([ { foo: 56 }, 'iotea/foo', 'mock-mqtt1' ]);
-        expect(spy.calls.argsFor(1)).toEqual([ { foo: 56 }, 'iotea/foo', 'mock-mqtt2' ]);
+        expect(spy.calls.argsFor(0)).toEqual([ { foo: 56 }, 'foo', 'mock-mqtt1' ]);
+        expect(spy.calls.argsFor(1)).toEqual([ { foo: 56 }, 'foo', 'mock-mqtt2' ]);
     });
 
     it('It should subscribe a topic from a specific adapter', async () => {
@@ -151,7 +151,7 @@ describe('core.protocolGateway', () => {
 
         expect(spy.calls.count()).toBe(1);
 
-        expect(spy.calls.argsFor(0)).toEqual([ { hello: 128 }, 'iotea/bar', adapter1.id ]);
+        expect(spy.calls.argsFor(0)).toEqual([ { hello: 128 }, 'bar', adapter1.id ]);
     });
 
     it('It should subscribe a shared topic from all adapters', async () => {
@@ -195,7 +195,7 @@ describe('core.protocolGateway', () => {
 
         expect(spy.calls.count()).toBe(1);
 
-        expect(spy.calls.argsFor(0)).toEqual([ { hello: 128 }, 'iotea/bar', adapter1.id ]);
+        expect(spy.calls.argsFor(0)).toEqual([ { hello: 128 }, 'bar', adapter1.id ]);
     });
 
     it('should not be possible to only using platform protocols and publish to all adapters', async () => {

@@ -188,6 +188,7 @@ class PubSubOptions {
         this.adapterId = adapterId;
     }
 }
+
 class PublishOptions extends PubSubOptions {
     constructor(platformProtocolOnly, adapterId) {
         super(platformProtocolOnly, adapterId);
