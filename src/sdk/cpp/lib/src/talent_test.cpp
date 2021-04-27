@@ -47,14 +47,14 @@ json TestResult::Json() const {
 //
 // Test
 //
-Test::Test(const std::string& name, const json& expected_value, const std::function<void(const core::CallContext&)> func, uint32_t timeout)
+Test::Test(const std::string& name, const json& expected_value, const std::function<void(core::call_ctx_ptr)> func, uint32_t timeout)
     : name_{name}
     , expected_value_{expected_value}
     , func_{func}
     , timeout_{timeout} {}
 
-void Test::Run(core::CallContext context) {
-    func_(context);
+void Test::Run(core::call_ctx_ptr ctx) {
+    func_(ctx);
 }
 
 json Test::Json() const {
@@ -72,12 +72,12 @@ json Test::Json() const {
 TestSetInfo::TestSetInfo(const std::string& name)
     : name_{name} {}
 
-void TestSetInfo::AddTest(const std::string& name, const json& exepected_value, const std::function<void(const core::CallContext&)>& func, uint32_t timeout) {
+void TestSetInfo::AddTest(const std::string& name, const json& exepected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout) {
     auto test = Test{name, exepected_value, func, timeout};
     tests_.insert({name, test});
 }
 
-void TestSetInfo::RunTest(const std::string& name, const core::CallContext& context) {
+void TestSetInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
     core::log::Info() << "Run Test " << name;
 
     auto test = tests_.find(name);
@@ -85,11 +85,11 @@ void TestSetInfo::RunTest(const std::string& name, const core::CallContext& cont
     if (test == tests_.end()) {
         core::log::Error() << "Test " << name << " has not been registered";
 
-        context.Reply(TestResult{name, TEST_ERROR, -1}.Json());
+        ctx->Reply(TestResult{name, TEST_ERROR, -1}.Json());
         return;
     }
 
-    test->second.Run(context);
+    test->second.Run(ctx);
 }
 
 json TestSetInfo::Json() const {
@@ -179,16 +179,16 @@ TestSetTalent::TestSetTalent(const std::string& name)
     : core::FunctionTalent{name}
     , test_set_info_{name} {
 
-    RegisterFunction(PREPARE_TEST_SET_METHOD_NAME, [this](const json& args, const core::CallContext& context) {
-        Prepare(args, context);
+    RegisterFunction(PREPARE_TEST_SET_METHOD_NAME, [this](const json& args, core::call_ctx_ptr ctx) {
+        Prepare(args, ctx);
     });
 
-    RegisterFunction(GET_TEST_INFO_METHOD_NAME, [this](const json& args, const core::CallContext& context) {
-        GetInfo(args, context);
+    RegisterFunction(GET_TEST_INFO_METHOD_NAME, [this](const json& args, core::call_ctx_ptr ctx) {
+        GetInfo(args, ctx);
     });
 
-    RegisterFunction(RUN_TEST_METHOD_NAME, [this](const json& args, const core::CallContext& context) {
-        Run(args, context);
+    RegisterFunction(RUN_TEST_METHOD_NAME, [this](const json& args, core::call_ctx_ptr ctx) {
+        Run(args, ctx);
     });
 }
 
@@ -200,12 +200,12 @@ void TestSetTalent::RegisterTest(const std::string& name, const json& expect, co
     // This is the function that we will delegate to when the runner ask us to
     // run the test called "name"
     //
-    auto func = [name, callee, args](core::CallContext context) {
+    auto func = [name, callee, args](core::call_ctx_ptr ctx) {
 
         auto start = std::chrono::high_resolution_clock::now();
-        auto t = context.Call(callee, args);
+        auto t = ctx->Call(callee, args);
 
-        context.GatherAndReply([name, start](std::vector<json> replies) {
+        ctx->GatherAndReply([name, start](std::vector<json> replies) {
                 auto stop = std::chrono::high_resolution_clock::now();
                 auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count();
                 auto duration = static_cast<int32_t>(delta);
@@ -218,17 +218,17 @@ void TestSetTalent::RegisterTest(const std::string& name, const json& expect, co
     test_set_info_.AddTest(name, expect, func, timeout);
 }
 
-void TestSetTalent::Prepare(const json&, const core::CallContext& context) {
-    context.Reply(dependencies_.CheckAll());
+void TestSetTalent::Prepare(const json&, core::call_ctx_ptr ctx) {
+    ctx->Reply(dependencies_.CheckAll());
 }
 
-void TestSetTalent::GetInfo(const json&, const core::CallContext& context) {
-    context.Reply(test_set_info_.Json());
+void TestSetTalent::GetInfo(const json&, core::call_ctx_ptr ctx) {
+    ctx->Reply(test_set_info_.Json());
 }
 
-void TestSetTalent::Run(const json& args, const core::CallContext& context) {
+void TestSetTalent::Run(const json& args, core::call_ctx_ptr ctx) {
     auto test_name = args[0].get<std::string>();
-    test_set_info_.RunTest(test_name, context);
+    test_set_info_.RunTest(test_name, ctx);
 }
 
 } // namespace test

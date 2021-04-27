@@ -52,14 +52,14 @@ class EchoConsumer : public Talent {
         return IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME);
     }
 
-    void OnEvent(const Event& event, EventContext context) override {
+    void OnEvent(const Event& event, event_ctx_ptr context) override {
         if (event.GetType() == PROVIDED_FETAURE_TYPE) {
-            auto message = json{event.GetValue().get<std::string>()};
+            auto message = event.GetValue().get<std::string>();
             log::Info() << "Received message:  '" << message << "'";
 
-            auto t = context.Call(echo_provider.echo, message);
+            auto t = context->Call(echo_provider.echo, message);
 
-            context.Gather([](std::vector<json> replies) {
+            context->Gather([](std::vector<json> replies) {
                     log::Info() << "Received echo:     '" << replies[0].dump(4) << "'";
                 }, nullptr, t);
 
@@ -72,11 +72,11 @@ class EchoConsumer : public Talent {
 
 static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) {
+void signal_handler(int) {
     client.Stop();
 }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<EchoConsumer>();
     client.RegisterTalent(talent);
 

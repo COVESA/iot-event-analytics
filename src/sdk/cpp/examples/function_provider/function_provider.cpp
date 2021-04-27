@@ -33,40 +33,40 @@ class MathFunctions : public FunctionTalent {
     Callee fib;
 
    public:
-    explicit MathFunctions()
+    MathFunctions()
         : FunctionTalent(TALENT_NAME) {
         RegisterFunction(FUNC_MULTIPLY,
-                         [this](const json& args, const CallContext& context) { Multiply(args, context); });
+                         [this](const json& args, call_ctx_ptr context) { Multiply(args, context); });
 
         RegisterFunction(FUNC_FIBONACCI,
-                [this](const json& args, const CallContext& context) { Fibonacci(args, context); });
+                [this](const json& args, call_ctx_ptr context) { Fibonacci(args, context); });
 
         fib = RegisterCallee(TALENT_NAME, FUNC_FIBONACCI);
     }
 
-    void Multiply(const json& args, const CallContext& context) {
+    void Multiply(const json& args, call_ctx_ptr context) {
         auto a = args[0].get<int>();
         auto b = args[1];
         auto val = std::to_string(a * b["factor"].get<int>()) + " " + b["unit"].get<std::string>();
-        context.Reply(val);
+        context->Reply(val);
 
         static int dingdings = 0;
-        NewEventContext("my-subject").Emit<int>("dingdings", ++dingdings, "blob");
+        NewEventContext("my-subject")->Emit<int>("dingdings", ++dingdings, "blob");
     }
 
 
-    void Fibonacci(const json& args, CallContext context) {
+    void Fibonacci(const json& args, call_ctx_ptr context) {
         auto n = args[0].get<int>();
 
         if (n <= 1) {
-            context.Reply(n);
+            context->Reply(n);
             return;
         }
 
-        auto t1 = context.Call(fib, n - 1);
-        auto t2 = context.Call(fib, n - 2);
+        auto t1 = context->Call(fib, n - 1);
+        auto t2 = context->Call(fib, n - 2);
 
-        context.GatherAndReply([](std::vector<json> replies) {
+        context->GatherAndReply([](std::vector<json> replies) {
             auto n1 = replies[0].get<int>();
             auto n2 = replies[1].get<int>();
 
@@ -80,11 +80,11 @@ class MathFunctions : public FunctionTalent {
 
 static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) {
+void signal_handler(int) {
     client.Stop();
 }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<MathFunctions>();
     client.RegisterFunctionTalent(talent);
 

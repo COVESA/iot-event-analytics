@@ -23,19 +23,19 @@ static const char FUNC_ECHO[] = "echo";
 
 class FunctionProvider : public FunctionTalent {
    public:
-    explicit FunctionProvider()
+    FunctionProvider()
         : FunctionTalent(TALENT_ID) {
-        RegisterFunction(FUNC_ECHO, [](const json& args, const CallContext& context) {
-            context.Reply(args[0]);
+        RegisterFunction(FUNC_ECHO, [](const json& args, call_ctx_ptr context) {
+            context->Reply(args[0]);
         });
     }
 };
 
 static Client client(SERVER_ADDRESS);
 
-void signal_handler(int signal) { client.Stop(); }
+void signal_handler(int) { client.Stop(); }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<FunctionProvider>();
     client.RegisterFunctionTalent(talent);
 

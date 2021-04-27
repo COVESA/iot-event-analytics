@@ -40,11 +40,13 @@ class CallToken;
 class EventContext;
 class CallContext;
 class Callee;
-class CallHandler;
+class ReplyHandler;
 class DiscoverMessage;
 
-using call_token_t = std::string;
-using func_ptr = std::function<void(const json&, const CallContext&)>;
+using call_id_t = std::string;
+using event_ctx_ptr = std::shared_ptr<EventContext>;
+using call_ctx_ptr = std::shared_ptr<CallContext>;
+using func_ptr = std::function<void(const json&, call_ctx_ptr)>;
 using function_map = std::unordered_map<std::string, func_ptr>;
 using gather_func_ptr = std::function<void(std::vector<json>)>;
 using gather_and_reply_func_ptr = std::function<json(std::vector<json>)>;
@@ -52,14 +54,12 @@ using timeout_func_ptr = std::function<void(void)>;
 using talent_ptr = std::shared_ptr<Talent>;
 using talent_map = std::unordered_map<std::string, talent_ptr>;
 using publisher_ptr = std::shared_ptr<Publisher>;
-using call_handler_ptr = std::shared_ptr<CallHandler>;
+using reply_handler_ptr = std::shared_ptr<ReplyHandler>;
 
-using duration_t = std::chrono::duration<int64_t>;
-using timepoint_t = std::chrono::system_clock::time_point;
 
-using context_generator_func_ptr = std::function<EventContext(const std::string& subject)>;
+using context_generator_func_ptr = std::function<event_ctx_ptr(const std::string& subject)>;
 using uuid_generator_func_ptr = std::function<std::string(void)>;
-using on_event_func_ptr = std::function<void(const Event&, EventContext)>;
+using on_event_func_ptr = std::function<void(const Event&, event_ctx_ptr)>;
 
 static constexpr char DEFAULT_INSTANCE[] = "default";
 static constexpr char DEFAULT_TYPE[] = "default";
@@ -186,7 +186,7 @@ class PlatformEvent {
     enum class Type {
         TALENT_RULES_SET,
         TALENT_RULES_UNSET,
-        UNDEF // TODO extend
+        UNDEF
     };
 
    public:
@@ -195,9 +195,9 @@ class PlatformEvent {
      *
      * @param type The event type
      * @param data The JSON representation of the PlatformEvent
-     * @param timestamp The time when the event was emitted.
+     * @param timestamp The time when the event was emitted in ms since the epoch.
      */
-    PlatformEvent(const Type& type, const json& data, const timepoint_t& timestamp);
+    PlatformEvent(const Type& type, const json& data, int64_t timestamp);
 
     /**
      * @brief Get the data attached to the event.
@@ -209,9 +209,9 @@ class PlatformEvent {
     /**
      * @brief Get the time when the event was emitted.
      *
-     * @return timepoint_t
+     * @return int64_t
      */
-    timepoint_t GetTimestamp() const;
+    int64_t GetTimestamp() const;
 
     /**
      * @brief Get the event type.
@@ -228,9 +228,9 @@ class PlatformEvent {
     static PlatformEvent FromJson(const json& j);
 
    private:
-    const Type type_;
-    const json data_;
-    const timepoint_t timestamp_;
+    Type type_;
+    json data_;
+    int64_t timestamp_;
 };
 
 /**
@@ -292,7 +292,7 @@ class Event {
      */
     Event(const std::string& subject, const std::string& feature, const json& value,
           const std::string& type = "default", const std::string& instance = "default",
-          const std::string& return_topic = "", const timepoint_t& when = std::chrono::system_clock::now());
+          const std::string& return_topic = "", int64_t when = GetEpochTimeMs());
 
     Event() = default;
 
@@ -301,56 +301,57 @@ class Event {
      *
      * @return std::string
      */
-    std::string GetReturnTopic() const;
+    virtual std::string GetReturnTopic() const;
 
     /**
      * @brief Get the name of the subject.
      *
      * @return std::string
      */
-    std::string GetSubject() const;
+    virtual std::string GetSubject() const;
 
     /**
      * @brief Get the name of the feature.
      *
      * @return std::string
      */
-    std::string GetFeature() const;
+    virtual std::string GetFeature() const;
 
     /**
      * @brief Get the payload value as JSON.
      *
      * @return json
      */
-    json GetValue() const;
+    virtual json GetValue() const;
 
     /**
      * @brief Get the name of the instance.
      *
      * @return std::string
      */
-    std::string GetInstance() const;
+    virtual std::string GetInstance() const;
 
     /**
      * @brief Get the name of the type.
      *
      * @return std::string
      */
-    std::string GetType() const;
+    virtual std::string GetType() const;
 
     /**
-     * @brief Get the time when the event was emitted.
+     * @brief Get the time when the event was emitted in milliseconds since the
+     * epoch.
      *
-     * @return timepoint_t
+     * @return int64_t
      */
-    timepoint_t GetWhen() const;
+    virtual int64_t GetWhen() const;
 
     /**
      * @brief Get a representation of the event as JSON.
      *
      * @return json
      */
-    json Json() const;
+    virtual json Json() const;
 
     /**
      * @brief Create an event from JSON.
@@ -376,7 +377,7 @@ class Event {
     json value_;
     std::string type_;
     std::string instance_;
-    timepoint_t when_;
+    int64_t when_;
 };
 
 /**
@@ -397,16 +398,17 @@ class OutgoingEvent {
      * @param value The event payload value
      * @param type The name of the type associated with the event
      * @param instance The name of the instance producing the event
+     * @param when The time since the epoch in ms to attach to the event
      */
     OutgoingEvent(const std::string& subject, const std::string& talent_id, const std::string& feature, const T& value, const std::string& type,
-                  const std::string& instance)
+                  const std::string& instance, int64_t when = GetEpochTimeMs())
         : subject_{subject}
         , talent_id_{talent_id}
         , feature_{feature}
         , value_{value}
         , type_{type}
         , instance_{instance}
-        , when_{std::chrono::system_clock::now()} {}
+        , when_{when} {}
 
     /**
      * @brief Get a JSON representation of the event.
@@ -414,21 +416,22 @@ class OutgoingEvent {
      * @return json
      */
     json Json() const {
-        auto duration = when_.time_since_epoch();
-        auto when_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
+#if 0
         return json{{"subject", subject_}, {"feature", talent_id_ + "." + feature_},   {"value", value_},
-                    {"type", type_},       {"instance", instance_}, {"whenMs", when_ms}};
+                    {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
+#endif
+        return json{{"subject", subject_}, {"feature", feature_},   {"value", value_},
+                    {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
     }
 
    private:
-    const std::string subject_;
-    const std::string talent_id_;
-    const std::string feature_;
-    const T value_;
-    const std::string type_;
-    const std::string instance_;
-    const timepoint_t when_;
+    std::string subject_;
+    std::string talent_id_;
+    std::string feature_;
+    T value_;
+    std::string type_;
+    std::string instance_;
+    int64_t when_;
 };
 
 /**
@@ -448,9 +451,11 @@ class OutgoingCall {
     * @param args The arguments to pass to the function
     * @param subject The name of subject as determined by the context from which the call is made
     * @param type The name of the type associated with the called function
+    * @param when The time since the epoch in ms to attach to the call
     */
     OutgoingCall(const std::string& talent_id, const std::string& channel_id, const std::string& call_id,
-                 const std::string& func, const json& args, const std::string& subject, const std::string& type);
+                 const std::string& func, const json& args, const std::string& subject, const std::string& type,
+                 int64_t when = GetEpochTimeMs());
 
     /**
      * @brief Get a JSON representation of this OutgoingCall
@@ -467,13 +472,14 @@ class OutgoingCall {
     std::string GetCallId() const;
 
    private:
-    const std::string talent_id_;
-    const std::string channel_id_;
-    const std::string call_id_;
-    const std::string func_;
-    const json& args_;
-    const std::string subject_;
-    const std::string type_;
+    std::string talent_id_;
+    std::string channel_id_;
+    std::string call_id_;
+    std::string func_;
+    json args_;
+    std::string subject_;
+    std::string type_;
+    int64_t when_;
 };
 
 /**
@@ -555,14 +561,14 @@ class CallToken {
       * the call can remain pending indefinatly use 0 (will leak memory if the
       * reply is never received).
       */
-     explicit CallToken(const std::string& call_id, int64_t timeout = 0);
+     explicit CallToken(const call_id_t& call_id, int64_t timeout = 0);
 
      /**
       * @brief Get the ID of the call.
       *
       * @return std::string
       */
-     std::string GetCallId() const;
+     call_id_t GetCallId() const;
 
      /**
       * @brief Get the call timeout.
@@ -572,12 +578,12 @@ class CallToken {
      int64_t GetTimeout() const;
 
     private:
-     const std::string call_id_;
-     const int64_t timeout_;
+     call_id_t call_id_;
+     int64_t timeout_;
 };
 
 /**
- * @brief ReplyGatherer associates a set of pending replies with a callback
+ * @brief Gatherer associates a set of pending replies with a callback
  * function.
  */
 class Gatherer {
@@ -591,110 +597,210 @@ class Gatherer {
      */
     Gatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
 
+    virtual ~Gatherer() = default;
+
     /**
      * @brief Check if any of the pending calls have timed out.
      *
      * @return true if at least one call has timed out.
      */
-    bool CheckTimeout(const int64_t& now);
+    virtual bool HasTimedOut(int64_t now) const;
 
     /**
-     * @brief Return whether the gatherer expects a particular token.
+     * @brief Return whether the gatherer expects a particular call ID.
      *
-     * @param token A pending call ID.
-     * @return true if the gatherer expects the token.
+     * @param id A pending call ID.
+     * @return true if the gatherer expects the ID.
      */
-    bool Wants(const std::string& token);
+    virtual bool Wants(const call_id_t& id) const;
 
     /**
-     * @brief Gather the provided token and the reply to the associated call.
-     * If all the expected tokens have been gathered virtual function Call is
+     * @brief Return whether the gatherer has gathered all the expected replies
+     * and is ready for forward them.
+     *
+     * @return bool
+     */
+    virtual bool IsReady() const;
+
+    /**
+     * @brief Gather the provided ID and the reply to the associated call.  If
+     * all the expected IDs have been gathered the virtual function Call is
      * called.
      *
-     * @param token A pending call ID
-     * @param reply The reply to the call
-     * @return true if the all the expected tokens have been gathered
+     * @param id A pending call ID.
+     * @param reply The reply to the call.
+     * @return true if the all the expected IDs have been gathered
      */
-    bool Gather(const std::string& token, const json& reply);
+    virtual bool Gather(const call_id_t& id, const json& reply);
+
+
+    /**
+     * @brief Get the replies gathered so far.
+     *
+     * @return std::vector<json>
+     */
+    virtual std::vector<json> GetReplies() const;
+
+    /**
+     * @brief ForwardReplies must be overloaded by subclasses and should be
+     * called if and when all the expected IDs have been gathered.
+     *
+     * @param replies A vector of replies
+     */
+    virtual void ForwardReplies(const std::vector<json>& replies) const = 0;
+
+    /**
+     * @brief Call the registerd timeout function. Should be called if and when
+     * the pending calls have timed out.
+     */
+    virtual void TimeOut();
 
    protected:
     timeout_func_ptr timeout_func_;
-    std::set<std::string> tokens_;
-    std::unordered_map<std::string, json> replies_;
+    std::set<call_id_t> ids_;
+    std::unordered_map<call_id_t, json> replies_;
     int64_t timeout_;
 
-    /**
-     * @brief Call must be overloaded by subclasses and is called if and when
-     * all the expected tokens have been gathered.
-     */
-    virtual void Call() const = 0;
 };
 
 
 /**
- * @brief CallHandler maintains a collection of pending function calls and
- * their associated result handling functions. CallHandler should not be used
+ * @brief SinkGatherer gathers a collection of pending replies, exectues a
+ * callback function but does not produce a reply.
+ */
+class SinkGatherer : public Gatherer {
+   public:
+    /**
+     * @brief Construct a new SinkGatherer.
+     *
+     * @param func A function to call once all the required tokens have been
+     * gathered.
+     * @param timeout_func A function to call if any of the calls times before
+     * yielding a reply.
+     * @param tokens A vector of tokens as returned by
+     * EventContext::Call. The order of the replies forwared to func matches the
+     * order of the tokens.
+     * @param now_ms The notion of now in ms. If now_ms <= 0 the steady clock
+     * is used go fetch the current time. Provided as an argument so that tests
+     * can override it.
+     */
+    SinkGatherer(gather_func_ptr func, timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
+
+    virtual void ForwardReplies(const std::vector<json>& replies) const override;
+
+   private:
+    gather_func_ptr func_;
+};
+
+/**
+ * @brief PreparedFunctionReply holds everything necessary to send a function
+ * reply back to the caller except the actual function result.
+ */
+class PreparedFunctionReply {
+   public:
+    /**
+     * @brief Construct a new PreparedFunctionReply object.
+     *
+     * @param talent_id The ID of the talent to send the reply to
+     * @param feature The name of the feature
+     * @param subject The subject of the original event resulting in the
+     * function call
+     * @param channel_id The ID of the calling talent's channel_id
+     * @param call_id The unique call IDs
+     * @param return_topic The topic on which the reply should be posted
+     * @param publisher A pointer to a Publisher
+     */
+    PreparedFunctionReply(const std::string& talent_id,
+            const std::string& feature,
+            const std::string& subject,
+            const std::string& channel_id,
+            const std::string& call_id,
+            const std::string& return_topic,
+            publisher_ptr publisher);
+
+    virtual ~PreparedFunctionReply() = default;
+
+    /**
+     * @brief Send the reply.
+     *
+     * @param value The function reply value
+     */
+    virtual void Reply(const json& value) const;
+
+   private:
+    std::string talent_id_;
+    std::string feature_;
+    std::string subject_;
+    std::string channel_id_;
+    std::string call_id_;
+    std::string return_topic_;
+    publisher_ptr publisher_;
+};
+
+/**
+ * @brief ReplyGatherer gathers a collection of pending replies, exectues a
+ * callback function and sends back a reply.
+ */
+class ReplyGatherer : public Gatherer {
+   public:
+    /**
+     * @brief Construct a new ReplyGatherer.
+     *
+     * @param func A function to call once all the required tokens have been
+     * gathered.
+     * @param timeout_func A function to call if any of the calls times before
+     * yielding a reply.
+     * @param tokens A vector of tokens as returned by
+     * EventContext::Call. The order of the replies forwared to func matches the
+     * order of the tokens.
+     * @param now_ms The notion of now in ms. If now_ms <= 0 the steady clock
+     * is used go fetch the current time. Provided as an argument so that tests
+     * can override it.
+     */
+    ReplyGatherer(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const PreparedFunctionReply& prepared_reply, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
+
+    virtual void ForwardReplies(const std::vector<json>& replies) const override;
+
+   private:
+    gather_and_reply_func_ptr func_;
+    PreparedFunctionReply prepared_reply_;
+};
+
+
+/**
+ * @brief ReplyHandler maintains a collection of pending function calls and
+ * their associated result handling functions. ReplyHandler should not be used
  * by external clients.
  *
  */
-class CallHandler {
+class ReplyHandler {
    public:
-    virtual ~CallHandler() = default;
+    virtual ~ReplyHandler() = default;
 
     /**
-     * @brief Gather a set of call tokens (pending function call results) and
-     * call
-     * * "func" - if all the required tokens are gathered successfully
-     * * "timeout_func" - if at least one call times out
+     * @brief Add a Gatherer to this ReplyHandler.
      *
-     * @param func A function to call when all the tokens have been gathered,
-     * the replies are provided to func in the same order as the tokens where
-     * provided to Gather.
-     * @param timeout_func A function to call if any of the call timeout or
-     * nullptr if no timeout notification is needed.
-     * @param tokens A vector of tokens representing pending calls.
+     * @param gatherer The Gatherer
      */
-    void Gather(gather_func_ptr func, timeout_func_ptr timeout_func, std::vector<CallToken> tokens);
+    void AddGatherer(std::shared_ptr<Gatherer> gatherer);
 
     /**
-     * @brief Gather a set of call tokens (pending function call results) and
-     * call
-     * * "func" - if all the required tokens are gathered successfully
-     * * "timeout_func" - if at least one call times out
+     * @brief Remove and return the Gatherer matching id (if any).
      *
-     * If "func" is called then the return value from "func" is sent back to
-     * the caller as a reply.
-     *
-     * @param func A function to call when all the tokens have been gathered,
-     * the associated replies are provided to func in the same order as the
-     * tokens where provided to Gather. The return value of func is sent back
-     * as a reply to the caller.
-     * @param timeout_func A function to call if any of the call timeout or
-     * nullptr if no timeout notification is needed.
-     * @param tokens A vector of tokens representing pending calls.
+     * @param id A call ID.
+     * @return std::shared_ptr<Gatherer> or nullptr if no matching Gatherer was
+     * found.
      */
-    void GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const CallContext& ctx, std::vector<CallToken> tokens);
+    std::shared_ptr<Gatherer> ExtractGatherer(const call_id_t& id);
 
     /**
-     * @brief HandleReply forwards a reply to the proper Gatherer.
-     * If the Gatherer has gathered all the required replies the
-     * assicated callback is called and the Gatherer is released.
+     * @brief Remove and return all Gatherers that are waiting for a reply that
+     * has timed out.
      *
-     * @param token A call ID.
-     * @param reply The reply associated with token.
+     * @param ts A steady clock timestamp in ms
+     * @return std::vector<std::shard_ptr<Gatherer>>
      */
-    void HandleReply(const std::string& token, const json& reply);
-
-    /**
-     * @brief Send a tick to the gatherers triggering timeouts in those
-     * gatherers expect replies that have expired.
-     *
-     * @param ts The current time as ms since the Epoch.
-     */
-    void HandleTick(const int64_t& ts);
-
-  protected:
-    int64_t GetNowMs() const;
+    std::vector<std::shared_ptr<Gatherer>> ExtractTimedOut(int64_t ts);
 
    private:
     std::vector<std::shared_ptr<Gatherer>> gatherers_;
@@ -719,12 +825,12 @@ class EventContext {
      * @param channel_id The unique channel ID of the Talent
      * @param subject The subject of the context
      * @param return_topic The name of the topic to reply to
-     * @param call_handler The CallHandler to use for collecting replies to outgoing calls
+     * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
      * @param publisher A publisher to send replies with
      * @param uuid_gen A function generating stringified UUID4s
      */
     EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
-                 const std::string& return_topic, call_handler_ptr call_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
+                 const std::string& return_topic, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
 
     /**
      * @brief Get the ID of the Talent.
@@ -808,17 +914,17 @@ class EventContext {
              callee1 = CreateCallee(TARGET_TALENT1_NAME, TARGET_FUNCTION1_NAME);
         }
 
-        void OnEvent(const Event& event, EventContext context) override
+        void OnEvent(const Event& event, event_ctx_ptr context) override
             if (event.GetType() == MY_DESIRED_TYPE) {
                 auto args0 = ...; // Args for the callee0
 
                 // Call function represented by callee0 and store the token
                 // associated with the pending reply.
-                auto token0= context.Call(callee0, args);
+                auto token0= context->Call(callee0, args);
 
                 // Make another call, this time to callee1
                 auto args1 = ...;
-                auto token1 = context.Call(callee1, args);
+                auto token1 = context->Call(callee1, args);
 
                 auto handle_reply = [](std::vector<json> replies) {
                     // The order of the replies matches the order in which the
@@ -835,7 +941,7 @@ class EventContext {
                 // Gather the pending reply, i.e. collect the replies
                 // associated with the given tokens and then execute the given
                 // callback function.
-                context.Gather(handle_reply, handle_timeout, token0, token1);
+                context->Gather(handle_reply, handle_timeout, token0, token1);
             }
         }
     }
@@ -848,17 +954,24 @@ class EventContext {
     */
     template <typename... Args>
     void Gather(gather_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
-        call_handler_->Gather(func, timeout_func, std::vector<CallToken>{args...});
+        auto now_ms = GetNowMs();
+        auto tokens = std::vector<CallToken>{args...};
+        auto gatherer = std::make_shared<SinkGatherer>(func, timeout_func, tokens, now_ms);
+
+        reply_handler_->AddGatherer(gatherer);
     }
 
    protected:
+    virtual int64_t GetNowMs() const;
+
     const std::string talent_id_;
     const std::string channel_id_;
     const std::string subject_;
     const std::string return_topic_;
-    call_handler_ptr call_handler_;
+    reply_handler_ptr reply_handler_;
     publisher_ptr publisher_;
     uuid_generator_func_ptr uuid_gen_;
+
 };
 
 /**
@@ -882,12 +995,12 @@ class CallContext : public EventContext {
      * @param feature The name of the feature to emit a return value for (if any)
      * @param event The event to base the context of off
      * @param return_topic The name of the topic to reply to
-     * @param call_handler The CallHandler to use for collecting replies to outgoing calls
+     * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
      * @param publisher A publisher to send replies with
      * @param uuid_gen A function generating stringified UUID4s
      */
     CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                const Event& event, call_handler_ptr call_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
+                const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
 
     /**
      * @brief Immediately reply to a function call within in this context. Used
@@ -947,69 +1060,13 @@ class CallContext : public EventContext {
      */
     template <typename... Args>
     void GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
-        call_handler_->GatherAndReply(func, timeout_func, *this, std::vector<CallToken>{args...});
+        auto now_ms = GetNowMs();
+        auto tokens = std::vector<CallToken>{args...};
+        auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, subject_, channel_, call_, return_topic_, publisher_};
+        auto gatherer = std::make_shared<ReplyGatherer>(func, timeout_func, prepared_reply, tokens, now_ms);
+
+        reply_handler_->AddGatherer(gatherer);
     }
-};
-
-
-/**
- * @brief SinkGatherer gathers a collection of pending replies, exectues a
- * callback function but does not produce a reply.
- */
-class SinkGatherer : public Gatherer {
-   public:
-    /**
-     * @brief Construct a new SinkGatherer.
-     *
-     * @param func A function to call once all the required tokens have been
-     * gathered.
-     * @param timeout_func A function to call if any of the calls times before
-     * yielding a reply.
-     * @param tokens A vector of tokens as returned by
-     * EventContext::Call. The order of the replies forwared to func matches the
-     * order of the tokens.
-     * @param now_ms The notion of now in ms. If now_ms <= 0 the steady clock
-     * is used go fetch the current time. Provided as an argument so that tests
-     * can override it.
-     */
-    SinkGatherer(gather_func_ptr func, timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
-
-   protected:
-    void Call() const override;
-
-   private:
-    gather_func_ptr func_;
-};
-
-
-/**
- * @brief ReplyGatherer gathers a collection of pending replies, exectues a
- * callback function and sends back a reply.
- */
-class ReplyGatherer : public Gatherer {
-   public:
-    /**
-     * @brief Construct a new ReplyGatherer.
-     *
-     * @param func A function to call once all the required tokens have been
-     * gathered.
-     * @param timeout_func A function to call if any of the calls times before
-     * yielding a reply.
-     * @param tokens A vector of tokens as returned by
-     * EventContext::Call. The order of the replies forwared to func matches the
-     * order of the tokens.
-     * @param now_ms The notion of now in ms. If now_ms <= 0 the steady clock
-     * is used go fetch the current time. Provided as an argument so that tests
-     * can override it.
-     */
-    ReplyGatherer(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const CallContext& ctx, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
-
-   protected:
-    void Call() const override;
-
-   private:
-    gather_and_reply_func_ptr func_;
-    CallContext ctx_;
 };
 
 
@@ -1050,15 +1107,15 @@ class Talent {
      * rule set. Override in order to receive events.
      *
      * @code
-       void OnEvent(const Event& event, EventContext context) override {
+       void OnEvent(const Event& event, event_ctx_ptr context) override {
           log::Info() << "Received an event:\n" << event.GetValue().dump(4);
        }
      * @endcode
      *
      * @param event Event
-     * @param context Context in which the event was emitted.
+     * @param context A pointer to the EventContext in which the event was emitted.
      */
-    virtual void OnEvent(const Event& event, EventContext context);
+    virtual void OnEvent(const Event& event, event_ctx_ptr context);
 
 
     /**
@@ -1109,11 +1166,11 @@ class Talent {
 
        ...
 
-       void OnEvent(const Event& event, EventContext context) {
+       void OnEvent(const Event& event, event_ctx_ptr context) {
           auto term1 = 1;
           auto term2 = 2;
 
-          auto token = context.Call(callee, json{term1, term2});
+          auto token = context->Call(callee, json{term1, term2});
 
           auto handle_reply = [](const json& reply) {
              log::Inof() << term1 << " + " << term2 << " = " << reply[0].get<int>();
@@ -1121,7 +1178,7 @@ class Talent {
 
           auto handle_timeout = nullptr; // no timeout handler
 
-          context.Gather(handle_reply, timeout_handler, token);
+          context->Gather(handle_reply, timeout_handler, token);
        }
      * @endcode
      *
@@ -1142,11 +1199,11 @@ class Talent {
     /**
      * @brief Initialize the client (depencency injection).
      *
-     * @param call_handler The CallHandler to use for collecting replies to outgoing calls
+     * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
      * @param context_gen A function generating new EventContext
      * @param uuid_gen A function generating stringified UUID4s
      */
-    void Initialize(call_handler_ptr call_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen);
+    void Initialize(reply_handler_ptr reply_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen);
 
     /**
      * @brief Override the event handler and rule set generation in the Talent.
@@ -1258,7 +1315,7 @@ class Talent {
    protected:
     std::vector<Callee> callees_;
     schema::Talent schema_;
-    call_handler_ptr call_handler_;
+    reply_handler_ptr reply_handler_;
 
     /**
      * @brief Register a feature provided by the Talent.
@@ -1277,13 +1334,13 @@ class Talent {
      *
      * @code
        // Emit an event from a new context
-       NewEventContext("my-subject").Emit("my-feature", 42, "my-type");
+       NewEventContext("my-subject")->Emit("my-feature", 42, "my-type");
      * @endcode
      *
      * @param subject Name identifying the context
-     * @return EventContext
+     * @return event_ctx_ptr
      */
-    EventContext NewEventContext(const std::string& subject);
+    event_ctx_ptr NewEventContext(const std::string& subject);
 
    private:
     const std::string talent_id_;
@@ -1348,7 +1405,7 @@ class FunctionTalent : public Talent {
 
 
 using OnError = std::function<void(const ErrorMessage&)>;
-using OnEvent = std::function<void(const Event&, EventContext)>;
+using OnEvent = std::function<void(const Event&, event_ctx_ptr)>;
 using OnPlatformEvent = std::function<void(const PlatformEvent&)>;
 
 
@@ -1395,6 +1452,20 @@ class Service {
  */
 class Client : public Receiver {
 
+    /**
+     * @brief The CalleeTalent is responsible for bridging the gap between
+     * subclass and callback mode. In callback mode each stand alone
+     * subscription creates a new Talent hidden beneath the surface of the
+     * Client. When a stand alone subscription callback is triggered it is
+     * possible to issue a function call from it using EventContext::Call().
+     * But since function calls require a talent to receive the results and the
+     * stand alone subscription by definition doesn't have one, we "secretly"
+     * use the CalleTalent as the issuer and receiver of the call by
+     * manipulating the EventContext before it is passed to the callback. In
+     * fact the CalleTalent is used for all outgoing calls in order simply the
+     * code, so even if a call is issued from a fully fledged FunctionTalent
+     * the CalleeTalent is still used beneath the surface.
+     */
     class CalleeTalent : public Talent {
         public:
          CalleeTalent()
@@ -1548,7 +1619,7 @@ class Client : public Receiver {
       * @param msg The raw reply event
       */
      void HandleCallReply(const std::string& talent_id, const std::string&
-             channel_id, const std::string& call_id, const std::string& msg);
+             channel_id, const call_id_t& call_id, const std::string& msg);
 
      /**
       * @brief Receive a message from MQTT.
@@ -1565,7 +1636,7 @@ class Client : public Receiver {
       *
       * @param ts A steady clock timestamp, i.e. not wall time
       */
-     void HandleTick(const std::chrono::steady_clock::time_point& ts);
+     void UpdateTime(const std::chrono::steady_clock::time_point& ts);
 
      /**
       * @brief Subscribe to events pertaining to the Client's internal Talents.
@@ -1606,7 +1677,7 @@ class Client : public Receiver {
      std::shared_ptr<CalleeTalent> callee_talent_;
      std::unordered_map<std::string, std::shared_ptr<FunctionTalent>> function_talents_;
      std::unordered_map<std::string, std::shared_ptr<Talent>> subscription_talents_;
-     call_handler_ptr call_handler_;
+     reply_handler_ptr reply_handler_;
      const std::string mqtt_topic_ns_;
 };
 

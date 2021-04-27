@@ -11,16 +11,13 @@
 #ifndef IOTEA_UTIL_HPP
 #define IOTEA_UTIL_HPP
 
-#include <condition_variable>
-#include <deque>
-#include <mutex>
-#include <queue>
 #include <string>
 
 namespace iotea {
 namespace core {
 
 std::string GetEnv(const std::string& name, const std::string& defval = "");
+int64_t GetEpochTimeMs();
 
 std::string GenerateUUID();
 

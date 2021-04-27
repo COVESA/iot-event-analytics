@@ -21,53 +21,51 @@ namespace iotea {
 namespace test {
 
 class TestResult {
-   private:
-    const std::string name_;
-    const json actual_value_;
-    const int32_t duration_;
-
    public:
     TestResult(const std::string& name, const json& actual_value, int32_t duration);
 
     json Json() const;
+
+   private:
+    const std::string name_;
+    const json actual_value_;
+    const int32_t duration_;
 };
 
 class Test {
+   public:
+    Test(const std::string& name, const json& expected_value, const std::function<void(core::call_ctx_ptr)> func, uint32_t timeout);
+
+    void Run(core::call_ctx_ptr ctx);
+
+    json Json() const;
+
    private:
     const std::string name_;
     const json expected_value_;
-    const std::function<void(const core::CallContext&)> func_;
+    const std::function<void(core::call_ctx_ptr)> func_;
     const uint32_t timeout_;
 
-   public:
-    Test(const std::string& name, const json& expected_value, const std::function<void(const core::CallContext&)> func, uint32_t timeout);
-
-    void Run(core::CallContext context);
-
-    json Json() const;
 };
 
 class TestSetInfo {
-   private:
-    const std::string name_;
-    std::unordered_map<std::string, Test> tests_;
-
    public:
     explicit TestSetInfo(const std::string& name);
 
-    void AddTest(const std::string& name, const json& exepected_value, const std::function<void(const core::CallContext&)>& func, uint32_t timeout);
+    void AddTest(const std::string& name, const json& exepected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout);
 
-    void RunTest(const std::string& name, const core::CallContext& context);
+    void RunTest(const std::string& name, core::call_ctx_ptr ctx);
 
     std::string GetName() const;
 
     json Json() const;
+
+   private:
+    const std::string name_;
+    std::unordered_map<std::string, Test> tests_;
 };
 
 class TalentDependencies {
-   private:
-    std::unordered_map<std::string, bool> dependencies_;
-
    public:
     void Add(const std::string& talent_id);
 
@@ -78,25 +76,28 @@ class TalentDependencies {
     bool CheckAll() const;
 
     json Json() const;
+
+   private:
+    std::unordered_map<std::string, bool> dependencies_;
 };
 
 class TestSetTalent : public core::FunctionTalent {
-   private:
-    TestSetInfo test_set_info_;
-    TalentDependencies dependencies_;
-
-    void Prepare(const json& args, const core::CallContext& context);
-
-    void GetInfo(const json& args, const core::CallContext& context);
-
-    void Run(const json& args, const core::CallContext& context);
-
    public:
-    TestSetTalent(const std::string& name);
+    explicit TestSetTalent(const std::string& name);
 
     void OnPlatformEvent(const core::PlatformEvent& event) override;
 
     void RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout);
+
+   private:
+    TestSetInfo test_set_info_;
+    TalentDependencies dependencies_;
+
+    void Prepare(const json& args, core::call_ctx_ptr ctx);
+
+    void GetInfo(const json& args, core::call_ctx_ptr ctx);
+
+    void Run(const json& args, core::call_ctx_ptr ctx);
 };
 
 
