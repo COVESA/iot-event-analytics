@@ -43,8 +43,8 @@ public:
         RegisterFunction(FUNC_SET_COUNT,
                          [this](const json& args, const CallContext& context) { SetEchoCount(args, context); });
 
-        int history = 10;
-        int ttl = 30;
+        int history = 30;
+        int ttl = 1000;
         AddOutput(EVENT_ECHO_COUNT, schema::Metadata("Count event triggered by calls to 'echo' function.", history, ttl, "ONE",
                                                      schema::OutputEncoding(schema::OutputEncoding::Type::Number)));
         AddOutput(EVENT_ECHO_RESP_SENT, schema::Metadata("Message event triggered by calls to 'echo' function.", history, ttl, "ONE",

@@ -23,7 +23,7 @@ const std::string SERVER_ADDRESS("tcp://localhost:1883");
 
 using namespace iotea::core;
 
-static const std::string FEATURE = "provider_talent";
+static const std::string TALENT_NAME = "provider_talent";
 static const std::string FUNC_MULTIPLY = "multiply";
 static const std::string FUNC_SUM = "sum";
 static const std::string FUNC_FIBONACCI = "fibonacci";
@@ -34,14 +34,14 @@ class MathFunctions : public FunctionTalent {
 
    public:
     explicit MathFunctions()
-        : FunctionTalent(FEATURE) {
+        : FunctionTalent(TALENT_NAME) {
         RegisterFunction(FUNC_MULTIPLY,
                          [this](const json& args, const CallContext& context) { Multiply(args, context); });
 
         RegisterFunction(FUNC_FIBONACCI,
                 [this](const json& args, const CallContext& context) { Fibonacci(args, context); });
 
-        fib = RegisterCallee(FEATURE, FUNC_FIBONACCI);
+        fib = RegisterCallee(TALENT_NAME, FUNC_FIBONACCI);
     }
 
     void Multiply(const json& args, const CallContext& context) {

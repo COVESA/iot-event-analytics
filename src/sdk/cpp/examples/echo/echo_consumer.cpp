@@ -38,12 +38,14 @@ class EchoConsumer : public Talent {
    public:
     EchoConsumer()
         : Talent(TALENT_NAME) {
-        int history = 10;
-        int ttl = 30;
+
+        int ttl = 1000;
+        int history = 30;
         AddOutput(PROVIDED_FEATURE_NAME, schema::Metadata("Message to be forwarded to echo provider", history, ttl, "ONE",
                                                           schema::OutputEncoding(schema::OutputEncoding::Type::String)));
+
         echo_provider.echo = RegisterCallee(CALLED_TALENT_NAME, CALLED_METHOD_NAME);
-        //schema_.SkipCycleCheckFor({PROVIDED_FETAURE_TYPE+"."+TALENT_NAME+"."+PROVIDED_FEATURE_NAME});
+        schema_.SkipCycleCheckFor({PROVIDED_FETAURE_TYPE+"."+TALENT_NAME+"."+PROVIDED_FEATURE_NAME});
     }
 
     schema::rule_ptr OnGetRules() const override {
