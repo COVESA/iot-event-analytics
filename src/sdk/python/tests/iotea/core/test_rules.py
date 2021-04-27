@@ -1,15 +1,11 @@
 import pytest
 from unittest import TestCase
 from src.iotea.core.rules import AndRules, OrRules, Rule, Constraint, ChangeConstraint, OpConstraint
+from tests.helpers.constraints import create_op_constraint, create_change_constraint
 
 @pytest.fixture
 def test_case():
     return TestCase()
-
-def create_op_constraint(*args):
-    oc = OpConstraint(*args)
-    oc.value['$id'] = None
-    return oc
 
 @pytest.fixture
 def rules():
@@ -17,7 +13,7 @@ def rules():
     opc2 = create_op_constraint('*', OpConstraint.OPS['ISSET'], None, 'anytype2', Constraint.VALUE_TYPE['RAW'], Constraint.PATH_IDENTITY, '^test$', False)
 
     rules = AndRules([
-        Rule(ChangeConstraint('feat1', 'anytype1', Constraint.VALUE_TYPE['RAW'])),
+        Rule(create_change_constraint('feat1', 'anytype1', Constraint.VALUE_TYPE['RAW'])),
         OrRules([
             Rule(opc1),
             Rule(opc2)

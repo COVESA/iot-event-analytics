@@ -160,8 +160,6 @@ class FunctionTalent(Talent):
                 self.logger.warning(err)
                 return
 
-        print(f'Processing function for feature {ev["feature"]}')
-
         # Process function invocations
         raw_value = TalentInput.get_raw_value(ev)
 

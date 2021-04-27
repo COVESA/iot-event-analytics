@@ -47,8 +47,10 @@ class MqttClient:
             self.logger = logging.getLogger(client_id)
 
         self.client = CustomMqttClient(client_id, on_reconnect=self.__on_reconnect)
+        self.connection_string = connection_string
         self.client.config['reconnect_retries'] = 100000
         self.client.config['reconnect_max_interval'] = 2
+        self.client_initialized = False
         self.subscriptions = []
         self.check_mqtt5_compatibility = check_mqtt5_compatibility
         self.is_mqtt5_compatible = False
@@ -63,10 +65,13 @@ class MqttClient:
         else:
             self.logger.warning('*****WARNING***** No topic namespace given. Tip: Also check all topics of your subscriptions and publications')
 
-        init_future = asyncio.ensure_future(self.__init(connection_string))
-        init_future.add_done_callback(self.__on_init_complete)
+    async def get_client_async(self):
+        if self.client_initialized:
+            return self.client
 
-        self.init_complete_future = asyncio.get_event_loop().create_future()
+        await self.__init(self.connection_string)
+        self.client_initialized = True
+        return self.client
 
     async def publish_json(self, topics, json_, options=None):
         if options is None:
@@ -80,7 +85,7 @@ class MqttClient:
         if options is None:
             options = {}
 
-        await self.init_complete_future
+        client = await self.get_client_async()
 
         if isinstance(topics, list) is False:
             topics = [topics]
@@ -90,13 +95,13 @@ class MqttClient:
         for topic in topics:
             prefixed_topic = self.__prefix_topic_ns(topic)
             self.logger.debug('Sending {} to {}'.format(message, prefixed_topic))
-            await self.client.publish(prefixed_topic, message.encode('utf-8'), qos=options['qos'], retain=options['retain'])
+            await client.publish(prefixed_topic, message.encode('utf-8'), qos=options['qos'], retain=options['retain'])
 
     async def subscribe_json(self, topic, callback, qos=0):
         await self.subscribe(topic, callback, qos, True)
 
     async def subscribe(self, topic, callback, qos=QOS_0, to_json=False):
-        await self.init_complete_future
+        client = await self.get_client_async()
 
         topic = self.__prefix_topic_ns(topic)
 
@@ -104,18 +109,18 @@ class MqttClient:
 
         self.subscriptions.append(subscription)
 
-        await self.client.subscribe([(topic, qos)])
+        await client.subscribe([(topic, qos)])
 
         self.logger.debug('Successfully subscribed to topic {}'.format(topic))
 
         return subscription
 
     async def disconnect(self):
-        await self.client.disconnect()
+        client = await self.get_client_async()
+        await client.disconnect()
 
     async def unsubscribe(self, topics):
-        await self.init_complete_future
-
+        client = await self.get_client_async()
         await self.client.unsubscribe(topics)
 
     @staticmethod
@@ -141,15 +146,6 @@ class MqttClient:
         # Check for mqtt5 here
         if self.check_mqtt5_compatibility and self.is_mqtt5_compatible is False:
             await self.__mqtt5_probe(self.client, int(os.environ.get('MQTT5_PROBE_TIMEOUT', 1000)))
-
-    def __on_init_complete(self, fut):
-        try:
-            # Check if an exception was raised during initialization
-            fut.result()
-            self.init_complete_future.set_result(True)
-        # pylint: disable=broad-except
-        except Exception as err:
-            self.init_complete_future.set_exception(err)
 
     def __prefix_topic_ns(self, topic):
         if self.topic_ns is None:

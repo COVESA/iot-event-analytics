@@ -29,13 +29,8 @@ class DeferredCall:
         self.call_id = call_id
         self.loop = asyncio.get_event_loop()
         self.future = self.loop.create_future()
-        self.timeout_sleep = None
-        # Used to be compatible to Python 3.6.x
-        asyncio.ensure_future(self.__schedule_timeout(timeout_ms))
 
     def resolve(self, result):
-        self.timeout_sleep.cancel()
-
         if self.future.done():
             return
 
@@ -43,26 +38,11 @@ class DeferredCall:
         self.loop.call_soon_threadsafe(self.future.set_result, result)
 
     def reject(self, err):
-        self.timeout_sleep.cancel()
-
         if self.future.done():
             return
 
         # Called from another Thread
         self.loop.call_soon_threadsafe(self.future.set_exception, err)
-
-    async def __schedule_timeout(self, timeout_ms):
-        try:
-            self.timeout_sleep = asyncio.ensure_future(asyncio.sleep(timeout_ms / 1000))
-            await self.timeout_sleep
-
-            if self.future.done():
-                return
-
-            # Called from another Thread
-            self.loop.call_soon_threadsafe(self.future.set_exception, Exception('Timeout at calling function'))
-        except:
-            pass
 
 class OutputFeature:
     def __init__(self, feature, metadata):
@@ -72,7 +52,6 @@ class OutputFeature:
     def append_to(self, talent_id, feature_map):
         feature_map['.'.join([talent_id, self.feature])] = self.metadata
         return feature_map
-
 
 class IOFeatures:
     def __init__(self):
@@ -138,7 +117,7 @@ class Talent(IOFeatures):
     def callees(self):
         return []
 
-    async def call(self, id, func, args, subject, return_topic, timeout_ms=10000):
+    async def call(self, id, func, args, subject, return_topic, timeout_ms=10000, timestamp_ms=None):
         # Throws an exception if not available
         self.callees().index('{}.{}'.format(id, func))
 
@@ -153,7 +132,8 @@ class Talent(IOFeatures):
                 'args': args,
                 'chnl': self.chnl,
                 'call': call_id
-            }
+            },
+            timestamp_ms
         )
 
         self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms)
@@ -163,7 +143,10 @@ class Talent(IOFeatures):
         self.logger.debug('Successfully sent function call')
 
         # pylint: disable=unused-variable
-        done, pending = await asyncio.wait([self.deferred_calls[call_id].future])
+        done, pending = await asyncio.wait([self.deferred_calls[call_id].future], timeout=timeout_ms / 1000)
+
+        if len(list(pending)) == 1:
+            raise Exception(f'Timeout at calling function {func}')
 
         return list(done)[0].result()
 

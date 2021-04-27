@@ -82,9 +82,16 @@ Constraint.logger = logging.getLogger('Constraint')
 
 
 class SchemaConstraint(Constraint):
-    def __init__(self, feature, value, type_selector, value_type, path=Constraint.PATH_IDENTITY, instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER, limit_feature_selection=True, sid=uuid.uuid1().hex):
+    def __init__(self, feature, value, type_selector, value_type, path=Constraint.PATH_IDENTITY, instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER, limit_feature_selection=True, sid=None):
         super(SchemaConstraint, self).__init__(feature, Constraint.OPS['SCHEMA'], value, type_selector, value_type, path, instance_id_filter, limit_feature_selection)
+
+        if sid is None:
+            sid = self.create_schema_id()
+
         self.value['$id'] = sid
+
+    def create_schema_id(self):
+        return uuid.uuid1().hex
 
 
 class OpConstraint(SchemaConstraint):
