@@ -83,28 +83,9 @@ class ProtocolGateway:
 
                     await adapter.instance.subscribe(topic, cb, subscribe_options)
 
-
     # Callback needs to accept (ev, topic, adapter_id)
     async def subscribe_json(self, topic, callback, subscribe_options=None):
-        if asyncio.iscoroutinefunction(callback):
-            async def callback_wrapper(stringified_json, _topic, adapter_id):
-                try:
-                    await callback(ProtocolGateway.__try_parse_json(stringified_json), _topic, adapter_id)
-                except Exception:
-                    # Could not parse Json from incoming message
-                    pass
-
-            cb = callback_wrapper
-        else:
-            def callback_wrapper(stringified_json, _topic, adapter_id):
-                try:
-                    callback(ProtocolGateway.__try_parse_json(stringified_json), _topic, adapter_id)
-                except Exception:
-                    # Could not parse Json from incoming message
-                    pass
-
-            cb = callback_wrapper
-        return await self.subscribe(topic, cb, subscribe_options)
+        return await self.subscribe(topic, ProtocolGateway.__json_parse_wrapper(callback), subscribe_options)
 
     # Callback needs to accept (ev, topic, adapter_id)
     async def subscribe_shared(self, group, topic, callback, subscribe_options=None):
@@ -121,7 +102,7 @@ class ProtocolGateway:
 
         for adapter in self.adapters:
             if subscribe_to_platform_protocol_only is False or adapter.is_platform_protocol:
-                if subscribe_options.adapterId is None or subscribe_options.adapterId is adapter.id:
+                if subscribe_options.adapter_id is None or subscribe_options.adapter_id is adapter.id:
                     if asyncio.iscoroutinefunction(callback):
                         async def callback_wrapper(ev, _topic, adapter_id=adapter.id):
                             await callback(ev, _topic, adapter_id)
@@ -135,8 +116,8 @@ class ProtocolGateway:
 
                     await adapter.instance.subscribe_shared(group, topic, cb, subscribe_options)
 
-    # Callback needs to be (ev, topic, adapter.id) => {}
-    async def subscribe_json_shared(self, group, topic, callback, subscribe_options=None):
+    @staticmethod
+    def __json_parse_wrapper(callback):
         if asyncio.iscoroutinefunction(callback):
             async def callback_wrapper(stringified_json, _topic, adapter_id):
                 try:
@@ -155,8 +136,12 @@ class ProtocolGateway:
                     pass
 
             cb = callback_wrapper
+        return cb
 
-        return await self.subscribe_shared(group, topic, cb, subscribe_options)
+    # Callback needs to be (ev, topic, adapter.id) => {}
+    async def subscribe_json_shared(self, group, topic, callback, subscribe_options=None):
+        return await self.subscribe_shared(group, topic, ProtocolGateway.__json_parse_wrapper(callback),
+                                           subscribe_options)
 
     @staticmethod
     def __try_parse_json(stringified_json):
@@ -213,7 +198,6 @@ class ProtocolGateway:
         return {'adapters': protocol_adapters_config}
 
 
-
 class PubSubOptions:
     def __init__(self, platform_protocol_only=None, adapter_id=None):
         self.platform_protocol_only = platform_protocol_only
@@ -239,4 +223,3 @@ class Adapter:
         self.instance = instance
         self.is_platform_protocol = is_platform_protocol
         self.id = instance.getId()
-
