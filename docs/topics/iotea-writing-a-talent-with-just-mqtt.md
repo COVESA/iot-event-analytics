@@ -25,12 +25,13 @@
 - Your MQTT Client should be connected the the broker instance, the platform is connected to
   - Subscribe to the following topics:<br>
     Make sure your Client implementation supports wildcard subscriptions (_+_)
-    - `$share/<talentId>/configManager/talents/discover` (_Topic A_)
-    - `$share/<talentId>/talent/<talentId>/events` (_Topic B_)
-    - `talent/<talentId>/events/<talentId>.<callChannelId>/+` (_Topic C_)
+    - `$share/<ioteaTopicNs>/configManager/talents/discover` (_Topic A_)
+    - `$share/<ioteaTopicNs>/talent/<talentId>/events` (_Topic B_)
+    - `talent/<ioteaTopicNs>/events/<talentId>.<callChannelId>/+` (_Topic C_)
 
-    Replace `<talentId>` with your talent ID (Just think of an ID)
-    Replace `<callChannelId>` with a uuid v4 random string for each talent instance
+    Replace `<talentId>` with your talent ID (Just think of an ID) <br>
+    Replace `<callChannelId>` with a uuid v4 random string for each talent instance <br>
+    Replace `<ioteaTopicNs>`with the namespace used by the platform, e.g. "iotea"<br>
 
 ### Flow
 
