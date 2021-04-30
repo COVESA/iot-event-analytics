@@ -78,6 +78,7 @@ if(BUILD_TESTING)
     add_executable(testrunner
         tests/test_iotea.cpp
         tests/test_schema.cpp
+        tests/test_util.cpp
     )
 
     target_link_libraries(testrunner PRIVATE
