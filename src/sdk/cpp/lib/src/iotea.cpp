@@ -244,12 +244,12 @@ int64_t CallToken::GetTimeout() const {
 // EventContext
 //
 EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
-                           const std::string& return_topic, reply_handler_ptr reply_nandler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
+                           const std::string& return_topic, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
     : talent_id_{talent_id}
     , channel_id_{channel_id}
     , subject_{subject}
     , return_topic_{return_topic}
-    , reply_handler_{reply_nandler}
+    , reply_handler_{reply_handler}
     , publisher_{publisher}
     , uuid_gen_{uuid_gen} {}
 
@@ -294,8 +294,8 @@ int64_t EventContext::GetNowMs() const {
 // CallContext
 //
 CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                         const Event& event, reply_handler_ptr reply_nandler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
-    : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_nandler, publisher, uuid_gen}
+                         const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
+    : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_handler, publisher, uuid_gen}
     , feature_{feature}
     , channel_{event.GetValue()["chnl"].get<std::string>()}
     , call_{event.GetValue()["call"].get<std::string>()} {}
@@ -512,8 +512,8 @@ Talent::Talent(const std::string& talent_id)
     : schema_{schema::Talent{talent_id}}
     , talent_id_{talent_id} {}
 
-void Talent::Initialize(reply_handler_ptr reply_nandler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen) {
-    reply_handler_ = reply_nandler;
+void Talent::Initialize(reply_handler_ptr reply_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen) {
+    reply_handler_ = reply_handler;
     context_gen_ = context_gen;
     uuid_gen_ = uuid_gen;
 
