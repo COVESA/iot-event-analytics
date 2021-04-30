@@ -11,7 +11,7 @@
 
 /**
  * Module JSON Query.
- * 
+ *
  * @module jsonQuery
  */
 const MASKED_FIELD_NAME_MGROUP = 1;
@@ -32,20 +32,21 @@ const LABEL_MGROUP = 7;
  * :<label> > Gets value as is
  * foo.bar:<label> > Gets nested value 'baz' in { foo: { bar: 'baz' }}
  * *.bar:<label> > Gets all nested values 'baz1' and 'baz2' in { foo1: { bar: 'baz1' }, foo2: { bar: 'baz2' }}
- * foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } = 2
- * foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2, 3
+ * foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } > 2
+ * foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2
  * foo.bar[:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
  * foo.bar[-1]:<label> > Gets last member of array in { foo: { bar: [0, 2, 3] } } > 3
- * foo.bar[-1:0]:<label> > Gets members of array in reverse order { foo: { bar: [0, 2, 3] } } > 3, 2, 0
- * 'foo.bar' > Searches for field 'foo.bar' > The point is masked 
+ * foo.bar[0:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
+ * foo.bar[0:-1]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2
+ * 'foo.bar' > Searches for field 'foo.bar' > The point is masked
  * </pre>
  * @param {*} value - A json object.
  * @param {string} query - Json query.
- * @param {*} options 
- * @param {*} regex 
- * @param {*} normalizedQuery 
- * @param {*} parent 
- * @param {*} field 
+ * @param {*} options
+ * @param {*} regex
+ * @param {*} normalizedQuery
+ * @param {*} parent
+ * @param {*} field
  * @returns an iterator.
  */
 function* jsonQuery(value, query = '', options = { modify: v => v, limit: -1, $cnt: 0 }, regex = __createRegex(), normalizedQuery = '', parent = null, field = null) {
@@ -120,7 +121,13 @@ function* jsonQuery(value, query = '', options = { modify: v => v, limit: -1, $c
         }
 
         let startRange = __wrapIndex(__parseInt(match[START_RANGE_MGROUP], 0), value);
-        let endRange = __wrapIndex(__parseInt(match[END_RANGE_MGROUP], value.length - 1), value);
+        // Skip last element if given
+        let endRange = __wrapIndex(__parseInt(match[END_RANGE_MGROUP], value.length), value);
+
+        if (startRange >= endRange) {
+            // For start >= end leave the result empty
+            return;
+        }
 
         for (let idx of __intRange(startRange, endRange)) {
             const li = regex.lastIndex;
@@ -168,8 +175,6 @@ function* __intRange(start, end) {
         yield start;
         start += end > start ? 1 : -1;
     }
-
-    yield start;
 }
 
 function __createRegex() {
@@ -195,7 +200,7 @@ function __wrapIndex(idx, arr) {
         idx += arr.length;
     }
 
-    if (idx < 0 || idx >= arr.length) {
+    if (idx < 0 || idx > arr.length) {
         throw new Error(`Index ${idx} is out of bounds`);
     }
 
@@ -225,7 +230,7 @@ jsonQuery.first = (data, query, options = {}) => {
  * <pre>
  *  const json = {"Feature": {"MyFeature": "value"}};
  *  const query = "Feature.MyFeature";
- *  console.log(jsonQuery.updateFirst(json, query, "newValue")); 
+ *  console.log(jsonQuery.updateFirst(json, query, "newValue"));
  *  The result is:
  *  { Feature: { MyFeature: 'newValue' } }
  * </pre>

@@ -15,11 +15,12 @@ from functools import partial
 # :<label> > Gets value as is
 # foo.bar:<label> > Gets nested value 'baz' in { foo: { bar: 'baz' }}
 # *.bar:<label> > Gets all nested values 'baz1' and 'baz2' in { foo1: { bar: 'baz1' }, foo2: { bar: 'baz2' }}
-# foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } = 2
-# foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2, 3
+# foo[1]:<label> > Gets second member of array in { foo: [0, 2, 3] } > 2
+# foo[1:2]:<label> > Gets range of array in { foo: [0, 2, 3] } > 2
 # foo.bar[:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
 # foo.bar[-1]:<label> > Gets last member of array in { foo: { bar: [0, 2, 3] } } > 3
-# foo.bar[-1:0]:<label> > Gets members of array in reverse order { foo: { bar: [0, 2, 3] } } > 3, 2, 0
+# foo.bar[0:]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2, 3
+# foo.bar[0:-1]:<label> > Gets array in { foo: { bar: [0, 2, 3] } } > 0, 2
 # 'foo.bar' > Searches for field 'foo.bar' > The point is masked
 
 MASKED_FIELD_NAME_MGROUP = 0
@@ -44,7 +45,7 @@ def __wrap_index(idx, arr):
     if idx < 0:
         idx += len(arr)
 
-    if idx < 0 or idx >= len(arr):
+    if idx < 0 or idx > len(arr):
         raise Exception('Index {} is out of bounds'.format(idx))
 
     return idx
@@ -67,8 +68,6 @@ def __int_range(start, end):
     while start != end:
         rng.append(start)
         start += 1 if end > start else -1
-
-    rng.append(start)
 
     return rng
 
@@ -161,7 +160,11 @@ def json_query(value, query='', options=None, match_index=0, normalized_query=''
             return result
 
         start_range = __wrap_index(__parse_int(match[START_RANGE_MGROUP], 0), value)
-        end_range = __wrap_index(__parse_int(match[END_RANGE_MGROUP], len(value) - 1), value)
+        # Skip last element if given
+        end_range = __wrap_index(__parse_int(match[END_RANGE_MGROUP], len(value)), value)
+
+        if start_range >= end_range:
+            return result
 
         for idx in __int_range(start_range, end_range):
             json_query(value[idx], query, options, i + 1, '{}[{}]'.format(normalized_query, idx), value, idx, matches, result)

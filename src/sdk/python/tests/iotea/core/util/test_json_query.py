@@ -42,7 +42,8 @@ def json():
             'b': { 'value': 'b' },
             'c': { 'value': 'c' },
             'd': { 'value': 'd' }
-        }
+        },
+        'py': [ 1, 2, 3, 4 ]
     }
 
 class TestJsonQuery:
@@ -70,7 +71,7 @@ class TestJsonQuery:
     def test_get_all_fields_of_object(self, json):
         results = json_query(json, '*')
 
-        assert len(results) == 4
+        assert len(results) == 5
 
         for i in range(len(results)):
             assert results[i]['value'] == json[results[i]['query']]
@@ -117,17 +118,38 @@ class TestJsonQuery:
     def test_get_array_range(self, json, test_case):
         results = json_query(json, 'foo[1:2]')
 
-        assert len(results) == 2
+        assert len(results) == 1
         test_case.assertDictEqual(results[0]['value'], json['foo'][1])
-        test_case.assertDictEqual(results[1]['value'], json['foo'][2])
 
-    def test_get_reverse_range(self, json, test_case):
-        results = json_query(json, 'foo[-1:0]')
+    def test_python_range_selector(self, json, test_case):
+        def extract_values(results):
+            return list(map(lambda result: result['value'], results))
 
-        assert len(results) == 3
+        results = json_query(json, 'py[1:]')
+        test_case.assertListEqual(extract_values(results), [ 2, 3, 4 ])
 
-        for i in range(len(results)):
-            test_case.assertDictEqual(results[i]['value'], json['foo'][len(json['foo']) - i - 1])
+        results = json_query(json, 'py[:1]')
+        test_case.assertListEqual(extract_values(results), [ 1 ])
+
+        results = json_query(json, 'py[3:0]')
+        test_case.assertListEqual(extract_values(results), [ ])
+
+        results = json_query(json, 'py[:-1]')
+        test_case.assertListEqual(extract_values(results), [ 1, 2, 3 ])
+
+        results = json_query(json, 'py[-3:-1]')
+        test_case.assertListEqual(extract_values(results), [ 2, 3 ])
+
+        results = json_query(json, 'py[-1:]')
+        test_case.assertListEqual(extract_values(results), [ 4 ])
+
+        results = json_query(json, 'py[0:0]')
+        test_case.assertListEqual(extract_values(results), [ ])
+
+        with pytest.raises(Exception) as exc_info:
+            json_query(json, 'py[0:5]')
+
+        assert 'Index 5 is out of bounds' == str(exc_info.value)
 
     def test_accepts_masked_dot_character(self, json, test_case):
         results = json_query(json, "bar.'bla.blubb'")

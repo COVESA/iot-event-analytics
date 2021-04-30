@@ -38,7 +38,8 @@ describe('core.util.jsonQuery', () => {
                 "b": { "value": "b" },
                 "c": { "value": "c" },
                 "d": { "value": "d" }
-            }
+            },
+            py: [ 1, 2, 3, 4 ]
         };
     });
 
@@ -69,7 +70,7 @@ describe('core.util.jsonQuery', () => {
     it('should get all fields of a given object', () => {
         const results = Array.from(jsonQuery(json, '*'));
 
-        expect(results.length).toBe(4);
+        expect(results.length).toBe(5);
 
         for(let i = 0; i < results.length; i++) {
             // Replace the '' around the query, since we have an object
@@ -124,21 +125,22 @@ describe('core.util.jsonQuery', () => {
     });
 
     it('should be able to retrieve a range of items in an array', () => {
-        const results = Array.from(jsonQuery(json, 'foo[1:2]'));
+        const results = Array.from(jsonQuery(json, 'foo[1:3]'));
 
         expect(results.length).toBe(2);
         expect(results[0].value).toEqual(json.foo[1]);
         expect(results[1].value).toEqual(json.foo[2]);
     });
 
-    it('should be able to retrieve a reverse range of items in an array', () => {
-        const results = Array.from(jsonQuery(json, 'foo[-1:0]'));
-
-        expect(results.length).toBe(3);
-
-        for (let i = 0; i < results.length; i++) {
-            expect(results[i].value).toEqual(json.foo[json.foo.length - i - 1]);
-        }
+    it('should behave like the python array range selector', () => {
+        expect(Array.from(jsonQuery(json, 'py[1:]')).map(m => m.value)).toEqual([ 2, 3, 4 ]);
+        expect(Array.from(jsonQuery(json, 'py[:1]')).map(m => m.value)).toEqual([ 1 ]);
+        expect(Array.from(jsonQuery(json, 'py[3:0]')).map(m => m.value)).toEqual([ ]);
+        expect(Array.from(jsonQuery(json, 'py[:-1]')).map(m => m.value)).toEqual([ 1, 2, 3 ]);
+        expect(Array.from(jsonQuery(json, 'py[-3:-1]')).map(m => m.value)).toEqual([ 2, 3 ]);
+        expect(Array.from(jsonQuery(json, 'py[-1:]')).map(m => m.value)).toEqual([ 4 ]);
+        expect(Array.from(jsonQuery(json, 'py[0:0]')).map(m => m.value)).toEqual([ ]);
+        expect(() => Array.from(jsonQuery(json, 'py[0:5]'))).toThrowError('Index 5 is out of bounds');
     });
 
     it('should be able to accept fields containing a dot character', () => {
