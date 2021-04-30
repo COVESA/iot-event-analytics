@@ -27,7 +27,7 @@ class FunctionProvider(FunctionTalent):
         self.register_function('echo', self.echo)
 
     # pylint: disable=invalid-name,unused-argument
-    async def echo(self, value, ev, evctx):
+    async def echo(self, value, ev, evtctx, timeout_at_ms):
         self.logger.debug('Echo called')
         return value
 

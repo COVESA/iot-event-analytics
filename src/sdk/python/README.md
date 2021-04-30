@@ -15,6 +15,10 @@
 - Run `pytest` after installing all dependencies
   - After running the tests, you will find all reports in the _./reports_ directory. It'll contain coverage reports as HTML and XML in cobertura format.
 
+## Build and install in one go
+
+`python -m pip install ./src --user --force`
+
 ## Build
 
 - Create an empty _./lib_ folder folder if not exists

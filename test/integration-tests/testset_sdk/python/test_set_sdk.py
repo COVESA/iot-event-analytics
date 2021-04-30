@@ -43,7 +43,7 @@ class TestSetSDK(TestSetTalent):
         return ['function-provider-py.echo']
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_string(self, ev, evctx):
+    async def test_echo_string(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  ['Hello World'],
                                  ev['subject'],
@@ -52,7 +52,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_boolean(self, ev, evctx):
+    async def test_echo_boolean(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [True],
                                  ev['subject'],
@@ -61,7 +61,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_integer(self, ev, evctx):
+    async def test_echo_integer(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [123],
                                  ev['subject'],
@@ -70,7 +70,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_double(self, ev, evctx):
+    async def test_echo_double(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [123.456],
                                  ev['subject'],
@@ -79,7 +79,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_empty_list(self, ev, evctx):
+    async def test_echo_empty_list(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [[]],
                                  ev['subject'],
@@ -88,7 +88,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_integer_list(self, ev, evctx):
+    async def test_echo_integer_list(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [[1, 2, 3]],
                                  ev['subject'],
@@ -97,7 +97,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_mixed_list(self, ev, evctx):
+    async def test_echo_mixed_list(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [[1, 'Hello World', 3.21]],
                                  ev['subject'],
@@ -106,7 +106,7 @@ class TestSetSDK(TestSetTalent):
         return result
 
     # pylint: disable=invalid-name,unused-argument
-    async def test_echo_deep_list(self, ev, evctx):
+    async def test_echo_deep_list(self, ev, evtctx):
         result = await self.call('function-provider-py', 'echo',
                                  [[1, [2, [3, [4, [5]]]]]],
                                  ev['subject'],
