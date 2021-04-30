@@ -10,10 +10,12 @@
 
 import asyncio
 import threading
+import concurrent
 import functools
 import os
 import re
 import logging
+import json
 from uuid import uuid4
 
 from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_ERROR
@@ -117,7 +119,13 @@ class Talent(IOFeatures):
     def callees(self):
         return []
 
-    async def call(self, id, func, args, subject, return_topic, timeout_ms=10000, timestamp_ms=None):
+    async def call(self, id, func, args, subject, return_topic, timeout_ms=10000, now_ms=None):
+        if now_ms is None:
+            now_ms = time_ms()
+
+        if timeout_ms <= 0:
+            raise Exception(f'The function call {func}() timed out')
+
         # Throws an exception if not available
         self.callees().index('{}.{}'.format(id, func))
 
@@ -131,9 +139,10 @@ class Talent(IOFeatures):
                 'func': func,
                 'args': args,
                 'chnl': self.chnl,
-                'call': call_id
+                'call': call_id,
+                'timeoutAtMs': now_ms + timeout_ms
             },
-            timestamp_ms
+            now_ms
         )
 
         self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms)

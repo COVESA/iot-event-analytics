@@ -141,6 +141,10 @@ class Talent extends IOFeatures {
             throw new Error(`${id}.${func} has to be added to the return value of callees() function`);
         }
 
+        if (timeoutMs <= 0) {
+            throw new Error(`The function call ${func}() timed out`);
+        }
+
         const callId = uuid.v4();
 
         const ev = TalentOutput.createFor(
@@ -151,8 +155,10 @@ class Talent extends IOFeatures {
                 func,
                 args,
                 chnl: this.chnl,
-                call: callId
-            }
+                call: callId,
+                timeoutAtMs: nowMs + timeoutMs
+            },
+            nowMs
         );
 
         const timeoutPromise = new Promise((resolve, reject) => {

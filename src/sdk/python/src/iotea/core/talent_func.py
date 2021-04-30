@@ -90,7 +90,13 @@ class FunctionTalent(Talent):
         for function_name in function_names:
             event_schema = {
                 'type': 'object',
-                'required': ['func', 'args', 'chnl', 'call'],
+                'required': [
+                    'func',
+                    'args',
+                    'chnl',
+                    'call',
+                    'timeoutAtMs'
+                ],
                 'properties': {
                     'func': {
                         'type': 'string',
@@ -104,6 +110,9 @@ class FunctionTalent(Talent):
                     },
                     'call': {
                         'type': 'string'
+                    },
+                    'timeoutAtMs': {
+                        'type': 'integer'
                     }
                 },
                 'additionalProperties': False
@@ -163,7 +172,7 @@ class FunctionTalent(Talent):
         # Process function invocations
         raw_value = TalentInput.get_raw_value(ev)
 
-        args = [*raw_value['args'], ev, evtctx]
+        args = [*raw_value['args'], ev, evtctx, raw_value['timeoutAtMs']]
 
         feature = '{}-out'.format(raw_value['func'])
 

@@ -43,7 +43,7 @@ class VerifyTalent(FunctionTalent):
                 self.logger.error('Could not import JWK: {}'.format(ex))
 
     # pylint: disable=unused-argument
-    def __verify(self, payload, ev, evtctx):
+    def __verify(self, payload, ev, evtctx, timeout_at_ms):
         self.logger.info('Received verification request for value {}'.format(payload))
         result = self.verifier.verify(payload)
 
@@ -55,14 +55,14 @@ class VerifyTalent(FunctionTalent):
             return self.verifier.verify(payload).decode('utf-8')
 
     # pylint: disable=unused-argument
-    async def __sign(self, payload, ev, evtctx):
+    async def __sign(self, payload, ev, evtctx, timeout_at_ms):
         if self.key is None or self.key == '':
             return 'no key given'
 
         return await self.verifier.sign(payload, self.key)
 
     # pylint: disable=unused-argument
-    async def __signerdid(self, payload, ev, evtctx):
+    async def __signerdid(self, payload, ev, evtctx, timeout_at_ms):
         return await self.verifier.signer_did(payload)
 
 async def main():

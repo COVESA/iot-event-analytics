@@ -17,6 +17,8 @@ from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
+from iotea.core.util.time_ms import time_ms
+
 os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
@@ -58,25 +60,25 @@ class MathFunctions(FunctionTalent):
             self.logger.error(err)
 
     # pylint: disable=unused-argument
-    async def __multiply(self, operand_a, operand_b, ev, evtctx):
+    async def __multiply(self, operand_a, operand_b, ev, evtctx, called_at_ms, timeout_ms):
         await asyncio.sleep(random.randint(0, 2))
         return operand_a * operand_b
 
     # pylint: disable=unused-argument
-    async def __sum(self, operand, ev, evtctx):
+    async def __sum(self, operand, ev, evtctx, timeout_at_ms):
         if operand == 1:
             return 1
 
-        return operand + await self.call(self.id, 'sum', [operand - 1], ev['subject'], ev['returnTopic'], 60000)
+        return operand + await self.call(self.id, 'sum', [operand - 1], ev['subject'], ev['returnTopic'], timeout_at_ms - time_ms())
 
-    async def __fibonacci(self, nth, ev, evtctx):
+    async def __fibonacci(self, nth, ev, evtctx, timeout_at_ms):
         self.logger.info(f'Calculating {nth}th fibonacci number...', extra=self.logger.create_extra(evtctx))
 
         if nth <= 1:
             self.logger.info(f'Result for {nth}th fibonacci number is {nth}', extra=self.logger.create_extra(evtctx))
             return nth
 
-        return await self.call(self.id, 'fibonacci', [nth - 1], ev['subject'], ev['returnTopic'], 60000) + await self.call(self.id, 'fibonacci', [nth - 2], ev['subject'], ev['returnTopic'], 60000)
+        return await self.call(self.id, 'fibonacci', [nth - 1], ev['subject'], ev['returnTopic'], timeout_at_ms - time_ms()) + await self.call(self.id, 'fibonacci', [nth - 2], ev['subject'], ev['returnTopic'], timeout_at_ms - time_ms())
 
 async def main():
     math_function_talent_1 = MathFunctions('mqtt://localhost:1883')

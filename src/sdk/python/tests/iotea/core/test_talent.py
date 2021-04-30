@@ -101,7 +101,7 @@ class TestTalent:
 
         talent.mqtt_client.publish_json.assert_called_once_with(
             [ 'ingestion/events' ],
-            { 'subject': 'testsubject', 'type': 'default', 'instance': 'default', 'value': {'func': 'sum', 'args': [1, 1], 'chnl': 'test-talent.00000000', 'call': '00000000'}, 'feature': 'math.sum-in', 'whenMs': 1619524724000 }
+            { 'subject': 'testsubject', 'type': 'default', 'instance': 'default', 'value': {'func': 'sum', 'args': [1, 1], 'chnl': 'test-talent.00000000', 'call': '00000000', 'timeoutAtMs': 1619524734000 }, 'feature': 'math.sum-in', 'whenMs': 1619524724000 }
         )
 
         expected_error_message = 'An error occurred'
