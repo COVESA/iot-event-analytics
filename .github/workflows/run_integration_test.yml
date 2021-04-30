@@ -21,15 +21,22 @@ jobs:
       # is needed later in the "Run integration tests" step
       run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env up --build -d
 
-    - name: Setup test dependencies
-      working-directory: ${{github.workspace}}/test/integration-tests
+    - name: Build Node.js SDK
+      working-directory: ${{github.workspace}}
       shell: bash
       run: |
         yarn --frozen-lockfile
+
+    - name: Build Python SDK
+      working-directory: ${{github.workspace}}/test/integration-tests
+      shell: bash
+      env:
+        IOTEA_PROJECT_ROOT: ${{github.workspace}}
+      run: |
         python3 -m venv .venv
         source .venv/bin/activate
-        pip install wheel
-        pip install ${{github.workspace}}/src/sdk/python/lib/boschio_iotea-0.4.0-py3-none-any.whl
+        python -m pip install wheel
+        python -m pip install $IOTEA_PROJECT_ROOT/src/sdk/python/pkg --force
 
     - name: Build C++ tests
       working-directory: ${{github.workspace}}/test/integration-tests/testset_sdk/cpp
