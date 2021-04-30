@@ -136,7 +136,7 @@ class Talent extends IOFeatures {
         return [];
     }
 
-    async call(id, func, args, subject, returnTopic, timeoutMs = 10000) {
+    async call(id, func, args, subject, returnTopic, timeoutMs = 10000, nowMs = Date.now()) {
         if (this.callees().indexOf(`${id}.${func}`) === -1) {
             throw new Error(`${id}.${func} has to be added to the return value of callees() function`);
         }

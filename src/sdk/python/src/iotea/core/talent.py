@@ -24,23 +24,27 @@ from .util.mqtt_client import NamedMqttClient
 from .util.logger import Logger
 from .util.json_query import json_query_first
 from .util.talent_io import TalentOutput
-from .util import time_ms
+from .util.time_ms import time_ms
 
 class DeferredCall:
-    def __init__(self, call_id, timeout_ms):
+    def __init__(self, call_id, timeout_ms, loop):
         self.call_id = call_id
-        self.loop = asyncio.get_event_loop()
+        self.loop = loop
         self.future = self.loop.create_future()
 
     def resolve(self, result):
-        if self.future.done():
+        # Loop can be closed, if a timeout occurred, since the newly created
+        # Execution loop was stopped
+        if self.loop.is_closed() or self.future.done():
             return
 
         # Called from another Thread
         self.loop.call_soon_threadsafe(self.future.set_result, result)
 
     def reject(self, err):
-        if self.future.done():
+        # Loop can be closed, if a timeout occurred, since the newly created
+        # Execution loop was stopped
+        if self.loop.is_closed() or self.future.done():
             return
 
         # Called from another Thread
@@ -88,7 +92,7 @@ class IOFeatures:
         return functools.reduce(lambda outputs, feature: feature.append_to(talent_id, outputs), self.output_features, outputs)
 
 class Talent(IOFeatures):
-    def __init__(self, talent_id, connection_string):
+    def __init__(self, talent_id, connection_string, max_threadpool_workers=1024):
         super(Talent, self).__init__()
         # Unique for different talents
         # pylint: disable=invalid-name
@@ -102,6 +106,12 @@ class Talent(IOFeatures):
         self.deferred_calls = {}
         self.chnl = f'{self.id}.{str(uuid4())}'
         self.lock = threading.Lock()
+
+        # Set the maximum number of event workers
+        asyncio.get_event_loop().set_default_executor(concurrent.futures.ThreadPoolExecutor(max_workers=max_threadpool_workers))
+
+        # Store the current event loop
+        self.loop = asyncio.get_event_loop()
 
         for callee in self.callees():
             self.skip_cycle_check_for(f'{DEFAULT_TYPE}.{callee}-out')
@@ -145,14 +155,13 @@ class Talent(IOFeatures):
             now_ms
         )
 
-        self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms)
+        self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms, asyncio.get_event_loop())
 
         await self.mqtt_client.publish_json([return_topic], ev)
 
         self.logger.debug('Successfully sent function call')
 
-        # pylint: disable=unused-variable
-        done, pending = await asyncio.wait([self.deferred_calls[call_id].future], timeout=timeout_ms / 1000)
+        done, pending = await asyncio.wait([ self.deferred_calls[call_id].future ], timeout=timeout_ms / 1000)
 
         if len(list(pending)) == 1:
             raise Exception(f'Timeout at calling function {func}')
@@ -185,8 +194,25 @@ class Talent(IOFeatures):
                 await self.mqtt_client.publish_json(topic, out_event)
 
     # pylint: disable=assignment-from-no-return, unused-argument
-    async def __on_event(self, ev, topic):
-        await self._process_event(ev, self.on_event)
+    def __on_event(self, ev, topic):
+        result = self.loop.run_in_executor(None, self.__start_process_event, ev, self.on_event)
+
+        def done_callback(future):
+            if future.exception():
+                self.logger.warning(f'Error on event execution: {future.exception()}')
+
+        result.add_done_callback(done_callback)
+
+    def __start_process_event(self, ev, cb):
+        # Create a blocking function which is executed using the default ThreadPoolExecutor
+        loop = asyncio.new_event_loop()
+
+        try:
+            return loop.run_until_complete(functools.partial(self._process_event, ev=ev, cb=cb)())
+        finally:
+            # If run_until_complete throws an exception, the loop is closed to cleanup
+            loop.close()
+
 
     async def _process_event(self, ev, cb):
         evtctx = Logger.create_event_context(ev)
@@ -204,8 +230,10 @@ class Talent(IOFeatures):
 
         await self.publish_out_events(ev['returnTopic'], out_events)
 
+        return out_events
+
     async def __on_common_event(self, ev, topic):
-        # self.logger.debug('Received common event {} at topic {}'.format(json.dumps(ev), topic))
+        self.logger.debug('Received common event {} at topic {}'.format(json.dumps(ev), topic))
 
         suffix_match = re.fullmatch('^.*\\/([^\\/]+)$', topic)
 
