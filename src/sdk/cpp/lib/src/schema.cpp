@@ -55,6 +55,12 @@ NumberType::NumberType()
     : ValueType{"number"} {}
 
 //
+// IntegerType
+//
+IntegerType::IntegerType()
+    : ValueType{"integer"} {}
+
+//
 // StringType
 //
 StringType::StringType(const std::string& const_value)
@@ -517,8 +523,9 @@ FunctionValue::FunctionValue(const std::string& name)
     : ObjectType(property_map({{"func", std::make_shared<StringType>(name)},
                                {"args", std::make_shared<ArrayType>()},
                                {"chnl", std::make_shared<StringType>()},
-                               {"call", std::make_shared<StringType>()}}),
-                 std::vector<std::string>({"func", "args", "chnl", "call"})) {}
+                               {"call", std::make_shared<StringType>()},
+                               {"timeoutAtMs", std::make_shared<IntegerType>()}}),
+                 std::vector<std::string>({"func", "args", "chnl", "call", "timeoutAtMs"})) {}
 
 //
 // Schema

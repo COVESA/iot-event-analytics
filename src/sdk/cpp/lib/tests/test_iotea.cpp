@@ -13,6 +13,7 @@
 #include <vector>
 #include <utility>
 #include <tuple>
+#include <iostream>
 
 #include "gtest/gtest.h"
 #include "nlohmann/json.hpp"
@@ -308,11 +309,6 @@ TEST(iotea, Gatherer_HasTimedOut) {
         std::vector<std::pair<int64_t, bool>> in_out_pairs;
     } tests[] {
         {
-            // Single token without timeout, should not timeout
-            {CallToken{"a", -1}},
-            {{0, false}, {100, false}, {200, false}},
-        },
-        {
             // Single token, should timeout at t=100
             {CallToken{"a", 100}},
             {{0, false}, {100, true}, {200, true}},
@@ -322,11 +318,6 @@ TEST(iotea, Gatherer_HasTimedOut) {
             {CallToken{"a", 100}, CallToken{"b", 200}},
             {{0, false}, {100, true}, {200, true}},
         },
-        {
-            // Multiple tokens of which one doesn't have a timeout, should timeout at earliest timeout, i.e. t=100
-            {CallToken{"a", 100}, CallToken{"b", 200}, CallToken{"c", -1}},
-            {{0, false}, {100, true}, {200, true}},
-        }
     };
 
     for (const auto& t : tests) {
@@ -748,7 +739,7 @@ TEST(iotea, CallContext_Reply) {
         int64_t GetNowMs() const override { return 0; }
     };
 
-    auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}};
+    auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
     auto event = Event{"subject", "feature", call_value, "default", "default", "return_topic", 0};
     auto publisher = std::make_shared<PublisherMock>();
 
