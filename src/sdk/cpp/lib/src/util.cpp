@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cstdlib>
 #include <string>
 #include <atomic>
@@ -23,6 +24,11 @@ namespace core {
 std::string GetEnv(const std::string& name, const std::string& defval) {
     auto v = std::getenv(name.c_str());
     return v ? v : defval;
+}
+
+int64_t GetEpochTimeMs() {
+    auto epoch = std::chrono::system_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
 }
 
 // TODO implement proper UUID generator

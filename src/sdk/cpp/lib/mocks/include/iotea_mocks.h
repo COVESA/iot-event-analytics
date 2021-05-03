@@ -18,7 +18,7 @@
 
 #include "iotea.hpp"
 
-using iotea::core::call_handler_ptr;
+using iotea::core::reply_handler_ptr;
 using iotea::core::publisher_ptr;
 using iotea::core::uuid_generator_func_ptr;
 using iotea::core::gather_func_ptr;
@@ -41,33 +41,6 @@ class Publisher : public iotea::core::Publisher {
 class Receiver : public iotea::core::Receiver {
    public:
     MOCK_METHOD(void, Receive, (const std::string& topic, const std::string& msg), (override));
-};
-
-class CallHandler : public iotea::core::CallHandler {
-   public:
-    MOCK_METHOD(void, Gather, (gather_func_ptr func, timeout_func_ptr timeout_func, std::vector<CallToken> tokens));
-    MOCK_METHOD(void, GatherAndReply, (gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, const CallContext& ctx, std::vector<CallToken> tokens));
-    MOCK_METHOD(void, HandleReply, (const std::string& token, const json& reply));
-    MOCK_METHOD(void, HandleTick, (const int64_t& ts));
-    MOCK_METHOD(int64_t, GetNowMs, (), (const));
-};
-
-class EventContext : public iotea::core::EventContext {
-   public:
-    EventContext() = default;
-    MOCK_METHOD(std::string, GetTalentId, (), (const));
-    MOCK_METHOD(std::string, GetSubject, (), (const));
-    MOCK_METHOD(std::string, GetReturnTopic, (), (const));
-    MOCK_METHOD(CallToken, Call, (const Callee& callee, const json& args, const int64_t& timeout), (const));
-};
-
-class CallContext : public iotea::core::CallContext {
-   public:
-    CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                const Event& event, call_handler_ptr call_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
-        : iotea::core::CallContext{talent_id, channel_id, feature, event, call_handler, publisher, uuid_gen} {}
-
-    MOCK_METHOD(void, Reply, (const json& value), (const override));
 };
 
 } // namespace core

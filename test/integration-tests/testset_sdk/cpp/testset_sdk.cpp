@@ -27,7 +27,7 @@ static constexpr char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
 class TestSetSDK : public TestSetTalent {
    public:
-    explicit TestSetSDK()
+    TestSetSDK()
         : TestSetTalent(TALENT_NAME) {
         auto callee = RegisterCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
 
@@ -46,9 +46,9 @@ class TestSetSDK : public TestSetTalent {
 
 static Client client(SERVER_ADDRESS);
 
-void signal_handler(int signal) { client.Stop(); }
+void signal_handler(int) { client.Stop(); }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<TestSetSDK>();
 
     client.RegisterFunctionTalent(talent);

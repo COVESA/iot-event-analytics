@@ -20,8 +20,7 @@ using iotea::core::FunctionTalent;
 using iotea::core::Talent;
 using iotea::core::Client;
 using iotea::core::Callee;
-using iotea::core::EventContext;
-using iotea::core::CallContext;
+using iotea::core::event_ctx_ptr;
 using iotea::core::Change;
 using iotea::core::IsSet;
 using iotea::core::GreaterThan;
@@ -42,7 +41,7 @@ class MyService : public Talent {
         return Change("temp", "kuehlschrank");
     }
 
-    void OnEvent(const Event& event, EventContext ctx) override {
+    void OnEvent(const Event& event, event_ctx_ptr) override {
         logging::Info() << "Event: " << event.GetValue().dump(4);
     }
 
@@ -53,11 +52,11 @@ class MyService : public Talent {
 
 static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) {
+void signal_handler(int) {
     client.Stop();
 }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     client.RegisterTalent(std::make_shared<MyService>());
 
     std::signal(SIGINT, signal_handler);

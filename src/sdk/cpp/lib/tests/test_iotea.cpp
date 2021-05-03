@@ -208,7 +208,7 @@ TEST(iotea, Talent_RegisterCallee) {
     for (const auto&t : tests) {
         auto talent = Talent("test_RegisterCallee");
 
-        talent.Initialize(std::make_shared<CallHandler>(), nullptr, t.uuid_gen);
+        talent.Initialize(std::make_shared<ReplyHandler>(), nullptr, t.uuid_gen);
 
         for (const auto& c : t.callees) {
             talent.RegisterCallee(c.GetTalentId(), c.GetFunc(), c.GetType());
@@ -237,29 +237,29 @@ TEST(itoea, Talent_CallAndGather) {
                 callee_ = RegisterCallee("some_talent", "some_func");
             }
 
-        void OnEvent(const Event& event, EventContext ctx) override {
-            auto token = ctx.Call(callee_, event.GetValue());
+        void OnEvent(const Event& event, event_ctx_ptr ctx) override {
+            auto token = ctx->Call(callee_, event.GetValue());
 
             auto reply_handler = [this](const json& reply) {
                 reply_ = reply;
             };
-            ctx.Gather(reply_handler, nullptr, token);
+            ctx->Gather(reply_handler, nullptr, token);
         }
     };
 
     // Create and set up the talent
     std::string talent_id{"test_Talent"};
     auto talent = TestTalent{talent_id};
-    auto call_handler = std::make_shared<CallHandler>();
+    auto reply_handler = std::make_shared<ReplyHandler>();
 
     std::string fake_uuid{"00000000-0000-0000-0000-000000000000"};
     auto uuid_gen = [fake_uuid]{ return fake_uuid; };
-    talent.Initialize(call_handler, nullptr, uuid_gen);
+    talent.Initialize(reply_handler, nullptr, uuid_gen);
 
     // Create what's needed to send an event to the Talent
     auto publisher = std::make_shared<testing::NiceMock<iotea::mock::core::Publisher>>();
-    auto ctx = EventContext{"talent_id", "channel_id", "subject",
-        "ingestion/events", call_handler, publisher, uuid_gen};
+    auto ctx = std::make_shared<EventContext>("talent_id", "channel_id", "subject",
+        "ingestion/events", reply_handler, publisher, uuid_gen);
 
     auto value = json{"hello", "world"};
     auto event = Event{"subject", "feature", value};
@@ -267,8 +267,8 @@ TEST(itoea, Talent_CallAndGather) {
     // The following sequence of events follow
     // 1. Post the event to the talent
     // 2. Talent calls function and gathers (waits for) the reply
-    // 3. Generate a reply send it to the CallHandler
-    // 4. The CallHandler gathers the reply and sends it to the talent which
+    // 3. Generate a reply send it to the ReplyHandler
+    // 4. The ReplyHandler gathers the reply and sends it to the talent which
     //    assigns the reply the member "reply_"
     // 5. The talent's reply_ member is compared to the sent reply
 
@@ -276,7 +276,13 @@ TEST(itoea, Talent_CallAndGather) {
     talent.OnEvent(event, ctx);
 
     // 3 & 4
-    call_handler->HandleReply(fake_uuid, value);
+    auto gatherer = reply_handler->ExtractGatherer(fake_uuid);
+    ASSERT_TRUE(gatherer);
+
+    ASSERT_TRUE(gatherer->Gather(fake_uuid, value));
+    auto replies = gatherer->GetReplies();
+    gatherer->ForwardReplies(replies);
+
 
     // The replies passed to the talent's handler function are packed into a
     // JSON array in the order of the corresponding call tokens.
@@ -287,13 +293,13 @@ TEST(itoea, Talent_CallAndGather) {
 /**
  * @brief Test that Gatherer handles timeouts.
  */
-TEST(iotea, Gatherer_CheckTimeout) {
+TEST(iotea, Gatherer_HasTimedOut) {
     class TestGatherer : public Gatherer {
        public:
-        TestGatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms)
-            : Gatherer(timeout_func, tokens, now_ms) {}
+        TestGatherer(const std::vector<CallToken>& tokens, int64_t now_ms)
+            : Gatherer(nullptr, tokens, now_ms) {}
 
-        void Call() const override {}
+        void ForwardReplies(const std::vector<json>&) const override {}
     };
 
     struct {
@@ -323,26 +329,12 @@ TEST(iotea, Gatherer_CheckTimeout) {
         }
     };
 
-    // Test input without timeout callback function
     for (const auto& t : tests) {
-        auto gatherer = TestGatherer{nullptr, t.tokens, 0};
+        auto gatherer = TestGatherer{t.tokens, 0};
 
         for (const auto& iop : t.in_out_pairs) {
-            auto have = gatherer.CheckTimeout(iop.first);
+            auto have = gatherer.HasTimedOut(iop.first);
             ASSERT_EQ(have, iop.second);
-        }
-    }
-
-    // Test input with timeout function
-    for (const auto& t : tests) {
-        auto timed_out = false;
-        auto f = [&timed_out]{ timed_out = true; };
-        auto gatherer = TestGatherer{f, t.tokens, 0};
-
-        for (const auto& iop : t.in_out_pairs) {
-            auto have = gatherer.CheckTimeout(iop.first);
-            ASSERT_EQ(have, iop.second);
-            ASSERT_EQ(have, timed_out);
         }
     }
 }
@@ -354,10 +346,10 @@ TEST(iotea, Gatherer_CheckTimeout) {
 TEST(iotea, Gatherer_Wants) {
     class TestGatherer : public Gatherer {
        public:
-        TestGatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens)
-            : Gatherer(timeout_func, tokens) {}
+        explicit TestGatherer(const std::vector<CallToken>& tokens)
+            : Gatherer(nullptr, tokens) {}
 
-        void Call() const override {}
+        void ForwardReplies(const std::vector<json>&) const override {}
     };
 
     struct {
@@ -379,7 +371,7 @@ TEST(iotea, Gatherer_Wants) {
     };
 
     for (const auto& t : tests) {
-        auto gatherer = TestGatherer{nullptr, t.tokens};
+        auto gatherer = TestGatherer{t.tokens};
 
         for (const auto& iop : t.in_out_pairs) {
             auto have = gatherer.Wants(iop.first);
@@ -390,51 +382,47 @@ TEST(iotea, Gatherer_Wants) {
 
 /**
  * @brief Test that Gatherer only collects replies corresponding to the call
- * IDs it depends on. Verify that replies are stored correctly and that the
- * "Call" callback is invoked when all the call IDs have been gathered.
+ * IDs it depends on. Verify that replies are stored correctly and that
+ * Gatherer::Gather only returns true once all the IDs have been gathered.
  */
 TEST(iotea, Gatherer_Gather) {
     class TestGatherer : public Gatherer {
        public:
-        bool& called_;
-        TestGatherer(const std::vector<CallToken>& tokens, bool& called)
-            : Gatherer(nullptr, tokens)
-            , called_{called} {}
+        explicit TestGatherer(const std::vector<CallToken>& tokens)
+            : Gatherer{nullptr, tokens} {}
 
-        std::unordered_map<std::string, json> GetReplies() const {
-            return replies_;
-        }
-
-        void Call() const override {
-            called_ = true;
-        }
+        void ForwardReplies(const std::vector<json>&) const override {}
     };
 
+    // The tokens the gatherer depends on
     auto tokens = std::vector<CallToken>{CallToken{"a"}, CallToken{"b"}, CallToken{"c"}};
-    auto called = false;
-    auto gatherer = TestGatherer{tokens, called};
+    auto gatherer = TestGatherer{tokens};
 
+    auto value_a = json{{"value", "a"}};
+    auto value_b = json{{"value", "b"}};
+    auto value_c = json{{"value", "c"}};
     auto in_out_tuple = std::vector<std::tuple<std::string, json, bool>>{
-        {"d", json{{"value", "d"}}, false},
-        {"a", json{{"value", "a"}}, false},
-        {"e", json{{"value", "e"}}, false},
-        {"b", json{{"value", "b"}}, false},
-        {"f", json{{"value", "f"}}, false},
-        {"c", json{{"value", "c"}}, true},
+        {"d", json{{"value", "d"}}, false}, // Not a dependency
+        {"a", value_a, false},              // First dependency
+        {"e", json{{"value", "e"}}, false}, // Not a dependency
+        {"b", value_b, false},              // Second dependency
+        {"f", json{{"value", "f"}}, false}, // Not a dependency
+        {"c", value_c, true},               // Last dependency, expect Gather to return true
     };
 
+    auto expect_replies = std::vector<json>{value_a, value_b, value_c};
     for (const auto& tup : in_out_tuple) {
         std::string token;
         json reply;
-        bool expect;
+        bool expect_done_gathering;
 
-        std::tie(token, reply, expect) = tup;
-        auto have = gatherer.Gather(token, reply);
-        ASSERT_EQ(have, expect);
-        ASSERT_EQ(have, called);
+        std::tie(token, reply, expect_done_gathering) = tup;
+        auto done_gathering = gatherer.Gather(token, reply);
+        ASSERT_EQ(done_gathering, expect_done_gathering);
 
-        if (gatherer.Wants(token)) {
-            ASSERT_EQ(gatherer.GetReplies()[token], reply);
+        if (done_gathering) {
+            // Verify that the replies are gathered and gathered in order
+            ASSERT_EQ(gatherer.GetReplies(), expect_replies);
         }
     }
 }
@@ -448,16 +436,10 @@ TEST(iotea, Gatherer_Gather) {
 TEST(iotea, SinkGatherer_Gather) {
     auto tokens = std::vector<CallToken>{CallToken{"a"}, CallToken{"b"}, CallToken{"c"}};
 
-    auto value_a = json{{"value", "a"}};
-    auto value_b = json{{"value", "b"}};
-    auto value_c = json{{"value", "c"}};
     auto in_out_tuple = std::vector<std::tuple<std::string, json, bool>>{
-        {"d", json{{"value", "d"}}, false},
-        {"a", value_a, false},
-        {"e", json{{"value", "e"}}, false},
-        {"b", value_b, false},
-        {"f", json{{"value", "f"}}, false},
-        {"c", value_c, true},
+        {"a", json{{"value", "a"}}, false},
+        {"b", json{{"value", "b"}}, false},
+        {"c", json{{"value", "c"}}, true},
     };
 
     std::vector<json> gathered_replies;
@@ -467,14 +449,16 @@ TEST(iotea, SinkGatherer_Gather) {
     for (const auto& tup : in_out_tuple) {
         std::string token;
         json reply;
-        bool expect;
+        bool expect_done_gathering;
 
-        std::tie(token, reply, expect) = tup;
-        auto finished = gatherer.Gather(token, reply);
-        ASSERT_EQ(finished, expect);
+        std::tie(token, reply, expect_done_gathering) = tup;
+        auto done_gathering = gatherer.Gather(token, reply);
+        ASSERT_EQ(done_gathering, expect_done_gathering);
 
-        if (finished) {
-            ASSERT_EQ(gathered_replies, json({value_a, value_b, value_c}));
+        if (done_gathering) {
+            auto replies = gatherer.GetReplies();
+            gatherer.ForwardReplies(replies);
+            ASSERT_EQ(replies, gathered_replies);
         }
     }
 }
@@ -485,59 +469,42 @@ TEST(iotea, SinkGatherer_Gather) {
  * the supplied callback function is invoked and returns as expected when all
  * the call IDs have been gathered.
  */
-/* TODO re-think mocking and re-implement
 TEST(iotea, ReplyGatherer_Gather) {
-    std::string subject{"subject"};
-    std::string feature{"feature"};
-    std::string channel_id{"00000000-0000-0000-0000-000000000000"};
-    std::string call_id{"00000000-0000-0000-0000-000000000000"};
-    std::string type{"default"};
-    std::string instance{"default"};
-    std::string return_topic{"return_topic"};
-    auto call_value = json{{"chnl", channel_id}, {"call", call_id}, {"args", json{}}};
-    auto event = Event{subject, feature, call_value, type, instance, return_topic};
-
-    std::string talent_id{"talent_id"};
-    auto gather_func = [](std::vector<json> replies) { return replies; };
-    auto call_handler = std::make_shared<CallHandler>();
-    auto publisher = std::make_shared<::testing::NiceMock<iotea::mock::core::Publisher>>();
-    std::string fake_uuid{"00000000-0000-0000-0000-000000000000"};
-    auto uuid_gen = [fake_uuid]{ return fake_uuid; };
-    //auto ctx = CallContext{talent_id, channel_id, feature, event, call_handler, publisher, uuid_gen};
-    iotea::mock::core::CallContext ctx{talent_id, channel_id, feature, event, call_handler, publisher, uuid_gen};
-
-    auto value_a = json{{"value", "a"}};
-    auto value_b = json{{"value", "b"}};
-    auto value_c = json{{"value", "c"}};
-    auto in_out_tuple = std::vector<std::tuple<std::string, json, bool>>{
-        {"d", json{{"value", "d"}}, false},
-        {"a", value_a, false},
-        {"e", json{{"value", "e"}}, false},
-        {"b", value_b, false},
-        {"f", json{{"value", "f"}}, false},
-        {"c", value_c, true},
+    class PublisherMock : public Publisher {
+       public:
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
     };
 
     auto tokens = std::vector<CallToken>{CallToken{"a"}, CallToken{"b"}, CallToken{"c"}};
-    auto gatherer = ReplyGatherer{gather_func, nullptr, ctx, tokens};
 
-    EXPECT_CALL(ctx, Reply(json({value_a, value_b, value_c}))).Times(1);
+    auto in_out_tuple = std::vector<std::tuple<std::string, json, bool>>{
+        {"a", json{{"value", "a"}}, false},
+        {"b", json{{"value", "b"}}, false},
+        {"c", json{{"value", "c"}}, true},
+    };
+
+    auto gather_func = [](std::vector<json>) { return json{nullptr}; };
+    auto publisher = std::make_shared<PublisherMock>();
+    auto replier = PreparedFunctionReply{"talent_id", "feature", "subject", "channel_id", "call_id", "return_topic", publisher};
+    auto gatherer = ReplyGatherer{gather_func, nullptr, replier, tokens};
 
     for (const auto& tup : in_out_tuple) {
         std::string token;
         json reply;
-        bool expect;
+        bool expect_done_gathering;
 
-        std::tie(token, reply, expect) = tup;
-        auto finished = gatherer.Gather(token, reply);
-        ASSERT_EQ(finished, expect);
+        std::tie(token, reply, expect_done_gathering) = tup;
+        auto done_gathering = gatherer.Gather(token, reply);
+        ASSERT_EQ(done_gathering, expect_done_gathering);
 
-        if (finished) {
-            // ASSERT_EQ(gathered_replies, json({value_a, value_b, value_c}));
+        if (done_gathering) {
+            auto replies = gatherer.GetReplies();
+
+            EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_));
+            gatherer.ForwardReplies(replies);
         }
     }
 }
-*/
 
 /**
  * @brief Test Message unmarshalling and accessors methods.
@@ -677,14 +644,14 @@ TEST(iotea, PlatformEvent) {
     struct {
         PlatformEvent::Type type;
         json data;
-        timepoint_t timestamp;
+        int64_t timestamp;
 
         json raw;
     } tests[] {
         {
             PlatformEvent::Type::TALENT_RULES_SET,
             json::object(),
-            iotea::core::timepoint_t{std::chrono::milliseconds{static_cast<int64_t>(12345)}},
+            12345,
             json::parse(R"({
                 "type": "platform.talent.config.set",
                 "data": {},
@@ -694,7 +661,7 @@ TEST(iotea, PlatformEvent) {
         {
             PlatformEvent::Type::TALENT_RULES_UNSET,
             json::object(),
-            iotea::core::timepoint_t{std::chrono::milliseconds{static_cast<int64_t>(12345)}},
+            12345,
             json::parse(R"({
                 "type": "platform.talent.config.unset",
                 "data": {},
@@ -722,7 +689,7 @@ TEST(iotea, Event) {
     auto type = "test_type";
     auto instance = "test_instance";
     auto return_topic = "test/return/topic";
-    auto when = iotea::core::timepoint_t{std::chrono::milliseconds{static_cast<int64_t>(1615209290000)}};
+    auto when = int64_t{1615209290000};
 
     auto event = iotea::core::Event(subject, feature, value, type, instance, return_topic, when);
 
@@ -767,49 +734,124 @@ TEST(iotea, Event_FromJson) {
 /**
  * @brief Test CallContext and verify that reply messages are correctly formatted.
  */
-/* TODO re-think mocking and re-implement
 TEST(iotea, CallContext_Reply) {
-    // Construct the "function call event" that we should reply to
-    auto subject = std::string{"subject"};
-    auto feature = std::string{"feature"};
-    auto channel_id = std::string{"00000000-0000-0000-0000-000000000000"};
-    auto call_id = std::string{"00000000-0000-0000-0000-000000000000"};
-    auto type = std::string{"default"};
-    auto instance = std::string{"default"};
-    auto return_topic = std::string{"return_topic"};
-    auto call_value = json{{"chnl", channel_id}, {"call", call_id}, {"args", json{"alpha", "beta"}}};
-    auto call_event = Event{subject, feature, call_value, type, instance, return_topic};
-
-    // Construct the CallContext
-    auto call_handler = std::make_shared<CallHandler>();
-    auto publisher = std::make_shared<iotea::mock::core::Publisher>();
-    auto fake_uuid = std::string{"00000000-0000-0000-0000-000000000000"};
-    auto uuid_gen = [fake_uuid]{ return fake_uuid; };
-    auto talent_id = std::string{"talent_id"};
-    auto ctx = CallContext{talent_id, channel_id, feature, call_event, call_handler, publisher, uuid_gen};
-
-    // Construct the "reply event"
-    auto reply_value = json{"gamma", "delta"};
-    auto reply_event = Event{subject, feature, 
-        json{{"$tsuffix", "/" + channel_id + "/" + call_id}, {"$vpath", "value"}, {"value", reply_value}}
+    class PublisherMock : public Publisher {
+       public:
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
     };
 
-    // Next we compare what is published with what we expect to be published.
-    // This is a bit convoluted because the event contains a timestamp that
-    // depends on when the event was created (yes we could dependency inject a
-    // clock function) so the textual representation of two otherwise equal
-    // event will differ if they where created a different times.
-    //
-    // Store the textual representation of the published event then unmarhal it
-    // and compare it to what we expect using the overerloaded operator==()
-    // which doesn't look at the "when" field.
-    std::string raw_event;
-    EXPECT_CALL(*publisher, Publish(std::string{return_topic}, ::testing::_)).WillOnce(::testing::SaveArg<1>(&raw_event));
-    ctx.Reply(reply_value);
+    class TestCallContext : public CallContext {
+       public:
+        explicit TestCallContext(const Event& event, publisher_ptr publisher)
+            : CallContext{"talent_id", "channel_id", "feature", event, std::make_shared<ReplyHandler>(), publisher, []{return "";}} {}
 
-    ASSERT_EQ(Event::FromJson(json::parse(raw_event)), reply_event);
+        int64_t GetNowMs() const override { return 0; }
+    };
+
+    auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}};
+    auto event = Event{"subject", "feature", call_value, "default", "default", "return_topic", 0};
+    auto publisher = std::make_shared<PublisherMock>();
+
+    auto ctx = TestCallContext{event, publisher};
+
+    auto expect_published_reply = json::parse(R"({
+        "feature":"talent_id.feature",
+        "instance":"default",
+        "subject":"subject",
+        "type":"default",
+        "value": {
+            "$tsuffix": "/caller_channel_id/caller_call_id",
+            "$vpath":"value",
+            "value": { "key":"value"}
+        },
+        "whenMs":0
+    })");
+
+    // The timestamp set on the outgoing event can't be reached from here so we
+    // have to store what's sent, unmarshal it, tweak the timestamp and then
+    // verify that the rest of the event lives up to expectations.
+    std::string raw_published_reply;
+    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_reply));
+    ctx.Reply(json{{"key", "value"}});
+
+    auto published_reply = json::parse(raw_published_reply);
+    published_reply["whenMs"] = 0;
+    ASSERT_EQ(published_reply, expect_published_reply);
 }
-*/
+
+TEST(iotea, ReplyHandler_ExtractGatherer) {
+    class GathererMock : public Gatherer {
+       public:
+        GathererMock() : Gatherer(nullptr, {}) {}
+
+        MOCK_METHOD(bool, Wants, (const call_id_t&), (const override));
+        MOCK_METHOD(void, ForwardReplies, (const std::vector<json>&), (const override));
+    };
+
+    ReplyHandler h;
+
+    auto g0 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g0, Wants("g1")).WillRepeatedly(::testing::Return(false));
+    EXPECT_CALL(*g0, Wants("g0")).WillOnce(::testing::Return(true));
+    h.AddGatherer(g0);
+
+    auto g1 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g1, Wants("g0")).WillRepeatedly(::testing::Return(false));
+    EXPECT_CALL(*g1, Wants("g1")).WillOnce(::testing::Return(true));
+    h.AddGatherer(g1);
+
+    ASSERT_NE(h.ExtractGatherer("g0"), nullptr);
+    ASSERT_EQ(h.ExtractGatherer("g0"), nullptr);
+
+    ASSERT_NE(h.ExtractGatherer("g1"), nullptr);
+    ASSERT_EQ(h.ExtractGatherer("g1"), nullptr);
+}
+
+TEST(iotea, ReplyHandler_UpdateTime) {
+    class GathererMock : public Gatherer {
+       public:
+        GathererMock() : Gatherer(nullptr, {}) {}
+
+        MOCK_METHOD(bool, HasTimedOut, (int64_t), (const override));
+        MOCK_METHOD(void, ForwardReplies, (const std::vector<json>&), (const override));
+    };
+
+    ReplyHandler h;
+
+    // Expected to timeout at t=3
+    auto g0 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g0, HasTimedOut(0)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g0, HasTimedOut(1)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g0, HasTimedOut(2)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g0, HasTimedOut(3)).WillOnce(::testing::Return(true));
+    h.AddGatherer(g0);
+
+    // Expected to timeout at t=2
+    auto g1 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g1, HasTimedOut(0)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g1, HasTimedOut(1)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g1, HasTimedOut(2)).WillOnce(::testing::Return(true));
+    h.AddGatherer(g1);
+
+    // Expected to timeout at t=2
+    auto g2 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g2, HasTimedOut(0)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g2, HasTimedOut(1)).WillOnce(::testing::Return(true));
+    h.AddGatherer(g2);
+
+    // Expected to timeout at t=0
+    auto g3 = std::make_shared<GathererMock>();
+    EXPECT_CALL(*g3, HasTimedOut(0)).WillOnce(::testing::Return(false));
+    EXPECT_CALL(*g3, HasTimedOut(1)).WillOnce(::testing::Return(true));
+    h.AddGatherer(g3);
+
+    // Expect nothing to timeout at t=0 and t=4
+    ASSERT_EQ(h.ExtractTimedOut(0), std::vector<std::shared_ptr<Gatherer>>{});
+    ASSERT_EQ(h.ExtractTimedOut(1), (std::vector<std::shared_ptr<Gatherer>>{g2, g3}));
+    ASSERT_EQ(h.ExtractTimedOut(2), std::vector<std::shared_ptr<Gatherer>>{g1});
+    ASSERT_EQ(h.ExtractTimedOut(3), std::vector<std::shared_ptr<Gatherer>>{g0});
+    ASSERT_EQ(h.ExtractTimedOut(4), std::vector<std::shared_ptr<Gatherer>>{});
+}
 
 TEST(iotea, Tokenizer_Next) {
     const auto query = "alpha.*.beta[1:2]:label";
@@ -1111,5 +1153,4 @@ TEST(iotea, JsonQuery_Exceptions) {
 
     // Invalid query (missing label)
     ASSERT_THROW(JsonQuery("foo.bar[0]").Query(obj), JsonQueryException);
-
 }

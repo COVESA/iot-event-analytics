@@ -38,12 +38,12 @@ class EchoObserver : public Talent {
         return OrRules(IsSet(SUBSCRIBED_ECHO_EVENT), IsSet(SUBSCRIBED_COUNT_EVENT));
     }
 
-    void OnEvent(const Event& event, EventContext context) override {
+    void OnEvent(const Event& event, event_ctx_ptr) override {
         if (event.GetFeature() == SUBSCRIBED_ECHO_EVENT) {
-            auto message = json{event.GetValue().get<std::string>()};
+            auto message = event.GetValue().get<std::string>();
             log::Info() << "Received echo: '" << message << "'";
         } else if (event.GetFeature() == SUBSCRIBED_COUNT_EVENT) {
-            auto echoCount = json{event.GetValue().get<unsigned int>()};
+            auto echoCount = event.GetValue().get<unsigned int>();
             log::Info() << "Received echoCount: " << echoCount;
         } else {
             log::Warn() << "UNKNOWN EVENT RECEIVED";
@@ -53,11 +53,11 @@ class EchoObserver : public Talent {
 
 static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) {
+void signal_handler(int) {
     client.Stop();
 }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<EchoObserver>();
     client.RegisterTalent(talent);
 

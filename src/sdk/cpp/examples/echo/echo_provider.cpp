@@ -37,11 +37,11 @@ public:
     EchoProvider()
         : FunctionTalent(TALENT_NAME) {
         RegisterFunction(FUNC_ECHO,
-                         [this](const json& args, const CallContext& context) { Echo(args, context); });
+                         [this](const json& args, call_ctx_ptr context) { Echo(args, context); });
         RegisterFunction(FUNC_GET_COUNT,
-                         [this](const json& args, const CallContext& context) { GetEchoCount(context); });
+                         [this](const json&, call_ctx_ptr context) { GetEchoCount(context); });
         RegisterFunction(FUNC_SET_COUNT,
-                         [this](const json& args, const CallContext& context) { SetEchoCount(args, context); });
+                         [this](const json& args, call_ctx_ptr context) { SetEchoCount(args, context); });
 
         int history = 30;
         int ttl = 1000;
@@ -49,50 +49,50 @@ public:
                                                      schema::OutputEncoding(schema::OutputEncoding::Type::Number)));
         AddOutput(EVENT_ECHO_RESP_SENT, schema::Metadata("Message event triggered by calls to 'echo' function.", history, ttl, "ONE",
                                                          schema::OutputEncoding(schema::OutputEncoding::Type::String)));
-        //SkipCycleCheck(true);
     }
 
     schema::rule_ptr OnGetRules() const override { return nullptr; }
 
-    void Echo(const json& args, const CallContext& context) {
+    void Echo(const json& args, call_ctx_ptr context) {
+        log::Info() << "Raw args: " << args.dump(4);
         auto message = args[0].get<std::string>();
         log::Info() << "Received echo call: " << message;
         ++echoCount_;
 
         std::transform(message.begin(), message.end(), message.begin(), ::toupper);
-        context.Reply(message);
+        context->Reply(message);
         log::Info() << "Replying echo:      " << message;
 
-        EventContext notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
-        notifyContext.Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);
-        notifyContext.Emit(TALENT_NAME+"."+EVENT_ECHO_RESP_SENT, message);
+        auto notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
+        notifyContext->Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);
+        notifyContext->Emit(TALENT_NAME+"."+EVENT_ECHO_RESP_SENT, message);
     }
 
-    void GetEchoCount(const CallContext& context) {
+    void GetEchoCount(call_ctx_ptr context) {
         log::Info() << "Received GetEchoCount call";
-        context.Reply(echoCount_);
+        context->Reply(echoCount_);
         log::Info() << "Replying echoCount: " << echoCount_;
     }
 
-    void SetEchoCount(const json& args, const CallContext& context) {
+    void SetEchoCount(const json& args, call_ctx_ptr context) {
         auto newEchoCount = args[0].get<unsigned int>();
         log::Info() << "Received setEchoCount call: " << newEchoCount;
         if (newEchoCount != echoCount_) {
             echoCount_ = newEchoCount;
-            EventContext notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
-            notifyContext.Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);
+            auto notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
+            notifyContext->Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);
         }
-        context.Reply(nullptr);
+        context->Reply(nullptr);
     }
 };
 
 static Client client = Client{SERVER_ADDRESS};
 
-void signal_handler(int signal) {
+void signal_handler(int) {
     client.Stop();
 }
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
     auto talent = std::make_shared<EchoProvider>();
     client.RegisterFunctionTalent(talent);
 
