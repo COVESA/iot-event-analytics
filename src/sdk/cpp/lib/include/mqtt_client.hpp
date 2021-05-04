@@ -37,15 +37,21 @@ class MqttClient : public Publisher {
     MqttClient(const std::string& server_address, const std::string& client_id);
     virtual ~MqttClient() {}
 
-    void Run();
-    void Stop();
+    virtual void Run();
+    virtual void Stop();
 
     // Publisher
-    void Publish(const std::string& topic, const std::string& data) override;
-    void Subscribe(const std::string& topic, const int qos = 1);
+    virtual void Publish(const std::string& topic, const std::string& data) override;
+    virtual void Subscribe(const std::string& topic, const int qos = 1);
 
     std::function<void(mqtt::const_message_ptr)> OnMessage;
-    std::function<void(const std::chrono::steady_clock::time_point& ts)> OnTick;
+    std::function<void(int64_t)> OnTick;
+
+   protected:
+    /**
+     * @brief This constructor should only be used when mocking in unit tests.
+     */
+    MqttClient();
 
    private:
     enum class State {
@@ -63,7 +69,7 @@ class MqttClient : public Publisher {
     mqtt::async_client client_;
 
     int reconnect_delay_seconds_;
-    std::chrono::steady_clock::time_point prev_tick_;
+    int64_t prev_tick_;
 
     std::vector<std::pair<std::string, int>> topics_;
 

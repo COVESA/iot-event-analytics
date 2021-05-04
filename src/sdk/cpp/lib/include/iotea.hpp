@@ -362,11 +362,11 @@ class Event {
     static Event FromJson(const json& j);
 
     /**
-     * @brief Compare this event to another event. Comparison ignores the "when_" member.
+     * @brief Compare this Event to another. Comparison ignores the "when_" member.
      *
-     * @param other The event to compare this event to
+     * @param other The Event to compare this Event to
      *
-     * @return true If this event is equal to "other"
+     * @return true If this Event is equal to "other"
      */
     bool operator==(const Event& other) const;
 
@@ -416,12 +416,13 @@ class OutgoingEvent {
      * @return json
      */
     json Json() const {
-#if 0
-        return json{{"subject", subject_}, {"feature", talent_id_ + "." + feature_},   {"value", value_},
-                    {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
-#endif
-        return json{{"subject", subject_}, {"feature", feature_},   {"value", value_},
-                    {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
+        return json{
+            {"subject", subject_},
+            {"feature", feature_},
+            {"value", value_},
+            {"type", type_},
+            {"instance", instance_},
+            {"whenMs", when_}};
     }
 
    private:
@@ -541,6 +542,15 @@ class Callee {
      * @return true if the function is registered.
      */
     bool IsRegistered() const;
+
+    /**
+     * @brief Compare this Callee to another. Comparison ignores the "registerd_" member.
+     *
+     * @param other The Callee to compare this Callee to
+     *
+     * @return true If this Callee is equal to "other"
+     */
+    bool operator==(const Callee& other) const;
 
    private:
     std::string talent_id_;
@@ -811,9 +821,7 @@ class ReplyHandler {
 
 
 /**
- * @brief EventContext is the context within which a set of events and calls
- * originated. The purpose of the context is to be able to trace a chain of
- * events and calls.
+ * @brief EventContext is the context within which an event exists.
  */
 class EventContext {
    public:
@@ -960,7 +968,7 @@ class EventContext {
     */
     template <typename... Args>
     void Gather(gather_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
-        auto now_ms = GetNowMs();
+        auto now_ms = GetEpochTimeMs();
         auto tokens = std::vector<CallToken>{args...};
         auto gatherer = std::make_shared<SinkGatherer>(func, timeout_func, tokens, now_ms);
 
@@ -977,8 +985,6 @@ class EventContext {
      * @return CallToken
      */
     virtual CallToken CallInternal(const Callee& callee, const json& args, int64_t timeout) const;
-
-    virtual int64_t GetNowMs() const;
 
     const std::string talent_id_;
     const std::string channel_id_;
@@ -1073,7 +1079,7 @@ class CallContext : public EventContext {
      */
     template <typename... Args>
     void GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
-        auto now_ms = GetNowMs();
+        auto now_ms = GetEpochTimeMs();
         auto tokens = std::vector<CallToken>{args...};
         auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, subject_, channel_, call_, return_topic_, publisher_};
         auto gatherer = std::make_shared<ReplyGatherer>(func, timeout_func, prepared_reply, tokens, now_ms);
@@ -1102,6 +1108,8 @@ class Talent {
     * @param talent_id Globally (within the system) unique ID of the Talent
     */
     explicit Talent(const std::string& talent_id);
+
+    virtual ~Talent() = default;
 
     /**
      * @brief Called periodically in order to fetch the rules describing the
@@ -1207,7 +1215,7 @@ class Talent {
      *
      * @return Callee
      */
-    Callee RegisterCallee(const std::string& talent_id, const std::string& func,
+    virtual Callee RegisterCallee(const std::string& talent_id, const std::string& func,
            const std::string& type = "default");
 
 
@@ -1222,7 +1230,7 @@ class Talent {
      * @param context_gen A function generating new EventContext
      * @param uuid_gen A function generating stringified UUID4s
      */
-    void Initialize(reply_handler_ptr reply_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen);
+    virtual void Initialize(reply_handler_ptr reply_handler, context_generator_func_ptr context_gen, uuid_generator_func_ptr uuid_gen);
 
     /**
      * @brief Override the event handler and rule set generation in the Talent.
@@ -1231,7 +1239,7 @@ class Talent {
      * @param on_event A function to call when the Talent receives an event, substitutes OnEvent
      * @param rules The rule set to send back on discovery
      */
-    void SetExternalEventHandler(on_event_func_ptr on_event, schema::rule_ptr rules);
+    virtual void SetExternalEventHandler(on_event_func_ptr on_event, schema::rule_ptr rules);
 
     /**
      * @brief Get the internal rule set. Should not be used by external subclasses.
@@ -1255,21 +1263,21 @@ class Talent {
      *
      * @return std::string
      */
-    std::string GetId() const;
+    virtual std::string GetId() const;
 
     /**
      * Get the registered callees.
      *
      * @return std::vector<Callee>
      */
-    std::vector<Callee> GetCallees();
+    virtual std::vector<Callee> GetCallees();
 
     /**
      * @brief Get the ID of the Talent's communication channel
      *
      * @return std::string
      */
-    std::string GetChannelId() const;
+    virtual std::string GetChannelId() const;
 
     /**
      * @brief Get the name of an input feature, i.e. "<feature>-in".
@@ -1342,7 +1350,7 @@ class Talent {
      * @param feature The name of the feature
      * @param metadata A description of the feature
      */
-    void AddOutput(const std::string& feature, const schema::Metadata& metadata);
+    virtual void AddOutput(const std::string& feature, const schema::Metadata& metadata);
 
     /**
      * @brief Create a new EventContext. Used for emitting the first event or
@@ -1359,7 +1367,7 @@ class Talent {
      * @param subject Name identifying the context
      * @return event_ctx_ptr
      */
-    event_ctx_ptr NewEventContext(const std::string& subject);
+    virtual event_ctx_ptr NewEventContext(const std::string& subject);
 
    private:
     const std::string talent_id_;
@@ -1467,53 +1475,41 @@ class Service {
 
 
 /**
+ * @brief The CalleeTalent is responsible for bridging the gap between
+ * subclass and callback mode. In callback mode each stand alone
+ * subscription creates a new Talent hidden beneath the surface of the
+ * Client. When a stand alone subscription callback is triggered it is
+ * possible to issue a function call from it using EventContext::Call().
+ * But since function calls require a talent to receive the results and the
+ * stand alone subscription by definition doesn't have one, we "secretly"
+ * use the CalleTalent as the issuer and receiver of the call by
+ * manipulating the EventContext before it is passed to the callback. In
+ * fact the CalleTalent is used for all outgoing calls in order simply the
+ * code, so even if a call is issued from a fully fledged FunctionTalent
+ * the CalleeTalent is still used beneath the surface.
+ */
+class CalleeTalent : public Talent {
+    public:
+     explicit CalleeTalent(const std::string& id);
+
+     virtual ~CalleeTalent() = default;
+
+     virtual Callee RegisterCallee(const std::string& talent_id, const std::string& func,
+            const std::string& type);
+
+     virtual bool HasSchema() const;
+     virtual void ClearCallees();
+     virtual void AddCallees(const std::vector<Callee>& callees);
+
+    private:
+     std::vector<Callee> internal_callees_;
+};
+
+
+/**
  * @brief Client handles the interaction between the platform and the Talents.
  */
 class Client : public Receiver {
-
-    /**
-     * @brief The CalleeTalent is responsible for bridging the gap between
-     * subclass and callback mode. In callback mode each stand alone
-     * subscription creates a new Talent hidden beneath the surface of the
-     * Client. When a stand alone subscription callback is triggered it is
-     * possible to issue a function call from it using EventContext::Call().
-     * But since function calls require a talent to receive the results and the
-     * stand alone subscription by definition doesn't have one, we "secretly"
-     * use the CalleTalent as the issuer and receiver of the call by
-     * manipulating the EventContext before it is passed to the callback. In
-     * fact the CalleTalent is used for all outgoing calls in order simply the
-     * code, so even if a call is issued from a fully fledged FunctionTalent
-     * the CalleeTalent is still used beneath the surface.
-     */
-    class CalleeTalent : public Talent {
-        public:
-         CalleeTalent()
-             : Talent(GenerateUUID()) {}
-
-         Callee RegisterCallee(const std::string& talent_id, const std::string& func,
-                const std::string& type) {
-             auto c = Callee{talent_id, func, type};
-             internal_callees_.push_back(c);
-             return c;
-         }
-
-         bool HasSchema() {
-              return !(internal_callees_.empty() && callees_.empty());
-         }
-
-         void ClearCallees() {
-              callees_.clear();
-              callees_.insert(callees_.begin(), internal_callees_.begin(), internal_callees_.end());
-         }
-
-         void AddCallees(const std::vector<Callee>& callees) {
-             callees_.insert(callees_.begin(), callees.begin(), callees.end());
-         }
-
-        private:
-         std::vector<Callee> internal_callees_;
-    };
-
     public:
 
     /**
@@ -1524,6 +1520,8 @@ class Client : public Receiver {
      */
      explicit Client(const std::string& connection_string);
 
+     virtual ~Client() = default;
+
      /**
       * @brief Start the client. All Services, Talents and subscriptions must
       * be created and registerd before Start() is called. When the client is
@@ -1532,33 +1530,33 @@ class Client : public Receiver {
       * connection is lost.  This method does not return until Stop() is
       * called.
       */
-     void Start();
+     virtual void Start();
 
      /**
       * @brief Stop the client and disconnect from the broker.
       */
-     void Stop();
+     virtual void Stop();
 
      /**
       * @brief Register a Service. Used in "callback mode".
       *
       * @param service The service.
       */
-     void Register(const Service& service);
+     virtual void Register(const Service& service);
 
      /**
       * @brief Register a FunctionTalent. Used in "subclass mode".
       *
       * @param talent The FunctionTalent
       */
-     void RegisterFunctionTalent(std::shared_ptr<FunctionTalent> talent);
+     virtual void RegisterFunctionTalent(std::shared_ptr<FunctionTalent> talent);
 
      /**
       * @brief Register a Talent. Used in "subclass mode".
       *
       * @param talent The Talent
       */
-     void RegisterTalent(std::shared_ptr<Talent> talent);
+     virtual void RegisterTalent(std::shared_ptr<Talent> talent);
 
      /**
       * @brief Register a stand alone Callee, i.e. notify the platform that a
@@ -1570,7 +1568,7 @@ class Client : public Receiver {
       *
       * @return Callee
       */
-     Callee CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type = "default");
+     virtual Callee CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type = "default");
 
      /**
       * @brief Subscribe to a rule set. Used in "callback mode".
@@ -1579,18 +1577,20 @@ class Client : public Receiver {
       * @param callback The callback to invoke when the rules described by the
       * rule set are fulfilled.
       */
-     void Subscribe(schema::rule_ptr rules, const OnEvent callback);
+     virtual void Subscribe(schema::rule_ptr rules, const OnEvent callback);
 
      std::function<void(const ErrorMessage& msg)> OnError;
      std::function<void(const PlatformEvent& event)> OnPlatformEvent;
 
-    private:
+    protected:
+        Client(std::shared_ptr<MqttClient> mqtt_client, std::shared_ptr<CalleeTalent> callee_talent, reply_handler_ptr reply_handler, const std::string& mqtt_topic_ns);
+
      /**
       * @brief Parse and distribute a discover message to all Talents.
       *
       * @param msg The raw discover message
       */
-     void HandleDiscover(const std::string& msg);
+     virtual void HandleDiscover(const std::string& msg);
 
      /**
       * @brief Parse a plaform event and distribute it to all Talents that have
@@ -1598,7 +1598,7 @@ class Client : public Receiver {
       *
       * @param msg The raw platform message
       */
-     void HandlePlatformEvent(const std::string& msg);
+     virtual void HandlePlatformEvent(const std::string& msg);
 
      /**
       * @brief Distribute an error message to all Talents that have registered
@@ -1606,7 +1606,7 @@ class Client : public Receiver {
       *
       * @param err The error message
       */
-     void HandleError(const ErrorMessage& err);
+     virtual void HandleError(const ErrorMessage& err);
 
      /**
       * @brief Attempt to treat an event as a function call. A function call is
@@ -1619,7 +1619,7 @@ class Client : public Receiver {
       *
       * @return true if the event was function call
       */
-     bool HandleAsCall(std::shared_ptr<FunctionTalent> talent, const Event& event);
+     virtual bool HandleAsCall(std::shared_ptr<FunctionTalent> talent, const Event& event);
 
      /**
       * @brief Handle an event sent to a particular Talent.
@@ -1627,7 +1627,7 @@ class Client : public Receiver {
       * @param talent_id The ID of the talent
       * @param msg The raw event
       */
-     void HandleEvent(const std::string& talent_id, const std::string& msg);
+     virtual void HandleEvent(const std::string& talent_id, const std::string& msg);
 
      /**
       * @brief Handle a reply to a function call.
@@ -1637,7 +1637,7 @@ class Client : public Receiver {
       * @param call_id The ID of the call
       * @param msg The raw reply event
       */
-     void HandleCallReply(const std::string& talent_id, const std::string&
+     virtual void HandleCallReply(const std::string& talent_id, const std::string&
              channel_id, const call_id_t& call_id, const std::string& msg);
 
      /**
@@ -1646,23 +1646,23 @@ class Client : public Receiver {
       * @param topic The topic the message was sent one
       * @param msg The message
       */
-     void Receive(const std::string& topic, const std::string& msg) override;
+     virtual void Receive(const std::string& topic, const std::string& msg) override;
 
      /**
       * @brief Handle the progress of time. This method is called
       * periodically. Used for cleaning out timed out function calls and
       * anything else that needs to be inspected periodically.
       *
-      * @param ts A steady clock timestamp, i.e. not wall time
+      * @param ts The current epoch time in ms.
       */
-     void UpdateTime(const std::chrono::steady_clock::time_point& ts);
+     virtual void UpdateTime(int64_t ts);
 
      /**
       * @brief Subscribe to events pertaining to the Client's internal Talents.
       *
       * @param talent The Talent
       */
-     void SubscribeInternal(std::shared_ptr<Talent> talent);
+     virtual void SubscribeInternal(std::shared_ptr<Talent> talent);
 
      /**
       * @brief Get the discover topic.
@@ -1692,6 +1692,7 @@ class Client : public Receiver {
       */
      std::string GetPlatformEventsTopic() const;
 
+    private:
      std::shared_ptr<MqttClient> mqtt_client_;
      std::shared_ptr<CalleeTalent> callee_talent_;
      std::unordered_map<std::string, std::shared_ptr<FunctionTalent>> function_talents_;

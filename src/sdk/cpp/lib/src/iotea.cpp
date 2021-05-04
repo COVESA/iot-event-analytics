@@ -296,11 +296,6 @@ CallToken EventContext::CallInternal(const Callee& callee, const json& args, int
     return CallToken{call_id, timeout};
 }
 
-int64_t EventContext::GetNowMs() const {
-    auto now = std::chrono::steady_clock::now().time_since_epoch();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-}
-
 //
 // CallContext
 //
@@ -488,6 +483,12 @@ std::string Callee::GetType() const { return type_; }
 
 bool Callee::IsRegistered() const {
     return registered_;
+}
+
+bool Callee::operator==(const Callee& other) const {
+    return talent_id_ == other.talent_id_ &&
+        func_ == other.func_ &&
+        type_ == other.type_;
 }
 
 //
@@ -782,21 +783,57 @@ void Service::RegisterFunction(const std::string& name, func_ptr callback) {
 std::shared_ptr<FunctionTalent> Service::GetTalent() const { return talent_; }
 
 //
+// CalleeTalent
+//
+ CalleeTalent::CalleeTalent(const std::string& id)
+     : Talent(id) {}
+
+ Callee CalleeTalent::RegisterCallee(const std::string& talent_id, const std::string& func,
+        const std::string& type) {
+     auto c = Callee{talent_id, func, type};
+     internal_callees_.push_back(c);
+     return c;
+ }
+
+ bool CalleeTalent::HasSchema() const {
+      return !(internal_callees_.empty() && callees_.empty());
+ }
+
+ void CalleeTalent::ClearCallees() {
+      callees_.clear();
+      callees_.insert(callees_.begin(), internal_callees_.begin(), internal_callees_.end());
+ }
+
+ void CalleeTalent::AddCallees(const std::vector<Callee>& callees) {
+     callees_.insert(callees_.begin(), callees.begin(), callees.end());
+ }
+
+//
 // Client
 //
 Client::Client(const std::string& connection_string)
     : mqtt_client_{new MqttClient(connection_string, GenerateUUID())}
-    , callee_talent_(new CalleeTalent{})
+    , callee_talent_(new CalleeTalent{GenerateUUID()})
     , reply_handler_{std::make_shared<ReplyHandler>()}
     , mqtt_topic_ns_{GetEnv(MQTT_TOPIC_NS, "iotea")} {
 
     mqtt_client_->OnMessage = [this](mqtt::const_message_ptr msg) {
         Receive(msg->get_topic(), msg->get_payload());
     };
-    mqtt_client_->OnTick = [this](const std::chrono::steady_clock::time_point ts) {
+    mqtt_client_->OnTick = [this](int64_t ts) {
         UpdateTime(ts);
     };
 }
+
+Client::Client(std::shared_ptr<MqttClient> mqtt_client,
+        std::shared_ptr<CalleeTalent> callee_talent,
+        reply_handler_ptr reply_handler,
+        const std::string& mqtt_topic_ns)
+    : mqtt_client_{mqtt_client}
+    , callee_talent_{callee_talent}
+    , reply_handler_{reply_handler}
+    , mqtt_topic_ns_{mqtt_topic_ns} {}
+
 
 void Client::Start() {
     callee_talent_->Initialize(reply_handler_, nullptr, GenerateUUID);
@@ -1117,9 +1154,8 @@ void Client::Receive(const std::string& topic, const std::string& msg) {
     log::Error() << "Unexpected topic: << " << topic;
 }
 
-void Client::UpdateTime(const std::chrono::steady_clock::time_point& ts) {
-    auto ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(ts.time_since_epoch()).count();
-    auto timed_out = reply_handler_->ExtractTimedOut(ts_ms);
+void Client::UpdateTime(int64_t ts) {
+    auto timed_out = reply_handler_->ExtractTimedOut(ts);
 
     std::for_each(timed_out.begin(), timed_out.end(), [](const auto& g) {
         g->TimeOut();

@@ -27,7 +27,7 @@ MqttClient::MqttClient(const std::string& server_address, const std::string& cli
     OnMessage = [](mqtt::const_message_ptr msg) {
         (void)msg;
     };
-    OnTick = [](const std::chrono::steady_clock::time_point ts){
+    OnTick = [](int64_t ts){
         (void)ts;
     };
 
@@ -43,6 +43,9 @@ MqttClient::MqttClient(const std::string& server_address, const std::string& cli
 
     client_.start_consuming();
 }
+
+MqttClient::MqttClient()
+    : client_{"tcp://localhost", "id"} {}
 
 void MqttClient::Run() {
     mqtt::token_ptr connect_token;
@@ -92,8 +95,8 @@ void MqttClient::Run() {
                     OnMessage(msg);
                 }
 
-                auto now = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::microseconds>(now - prev_tick_) >= 1s) {
+                auto now = GetEpochTimeMs();
+                if (now - prev_tick_ >= 1000) {
                     prev_tick_ = now;
                     OnTick(now);
                 }
