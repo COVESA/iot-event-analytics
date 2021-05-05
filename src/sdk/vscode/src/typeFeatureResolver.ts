@@ -75,8 +75,8 @@ export class TypeFeatureResolver {
                 }
             }
 
-            // Fetch again in 10 seconds
-            this.ttl = Date.now() + 3600000;
+            const refreshIntervalMs = vscode.workspace.getConfiguration('iotea').get('autocomplete.typeFeatures.refresh-interval-ms') as number;
+            this.ttl = Date.now() + refreshIntervalMs;
 
             return this.typeFeatures;
         }

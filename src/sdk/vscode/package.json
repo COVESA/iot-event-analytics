@@ -5,7 +5,7 @@
     "categories": [
         "Snippets"
     ],
-    "version": "0.9.3",
+    "version": "0.9.4",
     "license": "MPL-2.0",
     "private": "true",
     "author": "Bosch.IO GmbH",
@@ -181,6 +181,12 @@
                     "type": "string",
                     "default": "pip3",
                     "description": "Pip module"
+                },
+                "iotea.autocomplete.typeFeatures.refresh-interval-ms": {
+                    "scope": "machine-overridable",
+                    "type": "number",
+                    "default": 10000,
+                    "description": "Refresh interval for types and features for autocompletion"
                 }
             }
         }
