@@ -14,17 +14,14 @@
 
 - Be sure to include all library relevant exports into the _../../modules.js_ file
 
-## Build
+## Build the Node.js SDK
 
-- Create an empty _./lib_ folder if not exists
-- Go into the _./lib_ folder
-
-### Build distribution package
-
-- Run `npm pack ../../../..`
+- Run `yarn build.sdk` from somewhere within the project directory
+- The artifact will be saved at _src/sdk/javascript/lib/boschio.iotea-\<version\>.tgz_
 
 ## Install
 
+- Copy the artifact (_src/sdk/javascript/lib/boschio.iotea-\<version\>.tgz_) into your application directory
 - Goto into your application directory and run
 - `npm init`
 - `npm install boschio.iotea-<version>.tgz`
