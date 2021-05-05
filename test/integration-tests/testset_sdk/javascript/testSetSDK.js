@@ -1,4 +1,6 @@
+const { ENCODING_TYPE_STRING } = require('../../../../src/core/constants.js');
 const iotea = require('../../../../src/module.js');
+
 // const iotea = require('boschio.iotea');
 
 const {
@@ -31,12 +33,76 @@ class TestSetSDK extends TestSetTalent {
         this.registerTest('echoMixedList', [1, 'Hello World', 3.21], this.test_echoMixedList.bind(this), 5000);
         this.registerTest('echoDeepList', [1, [2, [3, [4, [5]]]]], this.test_echoDeepList.bind(this), 5000);
 
+        this.registerTest('receiveEvent1ByMultipleTalents', true, this.test_receiveEvent1ByMultipleTalents.bind(this), 5000);
+
         // Add external talentIds which this test set is depending on
         this.talentDependencies.addTalent('function-provider-js');
+        this.talentDependencies.addTalent('event-tester-1-js');
+        this.talentDependencies.addTalent('event-tester-2-js');
+
+        this.addOutput("receive_event_1", {
+            "description": "receiveEvent1",
+                "idx": 1,
+                "encoding": {
+                    "type": "string",
+                    "encoder": null
+                }
+            });
     }
 
     callees() {
-        return [ 'function-provider-js.echo' ];
+        return [
+            'function-provider-js.echo',
+            'event-tester-1-js.get_received_events',
+            'event-tester-2-js.get_received_events',
+        ];
+    }
+
+    async test_receiveEvent1ByMultipleTalents(ev, evtctx) {
+        this.logger.info('test_receiveEvent1')
+        const type = 'default';
+        const feature = 'testSet-sdk-js.receive_event_1';
+        const value = 'this is a string';
+
+        let outEvent = {
+            type: type,
+            feature: feature,
+            instance: '1',
+            value: value,
+            subject: ev.subject,
+            whenMs: Date.now(),
+        };
+
+        this.pg.publishJson(ev.returnTopic, outEvent)
+
+        // Check if the event was received by event-tester-1
+        let received_events1 = await this.call('event-tester-1-js', 'get_received_events',
+            [],
+            ev.subject,
+            ev.returnTopic,
+            500);
+
+        let match1 = received_events1.find((event) => event.feature === feature && event.type === type);
+
+        // Check if the event was received by event-tester-2
+        let received_events2 = await this.call('event-tester-2-js', 'get_received_events',
+            [],
+            ev.subject,
+            ev.returnTopic,
+            500);
+
+        let match2 = received_events2.find((event) => event.feature === feature && event.type === type);
+
+
+        if (match1 === undefined) {
+            throw Error('Event wasn\'t received by event-tester-1-js');
+        }
+
+        if (match2 === undefined) {
+            throw Error('Event wasn\'t received by event-tester-2-js');
+        }
+
+        return match1.value === value && match2.value === value;
     }
 
     async test_echoString(ev, evtctx) {
