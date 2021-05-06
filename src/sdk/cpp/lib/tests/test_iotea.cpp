@@ -393,11 +393,11 @@ TEST(iotea, FunctionTalent_RegisterFunction) {
     } tests[] {
         {
             { "alpha" },
-            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0}],"type":"or"})")
+            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"})")
         },
         {
             { "alpha", "beta" },
-            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.beta-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"beta","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0}],"type":"or"})")
+            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.beta-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"beta","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"})")
         }
     };
 
@@ -410,7 +410,7 @@ TEST(iotea, FunctionTalent_RegisterFunction) {
         }
 
         auto rules = talent.GetRules();
-        ASSERT_EQ(rules->Json(), t.want);
+        EXPECT_EQ(rules->Json(), t.want);
     }
 }
 
@@ -452,7 +452,7 @@ TEST(iotea, FunctionTalent_GetSchema) {
             nullptr,
             { "function1" },
             {},
-            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
         },
         {
             nullptr,
@@ -464,7 +464,7 @@ TEST(iotea, FunctionTalent_GetSchema) {
             IsSet("feature1"),
             { "function1" },
             {},
-            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
         },
         {
             IsSet("feature1"),
@@ -476,13 +476,13 @@ TEST(iotea, FunctionTalent_GetSchema) {
             nullptr,
             { "function1" },
             { Callee{"talent1", "func1", "type1" } },
-            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.func1-out"]},"id":"FunctionTalent_GetSchema"})")
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.func1-out"]},"id":"FunctionTalent_GetSchema"})")
         },
         {
             OrRules(IsSet("feature1"), IsSet("feature2")),
             { "function1", "function2" },
             { Callee{"talent1", "func1", "type1" }, Callee{"talent2", "func2", "type2" } },
-            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-in":{"description":"Argument(s) for function function2","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-out":{"description":"Result of function function2","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"feature":"talent2.func2-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-out","default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function2-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function2","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"}},"required":["func","args","chnl","call"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0},{"feature":"feature2","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.func1-out","default.FunctionTalent_GetSchema.func2-out"]},"id":"FunctionTalent_GetSchema"})")
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-in":{"description":"Argument(s) for function function2","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-out":{"description":"Result of function function2","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"feature":"talent2.func2-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-out","default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function2-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function2","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0},{"feature":"feature2","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.func1-out","default.FunctionTalent_GetSchema.func2-out"]},"id":"FunctionTalent_GetSchema"})")
         },
     };
 
@@ -1385,7 +1385,7 @@ TEST(iotea, JsonQuery_Exceptions) {
  * function call event.
  */
 TEST(iotea, OutgoingCall) {
-    auto c = OutgoingCall{"my_talent_id", "my_channel_id", "my_call_id", "my_func", {{"key", "value"}}, "my_subject", "my_type", 1234};
+    auto c = OutgoingCall{"my_talent_id", "my_channel_id", "my_call_id", "my_func", {{"key", "value"}}, "my_subject", "my_type", 1234, 1000};
 
     auto want = json::parse(R"({
         "feature": "my_talent_id.my_func-in",
@@ -1395,8 +1395,9 @@ TEST(iotea, OutgoingCall) {
             "args": {"key": "value"},
             "call": "my_call_id",
             "chnl": "my_channel_id",
-            "func": "my_func"},
-            "whenMs":1234
+            "func": "my_func",
+            "timeoutAtMs": 2234},
+        "whenMs": 1000
     })");
 
     ASSERT_EQ(c.Json(), want);
@@ -1475,9 +1476,11 @@ TEST(iotea, EventContext_Call) {
 
     // The timestamp in the outgoing event is set to the current epoch time in
     // ms, since we don't know what it will be we have to manually override it
-    // before the final comparison.
+    // before the final comparison. The same is true for the "timeoutAtMs"
+    // property which is calculated based on the "whenMs" property.
     ASSERT_NO_THROW(published_event["whenMs"].get<int64_t>());
     published_event["whenMs"] = int64_t{1234};
+    published_event["value"]["timeoutAtMs"] = int64_t{1234};
 
     auto want = json::parse(R"({
         "subject": "my_subject",
@@ -1487,7 +1490,8 @@ TEST(iotea, EventContext_Call) {
             "func": "target_func",
             "args": [42],
             "call": "00000000-0000-0000-0000-000000000000",
-            "chnl": "my_channel_id"
+            "chnl": "my_channel_id",
+            "timeoutAtMs": 1234
         },
         "whenMs": 1234
     })");
@@ -1571,7 +1575,8 @@ TEST(iotea, Client_HandleAsCall) {
     auto value = json::parse(R"({
         "args": [1, 2, 3, 4],
         "chnl": "00000000-0000-0000-0000-000000000000",
-        "call": "00000000-0000-0000-0000-000000000000"
+        "call": "00000000-0000-0000-0000-000000000000",
+        "timeoutAtMs": 1234
     })");
     auto event = Event{"subject", "beta.function-in", value};
 
