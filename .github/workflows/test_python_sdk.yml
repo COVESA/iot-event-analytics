@@ -5,15 +5,16 @@ on:
     paths:
     - '.github/workflows/test_python_sdk.yml'
     - 'src/sdk/python/src/**/*.py'
+    - 'src/sdk/python/tests/**/*'
   pull_request:
     paths:
     - '.github/workflows/test_python_sdk.yml'
     - 'src/sdk/python/src/**/*.py'
-
+    - 'src/sdk/python/tests/**/*'
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Run unit tests
+    name: Prepare and Run unit tests
 
     steps:
     - uses: actions/checkout@v2

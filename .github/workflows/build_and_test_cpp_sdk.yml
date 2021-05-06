@@ -1,4 +1,4 @@
-name: C++ SDK
+name: C++ SDK Unit tests
 
 on:
   push:
@@ -17,7 +17,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build and run unit tests
+    name: Prepare and Run unit tests
 
     steps:
     - uses: actions/checkout@v2
@@ -32,8 +32,8 @@ jobs:
       # access regardless of the host operating system
       shell: bash
       working-directory: ${{github.workspace}}/build
-      # Note the current convention is to use the -S and -B options here to specify source 
-      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # Note the current convention is to use the -S and -B options here to specify source
+      # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE/src/sdk/cpp -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
@@ -43,7 +43,7 @@ jobs:
       # Execute the build.
       run: make -j
 
-    - name: Test
+    - name: Run unit tests
       working-directory: ${{github.workspace}}/build
       shell: bash
       # Run the test runner
