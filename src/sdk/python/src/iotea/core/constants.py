@@ -8,6 +8,8 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
+ONE_SECOND_MS = 1000
+
 TALENTS_DISCOVERY_TOPIC = 'configManager/talents/discover'
 TALENTS_DISCOVERY_RETURN_TOPIC = 'configManager/talent/discover'
 UPDATE_TALENT_CONFIG_TOPIC = 'talentConfigManager/update'
@@ -18,8 +20,8 @@ ENCODING_TOPIC = 'encoding/events'
 ROUTING_TOPIC = 'routing/events'
 PLATFORM_EVENTS_TOPIC = 'platform/$events'
 
-PLATFORM_EVENT_TYPE_SET_CONFIG = 'platform.talent.config.set';
-PLATFORM_EVENT_TYPE_UNSET_CONFIG = 'platform.talent.config.unset';
+PLATFORM_EVENT_TYPE_SET_CONFIG = 'platform.talent.config.set'
+PLATFORM_EVENT_TYPE_UNSET_CONFIG = 'platform.talent.config.unset'
 
 ENCODING_TYPE_NUMBER = 'number'
 ENCODING_TYPE_OBJECT = 'object'
@@ -40,13 +42,15 @@ DEFAULT_SEGMENT = '000000'
 DEFAULT_TYPE = 'default'
 DEFAULT_INSTANCE = 'default'
 
-TALENT_DISCOVERY_INTERVAL_MS = 60000
-TALENT_DISCOVERY_TIMEOUT_MS = 5000
+TALENT_DISCOVERY_INTERVAL_MS = 60 * ONE_SECOND_MS
+TALENT_DISCOVERY_TIMEOUT_MS = 5 * ONE_SECOND_MS
 TALENT_DISCOVERY_OPTIONS = {
     'SKIP_CYCLE_CHECK': 'scc'
 }
 
-DEFAULT_FEATURE_TTL_MS = 30000
+MAX_TALENT_EVENT_WORKER_COUNT = 1024
+
+DEFAULT_FEATURE_TTL_MS = 30 * ONE_SECOND_MS
 
 VALUE_TYPE_RAW = 0
 VALUE_TYPE_ENCODED = 1

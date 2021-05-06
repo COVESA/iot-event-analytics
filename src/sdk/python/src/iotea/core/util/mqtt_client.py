@@ -20,6 +20,14 @@ from uuid import uuid4
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_0
 
+from ..constants import ONE_SECOND_MS
+
+MAX_RECONNECT_RETRIES = 100000
+MAX_RECONNECT_INTERVAL_S = 2
+# Can be overriden by environment variable MQTT5_PROBE_TIMEOUT
+DEFAULT_MQTT5_PROBE_TIMEOUT_MS = ONE_SECOND_MS
+MQTT_MESSAGE_ENCODING = 'utf-8'
+
 class CustomMqttClient(MQTTClient):
     def __init__(self, client_id=None, config=None, loop=None, on_reconnect=None):
         super(CustomMqttClient, self).__init__(client_id, config, loop)
@@ -48,8 +56,8 @@ class MqttClient:
 
         self.client = CustomMqttClient(client_id, on_reconnect=self.__on_reconnect)
         self.connection_string = connection_string
-        self.client.config['reconnect_retries'] = 100000
-        self.client.config['reconnect_max_interval'] = 2
+        self.client.config['reconnect_retries'] = MAX_RECONNECT_RETRIES
+        self.client.config['reconnect_max_interval'] = MAX_RECONNECT_INTERVAL_S
         self.client_initialized = False
         self.subscriptions = []
         self.check_mqtt5_compatibility = check_mqtt5_compatibility
@@ -95,7 +103,7 @@ class MqttClient:
         for topic in topics:
             prefixed_topic = self.__prefix_topic_ns(topic)
             self.logger.debug('Sending {} to {}'.format(message, prefixed_topic))
-            await client.publish(prefixed_topic, message.encode('utf-8'), qos=options['qos'], retain=options['retain'])
+            await client.publish(prefixed_topic, message.encode(MQTT_MESSAGE_ENCODING), qos=options['qos'], retain=options['retain'])
 
     async def subscribe_json(self, topic, callback, qos=0):
         await self.subscribe(topic, callback, qos, True)
@@ -145,7 +153,7 @@ class MqttClient:
 
         # Check for mqtt5 here
         if self.check_mqtt5_compatibility and self.is_mqtt5_compatible is False:
-            await self.__mqtt5_probe(self.client, int(os.environ.get('MQTT5_PROBE_TIMEOUT', 1000)))
+            await self.__mqtt5_probe(self.client, int(os.environ.get('MQTT5_PROBE_TIMEOUT', DEFAULT_MQTT5_PROBE_TIMEOUT_MS)))
 
     def __prefix_topic_ns(self, topic):
         if self.topic_ns is None:
@@ -182,13 +190,13 @@ class MqttClient:
 
         self.logger.debug('Publishing probe to {}'.format(publish_to))
 
-        await client.publish(publish_to, 'probe-{}'.format(probe_uuid).encode('utf-8'), qos=QOS_0)
+        await client.publish(publish_to, 'probe-{}'.format(probe_uuid).encode(MQTT_MESSAGE_ENCODING), qos=QOS_0)
 
-        timeout_at_ms = time.time() * 1000 + timeout_ms
+        timeout_at_ms = time.time() * ONE_SECOND_MS + timeout_ms
 
         try:
             while probe_subscription.received_response is False:
-                if time.time() * 1000 > timeout_at_ms:
+                if time.time() * ONE_SECOND_MS > timeout_at_ms:
                     raise Exception('Probe on topic {} was not received on topic {}. An MQTT5 compilant broker is required'.format(publish_to, subscribe_to))
 
                 await asyncio.sleep(0.1)
@@ -268,7 +276,7 @@ class Subscription:
             if self.topic_regex.fullmatch(message.topic) is None:
                 continue
 
-            decoded_message = message.publish_packet.payload.data.decode('utf-8')
+            decoded_message = message.publish_packet.payload.data.decode(MQTT_MESSAGE_ENCODING)
 
             if to_json:
                 try:

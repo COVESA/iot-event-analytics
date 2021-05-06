@@ -18,7 +18,7 @@ import logging
 import json
 from uuid import uuid4
 
-from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_ERROR
+from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_ERROR, MAX_TALENT_EVENT_WORKER_COUNT
 from .rules import OrRules, Rule, OpConstraint, Constraint
 from .util.mqtt_client import NamedMqttClient
 from .util.logger import Logger
@@ -92,7 +92,7 @@ class IOFeatures:
         return functools.reduce(lambda outputs, feature: feature.append_to(talent_id, outputs), self.output_features, outputs)
 
 class Talent(IOFeatures):
-    def __init__(self, talent_id, connection_string, max_threadpool_workers=1024):
+    def __init__(self, talent_id, connection_string, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
         super(Talent, self).__init__()
         # Unique for different talents
         # pylint: disable=invalid-name
