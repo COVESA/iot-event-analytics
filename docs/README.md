@@ -469,7 +469,7 @@ The following tools support the development and integration:
 # Additional Documentation
 
 Additional documentation can be found below the topics folder:
-
+- [Communication](./topics/iotea-communication.md)
 - [Components](./topics/iotea-components.md)
 - [Talents](./topics/iotea-talents.md)
   - [Feature Engineering](./topics/iotea-feature-engineering.md)

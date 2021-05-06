@@ -101,7 +101,7 @@ module.exports = class Ingestion {
                 catch(err) {
                     // - Metadata could not be found for the processed Event --> skip event
                     // - Value type is incorrect
-                    // - Event could not be forwareded to message bus
+                    // - Event could not be forwarded to message bus
                     this.logger.debug(err.message);
                 }
 

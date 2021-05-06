@@ -1,0 +1,68 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    node Application #LightGray {
+        node Platform #LightBlue {
+            component ConfigManager
+            component Routing
+            component Ingestion
+            component Encoding
+            component ProtocolGatewayAdapter as PGA_Platform <<MiddlewareAbstraction>>
+
+            Routing       <-down-> PGA_Platform
+            Encoding      <-down-> PGA_Platform
+            Ingestion     <-down-> PGA_Platform
+            ConfigManager <-down-> PGA_Platform
+      }
+
+      node Client #LightGreen {
+          component Talent
+          component ProtocolGatewayAdapter as PGA_Talent <<MiddlewareAbstraction>>
+
+          component SDK as SDK
+
+          Talent .left.|> SDK
+          PGA_Talent .up.|> SDK
+
+          Talent <-down-> PGA_Talent
+      }
+    }
+
+    node "Transport Layer" as Transport #LightSlateGray {
+        component Mosquitto <<Middleware>>
+        note right of Mosquitto
+            This is the default used Middleware which is an MQTT Broker.
+            It could be replaced by other MQTT Brokers or with other Middlewares (e.g. SOME/IP)
+        end note
+    }
+
+    PGA_Platform <-down-> Mosquitto
+    PGA_Talent   <-down-> Mosquitto
+
+    node "Physical Layer" as Physical #LightGray {
+      component Ethernet <<TransmissionMedium>>
+
+      note right of Ethernet
+           This is default used transmission medium for the Mosquitto MQTT Broker.
+           It could be replaced by any other which can be used by the used Middleware
+      end note
+    }
+
+    Mosquitto <-down-> Ethernet
+
+    Platform -[hidden]down-> Transport
+
+@enduml

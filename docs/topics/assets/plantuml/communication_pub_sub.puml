@@ -1,0 +1,40 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    actor "Provider" as Provider
+
+    participant Platform as Platform #LightBlue
+
+    participant Middleware as Middleware #LightSlateGray
+
+    participant TalentA as TalentA #LightGreen
+    participant TalentB as TalentA #LightGreen
+
+    group External Feature Ingestion (TalentA is Subscriber)
+        Provider ->> Middleware: IngestionMsg [INGESTION_TOPIC]
+        Middleware ->> Platform: IngestionMsg [INGESTION_TOPIC]
+        Platform ->> Middleware: FeatureEventMsg [<TALENTA_TOPIC>]
+        Middleware ->> TalentA: FeatureEventMsg [<TALENTA_TOPIC>]
+        TalentA ->> TalentA: OnEvent()
+    end
+
+    group Internal Feature Ingestion (TalentA is Provider, Talent B is Subscriber)
+        TalentA ->> Middleware: IngestionMsg [INGESTION_TOPIC]
+        Middleware ->> Platform: IngestionMsg [INGESTION_TOPIC]
+        Platform ->> Middleware: FeatureEventMsg [<TALENTB_TOPIC>]
+        Middleware ->> TalentB: FeatureEventMsg [<TALENTB_TOPIC>]
+        TalentB -> TalentB: OnEvent()
+    end
+@enduml

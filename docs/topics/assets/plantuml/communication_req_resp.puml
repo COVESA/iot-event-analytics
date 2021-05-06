@@ -1,0 +1,76 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    participant Platform as Platform #LightBlue
+
+    participant Middleware as Middleware #LightSlateGray
+
+    participant TalentA as TalentA #LightGreen
+    participant TalentB as TalentB #LightGreen
+
+    group Init / Configure Talent
+        TalentA -> TalentA: RegisterFunction(<myFunction>)
+        TalentB -> TalentB: AddCallee(<myFunction>)
+    end
+
+    group Talent Discovery (only important parts are shown)
+        group Create Talent Reply
+            TalentA -> TalentA: AddRulesToReply()
+            TalentA -> TalentA: AddOutputsToReply(<MyFunction>)
+            TalentA -> TalentA: AddCalleesToReply()
+        end
+        TalentA -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        TalentB -->> Platform: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+
+        group Create Talent Reply
+            TalentB -> TalentB: AddRulesToReply()
+            TalentB -> TalentB: AddOutputsToReply()
+            TalentB -> TalentB: AddCalleesToReply(<MyFunction>)
+        end
+        TalentB -->> Middleware
+        Middleware -->> Platform: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+    end
+
+    group Call <MyFunction>
+        group Forward Request
+            TalentB -> TalentB: Call(<myFunction>, [params])
+
+            note left
+                Can be a awaitable call
+                (e.g. in NodeJS/Python SDK)
+            end note
+
+            TalentB ->> Middleware: IngestionMsg (<MyFunction>) \n [INGESTION_TOPIC]
+            Middleware ->> Platform: IngestionMsg (<MyFunction>) \n [INGESTON_TOPIC]
+
+            Platform ->> Middleware: RequestMsg (<MyFunction>) \n [<TALENTA_TOPIC>]
+            Middleware ->> TalentA: RequestMsg (<MyFunction>) \n [<TALENTA_TOPIC>]
+        end
+
+        group Execute Request
+            TalentA -> TalentA: ExecuteBoundFunction(<myFunction>)
+        end
+
+        group Route Response
+            TalentA ->> Middleware: IngestionMsg (<MyFunction>) \n [INGESTION_TOPIC]
+            Middleware ->> Platform: IngestionMsg (<MyFunction>) \n [INGESTION_TOPIC]
+
+            Platform ->> Middleware: ResponseMsg (<MyFunction>) \n [<TALENTB_TOPIC>]
+            Middleware ->> TalentB: ResponseMsg (<MyFunction>) \n [<TALENTB_TOPIC>]
+
+            TalentB -> TalentB: HandleResponse(returnValues)
+        end
+    end
+@enduml
