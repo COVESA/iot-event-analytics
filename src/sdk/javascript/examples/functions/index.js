@@ -86,7 +86,8 @@ class IntegratedFunction extends FunctionTalent {
     getRules() {
         return new AndRules([
             new Rule(new OpConstraint(`${this.id}.trigger`, OpConstraint.OPS.LESS_THAN_EQUAL, 15, DEFAULT_TYPE, VALUE_TYPE_RAW)),
-            //new Rule(new ChangeConstraint(`${this.id}.trigger`, DEFAULT_TYPE, VALUE_TYPE_RAW))
+            new Rule(new OpConstraint(`${this.id}.trigger`, OpConstraint.OPS.GREATER_THAN, 0, DEFAULT_TYPE, VALUE_TYPE_RAW)),
+            new Rule(new ChangeConstraint(`${this.id}.trigger`, DEFAULT_TYPE, VALUE_TYPE_RAW))
         ]);
     }
 
