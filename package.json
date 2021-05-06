@@ -1,12 +1,13 @@
 {
   "name": "boschio.iotea",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "jsonApiVersion": "2.0.0",
   "author": "Bosch.IO GmbH",
   "main": "src/module.js",
   "license": "MPL-2.0",
   "scripts": {
     "yarn": "yarn",
+    "build.sdk": "node src/sdk/javascript/pack.js",
     "postinstall": "yarn generate-docs && node ./postinstall.js || exit 0",
     "test": "nyc --report-dir=reports/coverage --reporter=cobertura --reporter=html --reporter=text-summary jasmine --config=test/jasmine.json",
     "test.no-coverage": "jasmine --config=test/jasmine.json",

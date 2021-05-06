@@ -16,9 +16,9 @@ var HttpsProxyAgent = require('https-proxy-agent');
 
 (async () => {
     await Promise.all([
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.3/iotea-0.9.3.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.4.0/boschio_iotea-0.4.0-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.4.0/boschio.iotea-0.4.0.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.4/iotea-0.9.4.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.4.1/boschio_iotea-0.4.1-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.4.1/boschio.iotea-0.4.1.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
     ])
         .catch(err => {
             console.error(`ERROR: ${err.message}`);
