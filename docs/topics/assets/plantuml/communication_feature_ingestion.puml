@@ -1,0 +1,61 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    actor "Provider" as Provider
+
+    participant Ingestion as Ingestion #LightBlue
+    participant Encoding as Encoding #LightBlue
+    participant Routing as Routing #LightBlue
+
+    participant Middleware as Middleware #LightSlateGray
+
+    participant Talent as Talent #LightGreen
+
+    group Ingest Event
+        Provider ->> Middleware: IngestionMsg \n [(PLATFORM_ID)/INGESTION_TOPIC]
+        Middleware ->> Ingestion: IngestionMsg \n [INGESTION_TOPIC]
+
+        Ingestion -> Ingestion: CheckType()
+        Ingestion -> Ingestion: AssignMetaData()
+    end
+
+    opt if type is correct & metadata assigned
+        group Encode Event
+            Ingestion ->> Middleware: FeatureIngestionMsg \n [ENCODING_TOPIC]
+            Middleware ->> Encoding: FeatureIngestionMsg \n [ENCODING_TOPIC]
+
+            Encoding -> Encoding: GetFeature()
+            Encoding -> Encoding: CheckHistory()
+            Encoding -> Encoding: UpdateFeature()
+        end
+
+        opt if feature is valid
+            group Route Feature
+                Encoding ->> Middleware: FeatureMsg \n [ROUTING_TOPIC]
+                Middleware ->> Routing: FeatureMsg \n [ROUTNING_TOPIC]
+                loop for all subscribed Talents
+                    Routing -> Routing: EvaluateRules()
+                    Routing -> Middleware: FeatureEventMsg [<TALENT_TOPIC>]
+                    Middleware -> Talent: FeatureEventMsg [<TALENT_TOPIC>]
+                    group Execute Business Code
+                        Talent -> Talent: OnEvent()
+                    end
+                end
+            end
+        end
+    end
+
+
+@enduml

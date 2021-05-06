@@ -1,0 +1,74 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    participant Ingestion as Ingestion #LightBlue
+    participant Encoding as Encoding #LightBlue
+    participant Routing as Routing #LightBlue
+    participant ConfigManager as ConfigManager #LightBlue
+
+    participant Middleware as Middleware #LightSlateGray
+
+    participant TalentA as TalentA #LightGreen
+    participant TalentB as TalentB #LightGreen
+
+    loop discoveryTimerElapsed
+        ConfigManager ->> Middleware: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
+
+        Middleware ->> TalentA: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
+        TalentA -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        group Create Talent Reply
+            TalentA -> TalentA: AddRulesToReply()
+            TalentA -> TalentA: AddOutputsToReply()
+            TalentA -> TalentA: AddCalleesToReply()
+        end
+        Middleware -->> ConfigManager: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+
+        Middleware ->> TalentB: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
+        group Create Talent Reply
+            TalentB -> TalentB: AddRulesToReply()
+            TalentB -> TalentB: AddOutputToReply()
+            TalentB -> TalentB: AddCalleesToReply()
+        end
+        TalentB -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        Middleware -->> ConfigManager: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+
+        group Finalize Discovery [DiscoveryDurationTimerElapsed]
+            ConfigManager -> ConfigManager: RegisterTalentOutputFeatures()
+
+            opt typesUpdated
+                ConfigManager ->> Middleware: TypesUpdateMsg \n [UPDATE_TYPES_TOPIC]
+                Middleware ->> Routing: TypesUpdateMsg \n [UPDATE_TYPES_TOPIC]
+                Middleware ->> Encoding: TypesUpdateMsg \n [UPDATE_TYPES_TOPIC]
+                Middleware ->> Ingestion: TypesUpdateMsg \n [UPDATE_TYPES_TOPIC]
+            end
+
+            group Update Talent Config
+                ConfigManager -> ConfigManager: SetConfig()
+                ConfigManager ->> Middleware: TalentConfigMsg \n [UPDATE_TALENT_CONFIG_TOPIC]
+
+                Middleware ->> ConfigManager: TalentConfigMsg \n [UPDATE_TALENT_CONFIG_TOPIC]
+                note left
+                    ConfigManager uses common async mechanism
+                    to update talent configuration
+                end note
+                ConfigManager -> ConfigManager: StoreConfiguration()
+
+                Middleware ->> Routing: TalentConfigMsg \n [UPDATE_TALENT_CONFIG_TOPIC]
+                Routing -> Routing: StoreConfiguration()
+            end
+        end
+    end
+
+@enduml
