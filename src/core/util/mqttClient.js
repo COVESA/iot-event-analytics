@@ -15,7 +15,7 @@ const Logger = require('./logger');
 const JsonModel = require('./jsonModel');
 /**
  * MQTT Client Module.
- * 
+ *
  * @module mqttClient
  */
 
@@ -59,7 +59,7 @@ class MqttProtocolAdapter {
 
     /**
      * Publishes a message to the underlying MQTT Broker. The topic is prefixed by 'topicNamespace' from the configuration.
-     * 
+     *
      * @param {string} topic  - Topic to publish the message to.
      * @param {string} message - Message to be published.
      * @param {*} publishOptions - Connection options.
@@ -79,11 +79,19 @@ class MqttProtocolAdapter {
      * from the configuration.
      *
      * @param {string} topic - Topic to subscribe for.
-     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @param {subscribeCallback} cb - Callback function invoked when a subscription message is received.
      * @returns a promise.
-     */    
+     */
+
+    /**
+     * @callback subscribeCallback
+     * @param {string} message - The message as string
+     * @param {string} topic - The "namespace-less" topic
+     */
      subscribe(topic, callback) {
-        return this.client.subscribe(this.__prefixTopicNs(topic), callback);
+        return this.client.subscribe(this.__prefixTopicNs(topic), (msg, topic) => {
+            callback(msg, this.__stripTopicNamespace(topic));
+        });
     }
 
     /**
@@ -91,16 +99,18 @@ class MqttProtocolAdapter {
      *
      * @param {string} group - Group segment of the shared subscription topic.
      * @param {string} topic - Topic to subscribe for.
-     * @param {*} cb - Callback function invoked when a subscription message is received.
+     * @param {subscribeCallback} cb - Callback function invoked when a subscription message is received.
      * @returns a promise.
-     */    
+     */
     subscribeShared(group, topic, callback) {
-        return this.client.subscribe(`$share/${group}/${this.__prefixTopicNs(topic)}`, callback);
+        return this.client.subscribe(`$share/${group}/${this.__prefixTopicNs(topic)}`, (msg, topic) => {
+            callback(msg, this.__stripTopicNamespace(topic));
+        });
     }
 
     /**
      * Gets the unique id that identifies this MqttClient among other MqttClient instances.
-     * 
+     *
      * @returns {string} - The url to the broker.
      */
     getId() {
@@ -113,6 +123,16 @@ class MqttProtocolAdapter {
         }
 
         return topic.replace(new RegExp(`^(\\$share\\/[^\\/]+\\/)?(?:${this.topicNs})?(.+)$`), `$1${this.topicNs}$2`);
+    }
+
+    __stripTopicNamespace(topic) {
+        let topicNsIndex = topic.indexOf(this.topicNs);
+
+        if (topicNsIndex === -1 || topicNsIndex > 0) {
+            return topic;
+        }
+
+        return topic.substring(this.topicNs.length);
     }
 }
 
@@ -135,7 +155,7 @@ MqttProtocolAdapter.createDefaultConfiguration = function createDefaultConfigura
 
 
 /**
- * Instances of this class are used to establish connection to an MQTT Broker, to publish and subscribe for messages. 
+ * Instances of this class are used to establish connection to an MQTT Broker, to publish and subscribe for messages.
  */
 class MqttClient {
     /**
@@ -190,7 +210,7 @@ class MqttClient {
      * @param {string} message - Message to be published.
      * @param {*} [options = {}] options - Connection options.
      * @returns a promise for chaining.
-     */    
+     */
     publish(topics, message, mqttPublishOptions = {}, stash = true) {
         if (this.clientPromise && this.clientPromise.done === false && stash === false) {
             // MQTT client is offline. Do not wait until it is online again.
@@ -215,7 +235,7 @@ class MqttClient {
      * @param {*} json - JSON object to publish as a message.
      * @param {*} [options = {}] options - Connection options.
      * @returns a promise for chaining.
-     */    
+     */
     publishJson(topics, json, mqttPublishOptions = {}, stash) {
         // Check if it's actually json, which should be sent
         try {
@@ -234,7 +254,7 @@ class MqttClient {
      * @param {string} topic - Topic to subscribe for.
      * @param {*} cb - Callback function invoked when a subscription message is received.
      * @returns a promise.
-     */    
+     */
     subscribe(topic, cb) {
         return this.__getClient()
             .then(client => {
@@ -301,7 +321,7 @@ class MqttClient {
 
     /**
      * Unsubscribes for a list of topics. Each topic is prefixed with the predefined _topicNS_ of this MqttClient
-     * instance. 
+     * instance.
      *
      * @param {string|string[]} topics - Topic(s) to unsubscribe for.
      * @returns a promise.

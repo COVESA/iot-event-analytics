@@ -258,13 +258,13 @@ class TestSetTalent(FunctionTalent):
         self.register_function('runTest', self.run_test)
 
     # pylint: disable=unused-argument,invalid-name
-    def get_test_set_info(self, ev, evctx):
+    def get_test_set_info(self, ev, evtctx, timeout_at_ms):
         return {
             'name' : self.test_set_info.name,
             'tests' : self.test_set_info.get_test_list()
         }
 
-    async def run_test(self, test_name, ev, evtctx):
+    async def run_test(self, test_name, ev, evtctx, timeout_at_ms):
         self.logger.info('Run Test %s', test_name)
 
         try:
@@ -280,7 +280,7 @@ class TestSetTalent(FunctionTalent):
         # Has to be a dict because of json serialization
         return TestResult(test_name, actual, duration).to_dict()
 
-    async def prepare(self, ev, evtctx):
+    async def prepare(self, ev, evtctx, timeout_at_ms):
         unmet_dependencies = self.talent_dependencies.check_all()
 
         if unmet_dependencies:

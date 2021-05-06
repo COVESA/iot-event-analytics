@@ -136,9 +136,13 @@ class Talent extends IOFeatures {
         return [];
     }
 
-    async call(id, func, args, subject, returnTopic, timeoutMs = 10000) {
+    async call(id, func, args, subject, returnTopic, timeoutMs = 10000, nowMs = Date.now()) {
         if (this.callees().indexOf(`${id}.${func}`) === -1) {
             throw new Error(`${id}.${func} has to be added to the return value of callees() function`);
+        }
+
+        if (timeoutMs <= 0) {
+            throw new Error(`The function call ${func}() timed out`);
         }
 
         const callId = uuid.v4();
@@ -151,8 +155,10 @@ class Talent extends IOFeatures {
                 func,
                 args,
                 chnl: this.chnl,
-                call: callId
-            }
+                call: callId,
+                timeoutAtMs: nowMs + timeoutMs
+            },
+            nowMs
         );
 
         const timeoutPromise = new Promise((resolve, reject) => {

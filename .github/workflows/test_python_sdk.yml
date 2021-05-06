@@ -1,0 +1,36 @@
+name: Python SDK Unit tests
+
+on:
+  push:
+    paths:
+    - '.github/workflows/test_python_sdk.yml'
+    - 'src/sdk/python/src/**/*.py'
+    - 'src/sdk/python/tests/**/*'
+  pull_request:
+    paths:
+    - '.github/workflows/test_python_sdk.yml'
+    - 'src/sdk/python/src/**/*.py'
+    - 'src/sdk/python/tests/**/*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Prepare and Run unit tests
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.3'
+
+    - name: Setup dependencies
+      run: pip install -r requirements.dev.txt
+
+    - name: Run unit tests
+      run: pytest
+      working-directory: ./src/sdk/python
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Coverage report
+        path: src/sdk/python/reports/coverage/

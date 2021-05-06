@@ -145,6 +145,7 @@ class TimeseriesPatternConstraint extends TimeseriesConstraint {
             const lastNode = this.matcher.treeMatch(values);
             // Make sure the pattern ends with the last value of the input
             // to prevent double matches
+            // WARNING: This skips historical matches, which are NOW found due to historical value insertion
             return lastNode.vi + lastNode.length === values.length;
         }
         catch(err) {

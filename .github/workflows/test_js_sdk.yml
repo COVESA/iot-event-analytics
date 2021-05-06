@@ -1,23 +1,29 @@
-name: Unit tests
+name: Node.js SDK Unit tests
 
 on:
   push:
     paths:
     - '.github/workflows/test_js_sdk.yml'
-    - 'src/**'
-    - '!src/sdk/cpp/**'
-    - '!src/sdk/python/**'
+    - 'src/core/**/*.js'
+    - 'src/adapter/**/*.js'
+    - 'src/module.js'
+    - 'resources/*.json'
+    - 'test/**/*.spec.js'
+    - 'test/**/*.json'
   pull_request:
     paths:
     - '.github/workflows/test_js_sdk.yml'
-    - 'src/**'
-    - '!src/sdk/cpp/**'
-    - '!src/sdk/python/**'
+    - 'src/core/**/*.js'
+    - 'src/adapter/**/*.js'
+    - 'src/module.js'
+    - 'resources/*.json'
+    - 'test/**/*.spec.js'
+    - 'test/**/*.json'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Run unit tests
+    name: Prepare and Run unit tests
 
     steps:
     - uses: actions/checkout@v2
@@ -28,7 +34,7 @@ jobs:
     - name: Setup dependencies
       run: yarn --frozen-lockfile
 
-    - name: Audit
+    - name: Auditing dependencies
       run: yarn audit
 
     - name: Run unit tests

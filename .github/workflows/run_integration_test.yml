@@ -36,7 +36,7 @@ jobs:
         python3 -m venv .venv
         source .venv/bin/activate
         python -m pip install wheel
-        python -m pip install $IOTEA_PROJECT_ROOT/src/sdk/python/pkg --force
+        python -m pip install $IOTEA_PROJECT_ROOT/src/sdk/python/src --force
 
     - name: Build C++ tests
       working-directory: ${{github.workspace}}/test/integration-tests/testset_sdk/cpp

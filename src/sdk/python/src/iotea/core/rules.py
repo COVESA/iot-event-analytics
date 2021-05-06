@@ -82,14 +82,57 @@ Constraint.logger = logging.getLogger('Constraint')
 
 
 class SchemaConstraint(Constraint):
-    def __init__(self, feature, value, type_selector, value_type, path=Constraint.PATH_IDENTITY, instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER, limit_feature_selection=True, sid=uuid.uuid1().hex):
-        super(SchemaConstraint, self).__init__(feature, Constraint.OPS['SCHEMA'], value, type_selector, value_type, path, instance_id_filter, limit_feature_selection)
+    def __init__(
+        self,
+        feature,
+        value,
+        type_selector,
+        value_type,
+        path=Constraint.PATH_IDENTITY,
+        instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER,
+        limit_feature_selection=True,
+        sid=None
+    ):
+        super(SchemaConstraint, self).__init__(
+            feature,
+            Constraint.OPS['SCHEMA'],
+            value,
+            type_selector,
+            value_type,
+            path,
+            instance_id_filter,
+            limit_feature_selection
+        )
+
+        if sid is None:
+            sid = self.create_schema_id()
+
         self.value['$id'] = sid
+
+    def create_schema_id(self):
+        return uuid.uuid1().hex
 
 
 class OpConstraint(SchemaConstraint):
-    def __init__(self, feature, op, value, type_selector, value_type, path=Constraint.PATH_IDENTITY, instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER, limit_feature_selection=True):
-        super(OpConstraint, self).__init__(feature, OpConstraint.create_schema(op, value), type_selector, value_type, path, instance_id_filter, limit_feature_selection)
+    def __init__(
+        self,
+        feature,
+        op, value,
+        type_selector,
+        value_type,
+        path=Constraint.PATH_IDENTITY,
+        instance_id_filter=Constraint.ALL_INSTANCE_IDS_FILTER,
+        limit_feature_selection=True
+    ):
+        super(OpConstraint, self).__init__(
+            feature,
+            OpConstraint.create_schema(op, value),
+            type_selector,
+            value_type,
+            path,
+            instance_id_filter,
+            limit_feature_selection
+        )
 
     @staticmethod
     def create_schema(op, value):
@@ -202,17 +245,17 @@ class Rules(Rule):
         regex = re.compile('^([^\.]+)\.([^\.]+)(?:\.([^\.]+))?$')
 
         for type_feature_selector in self.exclude_on:
-            matches = regex.match(self.type_selector)
+            matches = regex.match(type_feature_selector)
 
             if matches is None:
                 raise Exception(f'Invalid typeFeature selector "{type_feature_selector}" found in excludeOn constraints in given Rules')
 
             if matches[3] is not None:
                 if matches[1] != DEFAULT_TYPE:
-                    raise Exception(f'Invalid typeFeature selector "{typeFeatureSelector}". Has to be default type')
+                    raise Exception(f'Invalid typeFeature selector "{type_feature_selector}". Has to be default type')
 
                 if matches[2] == '*':
-                    raise Exception(f'Talent id has to be defined in typeFeature selector "{typeFeatureSelector}"')
+                    raise Exception(f'Talent id has to be defined in typeFeature selector "{type_feature_selector}"')
 
     def add(self, rules):
         if isinstance(rules, list):

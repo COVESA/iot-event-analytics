@@ -142,7 +142,8 @@
                                       "func",
                                       "args",
                                       "chnl",
-                                      "call"
+                                      "call",
+                                      "timeoutAtMs"
                                   ],
                                   "properties": {
                                       "func": {
@@ -157,6 +158,9 @@
                                       },
                                       "call": {
                                           "type": "string"
+                                      },
+                                      "timeoutAtMs": {
+                                          "type": "integer"
                                       }
                                   },
                                   "additionalProperties": false
@@ -176,7 +180,8 @@
                                       "func",
                                       "args",
                                       "chnl",
-                                      "call"
+                                      "call",
+                                      "timeoutAtMs"
                                   ],
                                   "properties": {
                                       "func": {
@@ -191,6 +196,9 @@
                                       },
                                       "call": {
                                           "type": "string"
+                                      },
+                                      "timeoutAtMs": {
+                                          "type": "integer"
                                       }
                                   },
                                   "additionalProperties": false
@@ -368,7 +376,8 @@
           "args": [ 8 ],                                                              // The function arguments as array !
           "call": "<deferredCallId>",                                                 // The random id of your call to transport the response
           "chnl": "<talentId>.<callChannelId>",
-          "whenMs": 1605026236000
+          "whenMs": 1605026236000,
+          "timeoutAtMs": 1605026286000                                                // The point in time at which the caller times out
       }
   }
 

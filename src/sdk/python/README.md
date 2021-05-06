@@ -10,10 +10,19 @@
 
 # Package
 
+## Test
+
+- Run `pytest` after installing all dependencies
+  - After running the tests, you will find all reports in the _./reports_ directory. It'll contain coverage reports as HTML and XML in cobertura format.
+
+## Build and install in one go
+
+`python -m pip install ./src --user --force`
+
 ## Build
 
 - Create an empty _./lib_ folder folder if not exists
-- Go into the _./pkg_ folder
+- Go into the _./src_ folder
 
 ### Build Source distribution package
 
@@ -27,3 +36,5 @@
 
 - Goto directory ./lib and pick a version you would like to install<br>
 - `python -m pip install --user boschio_iotea-<version>-py3-none-any.whl --force`
+
+## Test

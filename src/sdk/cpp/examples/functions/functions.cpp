@@ -113,11 +113,10 @@ class MathFunctions : public FunctionTalent {
                 logging::Info() << "sum(" << v << ") = " << replies[0].get<int>();
         }, nullptr, tsum);
 
-
-        auto tmul = ctx->Call(fac, v);
+        auto tfac = ctx->Call(fac, v);
         ctx->Gather([v](const std::vector<json>& replies) {
                 logging::Info() << "fac(" << v << ") = " << replies[0].get<int>();
-        }, nullptr, tmul);
+        }, nullptr, tfac);
 
         auto tfib = ctx->Call(fib, v);
         ctx->Gather([v](const std::vector<json>& replies) {

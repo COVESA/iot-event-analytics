@@ -21,7 +21,7 @@ class FunctionProvider extends FunctionTalent {
         this.registerFunction('echo', this.echo.bind(this));
     }
 
-    async echo(value, ev, evtctx) {
+    async echo(value, ev, evtctx, timeoutAtMs) {
         this.logger.debug('Echo called');
         return value;
     }

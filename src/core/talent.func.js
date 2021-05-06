@@ -96,6 +96,7 @@ module.exports = class FunctionTalent extends Talent {
 
         args.push(ev);
         args.push(evtctx);
+        args.push(rawValue.timeoutAtMs);
 
         let result = null;
 
@@ -156,7 +157,7 @@ module.exports = class FunctionTalent extends Talent {
         const functionInputRules = new OrRules(functionNames.map(functionName => {
             const eventSchema = {
                 type: 'object',
-                required: [ 'func', 'args', 'chnl', 'call' ],
+                required: [ 'func', 'args', 'chnl', 'call', 'timeoutAtMs' ],
                 properties: {
                     func: {
                         type: 'string',
@@ -170,6 +171,9 @@ module.exports = class FunctionTalent extends Talent {
                     },
                     call: {
                         type: 'string'
+                    },
+                    timeoutAtMs: {
+                        type: 'integer'
                     }
                 },
                 additionalProperties: false

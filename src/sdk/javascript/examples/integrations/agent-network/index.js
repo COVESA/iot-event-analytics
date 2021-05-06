@@ -100,7 +100,8 @@ class ChargeApiTalent extends FunctionTalent {
         return [ response ];
     }
 
-    __onGetVIN(sessionId) {
+    // eslint-disable-next-line no-unused-vars
+    __onGetVIN(sessionId, ev, evtctx, timeoutAtMs) {
         if (sessionId !== this.sessionId) {
             this.logger.warn(`__onGetVIN: Session with id ${sessionId} not found`);
             return false;
@@ -111,7 +112,8 @@ class ChargeApiTalent extends FunctionTalent {
         return 'MeineSuperSignierteVIN';
     }
 
-    __onTransactionEnd(sessionId, result) {
+    // eslint-disable-next-line no-unused-vars
+    __onTransactionEnd(sessionId, result, ev, evtctx, timeoutAtMs) {
         if (sessionId !== this.sessionId) {
             this.logger.warn(`__onTransactionEnd: Session with id ${sessionId} not found`);
             return false;
@@ -122,7 +124,8 @@ class ChargeApiTalent extends FunctionTalent {
         return 'Danke';
     }
 
-    __onPostOfferAccept(sessionId, offer) {
+    // eslint-disable-next-line no-unused-vars
+    __onPostOfferAccept(sessionId, offer, ev, evtctx, timeoutAtMs) {
         if (sessionId !== this.sessionId) {
             this.logger.warn(`__onPostOfferAccept: Session with id ${sessionId} not found`);
             return false;
@@ -141,7 +144,8 @@ class ChargeApiTalent extends FunctionTalent {
         return true;
     }
 
-    __onGetCredential(sessionId) {
+    // eslint-disable-next-line no-unused-vars
+    __onGetCredential(sessionId, ev, evtctx, timeoutAtMs) {
         if (sessionId !== this.sessionId) {
             this.logger.warn(`__onGetCredential: Session with id ${sessionId} not found`);
             return false;

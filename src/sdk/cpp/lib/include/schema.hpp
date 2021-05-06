@@ -115,6 +115,11 @@ class NumberType : public ValueType {
     NumberType();
 };
 
+class IntegerType : public ValueType {
+   public:
+    IntegerType();
+};
+
 class StringType : public ValueType {
    private:
     const Opt<unsigned int> min_length_ = defuint;

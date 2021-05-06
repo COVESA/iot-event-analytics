@@ -3,8 +3,9 @@
     "protocolGateway": {
         "adapters": [
             {
+                "platform": true,
                 "module": {
-                    "name": "'./util/mqttClient",
+                    "name": "./util/mqttClient",
                     "class": "MqttProtocolAdapter"
                 },
                 "config": {

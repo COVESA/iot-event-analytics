@@ -451,11 +451,12 @@ class OutgoingCall {
     * @param args The arguments to pass to the function
     * @param subject The name of subject as determined by the context from which the call is made
     * @param type The name of the type associated with the called function
+    * @param timeout The number of ms to wait for a reply to the call
     * @param when The time since the epoch in ms to attach to the call
     */
     OutgoingCall(const std::string& talent_id, const std::string& channel_id, const std::string& call_id,
                  const std::string& func, const json& args, const std::string& subject, const std::string& type,
-                 int64_t when = GetEpochTimeMs());
+                 int64_t timeout, int64_t when = GetEpochTimeMs());
 
     /**
      * @brief Get a JSON representation of this OutgoingCall
@@ -479,6 +480,7 @@ class OutgoingCall {
     json args_;
     std::string subject_;
     std::string type_;
+    int64_t timeout_;
     int64_t when_;
 };
 
@@ -593,7 +595,7 @@ class Gatherer {
      *
      * @param timeout_func_ptr A pointer to a function to call if any of the expected replies times out
      * @param tokens A collection of CallTokens representing pending replies to gather
-     * @param now_ms The notion of now in ms
+     * @param now_ms The current time in ms since the epoch
      */
     Gatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms = 0);
 
@@ -602,9 +604,10 @@ class Gatherer {
     /**
      * @brief Check if any of the pending calls have timed out.
      *
+     * @param now_ms The current time in ms since the epoch
      * @return true if at least one call has timed out.
      */
-    virtual bool HasTimedOut(int64_t now) const;
+    virtual bool HasTimedOut(int64_t now_ms) const;
 
     /**
      * @brief Return whether the gatherer expects a particular call ID.
@@ -894,8 +897,11 @@ class EventContext {
      * @param callee The callee representing the function to call
      * @param args The arguments to pass to the function
      * @param timeout The maximum time to wait for a reply in ms
+     * @return CallToken
+     *
+     * @throw std::logic_error If timeout <= 0
      */
-    CallToken Call(const Callee& callee, const json& args, const int64_t& timeout = 0) const;
+    virtual CallToken Call(const Callee& callee, const json& args, int64_t timeout = 10000) const;
 
     /**
      * @brief Gather results from pending replies and execute a function. This
@@ -962,6 +968,16 @@ class EventContext {
     }
 
    protected:
+    /**
+     * @brief Call the function represented by a Callee, all parameter verification is bypassed.
+     *
+     * @param callee The callee representing the function to call
+     * @param args The arguments to pass to the function
+     * @param timeout The maximum time to wait for a reply in ms
+     * @return CallToken
+     */
+    virtual CallToken CallInternal(const Callee& callee, const json& args, int64_t timeout) const;
+
     virtual int64_t GetNowMs() const;
 
     const std::string talent_id_;
@@ -979,11 +995,6 @@ class EventContext {
  * purpose of the context is to be able to trace a chain of events and calls.
  */
 class CallContext : public EventContext {
-   private:
-    const std::string feature_;
-    const std::string channel_;
-    const std::string call_;
-
    public:
     virtual ~CallContext() = default;
 
@@ -1001,6 +1012,8 @@ class CallContext : public EventContext {
      */
     CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
                 const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
+
+    virtual CallToken Call(const Callee& callee, const json& args, int64_t timeout = 10000) const override;
 
     /**
      * @brief Immediately reply to a function call within in this context. Used
@@ -1067,6 +1080,12 @@ class CallContext : public EventContext {
 
         reply_handler_->AddGatherer(gatherer);
     }
+
+   private:
+    std::string feature_;
+    std::string channel_;
+    std::string call_;
+    int64_t timeout_at_ms_;
 };
 
 

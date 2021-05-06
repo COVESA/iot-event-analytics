@@ -28,6 +28,9 @@ TEST(Schema, ScalarValueTypes) {
 
     auto number = schema::NumberType{};
     ASSERT_EQ(number.Json(), json::parse(R"({"type": "number"})"));
+
+    auto integer = schema::IntegerType{};
+    ASSERT_EQ(integer.Json(), json::parse(R"({"type": "integer"})"));
 }
 
 TEST(Schema, StringType) {

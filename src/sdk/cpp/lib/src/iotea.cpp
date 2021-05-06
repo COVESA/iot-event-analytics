@@ -11,6 +11,7 @@
 #include "iotea.hpp"
 
 #include <chrono>
+#include <limits>
 #include <memory>
 #include <regex>
 #include <set>
@@ -200,7 +201,7 @@ Event Event::FromJson(const json& j) {
 
 OutgoingCall::OutgoingCall(const std::string& talent_id, const std::string& channel_id, const std::string& call_id,
                            const std::string& func, const json& args, const std::string& subject,
-                           const std::string& type, int64_t when)
+                           const std::string& type, int64_t timeout, int64_t when)
     : talent_id_{talent_id}
     , channel_id_{channel_id}
     , call_id_{call_id}
@@ -208,6 +209,7 @@ OutgoingCall::OutgoingCall(const std::string& talent_id, const std::string& chan
     , args_(args)
     , subject_{subject}
     , type_{type}
+    , timeout_{when + timeout}
     , when_{when} {}
 
 std::string OutgoingCall::GetCallId() const { return call_id_; }
@@ -220,8 +222,9 @@ json OutgoingCall::Json() const {
                       {"func", func_},
                       {"args", args_},
                       {"call", call_id_},
-                      {"chnl", channel_id_}}
-                },
+                      {"chnl", channel_id_},
+                      {"timeoutAtMs", timeout_}
+                }},
                 {"whenMs", when_}};
 }
 
@@ -267,7 +270,7 @@ std::string EventContext::GetReturnTopic() const {
     return GetEnv(MQTT_TOPIC_NS, MQTT_TOPIC_NS) + "/" + return_topic_;
 }
 
-CallToken EventContext::Call(const Callee& callee, const json& args, const int64_t& timeout) const {
+CallToken EventContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
     if (!callee.IsRegistered()) {
         log::Warn() << "Tried to call unregistered Callee";
 
@@ -275,10 +278,18 @@ CallToken EventContext::Call(const Callee& callee, const json& args, const int64
         return CallToken{"", -1};
     }
 
-    auto call_id = uuid_gen_();
+    if (timeout <= 0) {
+        // Oops this call has already timed out.
+        throw std::logic_error("timeout must be larger that 0");
+    }
 
+    return CallInternal(callee, args, timeout);
+}
+
+CallToken EventContext::CallInternal(const Callee& callee, const json& args, int64_t timeout) const {
+    auto call_id = uuid_gen_();
     auto j = args.is_array() ? args : json::array({args});
-    auto c = OutgoingCall{callee.GetTalentId(), GetChannelId(), call_id, callee.GetFunc(), j, GetSubject(), callee.GetType()};
+    auto c = OutgoingCall{callee.GetTalentId(), GetChannelId(), call_id, callee.GetFunc(), j, GetSubject(), callee.GetType(), timeout};
 
     publisher_->Publish(GetReturnTopic(), c.Json().dump());
 
@@ -298,8 +309,35 @@ CallContext::CallContext(const std::string& talent_id, const std::string& channe
     : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_handler, publisher, uuid_gen}
     , feature_{feature}
     , channel_{event.GetValue()["chnl"].get<std::string>()}
-    , call_{event.GetValue()["call"].get<std::string>()} {}
+    , call_{event.GetValue()["call"].get<std::string>()}
+    , timeout_at_ms_{event.GetValue()["timeoutAtMs"].get<int64_t>()} {}
 
+
+CallToken CallContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
+    // If Call is called from a CallContext that means that it's part of a
+    // chain of calls. In that case we need to take a look at the "timeoutAtMs"
+    // property (which holds the absolute timeout of the first call in the
+    // chain) and modify the supplied timeout so that it doesn't expire after
+    // "timeoutAtMs".
+
+    // The timeout argument is in relative time and must be adjusted with
+    // respect to the absolute timeout given in the original call so that it
+    // doesn't expire after it. If the result of the subtraction in the second
+    // argument is negative we still create and the CallToken but don't issue
+    // the actual call (taken care of in EventContext::Call). The token will
+    // cause the gatherer to expire in the next
+    // "check timeouts cycle".
+    timeout = std::min(timeout, timeout_at_ms_ - GetEpochTimeMs());
+
+    if (timeout <= 0) {
+        // This call has already timed out. Just reply with a token that times
+        // out immediately and let the gatherer take care of handling the
+        // timeout.
+        return CallToken{uuid_gen_(), 0};
+    }
+
+    return CallInternal(callee, args, timeout);
+}
 
 void CallContext::Reply(const json& value) const {
     auto result = json{{"$tsuffix", std::string("/") + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
@@ -321,32 +359,19 @@ void CallContext::Reply(const json& value) const {
 Gatherer::Gatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms)
     : timeout_func_{timeout_func} {
 
-    auto smallest_timeout = int64_t{-1};
+    auto nearest_timeout = std::numeric_limits<int64_t>::max();
 
     for (const auto& t : tokens) {
         ids_.insert(t.GetCallId());
 
-        auto token_timeout = t.GetTimeout();
-        if (token_timeout > 0) {
-            smallest_timeout = smallest_timeout < 0 ? token_timeout : std::min(smallest_timeout, token_timeout);
-        }
+        nearest_timeout = std::min(nearest_timeout, t.GetTimeout());
     }
 
-    if (smallest_timeout <= 0) {
-        // No timeout was set
-        timeout_ = 0;
-        return;
-    }
-
-    timeout_ = now_ms + smallest_timeout;
+    timeout_ = now_ms + nearest_timeout;
 }
 
-bool Gatherer::HasTimedOut(int64_t now) const {
-    if (timeout_ <= 0 || now < timeout_) {
-        return false;
-    }
-
-    return true;
+bool Gatherer::HasTimedOut(int64_t now_ms) const {
+    return timeout_ <= now_ms;
 }
 
 void Gatherer::TimeOut() {

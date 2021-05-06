@@ -294,8 +294,8 @@ class TestSetTalent extends FunctionTalent {
         this.talentDependencies = new TalentDependencies();
     }
 
-    registerTest(testName, expectedValue, testFunction, timeout=2000) {
-        let test = new Test(testName, expectedValue, testFunction, timeout);
+    registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
+        let test = new Test(testName, expectedValue, testFunction, timeoutMs);
         this.testSetInfo.testMap.set(testName, test);
     }
 
@@ -311,14 +311,14 @@ class TestSetTalent extends FunctionTalent {
         this.registerFunction(RUN_TEST_METHOD_NAME, this.runTest.bind(this));
     }
 
-    getTestSetInfo(ev, evtctx) {
+    getTestSetInfo(ev, evtctx, timeoutAtMs) {
         return {
             'name' : this.testSetInfo.name,
             'tests' : this.testSetInfo.getTestList()
         };
     }
 
-    async runTest(testName, ev, evtctx) {
+    async runTest(testName, ev, evtctx, timeoutAtMs) {
         this.logger.info(`Run Test ${testName}`);
 
         if (!this.testSetInfo.testMap.has(testName)) {
@@ -338,7 +338,7 @@ class TestSetTalent extends FunctionTalent {
      * checks to ensure that everything is prepared
      * for your test cases
      */
-    async prepare(ev, evtctx) {
+    async prepare(ev, evtctx, timeoutAtMs) {
         let unmetDependencies = this.talentDependencies.checkAll();
 
         if (unmetDependencies.length > 0) {

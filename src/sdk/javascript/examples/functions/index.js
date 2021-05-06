@@ -73,7 +73,9 @@ class IntegratedFunction extends FunctionTalent {
     callees() {
         return [
             `${this.id}.sum`,
-            `math.multiply`
+            `math.multiply`,
+            `math.faculty`,
+            `math.fibonacci`
         ];
     }
 
@@ -83,7 +85,8 @@ class IntegratedFunction extends FunctionTalent {
 
     getRules() {
         return new AndRules([
-            new Rule(new OpConstraint(`${this.id}.trigger`, OpConstraint.OPS.GREATER_THAN, 20, DEFAULT_TYPE, VALUE_TYPE_RAW)),
+            new Rule(new OpConstraint(`${this.id}.trigger`, OpConstraint.OPS.LESS_THAN_EQUAL, 15, DEFAULT_TYPE, VALUE_TYPE_RAW)),
+            new Rule(new OpConstraint(`${this.id}.trigger`, OpConstraint.OPS.GREATER_THAN, 0, DEFAULT_TYPE, VALUE_TYPE_RAW)),
             new Rule(new ChangeConstraint(`${this.id}.trigger`, DEFAULT_TYPE, VALUE_TYPE_RAW))
         ]);
     }
@@ -91,9 +94,16 @@ class IntegratedFunction extends FunctionTalent {
     async onEvent(ev, evtctx) {
         const v = TalentInput.getRawValue(ev);
 
-        const sum = await this.call(this.id, 'sum', [ v, v ], ev.subject, ev.returnTopic, 20000);
+        this.logger.info(`${v} + ${v} = ${await this.call(this.id, 'sum', [ v, v ], ev.subject, ev.returnTopic, 20000)}. ${v} x ${v} = ${await this.call('math', 'multiply', [ v, v ], ev.subject, ev.returnTopic)}`, evtctx);
+        this.logger.info(`${v}! = ${await this.call('math','faculty', [ v ], ev.subject, ev.returnTopic, 20000)}`, evtctx);
 
-        this.logger.info(`Calculated sum ${sum}. ${v}x${v} is ${await this.call('math', 'multiply', [ v, v ], ev.subject, ev.returnTopic)}`, evtctx);
+        try {
+            this.logger.info(`${v}th fibonacci number is ${await this.call('math','fibonacci', [ v ], ev.subject, ev.returnTopic, 5000)}`, evtctx);
+        }
+        catch(err) {
+            console.log(`Could not calculate fibonacci number in the given timeout`);
+        }
+
     }
 }
 
@@ -121,7 +131,7 @@ class MathFunctions extends FunctionTalent {
     }
 
     // Actually a bad example, but for the sake of demoing recursive function execution it works out
-    async __fibonacci(nth, ev, evtctx) {
+    async __fibonacci(nth, ev, evtctx, timeoutAtMs) {
         this.logger.debug(`Calculating ${nth}th fibonacci number...`, evtctx);
 
         if (nth <= 1) {
@@ -129,21 +139,21 @@ class MathFunctions extends FunctionTalent {
             return nth;
         }
 
-        const fib = await this.call(this.id, 'fibonacci', [ nth - 1 ], ev.subject, ev.returnTopic, 20000) + await this.call(this.id, 'fibonacci', [ nth - 2 ], ev.subject, ev.returnTopic, 20000);
+        const fib = await this.call(this.id, 'fibonacci', [ nth - 1 ], ev.subject, ev.returnTopic, timeoutAtMs - Date.now()) + await this.call(this.id, 'fibonacci', [ nth - 2 ], ev.subject, ev.returnTopic, timeoutAtMs - Date.now());
 
         this.logger.debug(`Result for ${nth}th fibonacci number is ${fib}`);
 
         return fib;
     }
 
-    async __faculty(nth, ev, evtctx) {
+    async __faculty(nth, ev, evtctx, timeoutAtMs) {
         this.logger.debug(`Calculating ${nth}th faculty...`, evtctx)
 
         if (nth <= 1) {
             return 1;
         }
 
-        const faculty = nth * await this.call(this.id, 'faculty', [ nth - 1 ], ev.subject, ev.returnTopic, 20000);
+        const faculty = nth * await this.call(this.id, 'faculty', [ nth - 1 ], ev.subject, ev.returnTopic, timeoutAtMs - Date.now());
 
         this.logger.debug(`${nth}th faculty is ${faculty}`, evtctx);
 

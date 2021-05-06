@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-const uuid = require('uuid').v4;
+const uuid = require('uuid');
 const Ajv = require('ajv');
 
 const equals = require('./util/equals');
@@ -160,7 +160,7 @@ Constraint.OPS = {
 };
 
 class SchemaConstraint extends Constraint {
-    constructor(feature, value, typeSelector = DEFAULT_TYPE, valueType = VALUE_TYPE_ENCODED, path = PATH_IDENTITY, instanceIdFilter, limitFeatureSelection, sid = `${uuid()}.json`) {
+    constructor(feature, value, typeSelector = DEFAULT_TYPE, valueType = VALUE_TYPE_ENCODED, path = PATH_IDENTITY, instanceIdFilter, limitFeatureSelection, sid = `${uuid.v1()}.json`) {
         super(feature, Constraint.OPS.SCHEMA, value, typeSelector, valueType, path, instanceIdFilter, limitFeatureSelection);
 
         const ajv = new Ajv();

@@ -1,0 +1,38 @@
+{
+    "id": "test-talent",
+    "config": {
+        "scc": ["default.math.sum-out"],
+        "outputs": {},
+        "rules": {
+            "excludeOn": null,
+            "rules": [{
+                "feature": "math.sum-out",
+                "path": "/$tsuffix",
+                "op": 0,
+                "value": {
+                    "type": "string",
+                    "pattern": "^\\/test-talent\\.[^\\/]+\\/.*",
+                    "$id": "4711"
+                },
+                "valueType": 0,
+                "typeSelector": "default",
+                "instanceIdFilter": ".*",
+                "limitFeatureSelection": true
+            }, {
+                "excludeOn": ["default.math.sum-out"],
+                "rules": [{
+                    "feature": "temp",
+                    "path": "",
+                    "op": 1,
+                    "value": null,
+                    "valueType": 0,
+                    "typeSelector": "kuehlschrank",
+                    "instanceIdFilter": ".*",
+                    "limitFeatureSelection": true
+                }],
+                "type": "and"
+            }],
+            "type": "or"
+        }
+    }
+}
