@@ -151,6 +151,5 @@ For further information how to start the platform using docker-compose see [here
 
 ## Yarn Scripts
 
-- The jsdoc of iot-event-analytics APIs will be generated in `docs/jsdoc` folder after running `yarn` or `yarn
-  generate-docs`
+- The jsdoc of iot-event-analytics APIs will be generated in `docs/jsdoc` folder after running `yarn` or `yarn docs.generate`
 - To run the unit tests, use `yarn test`

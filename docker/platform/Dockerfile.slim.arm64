@@ -8,15 +8,30 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-FROM node:12.13.0 as base
+FROM arm64v8/node:12.13.0 as base
 
-FROM base as build
+FROM base as minify-js
 
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
+RUN npm config set strict-ssl false -g
+RUN npm config set maxsockets 5 -g
 
-ENV HTTP_PROXY=${HTTP_PROXY}
-ENV HTTPS_PROXY=${HTTPS_PROXY}
+RUN mkdir /build
+
+# Create app directory
+WORKDIR /build
+
+# Install minification pipeline
+RUN yarn init -y&&yarn add uglify-js glob yargs --dev
+
+# Copy application source files for minification
+COPY src/ ./src
+COPY docker/platform ./docker/platform
+
+# Minify source files
+RUN node ./docker/platform/minify.js -i "./src/core" -g "**/*.js" -o "./src-min/src/core"
+RUN node ./docker/platform/minify.js -i "./docker/platform" -g "index.js" -o "./src-min/docker/platform"
+
+FROM base as node-modules
 
 RUN mkdir /build
 
@@ -29,7 +44,7 @@ RUN npm config set strict-ssl false -g
 RUN npm config set maxsockets 5 -g
 
 # Install all dependencies
-RUN yarn --production
+RUN yarn --production --ignore-optional
 
 # Audit all packages for security vulnerabilities
 RUN yarn audit
@@ -40,22 +55,31 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 # Prune node-modules
 RUN node-prune
 
-# FROM node:10.16.1-alpine as runtime
-FROM mhart/alpine-node:slim-12.13.0 as runtime
+FROM yobasystems/alpine:3.11.6-aarch64
+
+RUN apk add --no-cache nodejs
 
 # Set root password
 # https://stackoverflow.com/questions/28721699/root-password-inside-a-docker-container
 # https://www.howtogeek.com/howto/30184/10-ways-to-generate-a-random-password-from-the-command-line/
 RUN echo "root:`date +%s | sha256sum | base64 | head -c 32`" | chpasswd &> /dev/null
 
+# Create app directory
+RUN mkdir -p /app
+
 WORKDIR /app
 
 # Copy node modules
-COPY --from=build /build .
+COPY --from=node-modules /build/node_modules ./node_modules
 
-# Copy the application sources
-COPY src/ ./src
+# Copy minified application source files
+COPY --from=minify-js /build/src-min ./
+
+# Copy the application resources
 COPY resources/ ./resources
-COPY docker/vss2iotea ./docker/vss2iotea
+COPY package.json ./
 
-CMD ["node", "/app/docker/vss2iotea/index.js"]
+# Print modules over 1MB in size
+RUN du -sh ./node_modules/* | sort -nr | grep '\dM.*'
+
+CMD ["node", "/app/docker/platform/index.js"]

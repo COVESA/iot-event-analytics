@@ -10,58 +10,52 @@
 
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const yargs = require('yargs');
+const Terminal = require('../../tools/terminal');
 
-class Terminal {
-    async runCommand(cmd, args, cwd, onStdOut = () => {}, env = {}) {
-        return new Promise((resolve, reject) => {
-            const proc = spawn(cmd, args, {
-                cwd,
-                shell: true,
-                env: { ...process.env, ...env }
-            });
-
-            let stdout = '';
-            let stderr = '';
-
-            proc.stdout.on('data', buf => {
-                const stringifiedBuffer = buf.toString('utf8');
-                onStdOut(stringifiedBuffer);
-                stdout += stringifiedBuffer;
-            });
-
-            proc.stderr.on('data', buf => {
-                stderr += buf.toString('utf8');
-            });
-
-            proc.on('close', code => {
-                if (code !== 0) {
-                    reject(new Error(stderr.trim()));
-                    return;
-                }
-
-                resolve(stdout.trim());
-            });
-        });
-    }
-}
+const args = yargs
+    .option('directory', {
+        alias: 'd',
+        description: 'Package output directory',
+        required: false,
+        default: null
+    })
+    .help()
+    .alias('help', 'h');
 
 (async () => {
     // Creates a new installable Node.js package in the lib folder
     const projectRoot = path.resolve(__dirname, '..', '..', '..');
+    let absPackageDir = path.resolve(projectRoot, 'src/sdk/javascript/lib');
+
+    const argv = args.argv;
+
+    if (argv.directory) {
+        if (!path.isAbsolute(argv.directory)) {
+            console.error(new Error(`Given path "${argv.directory}" must be absolute`));
+            return;
+        }
+
+        absPackageDir = argv.directory;
+    }
+
     const packageInfo = require(path.resolve(projectRoot, 'package.json'));
 
-    const libraryDir = path.resolve(projectRoot, 'src/sdk/javascript/lib');
-    if (!fs.existsSync(libraryDir)) {
-        fs.mkdirSync(libraryDir);
+    if (!fs.existsSync(absPackageDir)) {
+        fs.mkdirSync(absPackageDir);
     }
 
     const terminal = new Terminal();
+    const packageName = `${packageInfo.name}-${packageInfo.version}.tgz`;
+    const absPackagePath = path.join(absPackageDir, packageName);
+
     await terminal.runCommand('yarn', [
         'pack',
         '--filename',
-        `src/sdk/javascript/lib/${packageInfo.name}-${packageInfo.version}.tgz`
+        `"${absPackagePath}"`
     ], projectRoot, msg => {
         console.log(msg);
     });
+
+    console.log(absPackagePath);
 })();
