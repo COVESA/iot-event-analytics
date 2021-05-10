@@ -1,0 +1,39 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/channels/talent.schema.json",
+  "type": "object",
+  "required": [
+    "subject",
+    "feature",
+    "value",
+    "whenMs"
+  ],
+  "properties": {
+    "subject": {
+      "$id": "#/properties/subject",
+      "type": "string",
+      "minLength": 1
+    },
+    "cid": {
+      "$id": "#/properties/cid",
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "feature": {
+      "$id": "#/properties/feature",
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "$id": "#/properties/value",
+      "type": ["number", "string", "object", "array", "boolean"]
+    },
+    "whenMs": {
+      "$id": "#/properties/whenMs",
+      "type": "number",
+      "multipleOf": 1,
+      "minimum": 0
+    }
+  }
+}
