@@ -75,7 +75,7 @@ The slim build image does not offer any API (Neither Metadata nor Instance API t
   - Select your Node.js application and open the debugger
   - Click on the blue arrow to start the IoT Event Analytics application
 
-docker buildx build --platform linux/arm64 -t foo-arm64:0.0.1 --load -f docker/platform/Dockerfile-slim.arm64 .
+docker buildx build --platform linux/arm64 -t foo-arm64:0.0.1 --load -f docker/platform/Dockerfile.slim.arm64 .
 
 ### >> Linux only <<
 
