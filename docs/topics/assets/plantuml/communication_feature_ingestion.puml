@@ -47,8 +47,8 @@
                 Middleware ->> Routing: FeatureMsg \n [ROUTNING_TOPIC]
                 loop for all subscribed Talents
                     Routing -> Routing: EvaluateRules()
-                    Routing -> Middleware: FeatureEventMsg [<TALENT_TOPIC>]
-                    Middleware -> Talent: FeatureEventMsg [<TALENT_TOPIC>]
+                    Routing ->> Middleware: FeatureEventMsg \n [<TALENT_TOPIC>]
+                    Middleware ->> Talent: FeatureEventMsg \n [<TALENT_TOPIC>]
                     group Execute Business Code
                         Talent -> Talent: OnEvent()
                     end

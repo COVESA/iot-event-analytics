@@ -23,18 +23,18 @@
     participant TalentB as TalentA #LightGreen
 
     group External Feature Ingestion (TalentA is Subscriber)
-        Provider ->> Middleware: IngestionMsg [INGESTION_TOPIC]
-        Middleware ->> Platform: IngestionMsg [INGESTION_TOPIC]
-        Platform ->> Middleware: FeatureEventMsg [<TALENTA_TOPIC>]
-        Middleware ->> TalentA: FeatureEventMsg [<TALENTA_TOPIC>]
-        TalentA ->> TalentA: OnEvent()
+        Provider ->> Middleware: IngestionMsg \n [INGESTION_TOPIC]
+        Middleware ->> Platform: IngestionMsg \n [INGESTION_TOPIC]
+        Platform ->> Middleware: FeatureEventMsg \n [<TALENTA_TOPIC>]
+        Middleware ->> TalentA: FeatureEventMsg \n [<TALENTA_TOPIC>]
+        TalentA -> TalentA: OnEvent()
     end
 
     group Internal Feature Ingestion (TalentA is Provider, Talent B is Subscriber)
-        TalentA ->> Middleware: IngestionMsg [INGESTION_TOPIC]
-        Middleware ->> Platform: IngestionMsg [INGESTION_TOPIC]
-        Platform ->> Middleware: FeatureEventMsg [<TALENTB_TOPIC>]
-        Middleware ->> TalentB: FeatureEventMsg [<TALENTB_TOPIC>]
+        TalentA ->> Middleware: IngestionMsg \n [INGESTION_TOPIC]
+        Middleware ->> Platform: IngestionMsg \n [INGESTION_TOPIC]
+        Platform ->> Middleware: FeatureEventMsg \n [<TALENTB_TOPIC>]
+        Middleware ->> TalentB: FeatureEventMsg \n [<TALENTB_TOPIC>]
         TalentB -> TalentB: OnEvent()
     end
 @enduml
