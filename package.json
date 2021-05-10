@@ -48,5 +48,8 @@
   },
   "engines": {
     "node": ">=12.13.0"
+  },
+  "resolutions": {
+    "jsdoc/underscore": "1.12.1"
   }
 }
