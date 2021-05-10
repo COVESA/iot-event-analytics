@@ -562,6 +562,7 @@ class Schema {
    public:
     Schema(const std::string& id, const std::vector<OutputFeature>& outputs,
            const options_map& options, rule_ptr rules);
+
     json Json() const;
 };
 

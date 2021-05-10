@@ -206,13 +206,14 @@ TEST(iotea, Talent_RegisterCallee) {
         },
     };
 
-    for (const auto&t : tests) {
+    for (const auto& t : tests) {
         auto talent = Talent("test_RegisterCallee");
 
         talent.Initialize(std::make_shared<ReplyHandler>(), nullptr, t.uuid_gen);
 
         for (const auto& c : t.callees) {
-            talent.RegisterCallee(c.GetTalentId(), c.GetFunc(), c.GetType());
+            auto callee = talent.RegisterCallee(c.GetTalentId(), c.GetFunc(), c.GetType());
+            ASSERT_EQ(callee, c);
         }
 
         auto have = talent.GetRules();
@@ -222,73 +223,286 @@ TEST(iotea, Talent_RegisterCallee) {
 }
 
 /**
- * @brief Test that a Talent can call a function and gather the results.
+ * @brief Test that outputs added are reflected in the schema.
  */
-TEST(itoea, Talent_CallAndGather) {
-    // This client creates a callee. When it receives an event, it extracts the
-    // payload from the event and calls the callee with the payload and assigns
-    // the reply from the callee to the member variable reply_
+TEST(iotea, Talent_AddOutput) {
     class TestTalent : public Talent {
        public:
-        Callee callee_;
-        json reply_;
+        TestTalent() : Talent{"Talent_AddOutput"} {}
 
-        explicit TestTalent(const std::string& talent_id)
-            : Talent{talent_id} {
-                callee_ = RegisterCallee("some_talent", "some_func");
-            }
+        using Talent::AddOutput;
+        using Talent::GetSchema;
 
-        void OnEvent(const Event& event, event_ctx_ptr ctx) override {
-            auto token = ctx->Call(callee_, event.GetValue());
-
-            auto reply_handler = [this](const json& reply) {
-                reply_ = reply;
-            };
-            ctx->Gather(reply_handler, nullptr, token);
+        // A Talent must specify at least one trigger rule or callee. This test
+        // is not testing whether a proper rule section is generated, this is
+        // just to pass an assert.
+        schema::rule_ptr OnGetRules() const {
+            return IsSet("feature");
         }
     };
 
-    // Create and set up the talent
-    std::string talent_id{"test_Talent"};
-    auto talent = TestTalent{talent_id};
-    auto reply_handler = std::make_shared<ReplyHandler>();
+    struct {
+        std::vector<std::string> features;
+        schema::Metadata metadata;
+        uuid_generator_func_ptr uuid_gen;
+        json want;
+    } tests[] {
+        {
+            { "test_feature1" },
+            schema::Metadata{"metadata1"},
+            []{ return "00000000-0000-0000-0000-000000000000"; },
+            json::parse(R"({"config":{"outputs":{"Talent_AddOutput.test_feature1":{"description":"metadata1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"feature","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"},"scc":[]},"id":"Talent_AddOutput"})")
 
-    std::string fake_uuid{"00000000-0000-0000-0000-000000000000"};
-    auto uuid_gen = [fake_uuid]{ return fake_uuid; };
-    talent.Initialize(reply_handler, nullptr, uuid_gen);
+        },
+        {
+            { "test_feature1", "test_feature2" },
+            schema::Metadata{"metadata1"},
+            []{ return "00000000-0000-0000-0000-000000000000"; },
+            json::parse(R"({"config":{"outputs":{"Talent_AddOutput.test_feature1":{"description":"metadata1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"Talent_AddOutput.test_feature2":{"description":"metadata1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"feature","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"},"scc":[]},"id":"Talent_AddOutput"})")
 
-    // Create what's needed to send an event to the Talent
-    auto publisher = std::make_shared<testing::NiceMock<iotea::mock::core::Publisher>>();
-    auto ctx = std::make_shared<EventContext>("talent_id", "channel_id", "subject",
-        "ingestion/events", reply_handler, publisher, uuid_gen);
+        }
+    };
 
-    auto value = json{"hello", "world"};
-    auto event = Event{"subject", "feature", value};
+    for (const auto& t : tests) {
+        auto talent = TestTalent();
 
-    // The following sequence of events follow
-    // 1. Post the event to the talent
-    // 2. Talent calls function and gathers (waits for) the reply
-    // 3. Generate a reply send it to the ReplyHandler
-    // 4. The ReplyHandler gathers the reply and sends it to the talent which
-    //    assigns the reply the member "reply_"
-    // 5. The talent's reply_ member is compared to the sent reply
+        for (const auto& f : t.features) {
+            talent.AddOutput(f, t.metadata);
+        }
 
-    // 1 & 2
-    talent.OnEvent(event, ctx);
+        auto schema = talent.GetSchema();
 
-    // 3 & 4
-    auto gatherer = reply_handler->ExtractGatherer(fake_uuid);
-    ASSERT_TRUE(gatherer);
+        ASSERT_EQ(schema.Json(), t.want);
+    }
+}
 
-    ASSERT_TRUE(gatherer->Gather(fake_uuid, value));
-    auto replies = gatherer->GetReplies();
-    gatherer->ForwardReplies(replies);
+/**
+ * @brief Verify that Talent::GetSchema produces a proper schema for
+ * each permutation of; Talent
+ *
+ * - has or doesn't have a ruleset
+ * - has or doesn' have callee(s)
+ *
+ * A valid permutation includes at least one ruleset or callee
+ */
+TEST(iotea, Talent_GetSchema) {
+    class TestTalent : public Talent {
+       public:
+        explicit TestTalent(schema::rule_ptr rules)
+            : Talent{"Talent_GetSchema"}
+            , test_rules_{rules} {}
+
+        schema::rule_ptr OnGetRules() const override {
+            return test_rules_;
+        }
+
+        using Talent::GetSchema;
+        schema::rule_ptr test_rules_;
+    };
+    struct {
+        std::vector<Callee> callees;
+        schema::rule_ptr rules;
+        json want;
+    } tests[] {
+        {
+            { Callee{"talent1", "func1", "type1"} },
+            nullptr,
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/Talent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0}],"type":"or"},"scc":["default.Talent_GetSchema.func1-out"]},"id":"Talent_GetSchema"})")
+        },
+        {
+            { Callee{"talent1", "func1", "type1"}, Callee{"talent2", "func2", "type2"} },
+            nullptr,
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/Talent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"feature":"talent2.func2-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/Talent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0}],"type":"or"},"scc":["default.Talent_GetSchema.func1-out","default.Talent_GetSchema.func2-out"]},"id":"Talent_GetSchema"})")
+        },
+        {
+            {},
+            IsSet("alpha"),
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"feature":"alpha","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"},"scc":[]},"id":"Talent_GetSchema"})")
+        },
+        {
+            {},
+            OrRules(IsSet("alpha"), IsSet("beta")),
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"feature":"alpha","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0},{"feature":"beta","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"},"scc":[]},"id":"Talent_GetSchema"})")
+        },
+        {
+            { Callee{"talent1", "func1", "type1"}, Callee{"talent2", "func2", "type2"} },
+            OrRules(IsSet("alpha"), IsSet("beta")),
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/Talent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"feature":"talent2.func2-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/Talent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.talent1.func1-out","default.talent2.func2-out"],"rules":[{"excludeOn":null,"rules":[{"feature":"alpha","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0},{"feature":"beta","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"}],"type":"or"},"scc":["default.Talent_GetSchema.func1-out","default.Talent_GetSchema.func2-out"]},"id":"Talent_GetSchema"})")
+        }
+    };
+
+    for (const auto& t : tests) {
+        auto talent = TestTalent{t.rules};
+
+        for (const auto& c : t.callees) {
+            talent.RegisterCallee(c.GetTalentId(), c.GetFunc(), c.GetType());
+        }
+
+        auto schema = talent.GetSchema();
+        ASSERT_EQ(schema.Json(), t.want);
+    }
+}
+
+/**
+ * @brief Test that the Talent::GetInputName() functions produce correct input
+ * feature names.
+ */
+TEST(iotea, Talent_GetInputName) {
+    auto t = Talent("Talent_GetInputName");
+
+    ASSERT_EQ(t.GetInputName("feature"), std::string{"feature-in"});
+    ASSERT_EQ(t.GetInputName("talent_id", "feature"), std::string{"talent_id.feature-in"});
+    ASSERT_EQ(t.GetInputName("type", "talent_id", "feature"), std::string{"type.talent_id.feature-in"});
+}
+
+/**
+ * @brief Test that the Talent::GetOutputName() functions produce correct
+ * output feature names.
+ */
+TEST(iotea, Talent_GetOutputName) {
+    auto t = Talent("Talent_GetOutputName");
+
+    ASSERT_EQ(t.GetOutputName("feature"), std::string{"feature-out"});
+    ASSERT_EQ(t.GetOutputName("talent_id", "feature"), std::string{"talent_id.feature-out"});
+    ASSERT_EQ(t.GetOutputName("type", "talent_id", "feature"), std::string{"type.talent_id.feature-out"});
+}
+
+/**
+ * @brief Test that a FunctionTalent retains its assigned name.
+ */
+TEST(iotea, FunctionTalent_GetId) {
+  auto talent = FunctionTalent("test_talent");
+  ASSERT_STREQ(talent.GetId().c_str(), "test_talent");
+}
+
+/**
+ * @brief Verify that FunctionTalent::RegisterFunction adds the function and
+ * all it's particularities to the FunctionTalent's rules.
+ */
+TEST(iotea, FunctionTalent_RegisterFunction) {
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        TestFunctionTalent() : FunctionTalent{"FunctionTalent_RegisterFunction"} {}
+
+        using FunctionTalent::GetRules;
+    };
+
+    struct {
+        std::vector<std::string> functions;
+        json want;
+    } tests[] {
+        {
+            { "alpha" },
+            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"})")
+        },
+        {
+            { "alpha", "beta" },
+            json::parse(R"({"excludeOn":null,"rules":[{"feature":"FunctionTalent_RegisterFunction.beta-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"beta","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_RegisterFunction.alpha-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"alpha","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"})")
+        }
+    };
+
+    auto test_func = [](const json&, call_ctx_ptr) {};
+    for (const auto& t : tests) {
+        auto talent = TestFunctionTalent{};
+
+        for (const auto& f : t.functions) {
+            talent.RegisterFunction(f, test_func);
+        }
+
+        auto rules = talent.GetRules();
+        EXPECT_EQ(rules->Json(), t.want);
+    }
+}
+
+/**
+ * @brief Verify that FunctionTalent::GetSchema produces a proper schema for
+ * each permutation of; FunctionTalent
+ *
+ * - has or doesn't have a ruleset
+ * - has or doesn' have callee(s)
+ * - does or doesn't provides function(s)
+ *
+ * A valid permutation includes at least one of ruleset, callee or function.
+ */
+TEST(iotea, FunctionTalent_GetSchema) {
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(schema::rule_ptr rules)
+            : FunctionTalent("FunctionTalent_GetSchema")
+            , test_rules_{rules} {}
+
+        schema::rule_ptr OnGetRules() const { return test_rules_; }
+        using FunctionTalent::GetSchema;
+        schema::rule_ptr test_rules_;
+    };
+
+    struct {
+        schema::rule_ptr rules;
+        std::vector<std::string> functions;
+        std::vector<Callee> callees;
+        json want;
+    } tests[] {
+        {
+            IsSet("feature1"),
+            {},
+            {},
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"excludeOn":null,"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"},"scc":[]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            nullptr,
+            { "function1" },
+            {},
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            nullptr,
+            {},
+            { Callee{"talent1", "func1", "type1" } },
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[],"type":"or"},"scc":["default.FunctionTalent_GetSchema.func1-out"]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            IsSet("feature1"),
+            { "function1" },
+            {},
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in"]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            IsSet("feature1"),
+            {},
+            { Callee{"talent1", "func1", "type1" } },
+            json::parse(R"({"config":{"outputs":{},"rules":{"excludeOn":null,"rules":[{"excludeOn":["default.talent1.func1-out"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.func1-out"]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            nullptr,
+            { "function1" },
+            { Callee{"talent1", "func1", "type1" } },
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.func1-out"]},"id":"FunctionTalent_GetSchema"})")
+        },
+        {
+            OrRules(IsSet("feature1"), IsSet("feature2")),
+            { "function1", "function2" },
+            { Callee{"talent1", "func1", "type1" }, Callee{"talent2", "func2", "type2" } },
+            json::parse(R"({"config":{"outputs":{"FunctionTalent_GetSchema.function1-in":{"description":"Argument(s) for function function1","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function1-out":{"description":"Result of function function1","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-in":{"description":"Argument(s) for function function2","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"FunctionTalent_GetSchema.function2-out":{"description":"Result of function function2","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"talent1.func1-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"feature":"talent2.func2-out","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"/$tsuffix","typeSelector":"default","value":{"pattern":"^\\/FunctionTalent_GetSchema\\.[^\\/]+\\/.*","type":"string"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-out","default.FunctionTalent_GetSchema.function1-out"],"rules":[{"feature":"FunctionTalent_GetSchema.function2-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function2","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"FunctionTalent_GetSchema.function1-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"function1","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"excludeOn":["default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.function1-in"],"rules":[{"feature":"feature1","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0},{"feature":"feature2","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"not":{"type":"null"}},"valueType":0}],"type":"or"}],"type":"or"}],"type":"or"},"scc":["default.FunctionTalent_GetSchema.function1-in","default.FunctionTalent_GetSchema.function2-in","default.FunctionTalent_GetSchema.func1-out","default.FunctionTalent_GetSchema.func2-out"]},"id":"FunctionTalent_GetSchema"})")
+        },
+    };
+
+    auto test_func = [](const json&, call_ctx_ptr) {};
+    for (const auto& t : tests) {
+        auto talent = TestFunctionTalent{t.rules};
+
+        for (const auto& f : t.functions) {
+            talent.RegisterFunction(f, test_func);
+        }
+
+        for (const auto& c : t.callees) {
+            talent.RegisterCallee(c.GetTalentId(), c.GetFunc(), c.GetType());
+        }
 
 
-    // The replies passed to the talent's handler function are packed into a
-    // JSON array in the order of the corresponding call tokens.
-    auto expect = json::array({value}); // Expect one reply, array with one element
-    ASSERT_EQ(talent.reply_, expect);
+        auto schema = talent.GetSchema();
+        EXPECT_EQ(schema.Json(), t.want);
+    }
+
 }
 
 /**
@@ -700,6 +914,9 @@ TEST(iotea, Event) {
     ASSERT_EQ(beta.GetWhen(), when);
 }
 
+/**
+ * @brief Verify that Event::FromJson can build an Event object from JSON.
+ */
 TEST(iotea, Event_FromJson) {
     auto payload = json::parse(R"({
             "cid": "2294a18a-4179-491f-828c-7b615602f86f",
@@ -735,8 +952,6 @@ TEST(iotea, CallContext_Reply) {
        public:
         explicit TestCallContext(const Event& event, publisher_ptr publisher)
             : CallContext{"talent_id", "channel_id", "feature", event, std::make_shared<ReplyHandler>(), publisher, []{return "";}} {}
-
-        int64_t GetNowMs() const override { return 0; }
     };
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
@@ -770,6 +985,10 @@ TEST(iotea, CallContext_Reply) {
     ASSERT_EQ(published_reply, expect_published_reply);
 }
 
+/**
+ * @brief Verify that ReplyHandler::ExtractGatherer finds, removes and returns
+ * the Gatherer associated with a particular call_token_t
+ */
 TEST(iotea, ReplyHandler_ExtractGatherer) {
     class GathererMock : public Gatherer {
        public:
@@ -798,7 +1017,11 @@ TEST(iotea, ReplyHandler_ExtractGatherer) {
     ASSERT_EQ(h.ExtractGatherer("g1"), nullptr);
 }
 
-TEST(iotea, ReplyHandler_UpdateTime) {
+/**
+ * @brief Verify that ReplyHandler::ExtractTimedOut correcly extracts gatherers
+ * whose CallTokens have timed out.
+ */
+TEST(iotea, ReplyHandler_ExtractTimedOut) {
     class GathererMock : public Gatherer {
        public:
         GathererMock() : Gatherer(nullptr, {}) {}
@@ -858,6 +1081,10 @@ TEST(iotea, Tokenizer_Next) {
     ASSERT_FALSE(t.HasNext());
 }
 
+/**
+ * @brief Verify that Tokenizer::PushBack permitts the caller to push the last
+ * token back into the stream.
+ */
 TEST(iotea, Tokenizer_PushBack) {
     const auto query = "alpha.*.beta[1:2]:label";
     auto t = Tokenizer{query, ".*[]:'"};
@@ -875,6 +1102,10 @@ TEST(iotea, Tokenizer_PushBack) {
     ASSERT_FALSE(t.HasNext());
 }
 
+/**
+ * @brief Verify that JsonQuery can parse the entire range of query
+ * permutations.
+ */
 TEST(iotea, JsonQuery) {
     struct {
         std::string query;
@@ -1120,6 +1351,9 @@ TEST(iotea, JsonQuery) {
     }
 }
 
+/**
+ * @brief Verify that JsonQuery throws expections as expected.
+ */
 TEST(iotea, JsonQuery_Exceptions) {
     auto obj = json::parse(R"({"foo": {"bar": [1, 2, 3, 4], "baz": [1, 2, 3, 4]}})");
 
@@ -1145,3 +1379,538 @@ TEST(iotea, JsonQuery_Exceptions) {
     // Invalid query (missing label)
     ASSERT_THROW(JsonQuery("foo.bar[0]").Query(obj), JsonQueryException);
 }
+
+/**
+ * @brief Verify that OutgoingCall::Json produces a properly formatted JSON
+ * function call event.
+ */
+TEST(iotea, OutgoingCall) {
+    auto c = OutgoingCall{"my_talent_id", "my_channel_id", "my_call_id", "my_func", {{"key", "value"}}, "my_subject", "my_type", 1234, 1000};
+
+    auto want = json::parse(R"({
+        "feature": "my_talent_id.my_func-in",
+        "subject":"my_subject",
+        "type":"my_type",
+        "value": {
+            "args": {"key": "value"},
+            "call": "my_call_id",
+            "chnl": "my_channel_id",
+            "func": "my_func",
+            "timeoutAtMs": 2234},
+        "whenMs": 1000
+    })");
+
+    ASSERT_EQ(c.Json(), want);
+}
+
+/**
+ * @brief Verify that EventContext::Emit sends properly formatted event
+ * messages.
+ */
+TEST(iotea, EventContext_Emit) {
+    class TestPublisher : public Publisher {
+       public:
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+    };
+
+    auto publisher = std::make_shared<TestPublisher>();
+    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, publisher, []{ return ""; }};
+
+    // We can't expect anything for sure with respect to the published data
+    // since it's JSON and we can't know a priori which of the different but
+    // equivalent orders the object properties are going to be layed out in. So
+    // we have to store the output in a string, parse it as JSON and compare it
+    // "semantically" to what we expect.
+    std::string raw_published_event;
+    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
+
+    ctx.Emit<std::string>("my_feature", "hello world", "my_type", "my_instance");
+    auto published_event = json::parse(raw_published_event);
+
+    // The timestamp in the outgoing event is set to the current epoch time in
+    // ms, since we don't know what it will be we have to manually override it
+    // before the final comparison.
+    ASSERT_NO_THROW(published_event["whenMs"].get<int64_t>());
+    published_event["whenMs"] = int64_t{1234};
+
+    auto want = json::parse(R"({
+        "subject": "my_subject",
+        "feature": "my_feature",
+        "value": "hello world",
+        "type": "my_type",
+        "instance": "my_instance",
+        "whenMs": 1234
+    })");
+
+    ASSERT_EQ(published_event, want);
+}
+
+/**
+ * @brief Verify that EventContext::Call sends properly formatted function call
+ * messages.
+ */
+TEST(iotea, EventContext_Call) {
+    class TestPublisher : public Publisher {
+       public:
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+    };
+
+    auto publisher = std::make_shared<TestPublisher>();
+    auto uuid_gen = []{ return "00000000-0000-0000-0000-000000000000"; };
+    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, publisher, uuid_gen};
+    auto callee = Callee{"target_talent_id", "target_func", "target_type"};
+
+    // We can't expect anything for sure with respect to the published data
+    // since it's JSON and we can't know a priori which of the different but
+    // equivalent orders the object properties are going to be layed out in. So
+    // we have to store the output in a string, parse it as JSON and compare it
+    // "semantically" to what we expect.
+    std::string raw_published_event;
+    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
+
+    // If the argument isn't an array we expect the SDK to wrap the argument in an array
+    auto token = ctx.Call(callee, 42);
+    ASSERT_EQ(token.GetCallId(), "00000000-0000-0000-0000-000000000000");
+
+    auto published_event = json::parse(raw_published_event);
+
+    // The timestamp in the outgoing event is set to the current epoch time in
+    // ms, since we don't know what it will be we have to manually override it
+    // before the final comparison. The same is true for the "timeoutAtMs"
+    // property which is calculated based on the "whenMs" property.
+    ASSERT_NO_THROW(published_event["whenMs"].get<int64_t>());
+    published_event["whenMs"] = int64_t{1234};
+    published_event["value"]["timeoutAtMs"] = int64_t{1234};
+
+    auto want = json::parse(R"({
+        "subject": "my_subject",
+        "feature": "target_talent_id.target_func-in",
+        "type": "target_type",
+        "value": {
+            "func": "target_func",
+            "args": [42],
+            "call": "00000000-0000-0000-0000-000000000000",
+            "chnl": "my_channel_id",
+            "timeoutAtMs": 1234
+        },
+        "whenMs": 1234
+    })");
+
+    ASSERT_EQ(published_event, want);
+}
+
+class TestMqttClient : public MqttClient {
+   public:
+    TestMqttClient() : MqttClient() {};
+
+    MOCK_METHOD(void, Run, (), (override));
+    MOCK_METHOD(void, Stop, (), (override));
+
+    MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+    MOCK_METHOD(void, Subscribe, (const std::string&, int), (override));
+};
+
+TEST(iotea, Client_Receive) {
+    class TestClient : public Client {
+       public:
+        TestClient()
+            : Client(std::make_shared<TestMqttClient>(),
+                    std::make_shared<CalleeTalent>("00000000-0000-0000-0000-000000000000"),
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::Receive;
+        MOCK_METHOD(void, HandleEvent, (const std::string&, const std::string&), (override));
+        MOCK_METHOD(void, HandleCallReply, (const std::string&, const std::string&, const call_id_t&, const std::string&), (override));
+        MOCK_METHOD(void, HandleDiscover, (const std::string&), (override));
+        MOCK_METHOD(void, HandlePlatformEvent, (const std::string&), (override));
+    };
+
+    TestClient client;
+
+    // Verify that messages sent under the "event topic" get routed to HandleEvent
+    EXPECT_CALL(client, HandleEvent("talent-name", "some message"));
+    client.Receive("iotea/talent/talent-name/events", "some message");
+
+    // Verify that messages sent under the "call reply topic" get routed to HandleCallReply
+    EXPECT_CALL(client, HandleCallReply("talent-name", "channel_id", call_id_t{"call_id"}, "some message"));
+    client.Receive("iotea/talent/talent-name/events/talent-name.channel_id/call_id", "some message");
+
+    // Verify that messages sent under the "discover topic" get routed to HandleDiscover
+    EXPECT_CALL(client, HandleDiscover("some message"));
+    client.Receive("iotea/configManager/talents/discover", "some message");
+
+    // Verify that messages sent under the "platform event topic" get routed to HandlePlatformEvent
+    EXPECT_CALL(client, HandlePlatformEvent("some message"));
+    client.Receive("iotea/platform/$events", "some message");
+}
+
+TEST(iotea, Client_HandleAsCall) {
+    class TestClient : public Client {
+       public:
+        TestClient()
+            : Client(std::make_shared<TestMqttClient>(),
+                    std::make_shared<CalleeTalent>("00000000-0000-0000-0000-000000000000"),
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::HandleAsCall;
+    };
+
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(const std::string& name)
+            : FunctionTalent{name} {}
+    };
+
+    TestClient client;
+
+    auto alpha = std::make_shared<TestFunctionTalent>("alpha");
+
+    auto beta = std::make_shared<TestFunctionTalent>("beta");
+    beta->RegisterFunction("function", [](const json&, call_ctx_ptr){});
+
+    client.RegisterFunctionTalent(alpha);
+
+    auto value = json::parse(R"({
+        "args": [1, 2, 3, 4],
+        "chnl": "00000000-0000-0000-0000-000000000000",
+        "call": "00000000-0000-0000-0000-000000000000",
+        "timeoutAtMs": 1234
+    })");
+    auto event = Event{"subject", "beta.function-in", value};
+
+    ASSERT_FALSE(client.HandleAsCall(alpha, event));
+
+    client.RegisterFunctionTalent(beta);
+    ASSERT_TRUE(client.HandleAsCall(beta, event));
+}
+
+TEST(iotea, Client_HandleEvent) {
+
+    class TestTalent : public Talent {
+       public:
+        explicit TestTalent(const std::string& name)
+            : Talent{name} {}
+
+        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+    };
+
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(const std::string& name)
+            : FunctionTalent{name} {}
+
+        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+    };
+
+    class TestCalleeTalent : public CalleeTalent {
+       public:
+        explicit TestCalleeTalent(const std::string& name)
+            : CalleeTalent{name} {}
+
+        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+    };
+
+    class TestClient : public Client {
+       public:
+        explicit TestClient(std::shared_ptr<CalleeTalent> callee_talent)
+            : Client(std::make_shared<TestMqttClient>(),
+                    callee_talent,
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        MOCK_METHOD(void, HandleError, (const ErrorMessage&), (override));
+        MOCK_METHOD(bool, HandleAsCall, (std::shared_ptr<FunctionTalent>, const Event&), (override));
+
+        using Client::HandleEvent;
+    };
+
+    auto callee_talent = std::make_shared<TestCalleeTalent>("00000000-0000-0000-0000-000000000000");
+    TestClient client{callee_talent};
+
+    // Errors should immediately be passed on to HandleError
+    //
+    EXPECT_CALL(client, HandleError(::testing::_));
+    client.HandleEvent("function_talent", R"({
+        "msgType": 4,
+        "code": 4000
+    })");
+
+
+    auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
+
+    // We need a function in order to trigger the first branch in HandleEvent
+    // where we check if the event is associated with a function talent
+    client.RegisterFunctionTalent(function_talent);
+
+
+    // Expect HandleAsCall to be called when a "function call event" is
+    // handled. Handle event should return immediately if the call was handled.
+    EXPECT_CALL(client, HandleAsCall(::testing::_, ::testing::_)).WillOnce(::testing::Return(true));
+    client.HandleEvent("function_talent", R"({
+        "msgType": 1,
+        "subject": "subject",
+        "feature": "function_talent.function-in",
+        "value": {
+                "args": [1, 2, 3, 4],
+                "chnl": "00000000-0000-0000-0000-000000000000",
+                "call": "00000000-0000-0000-0000-000000000000"
+            },
+        "type": "type",
+        "instance": "instance",
+        "returnTopic": "return_topic",
+        "whenMs": 1234
+    })");
+
+
+    // Expect HandleAsCall to be called when a "function call event" is
+    // handled.
+    EXPECT_CALL(client, HandleAsCall(::testing::_, ::testing::_)).WillOnce(::testing::Return(false));
+
+    // HandleEvent should forward the event to the FunctionTalent's
+    // OnEvent method if HandleAsCall returns false.
+    EXPECT_CALL(*function_talent, OnEvent(::testing::_, ::testing::_));
+
+    client.HandleEvent("function_talent", R"({
+        "msgType": 1,
+        "subject": "subject",
+        "feature": "feature",
+        "value": "value",
+        "type": "type",
+        "instance": "instance",
+        "whenMs": 1234
+    })");
+
+
+    // We need a plain talent to test that events are properly forwarded.
+    auto subscription_talent = std::make_shared<TestTalent>("subscription_talent");
+    client.RegisterTalent(subscription_talent);
+
+    // Verify that the subscription talent's OnEvent methods was called
+    EXPECT_CALL(*subscription_talent, OnEvent(::testing::_, ::testing::_));
+    client.HandleEvent("subscription_talent", R"({
+        "msgType": 1,
+        "subject": "subject",
+        "feature": "feature",
+        "value": "value",
+        "type": "type",
+        "instance": "instance",
+        "whenMs": 1234
+    })");
+
+
+    // If event was not aimed at any of the user supplied talents then at least
+    // it should be aimed at the interal CalleeTalent
+    EXPECT_CALL(*callee_talent, OnEvent(::testing::_, ::testing::_));
+    client.HandleEvent("00000000-0000-0000-0000-000000000000", R"({
+        "msgType": 1,
+        "subject": "subject",
+        "feature": "feature",
+        "value": "value",
+        "type": "type",
+        "instance": "instance",
+        "whenMs": 1234
+    })");
+}
+
+TEST(iotea, Client_HandleDiscover) {
+
+    class TestTalent : public Talent {
+       public:
+        explicit TestTalent(const std::string& name)
+            : Talent{name} {}
+
+        MOCK_METHOD(schema::Schema, GetSchema, (), (const override));
+    };
+
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(const std::string& name)
+            : FunctionTalent{name} {}
+
+        MOCK_METHOD(schema::Schema, GetSchema, (), (const override));
+    };
+
+    class TestCalleeTalent : public CalleeTalent {
+       public:
+        explicit TestCalleeTalent(const std::string& name)
+            : CalleeTalent{name} {}
+
+        MOCK_METHOD(schema::Schema, GetSchema, (), (const override));
+        MOCK_METHOD(bool, HasSchema, (), (const override));
+    };
+
+    class TestClient : public Client {
+       public:
+        TestClient(std::shared_ptr<MqttClient> mqtt_client, std::shared_ptr<CalleeTalent> callee_talent)
+            : Client(mqtt_client,
+                    callee_talent,
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::HandleDiscover;
+    };
+
+    auto mqtt_client = std::make_shared<TestMqttClient>();
+    auto callee_talent = std::make_shared<TestCalleeTalent>("00000000-0000-0000-0000-000000000000");
+    TestClient client{mqtt_client, callee_talent};
+
+    auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
+    client.RegisterFunctionTalent(function_talent);
+
+    auto subscription_talent = std::make_shared<TestTalent>("subscription_talent");
+    client.RegisterTalent(subscription_talent);
+
+    EXPECT_CALL(*function_talent, GetSchema())
+        .WillRepeatedly(::testing::Return(schema::Schema{"function_talent", {}, {}, std::make_shared<schema::Rule>(nullptr)}));
+    EXPECT_CALL(*subscription_talent, GetSchema())
+        .WillRepeatedly(::testing::Return(schema::Schema{"subscription_talent", {}, {}, std::make_shared<schema::Rule>(nullptr)}));
+
+    EXPECT_CALL(*callee_talent, GetSchema())
+        .WillRepeatedly(::testing::Return(schema::Schema{"00000000-0000-0000-0000-000000000000", {}, {}, std::make_shared<schema::Rule>(nullptr)}));
+    EXPECT_CALL(*mqtt_client, Publish(::testing::_, ::testing::_)).Times(2);
+
+
+    EXPECT_CALL(*callee_talent, HasSchema()).WillOnce(::testing::Return(false));
+
+    client.HandleDiscover(R"({"msgType":2,"version":"2.0.0","returnTopic":"123456/configManager/talent/discover"})");
+
+    EXPECT_CALL(*callee_talent, HasSchema()).WillOnce(::testing::Return(true));
+    EXPECT_CALL(*mqtt_client, Publish(::testing::_, ::testing::_)).Times(3);
+
+    client.HandleDiscover(R"({"msgType":2,"version":"2.0.0","returnTopic":"123456/configManager/talent/discover"})");
+}
+
+TEST(iotea, Client_HandlePlatformEvent) {
+
+    class TestTalent : public Talent {
+       public:
+        explicit TestTalent(const std::string& name)
+            : Talent{name} {}
+
+        MOCK_METHOD(void, OnPlatformEvent, (const PlatformEvent&), (override));
+    };
+
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(const std::string& name)
+            : FunctionTalent{name} {}
+
+        MOCK_METHOD(void, OnPlatformEvent, (const PlatformEvent&), (override));
+    };
+
+    class TestClient : public Client {
+       public:
+        explicit TestClient(std::shared_ptr<MqttClient> mqtt_client)
+            : Client(mqtt_client,
+                    std::make_shared<CalleeTalent>(""),
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::HandlePlatformEvent;
+    };
+
+    auto mqtt_client = std::make_shared<TestMqttClient>();
+    TestClient client{mqtt_client};
+
+    auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
+    client.RegisterFunctionTalent(function_talent);
+
+    auto subscription_talent = std::make_shared<TestTalent>("subscription_talent");
+    client.RegisterTalent(subscription_talent);
+
+    EXPECT_CALL(*function_talent, OnPlatformEvent(::testing::_));
+    EXPECT_CALL(*subscription_talent, OnPlatformEvent(::testing::_));
+
+    client.HandlePlatformEvent(R"({"type":"platform.talent.config.set","data":{},"timestamp":1234})");
+}
+
+TEST(iotea, Client_HandleError) {
+
+    class TestTalent : public Talent {
+       public:
+        explicit TestTalent(const std::string& name)
+            : Talent{name} {}
+
+        MOCK_METHOD(void, OnError, (const ErrorMessage&), (override));
+    };
+
+    class TestFunctionTalent : public FunctionTalent {
+       public:
+        explicit TestFunctionTalent(const std::string& name)
+            : FunctionTalent{name} {}
+
+        MOCK_METHOD(void, OnError, (const ErrorMessage&), (override));
+    };
+
+    class TestClient : public Client {
+       public:
+        explicit TestClient(std::shared_ptr<MqttClient> mqtt_client)
+            : Client(mqtt_client,
+                    std::make_shared<CalleeTalent>(""),
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::HandleError;
+    };
+
+    auto mqtt_client = std::make_shared<TestMqttClient>();
+    TestClient client{mqtt_client};
+
+    auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
+    client.RegisterFunctionTalent(function_talent);
+
+    auto subscription_talent = std::make_shared<TestTalent>("subscription_talent");
+    client.RegisterTalent(subscription_talent);
+
+    EXPECT_CALL(*function_talent, OnError(::testing::_));
+    EXPECT_CALL(*subscription_talent, OnError(::testing::_));
+
+    auto msg = ErrorMessage::FromJson(json::parse(R"({"code": 4000})"));
+    client.HandleError(msg);
+}
+
+/*
+ * TODO figure out how to test that a mocked function is called multiple times
+ * with different arguments. Using a series of EXPECT_CALLs with different
+ * arguments causes the test framework to only compare input to the mocked
+ * function to the last argument passed to EXPECT_CALL.
+TEST(iotea, Client_SubscribeInternal) {
+    class TestTalent : public Talent {
+       public:
+        TestTalent()
+            : Talent{""} {}
+
+        MOCK_METHOD(std::string, GetId, (), (const override));
+        MOCK_METHOD(std::string, GetChannelId, (), (const override));
+    };
+
+    class TestClient : public Client {
+       public:
+        explicit TestClient(std::shared_ptr<MqttClient> mqtt_client)
+            : Client(mqtt_client,
+                    std::make_shared<CalleeTalent>(""),
+                    std::make_shared<ReplyHandler>(),
+                    "iotea") {}
+
+        using Client::SubscribeInternal;
+    };
+
+    auto mqtt_client = std::make_shared<TestMqttClient>();
+    TestClient client{mqtt_client};
+
+    auto talent = std::make_shared<TestTalent>();
+    client.RegisterTalent(talent);
+
+    EXPECT_CALL(*talent, GetId()).WillOnce(::testing::Return("talent-id"));
+    EXPECT_CALL(*talent, GetChannelId()).WillOnce(::testing::Return("00000000-0000-0000-0000-000000000000"));
+
+    EXPECT_CALL(*mqtt_client, Subscribe("$share/talent-id/iotea/configManager/talents/discover", 1)).Times(1);
+    EXPECT_CALL(*mqtt_client, Subscribe("$share/talent-id/iotea/platform/$events", 1)).Times(1);
+    EXPECT_CALL(*mqtt_client, Subscribe("$share/talent-id/iotea/talent/talent-id/events", 1)).Times(1);
+    EXPECT_CALL(*mqtt_client, Subscribe("iotea/talent/talent-id/events/000000000-0000-0000-0000-000000000000/+", 1)).Times(1);
+
+    client.SubscribeInternal(talent);
+}
+*/
