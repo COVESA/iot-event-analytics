@@ -7,11 +7,11 @@
   "license": "MPL-2.0",
   "scripts": {
     "yarn": "yarn",
-    "build.sdk": "node src/sdk/javascript/pack.js",
-    "postinstall": "yarn generate-docs && node ./postinstall.js || exit 0",
+    "sdk.build": "node src/sdk/javascript/pack.js",
+    "sdk.get": "node get-sdks.js",
     "test": "nyc --report-dir=reports/coverage --reporter=cobertura --reporter=html --reporter=text-summary jasmine --config=test/jasmine.json",
     "test.no-coverage": "jasmine --config=test/jasmine.json",
-    "generate-docs": "jsdoc -c jsdoc.json"
+    "docs.generate": "jsdoc -c jsdoc.json"
   },
   "private": true,
   "dependencies": {
