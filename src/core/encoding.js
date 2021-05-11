@@ -128,13 +128,7 @@ module.exports = class Encoding {
 
         if (metaFeature.encoding.reduce) {
             // This property is metadata-bound and reduces an object into a single value that can be encoded
-            const reducedValue = jsonata(metaFeature.encoding.reduce).evaluate(rawValue);
-
-            if (reducedValue === undefined) {
-                throw new Error(`Invalid reducer ${metaFeature.encoding.reduce} given for value ${rawValue}`);
-            }
-
-            rawValue = reducedValue;
+            rawValue = jsonata(metaFeature.encoding.reduce).evaluate(rawValue);
         }
 
         switch(metaFeature.encoding.encoder) {
