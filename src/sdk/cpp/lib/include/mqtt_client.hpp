@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_MQTT_CLIENT_HPP
-#define IOTEA_MQTT_CLIENT_HPP
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_MQTT_CLIENT_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_MQTT_CLIENT_HPP_
 
 #include <chrono>
 #include <functional>
@@ -80,4 +80,4 @@ class MqttClient : public Publisher {
 }  // namespace core
 }  // namespace iotea
 
-#endif // IOTEA_MQTT_CLIENT_HPP
+#endif // SRC_SDK_CPP_LIB_INCLUDE_MQTT_CLIENT_HPP_

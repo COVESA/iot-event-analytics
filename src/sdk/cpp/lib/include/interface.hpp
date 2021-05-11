@@ -8,10 +8,11 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_INTERFACE_HPP_
-#define IOTEA_INTERFACE_HPP_
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_INTERFACE_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_INTERFACE_HPP_
 
 #include <string>
+#include <memory>
 
 namespace iotea {
 namespace core {
@@ -44,8 +45,10 @@ class Receiver {
     virtual void Receive(const std::string& topic, const std::string& msg) = 0;
 };
 
+using publisher_ptr = std::shared_ptr<Publisher>;
+
 }  // namespace core
 }  // namespace iotea
 
-#endif // IOTEA_INTERFACE_HPP_
+#endif // SRC_SDK_CPP_LIB_INCLUDE_INTERFACE_HPP_
 

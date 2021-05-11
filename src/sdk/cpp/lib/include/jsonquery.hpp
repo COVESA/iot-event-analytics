@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_JSONQUERY_HPP
-#define IOTEA_JSONQUERY_HPP
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_JSONQUERY_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_JSONQUERY_HPP_
 
 #include <ostream>
 #include <regex>
@@ -257,4 +257,4 @@ class JsonQuery {
 }  // namespace core
 }  // namespace iotea
 
-#endif // IOTEA_JSONQUERY_HPP
+#endif // SRC_SDK_CPP_LIB_INCLUDE_JSONQUERY_HPP_

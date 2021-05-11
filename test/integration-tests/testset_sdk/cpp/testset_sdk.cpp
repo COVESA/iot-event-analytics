@@ -12,8 +12,8 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
-#include "iotea.hpp"
 #include "talent_test.hpp"
+#include "client.hpp"
 
 using json = nlohmann::json;
 using namespace iotea::core;
