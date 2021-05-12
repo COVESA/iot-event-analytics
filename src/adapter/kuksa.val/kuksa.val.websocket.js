@@ -97,9 +97,9 @@ class WebsocketStream extends Duplex {
 
 WebsocketStream.REOPEN = 'reopen';
 
-class VssWebsocket {
+class KuksaValWebsocket {
     constructor(address, token, rwsOptions = {}) {
-        this.logger = new Logger('VssWebsocket');
+        this.logger = new Logger('Kuksa.valWebsocket');
 
         this.subscriptions = [];
         this.isAuthorized = false;
@@ -437,4 +437,4 @@ class CallbackStream extends Writable {
     }
 }
 
-module.exports = VssWebsocket;
+module.exports = KuksaValWebsocket;

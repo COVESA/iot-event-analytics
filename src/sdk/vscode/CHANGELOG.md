@@ -46,7 +46,7 @@
 
 - 0.7.0 [2021-02-12]
   - Add commands to facilitate the integration of Vehicle Signal Specification (VSS) into IoT Event Analytics
-    - Create complete Kuksa.VAL configuration
+    - Create complete Kuksa.val configuration
     - Convert VSS configuration to IoT Event Analytics types configuration
 
 - 0.6.1 [2021-02-10]

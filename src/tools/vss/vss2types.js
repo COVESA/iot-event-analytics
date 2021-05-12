@@ -14,7 +14,7 @@ const yargs = require('yargs');
 
 const {
     VssPathTranslator
-} = require('../../adapter/vss/vss.adapter');
+} = require('../../adapter/kuksa.val/kuksa.val.adapter');
 
 const JsonModel = require('../../core/util/jsonModel');
 

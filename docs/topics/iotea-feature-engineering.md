@@ -14,7 +14,7 @@
 
 ## The ingestion
 
-Due to the fact that IoT Event Analytics internally has a harmonized event representation an __E__ xtract-__T__ ransform-__L__ oad (ETL) flow is prerequisite, for transforming and validating the given data. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the VSS adapter](..\..\src\tools\vss).
+Due to the fact that IoT Event Analytics internally has a harmonized event representation an __E__ xtract-__T__ ransform-__L__ oad (ETL) flow is prerequisite, for transforming and validating the given data. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the Kuksa.val adapter](..\..\src\adapter\kuksa.val).
 
 ## The encoding
 

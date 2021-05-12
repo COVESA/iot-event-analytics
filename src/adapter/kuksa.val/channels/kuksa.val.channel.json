@@ -1,11 +1,11 @@
 [
     {
         "type": "validate",
-        "path": "./vss.schema.json"
+        "path": "./kuksa.schema.json"
     },
     {
         "type": "transform",
-        "path": "./vss.transform.jna"
+        "path": "./kuksa.transform.jna"
     },
     {
         "type": "validate",
