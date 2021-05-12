@@ -10,18 +10,18 @@
 
 import asyncio
 import logging
-import os
+from iotea.core.protocol_gateway import ProtocolGateway
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
 
 from iotea.core.talent_test import TestSetTalent
 from iotea.core.util.logger import Logger
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 class TestSetSDK(TestSetTalent):
-    def __init__(self, connection_string):
-        super(TestSetSDK, self).__init__('testSet-sdk-py', connection_string)
+    def __init__(self, pg_config):
+        super(TestSetSDK, self).__init__('testSet-sdk-py', pg_config)
 
         # Register Tests
 
@@ -116,7 +116,10 @@ class TestSetSDK(TestSetTalent):
 
 
 async def main():
-    talent = TestSetSDK('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    talent = TestSetSDK(pg_config)
     await talent.start()
 
 
