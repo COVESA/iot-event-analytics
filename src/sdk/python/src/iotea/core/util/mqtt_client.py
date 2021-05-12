@@ -42,7 +42,36 @@ class MqttProtocolAdapter:
         mqtt_options = {'retain': publish_options.retain }
         return self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options)
 
-    def strip_namespace_wrapper(self, callback):
+    #subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
+    #pylint: disable=unused-argument
+    def subscribe(self, topic, callback, subscribe_options=None):
+        return self.client.subscribe(self.__prefix_topic_ns(topic), self.__strip_namespace_wrapper(callback))
+
+    # subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
+    # pylint: disable=unused-argument
+    def subscribe_shared(self, group, topic, callback, subscribe_options=None):
+        return self.client.subscribe(f'$share/{group}/{self.__prefix_topic_ns(topic)}', self.__strip_namespace_wrapper(callback))
+
+    def getId(self):
+        return self.broker_url
+
+    @staticmethod
+    def create_default_configuration(is_platform_protocol=False, broker_url='mqtt://localhost:1883'):
+        config = {"platform": is_platform_protocol,
+                  "module": {"name": ".util.mqtt_client", "class": "MqttProtocolAdapter"},
+                  "config": {"brokerUrl": broker_url, "topicNamespace": "iotea/"}}
+        return config
+
+    def __prefix_topic_ns(self, topic):
+        return MqttClient.prefix_topic_ns(topic, self.topic_ns)
+
+    def __stripTopicNamespace(self, topic):
+        topic_ns_index = topic.find(self.topic_ns)
+        if topic_ns_index == -1 or topic_ns_index > 0:
+            return topic
+        return topic[len(self.topic_ns):]
+
+    def __strip_namespace_wrapper(self, callback):
         if asyncio.iscoroutinefunction(callback):
             async def callback_wrapper(msg, _topic):
                 await callback(msg, self.__stripTopicNamespace(_topic))
@@ -53,27 +82,8 @@ class MqttProtocolAdapter:
             cb = callback_wrapper
         return cb
 
-    #subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
-    #pylint: disable=unused-argument
-    def subscribe(self, topic, callback, subscribe_options=None):
-        return self.client.subscribe(self.__prefix_topic_ns(topic), self.strip_namespace_wrapper(callback))
 
-    # subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
-    # pylint: disable=unused-argument
-    def subscribe_shared(self, group, topic, callback, subscribe_options=None):
-        return self.client.subscribe(f'$share/{group}/{self.__prefix_topic_ns(topic)}', self.strip_namespace_wrapper(callback))
 
-    def getId(self):
-        return self.broker_url
-
-    def __prefix_topic_ns(self, topic):
-        return MqttClient.prefix_topic_ns(topic, self.topic_ns)
-
-    def __stripTopicNamespace(self, topic):
-        topic_ns_index = topic.find(self.topic_ns)
-        if topic_ns_index == -1 or topic_ns_index > 0:
-            return topic
-        return topic[len(self.topic_ns):]
 
 from ..constants import ONE_SECOND_MS
 
@@ -99,9 +109,8 @@ class CustomMqttClient(MQTTClient):
 
         return code
 
-
 class MqttClient:
-    def __init__(self, broker_url, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True, logger=None, client_id=None):
+    def __init__(self, broker_url, topic_ns=None, check_mqtt5_compatibility=True, logger=None, client_id=None):
         if client_id is None:
             client_id = MqttClient.create_client_id('MqttClient')
 
@@ -133,7 +142,7 @@ class MqttClient:
         if self.client_initialized:
             return self.client
 
-        await self.__init(self.connection_string)
+        await self.__init(self.broker_url)
         self.client_initialized = True
         return self.client
 
@@ -162,9 +171,11 @@ class MqttClient:
             await client.publish(prefixed_topic, message.encode(MQTT_MESSAGE_ENCODING), qos=options['qos'], retain=options['retain'])
 
     async def subscribe_json(self, topic, callback):
-        await self.subscribe(topic, callback, qos, to_json=True)
+        await self.subscribe(topic, callback, True)
 
-    async def subscribe_json(self, topic, callback):
+    async def subscribe(self, topic, callback, to_json=False):
+        qos = QOS_0
+
         client = await self.get_client_async()
 
         topic = self.__prefix_topic_ns(topic)
@@ -222,8 +233,6 @@ class MqttClient:
             return topic
 
         return re.sub(r'^(\$share\/[^\/]+\/)?(?:{})?(.+)'.format(topic_ns), r'\1' + topic_ns + r'\2', topic)
-
-
 
     async def __on_reconnect(self):
         for subscription in self.subscriptions:

@@ -28,7 +28,6 @@ class ProtocolGateway:
             if self.use_platform_protocol_only and not is_platform_protocol:
                 # Skip all non-platform protocols
                 continue
-
             module = importlib.import_module(adapter_config_model.get('module.name'), package=__package__)
             a_class = getattr(module, adapter_config_model.get('module.class'))
             instance = a_class(adapter_config_model.get('config'), display_name)
@@ -113,7 +112,6 @@ class ProtocolGateway:
                             callback(ev, _topic, adapter_id)
 
                         cb = callback_wrapper
-
                     await adapter.instance.subscribe_shared(group, topic, cb, subscribe_options)
 
     @staticmethod
@@ -140,7 +138,7 @@ class ProtocolGateway:
 
     # Callback needs to be (ev, topic, adapter.id) => {}
     async def subscribe_json_shared(self, group, topic, callback, subscribe_options=None):
-        return await self.subscribe_shared(group, topic, ProtocolGateway.__json_parse_wrapper(callback),
+        await self.subscribe_shared(group, topic, ProtocolGateway.__json_parse_wrapper(callback),
                                            subscribe_options)
 
     @staticmethod
