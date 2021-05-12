@@ -41,11 +41,11 @@ The sequence is:
 
 ## Prerequisites
 
-Install required libraries for the VerifyTalent: _pip install -r src/sdk/python/examples/integrations/agent-network/verify/requirements.txt_
+Install required libraries for the VerifyTalent: _pip install -r src/sdk/python/examples/integrations/agent-network/requirements.txt_
 
 ### Issue with cffi_backend
 
-If you have face this issue:
+If you have faced this issue:
 
 > from cryptography.hazmat.bindings._padding import lib
 > ModuleNotFoundError: No module named '_cffi_backend'"
