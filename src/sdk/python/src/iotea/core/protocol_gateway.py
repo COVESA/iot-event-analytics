@@ -13,7 +13,6 @@ import json
 
 from .util.json_model import JsonModel
 
-
 class ProtocolGateway:
     def __init__(self, protocol_gateway_config, display_name, use_platform_protocol_only=False):
         ProtocolGateway.validate_configuration(protocol_gateway_config, use_platform_protocol_only)
@@ -34,7 +33,8 @@ class ProtocolGateway:
 
             self.adapters.append(Adapter(instance, is_platform_protocol))
 
-    async def publish(self, topic, message, publish_options=None):
+
+    async def publish(self, topic, message, publish_options=None, force_wait=False):
         if publish_options is None:
             publish_options = ProtocolGateway.create_publish_options()
 
@@ -49,13 +49,18 @@ class ProtocolGateway:
         for adapter in self.adapters:
             if publish_to_platform_protocol_only is False or adapter.is_platform_protocol:
                 if publish_options.adapter_id is None or publish_options.adapter_id is adapter.id:
-                    await adapter.instance.publish(topic, message, publish_options)
+                    coro = adapter.instance.publish(topic, message, publish_options)
+                    if force_wait:
+                       await coro
+                    else:
+                        asyncio.get_event_loop().create_task(coro)
 
-    def publish_json(self, topic, json_o, publish_options=None):
-        return self.publish(topic, json.dumps(json_o, separators=(',', ':')), publish_options)
+    def publish_json(self, topic, json_o, publish_options=None, force_wait=False):
+        return self.publish(topic, json.dumps(json_o, separators=(',', ':')), publish_options, force_wait)
+
 
     # Callback needs to accept (ev, topic, adapter_id)
-    async def subscribe(self, topic, callback, subscribe_options=None):
+    async def subscribe(self, topic, callback, subscribe_options=None, force_wait=False):
         if subscribe_options is None:
             subscribe_options = ProtocolGateway.create_subscribe_options()
         subscribe_to_platform_protocol_only = subscribe_options.platform_protocol_only
@@ -79,15 +84,19 @@ class ProtocolGateway:
                             callback(ev, _topic, adapter_id)
 
                         cb = callback_wrapper
+                    coro = adapter.instance.subscribe(topic, cb, subscribe_options)
+                    if force_wait:
+                        await coro
+                    else:
+                        asyncio.get_event_loop().create_task(coro)
 
-                    await adapter.instance.subscribe(topic, cb, subscribe_options)
 
     # Callback needs to accept (ev, topic, adapter_id)
-    async def subscribe_json(self, topic, callback, subscribe_options=None):
-        return await self.subscribe(topic, ProtocolGateway.__json_parse_wrapper(callback), subscribe_options)
+    async def subscribe_json(self, topic, callback, subscribe_options=None, force_wait=False):
+        return await self.subscribe(topic, ProtocolGateway.__json_parse_wrapper(callback), subscribe_options, force_wait)
 
     # Callback needs to accept (ev, topic, adapter_id)
-    async def subscribe_shared(self, group, topic, callback, subscribe_options=None):
+    async def subscribe_shared(self, group, topic, callback, subscribe_options=None, force_wait=False):
         if subscribe_options is None:
             subscribe_options = ProtocolGateway.create_subscribe_options()
 
@@ -112,7 +121,11 @@ class ProtocolGateway:
                             callback(ev, _topic, adapter_id)
 
                         cb = callback_wrapper
-                    await adapter.instance.subscribe_shared(group, topic, cb, subscribe_options)
+                    coro = adapter.instance.subscribe_shared(group, topic, cb, subscribe_options)
+                    if force_wait:
+                        await coro
+                    else:
+                        asyncio.get_event_loop().create_task(coro)
 
     @staticmethod
     def __json_parse_wrapper(callback):
@@ -137,9 +150,8 @@ class ProtocolGateway:
         return cb
 
     # Callback needs to be (ev, topic, adapter.id) => {}
-    async def subscribe_json_shared(self, group, topic, callback, subscribe_options=None):
-        await self.subscribe_shared(group, topic, ProtocolGateway.__json_parse_wrapper(callback),
-                                           subscribe_options)
+    async def subscribe_json_shared(self, group, topic, callback, subscribe_options=None, force_wait=False):
+        await self.subscribe_shared(group, topic, ProtocolGateway.__json_parse_wrapper(callback), subscribe_options, force_wait)
 
     @staticmethod
     def __try_parse_json(stringified_json):
@@ -158,7 +170,7 @@ class ProtocolGateway:
         adapters = protocol_gateway_config['adapters']
         if not isinstance(adapters, list):
             raise Exception(
-                'Invalid ProtocolGateway configuration. Field "adapters" needs to be an array. Found {type(adapters)}')
+                f'Invalid ProtocolGateway configuration. Field "adapters" needs to be an array. Found {type(adapters)}')
 
         # Check if platform adapter is just used once
         platform_adapter_count = len([adapter for adapter in adapters if JsonModel(adapter).get('platform', False)])

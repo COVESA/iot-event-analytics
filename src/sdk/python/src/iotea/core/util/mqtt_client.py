@@ -40,7 +40,7 @@ class MqttProtocolAdapter:
             publish_options = ProtocolGateway.create_publish_options()
 
         mqtt_options = {'retain': publish_options.retain }
-        return self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options)
+        return self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options, publish_options.stash)
 
     #subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
     #pylint: disable=unused-argument
@@ -97,8 +97,10 @@ class CustomMqttClient(MQTTClient):
     def __init__(self, client_id=None, config=None, loop=None, on_reconnect=None):
         super(CustomMqttClient, self).__init__(client_id, config, loop)
         self.on_reconnect = on_reconnect
+        self.disconnected = False
 
     async def reconnect(self, cleansession=True):
+        self.disconnected = True
         code = await super(CustomMqttClient, self).reconnect(cleansession)
 
         if self.on_reconnect is not None:
@@ -107,6 +109,7 @@ class CustomMqttClient(MQTTClient):
             else:
                 self.on_reconnect()
 
+        self.disconnected = False
         return code
 
 class MqttClient:
@@ -124,6 +127,7 @@ class MqttClient:
         self.client.config['reconnect_retries'] = MAX_RECONNECT_RETRIES
         self.client.config['reconnect_max_interval'] = MAX_RECONNECT_INTERVAL_S
         self.client_initialized = False
+        self.connecting = False
         self.subscriptions = []
         self.check_mqtt5_compatibility = check_mqtt5_compatibility
         self.is_mqtt5_compatible = False
@@ -146,15 +150,19 @@ class MqttClient:
         self.client_initialized = True
         return self.client
 
-    async def publish_json(self, topics, json_, options=None):
+    async def publish_json(self, topics, json_, options=None, stash=True):
         if options is None:
             options = {}
 
         self.__validate_json(json_)
 
-        await self.publish(topics, json.dumps(json_, separators=(',', ':')), options)
+        await self.publish(topics, json.dumps(json_, separators=(',', ':')), options, stash)
 
-    async def publish(self, topics, message, options=None):
+    async def publish(self, topics, message, options=None, stash=True):
+        # if not connected and stash is disabled - do not publish the message to avoid memory overloading
+        if not stash and (not self.client_initialized or self.client.disconnected):
+            return
+
         if options is None:
             options = {}
 
@@ -198,7 +206,7 @@ class MqttClient:
         client = await self.get_client_async()
         if not isinstance(topics, list):
             topics = [topics]
-        await self.client.unsubscribe(topics)
+        await client.unsubscribe(topics)
 
     @staticmethod
     def create_client_id(prefix):
@@ -206,11 +214,21 @@ class MqttClient:
 
     async def __init(self, broker_url):
         # Connecting
-        self.logger.info('Connecting...')
+        self.logger.info(f'Connecting to {broker_url} ...')
+        #handle parallel connecting tasks
+        waited_to_connect = False
+        while self.connecting:
+            waited_to_connect = True
+            await asyncio.sleep(0.001)
+        if waited_to_connect:
+            #must have been connected from another task
+            return
 
         while True:
             try:
+                self.connecting = True
                 await self.client.connect(broker_url, cleansession=True)
+                self.connecting = False
                 break
             except:
                 await asyncio.sleep(1)
