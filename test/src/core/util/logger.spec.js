@@ -69,15 +69,6 @@ describe('core.util.jsonModel', () => {
         }
     });
 
-    it('should have the correct date format', () => {
-        logger.reset();
-
-        const now = 1617712424808;
-        const date = logger.dateFormat.evaluate('', { now });
-
-        expect(date).toBe('2021-04-06T12:33:44.808Z');
-    });
-
     it('should have the correct message format', () => {
         const ctx = Logger.createContext('HELLO');
 

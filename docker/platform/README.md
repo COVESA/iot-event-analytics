@@ -67,6 +67,24 @@ The slim build image does not offer any API (Neither Metadata nor Instance API t
 
 - `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" -d=true --restart=unless-stopped --name=iotea-platform-<version> -v <some folder>:/app/docker/platform/config iotea-platform-amd64:<version>`
 
+## Performance
+
+### Node.js options
+
+Add the environment variable `NODE_OPTIONS` with all options, you would like to pass to the platform process. For optimize memory usage, set the parameter `--max-old-space-size` to 4/5 of the available memory for this process in MegaBytes.<br>
+Example: `--env NODE_OPTIONS='--max-old-space-size=256' ...`
+
+__Be aware, that starting Node.js with debugger impacts the performance of the platform.__
+
+### Docker options
+
+To reduce the amount of Memory and CPU used, use the flags `--memory=75MB` and `cpus="0.25"`. Be sure that the memory you specify here is calculated via<br>
+
+```javascript
+memory = (`max-old-space-size` * 5) / 4 + 10
+// https://nodejs.org/docs/latest-v12.x/api/cli.html#cli_useful_v8_options
+```
+
 ## Debug
 
 - Start your container, and open a shell `docker run -it <see above> /bin/ash` Use `--rm` option to remove the container after stopping it
