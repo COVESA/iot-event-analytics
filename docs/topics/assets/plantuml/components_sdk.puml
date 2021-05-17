@@ -1,0 +1,30 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.4"
+
+    node SDK #LightGreen {
+
+    component Talent
+    component FunctionTalent
+    component TestSetTalent
+    component TalentIO
+
+    package MapReduce {
+        component Mapper
+        component Worker
+        component Reducer
+    }
+
+@enduml
