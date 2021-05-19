@@ -35,22 +35,21 @@ class MqttProtocolAdapter:
             self.client = NamedMqttClient(display_name, self.broker_url, self.topic_ns)
 
 
-    def publish(self, topic, message, publish_options=None):
+    async def publish(self, topic, message, publish_options=None):
         if publish_options is None:
             publish_options = ProtocolGateway.create_publish_options()
-
         mqtt_options = {'retain': publish_options.retain }
-        return self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options, publish_options.stash)
+        await self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options, publish_options.stash)
 
     #subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
     #pylint: disable=unused-argument
-    def subscribe(self, topic, callback, subscribe_options=None):
-        return self.client.subscribe(self.__prefix_topic_ns(topic), self.__strip_namespace_wrapper(callback))
+    async def subscribe(self, topic, callback, subscribe_options=None):
+        await self.client.subscribe(self.__prefix_topic_ns(topic), self.__strip_namespace_wrapper(callback))
 
     # subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
     # pylint: disable=unused-argument
-    def subscribe_shared(self, group, topic, callback, subscribe_options=None):
-        return self.client.subscribe(f'$share/{group}/{self.__prefix_topic_ns(topic)}', self.__strip_namespace_wrapper(callback))
+    async def subscribe_shared(self, group, topic, callback, subscribe_options=None):
+        await self.client.subscribe(f'$share/{group}/{self.__prefix_topic_ns(topic)}', self.__strip_namespace_wrapper(callback))
 
     def getId(self):
         return self.broker_url
