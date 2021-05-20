@@ -8,23 +8,22 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#include <regex>
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_COMMON_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_COMMON_HPP_
+
 #include <string>
+#include <functional>
 
-#include "gtest/gtest.h"
+namespace iotea {
+namespace core {
 
-#include "util.hpp"
+static constexpr char MQTT_TOPIC_NS[] = "iotea";
+static constexpr char DEFAULT_INSTANCE[] = "default";
+static constexpr char DEFAULT_TYPE[] = "default";
 
-using iotea::core::Uuid4;
+using uuid_generator_func_ptr = std::function<std::string(void)>;
 
-/**
- * @brief Verify that Uuid4 generates properly formatted string representations
- * of UUID4s.
- */
-TEST(util, Test_Uuid4) {
-    Uuid4 id;
-    std::string sid = id;
-    std::string expr = R"([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})";
+}  // namespace core
+}  // namespace iotea
 
-    ASSERT_TRUE(std::regex_match(sid, std::regex(expr)));
-}
+#endif // SRC_SDK_CPP_LIB_INCLUDE_COMMON_HPP_

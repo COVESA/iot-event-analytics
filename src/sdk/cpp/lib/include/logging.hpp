@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_LOGGING_HPP
-#define IOTEA_LOGGING_HPP
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_LOGGING_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_LOGGING_HPP_
 
 #include <iostream>
 #include <mutex>
@@ -94,4 +94,4 @@ LoggerFriend Error();
 }  // namespace core
 }  // namespace iotea
 
-#endif  // IOTEA_LOGGING_HPP
+#endif  // SRC_SDK_CPP_LIB_INCLUDE_LOGGING_HPP_

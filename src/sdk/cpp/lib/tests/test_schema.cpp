@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "nlohmann/json.hpp"
-#include "iotea.hpp"
+#include "schema.hpp"
 
 using json = nlohmann::json;
 

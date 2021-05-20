@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_UTIL_HPP
-#define IOTEA_UTIL_HPP
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_UTIL_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_UTIL_HPP_
 
 #include <string>
 
@@ -44,4 +44,4 @@ std::string GenerateUUID();
 }  // namespace core
 }  // namespace iotea
 
-#endif  // IOTEA_UTIL_HPP
+#endif  // SRC_SDK_CPP_LIB_INCLUDE_UTIL_HPP_
