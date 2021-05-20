@@ -16,23 +16,23 @@
 
 namespace iotea {
 namespace core {
-namespace log {
+namespace logging {
 
 enum class Level { DEBUG = 0, INFO = 1, WARNING = 2, ERROR = 3 };
 
 Level GetLogLevel();
 
-class LoggerFriend;
+class Logger;
 
-class Logger {
+class InternalLogger {
    private:
     std::recursive_mutex mutex_;
     std::ostream os_;
     Level level_ = GetLogLevel();
 
-    Logger();
+    InternalLogger();
 
-    static Logger* Get();
+    static InternalLogger* Get();
 
     Level GetLevel() const;
 
@@ -40,32 +40,24 @@ class Logger {
 
     std::ostream& GetStream();
 
-    friend class LoggerFriend;
+    friend class Logger;
     friend void SetLevel(const Level);
-    friend LoggerFriend Log(const Level);
+    friend Logger Log(const Level);
 };
 
-class LoggerFriend {
-   private:
-    Logger* logger_;
-    const Level level_ = Level::INFO;
-    const int call_depth_ = -1;
-
-    LoggerFriend(Logger* l, const Level level, int call_depth = 0);
-
-    explicit LoggerFriend(Logger* l);
-
-    LoggerFriend(const LoggerFriend& other);
-
-    LoggerFriend& operator=(const LoggerFriend& other) = delete;
-
+class Logger {
    public:
-    ~LoggerFriend();
 
-    LoggerFriend& operator<<(const std::ostream& (*f)(std::ostream&));
+    Logger(const Logger& other);
+
+    Logger& operator=(const Logger& other) = default;
+
+    ~Logger();
+
+    Logger& operator<<(const std::ostream& (*f)(std::ostream&));
 
     template <typename T>
-    LoggerFriend& operator<<(const T& t) {
+    Logger& operator<<(const T& t) {
         if (logger_->GetLevel() <= level_) {
             logger_->GetStream() << t;
         }
@@ -73,24 +65,49 @@ class LoggerFriend {
         return *this;
     }
 
+    friend class NamedLogger;
     friend void SetLevel(const Level);
-    friend LoggerFriend Log(const Level);
-    friend LoggerFriend Debug();
-    friend LoggerFriend Info();
-    friend LoggerFriend Warn();
-    friend LoggerFriend Error();
+    friend Logger Log(const Level);
+    friend Logger Debug();
+    friend Logger Info();
+    friend Logger Warn();
+    friend Logger Error();
+
+   private:
+    InternalLogger* logger_;
+    Level level_ = Level::INFO;
+    int call_depth_ = -1;
+
+    Logger(InternalLogger* l, const Level level, int call_depth = 0);
+
+    explicit Logger(InternalLogger* l);
+
 };
 
 void SetLevel(const Level lvl);
 
-LoggerFriend Log(const Level lvl);
+Logger Log(const Level lvl);
 
-LoggerFriend Debug();
-LoggerFriend Info();
-LoggerFriend Warn();
-LoggerFriend Error();
+Logger Debug();
+Logger Info();
+Logger Warn();
+Logger Error();
 
-}  // namespace log
+class NamedLogger {
+   public:
+    explicit NamedLogger(const std::string& name);
+
+    Logger Debug() const;
+    Logger Info() const;
+    Logger Warn() const;
+    Logger Error() const;
+
+   private:
+    std::string name_;
+};
+
+
+}  // namespace logging
 }  // namespace core
 }  // namespace iotea
 

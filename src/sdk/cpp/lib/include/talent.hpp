@@ -18,6 +18,9 @@
 #include "call.hpp"
 #include "context.hpp"
 
+using iotea::core::logging::Logger;
+using iotea::core::logging::NamedLogger;
+
 namespace iotea {
 namespace core {
 
@@ -269,6 +272,13 @@ class Talent {
      */
     std::string GetOutputName(const std::string& type, const std::string& talent_id, const std::string& feature) const;
 
+    /**
+     * @brief Get the logger associated with this Talent.
+     *
+     * @return NamedLogger
+     */
+    NamedLogger GetLogger() const;
+
    protected:
     std::vector<Callee> callees_;
     schema::Talent schema_;
@@ -302,6 +312,7 @@ class Talent {
    private:
     const std::string talent_id_;
     std::string channel_id_;
+    NamedLogger logger_;
 
     on_event_func_ptr on_event_;
     context_generator_func_ptr context_gen_;

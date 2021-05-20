@@ -10,6 +10,9 @@
 
 #include "context.hpp"
 #include "call.hpp"
+#include "logging.hpp"
+
+using iotea::core::logging::NamedLogger;
 
 namespace iotea {
 namespace core {
@@ -49,6 +52,8 @@ json OutgoingCall::Json() const {
 //
 // CallToken
 //
+static auto call_token_logger = NamedLogger("CallToken");
+
 CallToken::CallToken(const std::string& call_id, int64_t timeout)
     : call_id_{call_id}
     , timeout_{timeout} {}
@@ -61,9 +66,10 @@ int64_t CallToken::GetTimeout() const {
     return timeout_;
 }
 
+
 CallToken EventContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
     if (!callee.IsRegistered()) {
-        log::Warn() << "Tried to call unregistered Callee";
+        call_token_logger.Warn() << "Tried to call unregistered Callee";
 
         // TODO how do we best report an error in this case? We would like to avoid using exceptions.
         return CallToken{"", -1};
@@ -91,6 +97,8 @@ CallToken EventContext::CallInternal(const Callee& callee, const json& args, int
 //
 // Gatherer
 //
+static auto gatherer_logger = NamedLogger("Gatherer");
+
 Gatherer::Gatherer(timeout_func_ptr timeout_func, const std::vector<CallToken>& tokens, int64_t now_ms)
     : timeout_func_{timeout_func} {
 
@@ -125,7 +133,7 @@ bool Gatherer::IsReady() const {
 
 bool Gatherer::Gather(const call_id_t& id, const json& reply) {
     if (ids_.find(id) == ids_.end()) {
-        log::Error() << "Unrecognized call id " << id;
+        gatherer_logger.Error() << "Unrecognized call id " << id;
         return false;
     }
 

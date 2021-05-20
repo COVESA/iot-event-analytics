@@ -14,16 +14,21 @@
 #include <string>
 #include <thread>
 
-#include "util.hpp"
+#include "logging.hpp"
 #include "mqtt_client.hpp"
+#include "util.hpp"
+
+using iotea::core::logging::NamedLogger;
 
 namespace iotea {
 namespace core {
 
 using namespace std::chrono_literals;
 
+static auto logger = NamedLogger{"MqttClient"};
+
 MqttClient::MqttClient(const std::string& server_address, const std::string& client_id)
-    : client_(server_address, client_id) {
+    : client_{server_address, client_id} {
     OnMessage = [](mqtt::const_message_ptr msg) {
         (void)msg;
     };
@@ -62,23 +67,23 @@ void MqttClient::Run() {
             // on entry
             switch (next_state_) {
                 case State::kConnecting:
-                    log::Info() << "Connecting to '" << client_.get_server_uri() << "'... ";
+                    logger.Info() << "Connecting to '" << client_.get_server_uri() << "'... ";
                     connect_token = client_.connect(connOpts_);
                     break;
                 case State::kConnected: {
-                    log::Info() << "Connected";
+                    logger.Info() << "Connected";
                     connect_token = nullptr;
                     for (const auto& topic : topics_) {
                         client_.subscribe(topic.first, topic.second);
                     }
                 } break;
                 case State::kDisconnected:
-                    log::Info() << "Disconnected";
+                    logger.Info() << "Disconnected";
                     reconnect_delay_seconds_ = 5;
                     break;
                 case State::kStopping:
                     if (client_.is_connected()) {
-                        log::Info() << "Disconnecting... ";
+                        logger.Info() << "Disconnecting... ";
                         disconnect_token = client_.disconnect();
                     }
                     break;
@@ -108,7 +113,7 @@ void MqttClient::Run() {
                         ChangeState(State::kConnected);
                     }
                 } catch (const mqtt::exception& e) {
-                    log::Error() << "Unable to connect to MQTT server '" << client_.get_server_uri()
+                    logger.Error() << "Unable to connect to MQTT server '" << client_.get_server_uri()
                                  << "': " << e.to_string();
                     ChangeState(State::kDisconnected);
                 }
@@ -124,11 +129,11 @@ void MqttClient::Run() {
 
             case State::kStopping: {
                 if (disconnect_token) {
-                    log::Debug() << "Wait up to 5 seconds for disconnect confirmation.";
+                    logger.Debug() << "Wait up to 5 seconds for disconnect confirmation.";
                     if (disconnect_token->wait_for(5s)) {
-                        log::Debug() << "Disconnected successfully.";
+                        logger.Debug() << "Disconnected successfully.";
                     } else {
-                        log::Debug() << "Failed to get disconnect confirmation.";
+                        logger.Debug() << "Failed to get disconnect confirmation.";
                     }
                 }
                 running = false;
@@ -140,7 +145,7 @@ void MqttClient::Run() {
 void MqttClient::Stop() { ChangeState(State::kStopping); }
 
 void MqttClient::Subscribe(const std::string& topic, const int qos) {
-    log::Debug() << "Subscribing to " << topic << " qos=" << qos;
+    logger.Debug() << "Subscribing to " << topic << " qos=" << qos;
     topics_.push_back(std::make_pair(topic, qos));
     //client_.subscribe(topic, qos);
 }
@@ -150,16 +155,16 @@ void MqttClient::ChangeState(State state) {
     if (next_state_ != state) {
         switch (state) {
             case State::kDisconnected:
-                log::Debug() << "Changing state to: [Disconnected].";
+                logger.Debug() << "Changing state to: [Disconnected].";
                 break;
             case State::kConnecting:
-                log::Debug() << "Changing state to: [Connecting].";
+                logger.Debug() << "Changing state to: [Connecting].";
                 break;
             case State::kConnected:
-                log::Debug() << "Changing state to: [Connected].";
+                logger.Debug() << "Changing state to: [Connected].";
                 break;
             case State::kStopping: {
-                log::Debug() << "Changing state to: [Stopping].";
+                logger.Debug() << "Changing state to: [Stopping].";
             } break;
         }
         next_state_ = state;
@@ -167,9 +172,9 @@ void MqttClient::ChangeState(State state) {
 }
 
 void MqttClient::Publish(const std::string& topic, const std::string& data) {
-    log::Debug() << "Publishing message.";
-    log::Debug() << "\ttopic: '" << topic << "'";
-    log::Debug() << "\tpayload: '" << data << "'";
+    logger.Debug() << "Publishing message.";
+    logger.Debug() << "\ttopic: '" << topic << "'";
+    logger.Debug() << "\tpayload: '" << data << "'";
     client_.publish(topic, data);
 }
 

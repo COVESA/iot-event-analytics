@@ -16,12 +16,16 @@
 #include <vector>
 #include <algorithm>
 
+#include "logging.hpp"
 #include "schema.hpp"
 #include "util.hpp"
+
+using iotea::core::logging::NamedLogger;
 
 namespace iotea {
 namespace core {
 
+static auto logger = NamedLogger{"Message"};
 
 // Message
 //
@@ -70,7 +74,7 @@ DiscoverMessage DiscoverMessage::FromJson(const json& j) {
         version = j["version"].get<std::string>();
     } else {
         version = "0.0.0";
-        log::Warn() << "Discover Message API doesn't fit the sdk version. Please update to avoid unknown behavior.";
+        logger.Warn() << "Discover Message API doesn't fit the sdk version. Please update to avoid unknown behavior.";
     }
 
     auto return_topic = j["returnTopic"].get<std::string>();

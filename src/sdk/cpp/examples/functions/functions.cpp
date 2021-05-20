@@ -13,7 +13,6 @@
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "logging.hpp"
 #include "mqtt_client.hpp"
 
 
@@ -26,8 +25,6 @@ using iotea::core::IsSet;
 using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
 using iotea::core::schema::rule_ptr;
-
-namespace logging = iotea::core::log;
 
 constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 
@@ -106,18 +103,18 @@ class MathFunctions : public FunctionTalent {
         auto v = event.GetValue();
 
         auto tsum = ctx->Call(sum, v);
-        ctx->Gather([v](const std::vector<json>& replies) {
-                logging::Info() << "sum(" << v << ") = " << replies[0].get<int>();
+        ctx->Gather([this, v](const std::vector<json>& replies) {
+                GetLogger().Info() << "sum(" << v << ") = " << replies[0].get<int>();
         }, nullptr, tsum);
 
         auto tfac = ctx->Call(fac, v);
-        ctx->Gather([v](const std::vector<json>& replies) {
-                logging::Info() << "fac(" << v << ") = " << replies[0].get<int>();
+        ctx->Gather([this, v](const std::vector<json>& replies) {
+                GetLogger().Info() << "fac(" << v << ") = " << replies[0].get<int>();
         }, nullptr, tfac);
 
         auto tfib = ctx->Call(fib, v);
-        ctx->Gather([v](const std::vector<json>& replies) {
-                logging::Info() << "fib(" << v << ") = " << replies[0].get<int>();
+        ctx->Gather([this, v](const std::vector<json>& replies) {
+                GetLogger().Info() << "fib(" << v << ") = " << replies[0].get<int>();
         }, nullptr, tfib);
     }
 
