@@ -22,7 +22,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class TestRunner(TestRunnerTalent):
     def __init__(self, pg_config):
-        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js'], pg_config)
+        super().__init__('testRunner-py', ['testSet-sdk-py', 'testSet-sdk-js'], pg_config)
 
 async def main():
     mqtt_config = MqttProtocolAdapter.create_default_configuration()

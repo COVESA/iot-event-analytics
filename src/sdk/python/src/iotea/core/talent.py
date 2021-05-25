@@ -94,7 +94,7 @@ class IOFeatures:
 
 class Talent(IOFeatures):
     def __init__(self, talent_id, protocol_gateway_config, talent_config = {}, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
-        super(Talent, self).__init__()
+        super().__init__()
         # Unique for different talents
         # pylint: disable=invalid-name
         self.id = talent_id

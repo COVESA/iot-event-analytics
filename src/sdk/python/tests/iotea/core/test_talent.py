@@ -46,7 +46,7 @@ def talent(mock_uuid):
             mqtt_config = MqttProtocolAdapter.create_default_configuration()
             pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
 
-            super(MyTalent, self).__init__('test-talent', pg_config)
+            super().__init__('test-talent', pg_config)
 
         def callees(self):
             return [ 'math.sum' ]

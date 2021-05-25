@@ -18,7 +18,7 @@ from .util.talent_io import TalentInput, TalentOutput
 
 class Mapper(Talent):
     def __init__(self, mapper_id, reducer_id, protocol_gateway_config):
-        super(Mapper, self).__init__(mapper_id, protocol_gateway_config)
+        super().__init__(mapper_id, protocol_gateway_config)
         self.reducer_id = reducer_id
 
         self.skip_cycle_check_for(
@@ -135,7 +135,7 @@ Mapper.FEATURE_MAP_PARTIAL = 'map_partial'
 
 class Worker(Talent):
     def __init__(self, worker_id, mapper_id, protocol_gateway_config):
-        super(Worker, self).__init__(worker_id, protocol_gateway_config)
+        super().__init__(worker_id, protocol_gateway_config)
         self.mapper_id = mapper_id
 
     def get_rules(self):
@@ -178,7 +178,7 @@ Worker.ERROR = 'ERROR'
 
 class Reducer(Talent):
     def __init__(self, reducer_id, mapper_id, protocol_gateway_config):
-        super(Reducer, self).__init__(reducer_id, protocol_gateway_config)
+        super().__init__(reducer_id, protocol_gateway_config)
         self.mapper_id = mapper_id
 
         self.skip_cycle_check_for(self.__get_reduce_end_feature(DEFAULT_TYPE))

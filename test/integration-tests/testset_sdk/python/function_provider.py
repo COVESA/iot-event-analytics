@@ -21,7 +21,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class FunctionProvider(FunctionTalent):
     def __init__(self, pg_config):
-        super(FunctionProvider, self).__init__('function-provider-py', pg_config)
+        super().__init__('function-provider-py', pg_config)
 
         # Register Functions
         self.register_function('echo', self.echo)

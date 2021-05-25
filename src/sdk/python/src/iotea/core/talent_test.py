@@ -107,7 +107,7 @@ class TestRunnerTalent(Talent):
 
         self.test_callees = [f'{test_set}.{m}' for m in methods for test_set in test_sets]
 
-        super(TestRunnerTalent, self).__init__(name, protocol_gateway_config)
+        super().__init__(name, protocol_gateway_config)
 
         # TODO run-tests should be made into constant
         self.add_output('run-tests', {

@@ -24,7 +24,7 @@ from ..protocol_gateway import ProtocolGateway
 
 class MqttProtocolAdapter:
 
-    def __init__(self, config, display_name = None):
+    def __init__(self, config, display_name=None):
         self.client = None
         self.config = JsonModel(config)
         self.broker_url = self.config.get('brokerUrl')
@@ -64,20 +64,20 @@ class MqttProtocolAdapter:
     def __prefix_topic_ns(self, topic):
         return MqttClient.prefix_topic_ns(topic, self.topic_ns)
 
-    def __stripTopicNamespace(self, topic):
+    def __strip_topic_namespace(self, topic):
         topic_ns_index = topic.find(self.topic_ns)
-        if topic_ns_index == -1 or topic_ns_index > 0:
+        if topic_ns_index != 0:
             return topic
         return topic[len(self.topic_ns):]
 
     def __strip_namespace_wrapper(self, callback):
         if asyncio.iscoroutinefunction(callback):
             async def callback_wrapper(msg, _topic):
-                await callback(msg, self.__stripTopicNamespace(_topic))
+                await callback(msg, self.__strip_topic_namespace(_topic))
             cb = callback_wrapper
         else:
             def callback_wrapper(msg, _topic):
-                callback(msg, self.__stripTopicNamespace(_topic))
+                callback(msg, self.__strip_topic_namespace(_topic))
             cb = callback_wrapper
         return cb
 
@@ -94,13 +94,13 @@ MQTT_MESSAGE_ENCODING = 'utf-8'
 
 class CustomMqttClient(MQTTClient):
     def __init__(self, client_id=None, config=None, loop=None, on_reconnect=None):
-        super(CustomMqttClient, self).__init__(client_id, config, loop)
+        super().__init__(client_id, config, loop)
         self.on_reconnect = on_reconnect
         self.disconnected = False
 
     async def reconnect(self, cleansession=True):
         self.disconnected = True
-        code = await super(CustomMqttClient, self).reconnect(cleansession)
+        code = await super().reconnect(cleansession)
 
         if self.on_reconnect is not None:
             if asyncio.iscoroutinefunction(self.on_reconnect):
@@ -218,7 +218,7 @@ class MqttClient:
         waited_to_connect = False
         while self.connecting:
             waited_to_connect = True
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(0.01)
         if waited_to_connect:
             #must have been connected from another task
             return
@@ -249,7 +249,7 @@ class MqttClient:
         if topic_ns is None:
             return topic
 
-        return re.sub(r'^(\$share\/[^\/]+\/)?(?:{})?(.+)'.format(topic_ns), r'\1' + topic_ns + r'\2', topic)
+        return re.sub(fr'^(\$share\/[^\/]+\/)?(?:{topic_ns})?(.+)', fr'\1{topic_ns}\2', topic)
 
     async def __on_reconnect(self):
         for subscription in self.subscriptions:
