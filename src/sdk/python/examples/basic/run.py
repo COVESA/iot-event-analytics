@@ -25,7 +25,7 @@ from iotea.core.rules import AndRules, Rule, ChangeConstraint, Constraint
 
 class MyTalent(Talent):
     def __init__(self, protocol_gateway_config):
-        super(MyTalent, self).__init__('python-basic-talent', protocol_gateway_config)
+        super().__init__('python-basic-talent', protocol_gateway_config)
 
     def get_rules(self):
         return AndRules([

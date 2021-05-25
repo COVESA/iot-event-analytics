@@ -327,7 +327,7 @@ class MqttClient:
 class NamedMqttClient(MqttClient):
     def __init__(self, name, broker_url, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True):
         client_id = MqttClient.create_client_id('{}.MqttClient'.format(name))
-        super(NamedMqttClient, self).__init__(broker_url, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
+        super().__init__(broker_url, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
 
 class Subscription:
     def __init__(self, topic, cb, to_json=False, qos=0):
@@ -391,7 +391,7 @@ class Subscription:
 
 class ProbeSubscription(Subscription):
     def __init__(self, topic):
-        super(ProbeSubscription, self).__init__(topic, self.__on_probe_receive, False)
+        super().__init__(topic, self.__on_probe_receive, False)
         self.received_response = False
 
     # pylint: disable=unused-argument

@@ -28,7 +28,7 @@ from iotea.core.rules import OrRules, OpConstraint, Rule, Constraint
 
 class MathFunctions(FunctionTalent):
     def __init__(self, protocol_gateway_config):
-        super(MathFunctions, self).__init__('math', protocol_gateway_config)
+        super().__init__('math', protocol_gateway_config)
         self.register_function('multiply', self.__multiply)
         self.register_function('fibonacci', self.__fibonacci)
         self.register_function('sum', self.__sum)

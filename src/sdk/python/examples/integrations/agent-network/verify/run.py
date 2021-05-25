@@ -27,7 +27,7 @@ from verifier import Verifier
 
 class VerifyTalent(FunctionTalent):
     def __init__(self, protocol_gateway):
-        super(VerifyTalent, self).__init__('VerifyTalent', protocol_gateway)
+        super().__init__('VerifyTalent', protocol_gateway)
         self.register_function('verify', self.__verify)
         self.register_function('sign', self.__sign)
         self.register_function('signerdid', self.__signerdid)

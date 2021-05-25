@@ -27,7 +27,7 @@ from iotea.core.constants import VALUE_TYPE_RAW
 
 class RandomMapper(Mapper):
     def __init__(self, protocol_gateway_config):
-        super(RandomMapper, self).__init__('mapper', 'reducer', protocol_gateway_config)
+        super().__init__('mapper', 'reducer', protocol_gateway_config)
 
     def get_trigger_rules(self):
         return Rule(OpConstraint('anyfeature', OpConstraint.OPS['ISSET'], None, 'anytype', VALUE_TYPE_RAW))
@@ -37,7 +37,7 @@ class RandomMapper(Mapper):
 
 class RandomWorker(Worker):
     def __init__(self, connection_string):
-        super(RandomWorker, self).__init__('worker', 'mapper', connection_string)
+        super().__init__('worker', 'mapper', connection_string)
 
     async def work(self, data):
         await asyncio.sleep(random.random() * 2)
@@ -51,7 +51,7 @@ class RandomWorker(Worker):
 
 class RandomReducer(Reducer):
     def __init__(self, connection_string):
-        super(RandomReducer, self).__init__('reducer', 'mapper', connection_string)
+        super().__init__('reducer', 'mapper', connection_string)
 
     async def reduce(self, data):
         reduced_result = reduce(lambda a, b: a + (b if (isinstance(b, int) or isinstance(b, float)) else 0), data, 0)

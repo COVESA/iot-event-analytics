@@ -125,7 +125,7 @@ class TestRunnerTalent(Talent):
 
     async def start(self):
         await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
-        await super(TestRunnerTalent, self).start()
+        await super().start()
 
     def callees(self):
         return self.test_callees

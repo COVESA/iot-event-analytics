@@ -32,7 +32,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class ChargingStationTalent(Talent):
     def __init__(self, protocol_gateway):
-        super(ChargingStationTalent, self).__init__('ChargingStationTalent', protocol_gateway)
+        super().__init__('ChargingStationTalent', protocol_gateway)
 
     def get_rules(self):
         return AndRules([
