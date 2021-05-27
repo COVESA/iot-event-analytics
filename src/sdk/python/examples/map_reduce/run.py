@@ -10,15 +10,15 @@
 
 from functools import reduce
 import random
-import os
 import asyncio
 import logging
 
+from iotea.core.protocol_gateway import ProtocolGateway
 from iotea.core.util.logger import Logger
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
+
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
-
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent_mr import Mapper, Worker, Reducer
@@ -26,8 +26,8 @@ from iotea.core.rules import OpConstraint, Rule
 from iotea.core.constants import VALUE_TYPE_RAW
 
 class RandomMapper(Mapper):
-    def __init__(self, connection_string):
-        super(RandomMapper, self).__init__('mapper', 'reducer', connection_string)
+    def __init__(self, protocol_gateway_config):
+        super().__init__('mapper', 'reducer', protocol_gateway_config)
 
     def get_trigger_rules(self):
         return Rule(OpConstraint('anyfeature', OpConstraint.OPS['ISSET'], None, 'anytype', VALUE_TYPE_RAW))
@@ -37,7 +37,7 @@ class RandomMapper(Mapper):
 
 class RandomWorker(Worker):
     def __init__(self, connection_string):
-        super(RandomWorker, self).__init__('worker', 'mapper', connection_string)
+        super().__init__('worker', 'mapper', connection_string)
 
     async def work(self, data):
         await asyncio.sleep(random.random() * 2)
@@ -51,17 +51,20 @@ class RandomWorker(Worker):
 
 class RandomReducer(Reducer):
     def __init__(self, connection_string):
-        super(RandomReducer, self).__init__('reducer', 'mapper', connection_string)
+        super().__init__('reducer', 'mapper', connection_string)
 
     async def reduce(self, data):
         reduced_result = reduce(lambda a, b: a + (b if (isinstance(b, int) or isinstance(b, float)) else 0), data, 0)
         self.logger.info(f'Reducer calculated sum {reduced_result}')
 
 async def main():
-    mapper = RandomMapper('mqtt://localhost:1883')
-    worker1 = RandomWorker('mqtt://localhost:1883')
-    worker2 = RandomWorker('mqtt://localhost:1883')
-    reducer = RandomReducer('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    mapper = RandomMapper(pg_config)
+    worker1 = RandomWorker(pg_config)
+    worker2 = RandomWorker(pg_config)
+    reducer = RandomReducer(pg_config)
     await asyncio.gather(mapper.start(), worker1.start(), worker2.start(), reducer.start())
 
 LOOP = asyncio.get_event_loop()

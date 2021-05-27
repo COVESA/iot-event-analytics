@@ -1,10 +1,10 @@
-version: "3.5"
+version: "3.6"
 services:
   configmanager:
     build:
       context: ..
       labels:
-        iotea.platform.version: "0.3.0"
+        iotea.platform.version: "0.5.0"
       dockerfile: docker/config/Dockerfile.amd64
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
@@ -23,7 +23,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.platform.version: "0.3.0"
+        iotea.platform.version: "0.5.0"
       dockerfile: docker/pipeline/Dockerfile.amd64
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}

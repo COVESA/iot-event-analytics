@@ -8,3 +8,4 @@ src/sdk/vscode/lib
 reports/
 .nyc_output/
 docs/jsdoc/*
+venv/*

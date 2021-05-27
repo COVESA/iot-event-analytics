@@ -19,6 +19,70 @@ import time
 from uuid import uuid4
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_0
+from .json_model import JsonModel
+from ..protocol_gateway import ProtocolGateway
+
+class MqttProtocolAdapter:
+
+    def __init__(self, config, display_name=None):
+        self.client = None
+        self.config = JsonModel(config)
+        self.broker_url = self.config.get('brokerUrl')
+        self.topic_ns = self.config.get('topicNamespace')
+        if display_name is None:
+            self.client = MqttClient(self.broker_url, self.topic_ns)
+        else:
+            self.client = NamedMqttClient(display_name, self.broker_url, self.topic_ns)
+
+
+    async def publish(self, topic, message, publish_options=None):
+        if publish_options is None:
+            publish_options = ProtocolGateway.create_publish_options()
+        mqtt_options = {'retain': publish_options.retain }
+        await self.client.publish([self.__prefix_topic_ns(topic)], message, mqtt_options, publish_options.stash)
+
+    #subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
+    #pylint: disable=unused-argument
+    async def subscribe(self, topic, callback, subscribe_options=None):
+        await self.client.subscribe(self.__prefix_topic_ns(topic), self.__strip_namespace_wrapper(callback))
+
+    # subscribe_options are part of ProtocolAdapter interface even though not used in MqttClient
+    # pylint: disable=unused-argument
+    async def subscribe_shared(self, group, topic, callback, subscribe_options=None):
+        await self.client.subscribe(f'$share/{group}/{self.__prefix_topic_ns(topic)}', self.__strip_namespace_wrapper(callback))
+
+    def getId(self):
+        return self.broker_url
+
+    @staticmethod
+    def create_default_configuration(is_platform_protocol=False, broker_url='mqtt://localhost:1883'):
+        config = {"platform": is_platform_protocol,
+                  "module": {"name": ".util.mqtt_client", "class": "MqttProtocolAdapter"},
+                  "config": {"brokerUrl": broker_url, "topicNamespace": "iotea/"}}
+        return config
+
+    def __prefix_topic_ns(self, topic):
+        return MqttClient.prefix_topic_ns(topic, self.topic_ns)
+
+    def __strip_topic_namespace(self, topic):
+        topic_ns_index = topic.find(self.topic_ns)
+        if topic_ns_index != 0:
+            return topic
+        return topic[len(self.topic_ns):]
+
+    def __strip_namespace_wrapper(self, callback):
+        if asyncio.iscoroutinefunction(callback):
+            async def callback_wrapper(msg, _topic):
+                await callback(msg, self.__strip_topic_namespace(_topic))
+            cb = callback_wrapper
+        else:
+            def callback_wrapper(msg, _topic):
+                callback(msg, self.__strip_topic_namespace(_topic))
+            cb = callback_wrapper
+        return cb
+
+
+
 
 from ..constants import ONE_SECOND_MS
 
@@ -30,11 +94,13 @@ MQTT_MESSAGE_ENCODING = 'utf-8'
 
 class CustomMqttClient(MQTTClient):
     def __init__(self, client_id=None, config=None, loop=None, on_reconnect=None):
-        super(CustomMqttClient, self).__init__(client_id, config, loop)
+        super().__init__(client_id, config, loop)
         self.on_reconnect = on_reconnect
+        self.disconnected = False
 
     async def reconnect(self, cleansession=True):
-        code = await super(CustomMqttClient, self).reconnect(cleansession)
+        self.disconnected = True
+        code = await super().reconnect(cleansession)
 
         if self.on_reconnect is not None:
             if asyncio.iscoroutinefunction(self.on_reconnect):
@@ -42,10 +108,11 @@ class CustomMqttClient(MQTTClient):
             else:
                 self.on_reconnect()
 
+        self.disconnected = False
         return code
 
 class MqttClient:
-    def __init__(self, connection_string, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True, logger=None, client_id=None):
+    def __init__(self, broker_url, topic_ns=None, check_mqtt5_compatibility=True, logger=None, client_id=None):
         if client_id is None:
             client_id = MqttClient.create_client_id('MqttClient')
 
@@ -55,10 +122,11 @@ class MqttClient:
             self.logger = logging.getLogger(client_id)
 
         self.client = CustomMqttClient(client_id, on_reconnect=self.__on_reconnect)
-        self.connection_string = connection_string
+        self.broker_url = broker_url
         self.client.config['reconnect_retries'] = MAX_RECONNECT_RETRIES
         self.client.config['reconnect_max_interval'] = MAX_RECONNECT_INTERVAL_S
         self.client_initialized = False
+        self.connecting = False
         self.subscriptions = []
         self.check_mqtt5_compatibility = check_mqtt5_compatibility
         self.is_mqtt5_compatible = False
@@ -77,19 +145,23 @@ class MqttClient:
         if self.client_initialized:
             return self.client
 
-        await self.__init(self.connection_string)
+        await self.__init(self.broker_url)
         self.client_initialized = True
         return self.client
 
-    async def publish_json(self, topics, json_, options=None):
+    async def publish_json(self, topics, json_, options=None, stash=True):
         if options is None:
             options = {}
 
         self.__validate_json(json_)
 
-        await self.publish(topics, json.dumps(json_, separators=(',', ':')), options)
+        await self.publish(topics, json.dumps(json_, separators=(',', ':')), options, stash)
 
-    async def publish(self, topics, message, options=None):
+    async def publish(self, topics, message, options=None, stash=True):
+        # if not connected and stash is disabled - do not publish the message to avoid memory overloading
+        if not stash and (not self.client_initialized or self.client.disconnected):
+            return
+
         if options is None:
             options = {}
 
@@ -98,17 +170,19 @@ class MqttClient:
         if isinstance(topics, list) is False:
             topics = [topics]
 
-        options = {**{'qos': QOS_0, 'retain': False}, **options}
+        options = {**{'qos': QOS_0, 'retain': options.get('retain', False)}, **options}
 
         for topic in topics:
             prefixed_topic = self.__prefix_topic_ns(topic)
             self.logger.debug('Sending {} to {}'.format(message, prefixed_topic))
             await client.publish(prefixed_topic, message.encode(MQTT_MESSAGE_ENCODING), qos=options['qos'], retain=options['retain'])
 
-    async def subscribe_json(self, topic, callback, qos=0):
-        await self.subscribe(topic, callback, qos, True)
+    async def subscribe_json(self, topic, callback):
+        await self.subscribe(topic, callback, True)
 
-    async def subscribe(self, topic, callback, qos=QOS_0, to_json=False):
+    async def subscribe(self, topic, callback, to_json=False):
+        qos = QOS_0
+
         client = await self.get_client_async()
 
         topic = self.__prefix_topic_ns(topic)
@@ -129,19 +203,31 @@ class MqttClient:
 
     async def unsubscribe(self, topics):
         client = await self.get_client_async()
-        await self.client.unsubscribe(topics)
+        if not isinstance(topics, list):
+            topics = [topics]
+        await client.unsubscribe(topics)
 
     @staticmethod
     def create_client_id(prefix):
         return '{}-{}'.format(prefix, str(uuid4())[:8])
 
-    async def __init(self, connection_string):
+    async def __init(self, broker_url):
         # Connecting
-        self.logger.info('Connecting...')
+        self.logger.info(f'Connecting to {broker_url} ...')
+        #handle parallel connecting tasks
+        waited_to_connect = False
+        while self.connecting:
+            waited_to_connect = True
+            await asyncio.sleep(0.01)
+        if waited_to_connect:
+            #must have been connected from another task
+            return
 
         while True:
             try:
-                await self.client.connect(connection_string, cleansession=True)
+                self.connecting = True
+                await self.client.connect(broker_url, cleansession=True)
+                self.connecting = False
                 break
             except:
                 await asyncio.sleep(1)
@@ -156,10 +242,14 @@ class MqttClient:
             await self.__mqtt5_probe(self.client, int(os.environ.get('MQTT5_PROBE_TIMEOUT', DEFAULT_MQTT5_PROBE_TIMEOUT_MS)))
 
     def __prefix_topic_ns(self, topic):
-        if self.topic_ns is None:
+        return MqttClient.prefix_topic_ns(topic, self.topic_ns)
+
+    @staticmethod
+    def prefix_topic_ns(topic, topic_ns):
+        if topic_ns is None:
             return topic
 
-        return re.sub(r'^(\$share\/[^\/]+\/)?(?:{})?(.+)'.format(self.topic_ns), r'\1' + self.topic_ns + r'\2', topic)
+        return re.sub(fr'^(\$share\/[^\/]+\/)?(?:{topic_ns})?(.+)', fr'\1{topic_ns}\2', topic)
 
     async def __on_reconnect(self):
         for subscription in self.subscriptions:
@@ -235,9 +325,9 @@ class MqttClient:
         raise Exception('Given JSON document is neither a dictionary nor a list')
 
 class NamedMqttClient(MqttClient):
-    def __init__(self, name, connection_string, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True):
+    def __init__(self, name, broker_url, topic_ns=os.environ.get('MQTT_TOPIC_NS', None), check_mqtt5_compatibility=True):
         client_id = MqttClient.create_client_id('{}.MqttClient'.format(name))
-        super(NamedMqttClient, self).__init__(connection_string, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
+        super().__init__(broker_url, topic_ns, check_mqtt5_compatibility, logging.getLogger(client_id), client_id)
 
 class Subscription:
     def __init__(self, topic, cb, to_json=False, qos=0):
@@ -301,7 +391,7 @@ class Subscription:
 
 class ProbeSubscription(Subscription):
     def __init__(self, topic):
-        super(ProbeSubscription, self).__init__(topic, self.__on_probe_receive, False)
+        super().__init__(topic, self.__on_probe_receive, False)
         self.received_response = False
 
     # pylint: disable=unused-argument

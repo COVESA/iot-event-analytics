@@ -10,13 +10,13 @@
 
 import asyncio
 import json
-import os
 import logging
 
+from iotea.core.protocol_gateway import ProtocolGateway
 from iotea.core.util.logger import Logger
-logging.setLoggerClass(Logger)
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
+logging.setLoggerClass(Logger)
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent import Talent
@@ -31,8 +31,8 @@ logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
 class ChargingStationTalent(Talent):
-    def __init__(self, connection_string):
-        super(ChargingStationTalent, self).__init__('ChargingStationTalent', connection_string)
+    def __init__(self, protocol_gateway):
+        super().__init__('ChargingStationTalent', protocol_gateway)
 
     def get_rules(self):
         return AndRules([
@@ -131,7 +131,10 @@ class ChargingStationTalent(Talent):
             self.logger.warning('Transaction failed. Error: {}'.format(err))
 
 async def main():
-    charging_station_talent = ChargingStationTalent('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    charging_station_talent = ChargingStationTalent(pg_config)
     await charging_station_talent.start()
 
 LOOP = asyncio.get_event_loop()

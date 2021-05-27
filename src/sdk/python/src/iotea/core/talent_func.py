@@ -9,7 +9,6 @@
 ##############################################################################
 
 import asyncio
-import functools
 
 from .talent import Talent
 from .constants import ENCODING_TYPE_OBJECT, ENCODING_TYPE_ANY, DEFAULT_TYPE, MSG_TYPE_ERROR, MAX_TALENT_EVENT_WORKER_COUNT
@@ -17,8 +16,8 @@ from .rules import OrRules, SchemaConstraint, Rule, Constraint
 from .util.talent_io import TalentInput, TalentOutput
 
 class FunctionTalent(Talent):
-    def __init__(self, id, connection_string, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
-        super(FunctionTalent, self).__init__(id, connection_string, max_threadpool_workers)
+    def __init__(self, id, protocol_gateway_config, talent_config={}, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
+        super().__init__(id, protocol_gateway_config, talent_config, max_threadpool_workers)
         self.functions = {}
         self.function_input_features = []
 

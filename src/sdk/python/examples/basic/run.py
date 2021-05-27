@@ -9,24 +9,23 @@
 ##############################################################################
 
 import asyncio
-import json
-import os
 import logging
 
+from iotea.core.protocol_gateway import ProtocolGateway
 from iotea.core.util.logger import Logger
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
 from iotea.core.util.talent_io import TalentInput
+
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
-
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent import Talent
 from iotea.core.rules import AndRules, Rule, ChangeConstraint, Constraint
 
 class MyTalent(Talent):
-    def __init__(self, connection_string):
-        super(MyTalent, self).__init__('python-basic-talent', connection_string)
+    def __init__(self, protocol_gateway_config):
+        super().__init__('python-basic-talent', protocol_gateway_config)
 
     def get_rules(self):
         return AndRules([
@@ -38,7 +37,9 @@ class MyTalent(Talent):
 
 
 async def main():
-    my_talent = MyTalent('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+    my_talent = MyTalent(pg_config)
     await my_talent.start()
 
 LOOP = asyncio.get_event_loop()

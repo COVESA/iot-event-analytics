@@ -66,7 +66,7 @@ class TalentDependencies:
         self.dependencies.pop(talent_id)
 
     # pylint: disable=unused-argument,invalid-name
-    async def on_platform_event(self, ev, evctx):
+    async def on_platform_event(self, ev, topic, adapter_id=None):
         talent_id = ev['data']['talent']
 
         if ev['type'] == PLATFORM_EVENT_TYPE_SET_CONFIG:
@@ -102,12 +102,12 @@ class TestRunnerException(Exception):
 
 
 class TestRunnerTalent(Talent):
-    def __init__(self, name, test_sets, connection_string):
+    def __init__(self, name, test_sets, protocol_gateway_config):
         methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SET_METHOD_NAME, RUN_TEST_METHOD_NAME]
 
         self.test_callees = [f'{test_set}.{m}' for m in methods for test_set in test_sets]
 
-        super(TestRunnerTalent, self).__init__(name, connection_string)
+        super().__init__(name, protocol_gateway_config)
 
         # TODO run-tests should be made into constant
         self.add_output('run-tests', {
@@ -124,8 +124,8 @@ class TestRunnerTalent(Talent):
         self.skip_cycle_check(True)
 
     async def start(self):
-        await self.mqtt_client.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
-        await super(TestRunnerTalent, self).start()
+        await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
+        await super().start()
 
     def callees(self):
         return self.test_callees
@@ -248,7 +248,7 @@ class TestSetTalent(FunctionTalent):
         self.test_set_info.test_map[test_name] = test
 
     async def start(self):
-        await self.mqtt_client.subscribe_json(PLATFORM_EVENTS_TOPIC,
+        await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC,
                                          self.talent_dependencies.on_platform_event)
         await super().start()
 

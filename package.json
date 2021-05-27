@@ -1,6 +1,6 @@
 {
   "name": "boschio.iotea",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "jsonApiVersion": "2.0.0",
   "author": "Bosch.IO GmbH",
   "main": "src/module.js",

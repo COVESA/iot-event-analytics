@@ -11,11 +11,10 @@
 from os import path
 import pytest
 import asyncio
-import json
 import uuid
 from unittest import TestCase
 from src.iotea.core.constants import DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_EVENT, MSG_TYPE_ERROR
-from src.iotea.core.util.talent_io import TalentOutput
+from src.iotea.core.util.talent_io import TalentOutput, TalentInput
 from src.iotea.core.rules import AndRules, Rule, Constraint
 from tests.helpers.constraints import create_op_constraint, create_change_constraint
 from tests.helpers.json_loader import load_json
@@ -39,10 +38,15 @@ def mock_uuid(mocker):
 @pytest.fixture
 def talent(mock_uuid):
     from src.iotea.core.talent import Talent
+    from src.iotea.core.protocol_gateway import ProtocolGateway
+    from src.iotea.core.util.mqtt_client import MqttProtocolAdapter
 
     class MyTalent(Talent):
         def __init__(self):
-            super(MyTalent, self).__init__('test-talent', 'mqtt://localhost:1883')
+            mqtt_config = MqttProtocolAdapter.create_default_configuration()
+            pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+            super().__init__('test-talent', pg_config)
 
         def callees(self):
             return [ 'math.sum' ]
@@ -71,13 +75,13 @@ class TestTalent:
 
     @pytest.mark.asyncio
     async def test_function_call(self, test_case, talent, mocker):
-        def mock_publish_json(topics, msg, options={}):
+        def mock_publish_json(topic, json_o, publish_options=None):
             f = asyncio.Future()
             f.set_result(None)
             return f
 
         mocker.patch(
-            'src.iotea.core.util.mqtt_client.MqttClient.publish_json',
+            'src.iotea.core.protocol_gateway.ProtocolGateway.publish_json',
             wraps=mock_publish_json
         )
 
@@ -107,11 +111,13 @@ class TestTalent:
 
         assert response == function_result_value
 
-        assert talent.mqtt_client.publish_json.call_count == 1
+        assert talent.pg.publish_json.call_count == 1
 
-        talent.mqtt_client.publish_json.assert_called_once_with(
-            [ 'ingestion/events' ],
-            { 'subject': 'testsubject', 'type': 'default', 'instance': 'default', 'value': {'func': 'sum', 'args': [1, 1], 'chnl': 'test-talent.00000000', 'call': '00000000', 'timeoutAtMs': 1619524734000 }, 'feature': 'math.sum-in', 'whenMs': 1619524724000 }
+        talent.pg.publish_json.assert_called_once_with(
+            'ingestion/events',
+            {'subject': 'testsubject', 'type': 'default', 'instance': 'default',
+             'value': {'func': 'sum', 'args': [1, 1], 'chnl': 'test-talent.00000000', 'call': '00000000',
+                       'timeoutAtMs': 1619524734000}, 'feature': 'math.sum-in', 'whenMs': 1619524724000}
         )
 
         expected_error_message = 'An error occurred'

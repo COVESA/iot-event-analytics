@@ -12,9 +12,10 @@ import asyncio
 import logging
 import os
 
+from iotea.core.protocol_gateway import ProtocolGateway
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
 from jwcrypto import jwk
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent_func import FunctionTalent
@@ -25,8 +26,8 @@ logging.getLogger().setLevel(logging.INFO)
 from verifier import Verifier
 
 class VerifyTalent(FunctionTalent):
-    def __init__(self, connection_string):
-        super(VerifyTalent, self).__init__('VerifyTalent', connection_string)
+    def __init__(self, protocol_gateway):
+        super().__init__('VerifyTalent', protocol_gateway)
         self.register_function('verify', self.__verify)
         self.register_function('sign', self.__sign)
         self.register_function('signerdid', self.__signerdid)
@@ -66,7 +67,10 @@ class VerifyTalent(FunctionTalent):
         return await self.verifier.signer_did(payload)
 
 async def main():
-    verify_talent = VerifyTalent('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    verify_talent = VerifyTalent(pg_config)
     await verify_talent.start()
 
 LOOP = asyncio.get_event_loop()

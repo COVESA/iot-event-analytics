@@ -29,7 +29,7 @@ class MqttProtocolAdapter {
      * {@link module:mqttClient~MqttProtocolAdapter#subscribe} methods.
      *
      * @param {*} config - Json object, which carries all settings necessary to establish connection to the broker as
-     * 'brokerUrl', 'mqtt5Only'  and the 'topicNamespace' prefix, prepended to publish and subscription topics.
+     * 'brokerUrl' and the 'topicNamespace' prefix, prepended to publish and subscription topics.
      * @param {string} displayName - Descriptive name to identify the module, which uses this MqttProtocolAdapter.
      */
     constructor(config, displayName = null) {
@@ -208,7 +208,7 @@ class MqttClient {
      *
      * @param {string|string[]} topics - Topic to publish the message to.
      * @param {string} message - Message to be published.
-     * @param {*} [options = {}] options - Connection options.
+     * @param {*} [mqttPublishOptions = {}] - Connection options.
      * @returns a promise for chaining.
      */
     publish(topics, message, mqttPublishOptions = {}, stash = true) {
@@ -233,7 +233,7 @@ class MqttClient {
      *
      * @param {string|string[]} topics - Topic to publish the message to.
      * @param {*} json - JSON object to publish as a message.
-     * @param {*} [options = {}] options - Connection options.
+     * @param {*} [mqttPublishOptions = {}] - Connection options.
      * @returns a promise for chaining.
      */
     publishJson(topics, json, mqttPublishOptions = {}, stash) {

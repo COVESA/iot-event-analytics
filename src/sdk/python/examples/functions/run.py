@@ -9,26 +9,26 @@
 ##############################################################################
 
 import random
-import os
 import asyncio
 import logging
 
 from iotea.core.util.logger import Logger
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
+from iotea.core.protocol_gateway import ProtocolGateway
+
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
 from iotea.core.util.time_ms import time_ms
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
 
 # pylint: disable=wrong-import-position
 from iotea.core.talent_func import FunctionTalent
-from iotea.core.talent import Talent
 from iotea.core.rules import OrRules, OpConstraint, Rule, Constraint
 
 class MathFunctions(FunctionTalent):
-    def __init__(self, connection_string):
-        super(MathFunctions, self).__init__('math', connection_string)
+    def __init__(self, protocol_gateway_config):
+        super().__init__('math', protocol_gateway_config)
         self.register_function('multiply', self.__multiply)
         self.register_function('fibonacci', self.__fibonacci)
         self.register_function('sum', self.__sum)
@@ -81,8 +81,11 @@ class MathFunctions(FunctionTalent):
         return await self.call(self.id, 'fibonacci', [nth - 1], ev['subject'], ev['returnTopic'], timeout_at_ms - time_ms()) + await self.call(self.id, 'fibonacci', [nth - 2], ev['subject'], ev['returnTopic'], timeout_at_ms - time_ms())
 
 async def main():
-    math_function_talent_1 = MathFunctions('mqtt://localhost:1883')
-    math_function_talent_2 = MathFunctions('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    math_function_talent_1 = MathFunctions(pg_config)
+    math_function_talent_2 = MathFunctions(pg_config)
     await asyncio.gather(math_function_talent_1.start(), math_function_talent_2.start())
 
 LOOP = asyncio.get_event_loop()

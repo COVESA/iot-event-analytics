@@ -9,18 +9,19 @@
 ##############################################################################
 
 import asyncio
+import copy
 import threading
 import concurrent
 import functools
-import os
 import re
 import logging
 import json
 from uuid import uuid4
 
 from .constants import TALENTS_DISCOVERY_TOPIC, DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_ERROR, MAX_TALENT_EVENT_WORKER_COUNT
+from .protocol_gateway import ProtocolGateway
+
 from .rules import OrRules, Rule, OpConstraint, Constraint
-from .util.mqtt_client import NamedMqttClient
 from .util.logger import Logger
 from .util.json_query import json_query_first
 from .util.talent_io import TalentOutput
@@ -92,16 +93,20 @@ class IOFeatures:
         return functools.reduce(lambda outputs, feature: feature.append_to(talent_id, outputs), self.output_features, outputs)
 
 class Talent(IOFeatures):
-    def __init__(self, talent_id, connection_string, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
-        super(Talent, self).__init__()
+    def __init__(self, talent_id, protocol_gateway_config, talent_config = {}, max_threadpool_workers=MAX_TALENT_EVENT_WORKER_COUNT):
+        super().__init__()
         # Unique for different talents
         # pylint: disable=invalid-name
         self.id = talent_id
         # Unique across all talents
         self.uid = Talent.create_uid(self.id)
         self.logger = logging.getLogger('Talent.{}'.format(self.uid))
-        self.connection_string = connection_string
-        self.mqtt_client = self.__create_mqtt_client('Talent.{}'.format(self.uid), connection_string)
+        self.config = copy.deepcopy(talent_config)
+        if ProtocolGateway.get_adapter_count(protocol_gateway_config) != 1:
+            raise Exception('Invalid Talent ProtocolGateway Configuration. Specify a single adapter in your ProtocolGateway configuration')
+
+        self.pg = ProtocolGateway(protocol_gateway_config, self.logger.name)
+
         self.io_features = IOFeatures()
         self.deferred_calls = {}
         self.chnl = f'{self.id}.{str(uuid4())}'
@@ -117,9 +122,9 @@ class Talent(IOFeatures):
             self.skip_cycle_check_for(f'{DEFAULT_TYPE}.{callee}-out')
 
     async def start(self):
-        await self.mqtt_client.subscribe_json(f'$share/{self.id}/{Talent.get_talent_topic(self.id)}', self.__on_event)
-        await self.mqtt_client.subscribe_json(f'{Talent.get_talent_topic(self.id)}/{self.chnl}/+', self.__on_common_event)
-        await self.mqtt_client.subscribe_json(f'$share/{self.id}/{TALENTS_DISCOVERY_TOPIC}', self.__on_discover)
+        await self.pg.subscribe_json_shared(self.id, Talent.get_talent_topic(self.id), self.__on_event)
+        await self.pg.subscribe_json(f'{Talent.get_talent_topic(self.id)}/{self.chnl}/+', self.__on_common_event)
+        await self.pg.subscribe_json_shared(self.id, TALENTS_DISCOVERY_TOPIC, self.__on_discover)
 
         self.logger.info('Talent {} started successfully'.format(self.uid))
 
@@ -156,8 +161,7 @@ class Talent(IOFeatures):
         )
 
         self.deferred_calls[call_id] = DeferredCall(call_id, timeout_ms, asyncio.get_event_loop())
-
-        await self.mqtt_client.publish_json([return_topic], ev)
+        await self.pg.publish_json(return_topic, ev)
 
         self.logger.debug('Successfully sent function call')
 
@@ -191,10 +195,10 @@ class Talent(IOFeatures):
                 if 'whenMs' not in out_event:
                     out_event['whenMs'] = time_ms.time_ms()
 
-                await self.mqtt_client.publish_json(topic, out_event)
+                await self.pg.publish_json(topic, out_event)
 
     # pylint: disable=assignment-from-no-return, unused-argument
-    def __on_event(self, ev, topic):
+    def __on_event(self, ev, topic, adapter=None):
         result = self.loop.run_in_executor(None, self.__start_process_event, ev, self.on_event)
 
         def done_callback(future):
@@ -232,7 +236,8 @@ class Talent(IOFeatures):
 
         return out_events
 
-    async def __on_common_event(self, ev, topic):
+    async def __on_common_event(self, ev, topic, adapter=None):
+
         self.logger.debug('Received common event {} at topic {}'.format(json.dumps(ev), topic))
 
         suffix_match = re.fullmatch('^.*\\/([^\\/]+)$', topic)
@@ -261,8 +266,8 @@ class Talent(IOFeatures):
 
         deferred_call.resolve(value)
 
-    async def __on_discover(self, ev, topic):
-        await self.mqtt_client.publish_json(ev['returnTopic'], self.__create_discovery_response())
+    async def __on_discover(self, ev, topic, adapter=None):
+        await self.pg.publish_json(ev['returnTopic'], self.__create_discovery_response())
 
     def __create_discovery_response(self):
         rules = self._get_rules()
@@ -321,9 +326,6 @@ class Talent(IOFeatures):
             # pylint: disable=anomalous-backslash-in-string
             *map(lambda callee: Rule(OpConstraint(f'{callee}-out', OpConstraint.OPS['REGEX'], '^\\/{}\\.[^\\/]+\\/.*'.format(self.id), DEFAULT_TYPE, Constraint.VALUE_TYPE['RAW'], '/$tsuffix')), self.callees())
         ])
-
-    def __create_mqtt_client(self, name, connection_string):
-        return NamedMqttClient(name, connection_string, os.environ.get('MQTT_TOPIC_NS', None), True)
 
     @staticmethod
     def create_uid(prefix=None):

@@ -58,7 +58,7 @@ class ProtocolGateway {
         return this.publish(topic, JSON.stringify(json), publishOptions, forceWait);
     }
 
-    // Callback needs to be (ev, topic) => {}
+    // Callback needs to be (ev, topic, adapterId) => {}
     async subscribe(topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions(), forceWait = false) {
         let subscribeToPlatformProtocolOnly = subscribeOptions.platformProtocolOnly;
 
@@ -83,7 +83,7 @@ class ProtocolGateway {
         }
     }
 
-    // Callback needs to be (ev, topic) => {}
+    // Callback needs to be (ev, topic, adapterId) => {}
     subscribeJson(topic, callback, subscribeOptions, forceWait) {
         return this.subscribe(topic, (stringifiedJson, topic, adapterId) => {
             try {
@@ -95,7 +95,7 @@ class ProtocolGateway {
         }, subscribeOptions, forceWait);
     }
 
-    // Callback needs to be (ev, topic) => {}
+    // Callback needs to be (ev, topic, adapterId) => {}
     async subscribeShared(group, topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions(), forceWait = false) {
         let subscribeToPlatformProtocolOnly = subscribeOptions.platformProtocolOnly;
 
@@ -121,7 +121,7 @@ class ProtocolGateway {
         }
     }
 
-    // Callback needs to be (ev, topic) => {}
+    // Callback needs to be (ev, topic, adapterId) => {}
     subscribeJsonShared(group, topic, callback, subscribeOptions, forceWait) {
         return this.subscribeShared(group, topic, (stringifiedJson, topic, adapterId) => {
             try {

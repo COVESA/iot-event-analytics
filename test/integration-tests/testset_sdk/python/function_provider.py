@@ -10,18 +10,18 @@
 
 import asyncio
 import logging
-import os
 
 from iotea.core.talent_func import FunctionTalent
 from iotea.core.util.logger import Logger
+from iotea.core.protocol_gateway import ProtocolGateway
+from iotea.core.util.mqtt_client import MqttProtocolAdapter
+
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
-os.environ['MQTT_TOPIC_NS'] = 'iotea/'
-
 class FunctionProvider(FunctionTalent):
-    def __init__(self, connection_string):
-        super(FunctionProvider, self).__init__('function-provider-py', connection_string)
+    def __init__(self, pg_config):
+        super().__init__('function-provider-py', pg_config)
 
         # Register Functions
         self.register_function('echo', self.echo)
@@ -33,7 +33,10 @@ class FunctionProvider(FunctionTalent):
 
 
 async def main():
-    function_provider = FunctionProvider('mqtt://localhost:1883')
+    mqtt_config = MqttProtocolAdapter.create_default_configuration()
+    pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
+
+    function_provider = FunctionProvider(pg_config)
     await function_provider.start()
 
 if __name__ == '__main__':
