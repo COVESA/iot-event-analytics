@@ -13,7 +13,7 @@
 
     top to bottom direction
 
-    right footer "IoT Event Analytics Version: 0.4"
+    right footer "IoT Event Analytics Version: 0.5"
 
     node NodeJS {
             node Platform as Platform_NodeJS #LightBlue

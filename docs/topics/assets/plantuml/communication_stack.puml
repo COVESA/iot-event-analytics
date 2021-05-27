@@ -12,7 +12,7 @@
     skinparam backgroundColor #FFFFF
     top to bottom direction
 
-    right footer "IoT Event Analytics Version: 0.4"
+    right footer "IoT Event Analytics Version: 0.5"
 
     node Application #LightGray {
         node Platform #LightBlue {
