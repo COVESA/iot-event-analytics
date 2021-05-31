@@ -131,7 +131,8 @@ TEST(context, CallContext_Reply) {
     };
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
-    auto event = Event{"subject", "feature", call_value, "default", "default", "return_topic", 0};
+    auto features = json{};
+    auto event = Event{"subject", "feature", call_value, features, "default", "default", "return_topic", 0};
     auto publisher = std::make_shared<PublisherMock>();
 
     auto ctx = TestCallContext{event, publisher};

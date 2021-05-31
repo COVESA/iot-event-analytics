@@ -140,12 +140,13 @@ ErrorMessage ErrorMessage::FromJson(const json& j) {
 //
 // Event
 //
-Event::Event(const std::string& subject, const std::string& feature, const json& value, const std::string& type,
-             const std::string& instance, const std::string& return_topic, int64_t when)
+Event::Event(const std::string& subject, const std::string& feature, const json& value, const json& features,
+             const std::string& type, const std::string& instance, const std::string& return_topic, int64_t when)
     : return_topic_{return_topic}
     , subject_{subject}
     , feature_{feature}
     , value_(value)
+    , features_(features)
     , type_{type}
     , instance_{instance}
     , when_{when} {}
@@ -158,6 +159,8 @@ std::string Event::GetFeature() const { return feature_; }
 
 json Event::GetValue() const { return value_; }
 
+json Event::GetFeatures() const { return features_; }
+
 std::string Event::GetType() const { return type_; }
 
 std::string Event::GetInstance() const { return instance_; }
@@ -168,26 +171,35 @@ bool Event::operator==(const Event& other) const {
     return GetSubject() == other.GetSubject()
         && GetFeature() == other.GetFeature()
         && GetValue() == other.GetValue()
+        && GetFeatures() == other.GetFeatures()
         && GetType() == other.GetType()
         && GetInstance() == other.GetInstance()
         && GetReturnTopic() == other.GetReturnTopic();
 }
 
 json Event::Json() const {
-    return json{{"subject", subject_}, {"feature", feature_},   {"value", value_},
-                {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
+    return json{
+        {"subject", subject_},
+        {"feature", feature_},
+        {"value", value_},
+        {"$features", features_},
+        {"type", type_},
+        {"instance", instance_},
+        {"whenMs", when_}
+    };
 }
 
 Event Event::FromJson(const json& j) {
     auto subject = j["subject"].get<std::string>();
     auto feature = j["feature"].get<std::string>();
     auto value = j["value"];
+    auto features = j["$features"];
     auto type = j["type"].get<std::string>();
     auto instance = j["instance"].get<std::string>();
     auto return_topic = j.contains("returnTopic") ? j["returnTopic"].get<std::string>() : "";
     auto when_ms = j["whenMs"].get<int64_t>();
 
-    return Event{subject, feature, value, type, instance, return_topic, when_ms};
+    return Event{subject, feature, value, features, type, instance, return_topic, when_ms};
 }
 
 

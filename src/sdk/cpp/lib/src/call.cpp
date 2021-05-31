@@ -160,23 +160,29 @@ void SinkGatherer::ForwardReplies(const std::vector<json>& replies) const {
 //
 PreparedFunctionReply::PreparedFunctionReply(const std::string& talent_id,
         const std::string& feature,
-        const std::string& subject,
-        const std::string& channel_id,
-        const std::string& call_id,
+        const Event& event,
         const std::string& return_topic,
         publisher_ptr publisher)
     : talent_id_{talent_id}
     , feature_{feature}
-    , subject_{subject}
-    , channel_id_{channel_id}
-    , call_id_{call_id}
+    , event_{event}
     , return_topic_{return_topic}
     , publisher_{publisher} {}
 
 void PreparedFunctionReply::Reply(const json& value) const {
-    auto result = json{{"$tsuffix", std::string("/") + channel_id_ + "/" + call_id_}, {"$vpath", "value"}, {"value", value}};
 
-    auto event = Event{subject_, talent_id_ + "." + feature_, result};
+    auto channel = event_.GetValue()["chnl"].get<std::string>();
+    auto call = event_.GetValue()["call"].get<std::string>();
+    auto result = json{
+        {"$tsuffix", std::string("/") + channel + "/" + call},
+        {"$vpath", "value"},
+        {"value", value}
+    };
+
+    auto subject = event_.GetSubject();
+    auto type = event_.GetType();
+    auto instance = event_.GetInstance();
+    auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
     // Currently the return topic sent by the platform does not contain a
     // namespace prefix so we have to add it or else the event doesn't get

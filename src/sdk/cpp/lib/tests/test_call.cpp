@@ -209,7 +209,8 @@ TEST(call, ReplyGatherer_Gather) {
 
     auto gather_func = [](std::vector<json>) { return json{nullptr}; };
     auto publisher = std::make_shared<PublisherMock>();
-    auto replier = PreparedFunctionReply{"talent_id", "feature", "subject", "channel_id", "call_id", "return_topic", publisher};
+    auto event = Event{"subject", "feature", json{{"chnl", "chnl"}, {"call", "call"}}, "type", "instance", "return_topic"};
+    auto replier = PreparedFunctionReply{"talent_id", "feature", event, "return_topic", publisher};
     auto gatherer = ReplyGatherer{gather_func, nullptr, replier, tokens};
 
     for (const auto& tup : in_out_tuple) {

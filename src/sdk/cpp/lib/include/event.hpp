@@ -30,19 +30,6 @@ using json = nlohmann::json;
 namespace iotea {
 namespace core {
 
-#if 0
-class Message;
-class Talent;
-class Event;
-class Publisher;
-class CallToken;
-class EventContext;
-class CallContext;
-class Callee;
-class ReplyHandler;
-class DiscoverMessage;
-#endif
-
 /**
  * @brief Arriving messages must be parsed in two steps beginning with
  * determining what kind of message it is (one of DiscoverMessage, Event,
@@ -264,14 +251,16 @@ class Event {
      * @param subject The name of the subject as determined by the context from which the event originated.
      * @param feature The name of the feature represented by the event.
      * @param value The event payload value.
+     * @param features The feature object contained within the event.
      * @param type The name of the type associated with the event.
      * @param instance The name of the instance associated with the event.
      * @param return_topic The name of the topic to send replies on (if any).
      * @param when The point in time when the event was emitted.
      */
     Event(const std::string& subject, const std::string& feature, const json& value,
-          const std::string& type = "default", const std::string& instance = "default",
-          const std::string& return_topic = "", int64_t when = GetEpochTimeMs());
+          const json& features, const std::string& type = "default",
+          const std::string& instance = "default", const std::string& return_topic = "",
+          int64_t when = GetEpochTimeMs());
 
     Event() = default;
 
@@ -302,6 +291,13 @@ class Event {
      * @return json
      */
     virtual json GetValue() const;
+
+    /**
+     * @brief Get the features of the event.
+     *
+     * @return std::string
+     */
+    virtual json GetFeatures() const;
 
     /**
      * @brief Get the name of the instance.
@@ -354,6 +350,7 @@ class Event {
     std::string subject_;
     std::string feature_;
     json value_;
+    json features_;
     std::string type_;
     std::string instance_;
     int64_t when_;
@@ -384,7 +381,7 @@ class OutgoingEvent {
         : subject_{subject}
         , talent_id_{talent_id}
         , feature_{feature}
-        , value_{value}
+        , value_(value)
         , type_{type}
         , instance_{instance}
         , when_{when} {}
