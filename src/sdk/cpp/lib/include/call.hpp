@@ -20,6 +20,8 @@
 #include "nlohmann/json.hpp"
 
 #include "common.hpp"
+#include "event.hpp"
+#include "interface.hpp"
 #include "util.hpp"
 
 using json = nlohmann::json;
@@ -315,18 +317,13 @@ class PreparedFunctionReply {
      *
      * @param talent_id The ID of the talent to send the reply to
      * @param feature The name of the feature
-     * @param subject The subject of the original event resulting in the
-     * function call
-     * @param channel_id The ID of the calling talent's channel_id
-     * @param call_id The unique call IDs
+     * @param event The event that triggered the call
      * @param return_topic The topic on which the reply should be posted
      * @param publisher A pointer to a Publisher
      */
     PreparedFunctionReply(const std::string& talent_id,
             const std::string& feature,
-            const std::string& subject,
-            const std::string& channel_id,
-            const std::string& call_id,
+            const Event& event,
             const std::string& return_topic,
             publisher_ptr publisher);
 
@@ -342,6 +339,7 @@ class PreparedFunctionReply {
    private:
     std::string talent_id_;
     std::string feature_;
+    Event event_;
     std::string subject_;
     std::string channel_id_;
     std::string call_id_;

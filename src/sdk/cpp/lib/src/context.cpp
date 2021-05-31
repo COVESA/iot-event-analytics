@@ -47,6 +47,7 @@ std::string EventContext::GetReturnTopic() const {
 CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
                          const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
     : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_handler, publisher, uuid_gen}
+    , event_{event}
     , feature_{feature}
     , channel_{event.GetValue()["chnl"].get<std::string>()}
     , call_{event.GetValue()["call"].get<std::string>()}
@@ -80,9 +81,18 @@ CallToken CallContext::Call(const Callee& callee, const json& args, int64_t time
 }
 
 void CallContext::Reply(const json& value) const {
-    auto result = json{{"$tsuffix", std::string("/") + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
+    auto channel = event_.GetValue()["chnl"].get<std::string>();
+    auto call = event_.GetValue()["call"].get<std::string>();
+    auto result = json{
+        {"$tsuffix", std::string("/") + channel + "/" + call},
+        {"$vpath", "value"},
+        {"value", value}
+    };
 
-    auto event = Event{subject_, talent_id_ + "." + feature_, result};
+    auto subject = event_.GetSubject();
+    auto type = event_.GetType();
+    auto instance = event_.GetInstance();
+    auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
     // Currently the return topic sent by the platform does not contain a
     // namespace prefix so we have to add it or else the event doesn't get

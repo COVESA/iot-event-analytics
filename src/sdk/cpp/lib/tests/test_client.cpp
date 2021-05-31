@@ -97,7 +97,7 @@ TEST(client, Client_HandleAsCall) {
         "call": "00000000-0000-0000-0000-000000000000",
         "timeoutAtMs": 1234
     })");
-    auto event = Event{"subject", "beta.function-in", value};
+    auto event = Event{"subject", "beta.function-in", value, json{}};
 
     ASSERT_FALSE(client.HandleAsCall(alpha, event));
 
@@ -176,6 +176,7 @@ TEST(client, Client_HandleEvent) {
                 "chnl": "00000000-0000-0000-0000-000000000000",
                 "call": "00000000-0000-0000-0000-000000000000"
             },
+        "$features": "Not important for this test",
         "type": "type",
         "instance": "instance",
         "returnTopic": "return_topic",
@@ -195,6 +196,7 @@ TEST(client, Client_HandleEvent) {
         "msgType": 1,
         "subject": "subject",
         "feature": "feature",
+        "$features": "Not important for this test",
         "value": "value",
         "type": "type",
         "instance": "instance",
@@ -212,6 +214,7 @@ TEST(client, Client_HandleEvent) {
         "msgType": 1,
         "subject": "subject",
         "feature": "feature",
+        "$features": "Not important for this test",
         "value": "value",
         "type": "type",
         "instance": "instance",
@@ -227,6 +230,7 @@ TEST(client, Client_HandleEvent) {
         "subject": "subject",
         "feature": "feature",
         "value": "value",
+        "$features": "Not important for this test",
         "type": "type",
         "instance": "instance",
         "whenMs": 1234

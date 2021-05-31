@@ -199,12 +199,13 @@ TEST(event, Event) {
     auto subject = "test_subject";
     auto feature = "test_feature";
     auto value = json{{"test", "json"}};
+    auto features = json{{"hello", "world"}};
     auto type = "test_type";
     auto instance = "test_instance";
     auto return_topic = "test/return/topic";
     auto when = int64_t{1615209290000};
 
-    auto event = Event(subject, feature, value, type, instance, return_topic, when);
+    auto event = Event(subject, feature, value, features, type, instance, return_topic, when);
 
     // Test that the Json/FromJson methods are inverses operations
     auto alpha = event.Json();
@@ -215,6 +216,7 @@ TEST(event, Event) {
     ASSERT_EQ(beta.GetSubject(), subject);
     ASSERT_EQ(beta.GetFeature(), feature);
     ASSERT_EQ(beta.GetValue(), value);
+    ASSERT_EQ(beta.GetFeatures(), features);
     ASSERT_EQ(beta.GetType(), type);
     ASSERT_EQ(beta.GetInstance(), instance);
     // The return topic is dropped during marshalling because its
@@ -229,6 +231,7 @@ TEST(event, Event_FromJson) {
     auto payload = json::parse(R"({
             "cid": "2294a18a-4179-491f-828c-7b615602f86f",
             "feature": "temp",
+            "$features": {"hello": "world"},
             "instance": "1",
             "msgType": 1,
             "now": 1618550741573,
@@ -243,6 +246,7 @@ TEST(event, Event_FromJson) {
     auto event = Event::FromJson(payload);
 
     ASSERT_EQ(event.GetFeature(), "temp");
+    ASSERT_EQ(event.GetFeatures(), (json{{"hello", "world"}}));
     ASSERT_EQ(event.GetInstance(), "1");
     ASSERT_EQ(event.GetReturnTopic(), "123456/ingestion/events");
 }

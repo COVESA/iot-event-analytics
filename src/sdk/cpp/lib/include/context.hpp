@@ -282,13 +282,14 @@ class CallContext : public EventContext {
     void GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
         auto now_ms = GetEpochTimeMs();
         auto tokens = std::vector<CallToken>{args...};
-        auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, subject_, channel_, call_, return_topic_, publisher_};
+        auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, event_, return_topic_, publisher_};
         auto gatherer = std::make_shared<ReplyGatherer>(func, timeout_func, prepared_reply, tokens, now_ms);
 
         reply_handler_->AddGatherer(gatherer);
     }
 
    private:
+    Event event_;
     std::string feature_;
     std::string channel_;
     std::string call_;
