@@ -11,6 +11,7 @@
 #ifndef SRC_SDK_CPP_LIB_INCLUDE_TALENT_HPP_
 #define SRC_SDK_CPP_LIB_INCLUDE_TALENT_HPP_
 
+#include <functional>
 #include <string>
 #include <vector>
 

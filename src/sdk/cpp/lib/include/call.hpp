@@ -22,6 +22,7 @@
 #include "common.hpp"
 #include "event.hpp"
 #include "interface.hpp"
+#include "protocol_gateway.hpp"
 #include "util.hpp"
 
 using json = nlohmann::json;
@@ -319,13 +320,13 @@ class PreparedFunctionReply {
      * @param feature The name of the feature
      * @param event The event that triggered the call
      * @param return_topic The topic on which the reply should be posted
-     * @param publisher A pointer to a Publisher
+     * @param gatewy A pointer to a GatewayProtocl
      */
     PreparedFunctionReply(const std::string& talent_id,
             const std::string& feature,
             const Event& event,
             const std::string& return_topic,
-            publisher_ptr publisher);
+            gateway_ptr gateway);
 
     virtual ~PreparedFunctionReply() = default;
 
@@ -344,7 +345,7 @@ class PreparedFunctionReply {
     std::string channel_id_;
     std::string call_id_;
     std::string return_topic_;
-    publisher_ptr publisher_;
+    gateway_ptr gateway_;
 };
 
 /**

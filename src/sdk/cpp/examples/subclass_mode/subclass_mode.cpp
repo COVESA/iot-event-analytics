@@ -9,12 +9,18 @@
  ****************************************************************************/
 
 #include <csignal>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <memory>
+
 #include "nlohmann/json.hpp"
 
 #include "client.hpp"
-#include "mqtt_client.hpp"
+#include "protocol_gateway.hpp"
 
 using json = nlohmann::json;
+using iotea::core::ProtocolGateway;
 using iotea::core::FunctionTalent;
 using iotea::core::Talent;
 using iotea::core::Client;
@@ -28,8 +34,6 @@ using iotea::core::Event;
 using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
 using iotea::core::schema::rule_ptr;
-
-constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 
 class MyService : public FunctionTalent {
    public:
@@ -98,19 +102,27 @@ class MyCallingTalent : public Talent {
     };
 };
 
-static Client client = Client{SERVER_ADDRESS};
+std::shared_ptr<Client> client;
 
 void signal_handler(int) {
-    client.Stop();
+    if (client) {
+        client->Stop();
+    }
 }
 
-int main(int, char**) {
-    client.RegisterFunctionTalent(std::make_shared<MyService>());
-    client.RegisterTalent(std::make_shared<MyReporingTalent>());
-    client.RegisterTalent(std::make_shared<MyCallingTalent>());
+int main(int, char** argv) {
+    std::ifstream file{argv[1]};
+    std::string config{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+
+    auto gateway = std::make_shared<ProtocolGateway>(json::parse(config));
+    client = std::make_shared<Client>(gateway);
+
+    client->RegisterFunctionTalent(std::make_shared<MyService>());
+    client->RegisterTalent(std::make_shared<MyReporingTalent>());
+    client->RegisterTalent(std::make_shared<MyCallingTalent>());
 
     std::signal(SIGINT, signal_handler);
-    client.Start();
+    client->Start();
 
     return 0;
 }

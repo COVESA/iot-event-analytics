@@ -1,0 +1,14 @@
+{
+    "adapters": [
+        {
+            "platform": true,
+            "module": {
+                "name": "libmqtt_protocol_adapter.so"
+            },
+            "config": {
+                "brokerUrl": "tcp://localhost:1883",
+                "topicNamespace": "iotea/"
+            }
+        }
+    ]
+}

@@ -11,12 +11,14 @@
 #ifndef SRC_SDK_CPP_LIB_INCLUDE_CLIENT_HPP_
 #define SRC_SDK_CPP_LIB_INCLUDE_CLIENT_HPP_
 
+#include <atomic>
 #include <memory>
-#include <vector>
-#include <unordered_map>
+#include <mutex>
 #include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 
-#include "mqtt_client.hpp"
 #include "event.hpp"
 #include "call.hpp"
 #include "talent.hpp"
@@ -109,12 +111,12 @@ class Client : public Receiver {
     /**
      * @brief Constructs a new client. An application typically only has one Client.
      *
-     * @param connection_string A string describing the broker the Client
-     * should connect to, Ex. "tcp://127.0.0.1:1883"
+     * @param gateway A ProtocolGatway
+     * configuration to use.
      */
-     explicit Client(const std::string& connection_string);
+     explicit Client(gateway_ptr gateway);
 
-     virtual ~Client() = default;
+     virtual ~Client();
 
      /**
       * @brief Start the client. All Services, Talents and subscriptions must
@@ -177,7 +179,8 @@ class Client : public Receiver {
      std::function<void(const PlatformEvent& event)> OnPlatformEvent;
 
     protected:
-        Client(std::shared_ptr<MqttClient> mqtt_client, std::shared_ptr<CalleeTalent> callee_talent, reply_handler_ptr reply_handler, const std::string& mqtt_topic_ns);
+
+    Client(gateway_ptr gateway, std::shared_ptr<CalleeTalent> callee_talent, reply_handler_ptr reply_handler);
 
      /**
       * @brief Parse and distribute a discover message to all Talents.
@@ -239,8 +242,9 @@ class Client : public Receiver {
       *
       * @param topic The topic the message was sent one
       * @param msg The message
+      * @param adapter_id The adapter the message was received from
       */
-     void Receive(const std::string& topic, const std::string& msg) override;
+     void Receive(const std::string& topic, const std::string& msg, const std::string& adapter_id) override;
 
      /**
       * @brief Handle the progress of time. This method is called
@@ -258,41 +262,19 @@ class Client : public Receiver {
       */
      virtual void SubscribeInternal(std::shared_ptr<Talent> talent);
 
-     /**
-      * @brief Get the discover topic.
-      *
-      * @return std::string
-      */
-     std::string GetDiscoverTopic() const;
-
-     /**
-      * @brief Get the topic's shared prefix.
-      *
-      * @return std::string
-      */
-     std::string GetSharedPrefix(const std::string& talent_id) const;
-
-     /**
-      * @brief Get the event topic.
-      *
-      * @return std::string
-      */
-     std::string GetEventTopic(const std::string& talent_id) const;
-
-     /**
-      * @brief Get the platform events topic.
-      *
-      * @return std:.string
-      */
-     std::string GetPlatformEventsTopic() const;
-
     private:
-     std::shared_ptr<MqttClient> mqtt_client_;
+     void StartTicker();
+     void StopTicker();
+
+     gateway_ptr gateway_;
      std::shared_ptr<CalleeTalent> callee_talent_;
      std::unordered_map<std::string, std::shared_ptr<FunctionTalent>> function_talents_;
      std::unordered_map<std::string, std::shared_ptr<Talent>> subscription_talents_;
      reply_handler_ptr reply_handler_;
-     const std::string mqtt_topic_ns_;
+
+     std::thread ticker_thread_;
+     std::atomic_bool ticker_is_running_;
+     std::mutex mutex_;
 };
 
 

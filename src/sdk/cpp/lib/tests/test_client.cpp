@@ -18,25 +18,44 @@ using json = nlohmann::json;
 
 using namespace iotea::core;
 
-class TestMqttClient : public MqttClient {
+const json test_config = {
+    {"adapters", {
+                     {
+                         {"platform", true},
+                         {"module", {
+                                 {"name", "mqtt_client"},
+                            }
+                         },
+                         {"config", {
+                                {"brokerUrl", "mqtt://localhost:1883"},
+                                {"topicNamespace", "iotea/"}
+                            }
+                         }
+                     }
+                 }
+    }};
+
+class TestProtocolGateway : public ProtocolGateway {
    public:
-    TestMqttClient() : MqttClient() {};
+    TestProtocolGateway() : ProtocolGateway{test_config, "", false} {}
 
-    MOCK_METHOD(void, Run, (), (override));
+    MOCK_METHOD(void, Publish, (const std::string&, const std::string&, const PublishOptions&), (override));
+
+    MOCK_METHOD(void, Subscribe, (const std::string&, on_msg_func_ptr, const SubscribeOptions&), (override));
+
+    MOCK_METHOD(void, SubscribeShared, (const std::string&, const std::string&, on_msg_func_ptr, const SubscribeOptions&), (override));
+
+    MOCK_METHOD(void, Start, (), (override));
     MOCK_METHOD(void, Stop, (), (override));
-
-    MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
-    MOCK_METHOD(void, Subscribe, (const std::string&, int), (override));
 };
 
 TEST(client, Client_Receive) {
     class TestClient : public Client {
        public:
         TestClient()
-            : Client(std::make_shared<TestMqttClient>(),
+            : Client(std::make_shared<TestProtocolGateway>(),
                     std::make_shared<CalleeTalent>("00000000-0000-0000-0000-000000000000"),
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         using Client::Receive;
         MOCK_METHOD(void, HandleEvent, (const std::string&, const std::string&), (override));
@@ -49,29 +68,28 @@ TEST(client, Client_Receive) {
 
     // Verify that messages sent under the "event topic" get routed to HandleEvent
     EXPECT_CALL(client, HandleEvent("talent-name", "some message"));
-    client.Receive("iotea/talent/talent-name/events", "some message");
+    client.Receive("iotea/talent/talent-name/events", "some message", "");
 
     // Verify that messages sent under the "call reply topic" get routed to HandleCallReply
     EXPECT_CALL(client, HandleCallReply("talent-name", "channel_id", call_id_t{"call_id"}, "some message"));
-    client.Receive("iotea/talent/talent-name/events/talent-name.channel_id/call_id", "some message");
+    client.Receive("iotea/talent/talent-name/events/talent-name.channel_id/call_id", "some message", "");
 
     // Verify that messages sent under the "discover topic" get routed to HandleDiscover
     EXPECT_CALL(client, HandleDiscover("some message"));
-    client.Receive("iotea/configManager/talents/discover", "some message");
+    client.Receive("iotea/configManager/talents/discover", "some message", "");
 
     // Verify that messages sent under the "platform event topic" get routed to HandlePlatformEvent
     EXPECT_CALL(client, HandlePlatformEvent("some message"));
-    client.Receive("iotea/platform/$events", "some message");
+    client.Receive("iotea/platform/$events", "some message", "");
 }
 
 TEST(client, Client_HandleAsCall) {
     class TestClient : public Client {
        public:
         TestClient()
-            : Client(std::make_shared<TestMqttClient>(),
+            : Client(std::make_shared<TestProtocolGateway>(),
                     std::make_shared<CalleeTalent>("00000000-0000-0000-0000-000000000000"),
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         using Client::HandleAsCall;
     };
@@ -134,10 +152,9 @@ TEST(client, Client_HandleEvent) {
     class TestClient : public Client {
        public:
         explicit TestClient(std::shared_ptr<CalleeTalent> callee_talent)
-            : Client(std::make_shared<TestMqttClient>(),
+            : Client(std::make_shared<TestProtocolGateway>(),
                     callee_talent,
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         MOCK_METHOD(void, HandleError, (const ErrorMessage&), (override));
         MOCK_METHOD(bool, HandleAsCall, (std::shared_ptr<FunctionTalent>, const Event&), (override));
@@ -266,18 +283,17 @@ TEST(client, Client_HandleDiscover) {
 
     class TestClient : public Client {
        public:
-        TestClient(std::shared_ptr<MqttClient> mqtt_client, std::shared_ptr<CalleeTalent> callee_talent)
-            : Client(mqtt_client,
+        TestClient(std::shared_ptr<TestProtocolGateway> gateway, std::shared_ptr<CalleeTalent> callee_talent)
+            : Client(gateway,
                     callee_talent,
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         using Client::HandleDiscover;
     };
 
-    auto mqtt_client = std::make_shared<TestMqttClient>();
+    auto gateway = std::make_shared<TestProtocolGateway>();
     auto callee_talent = std::make_shared<TestCalleeTalent>("00000000-0000-0000-0000-000000000000");
-    TestClient client{mqtt_client, callee_talent};
+    TestClient client{gateway, callee_talent};
 
     auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
     client.RegisterFunctionTalent(function_talent);
@@ -292,7 +308,7 @@ TEST(client, Client_HandleDiscover) {
 
     EXPECT_CALL(*callee_talent, GetSchema())
         .WillRepeatedly(::testing::Return(schema::Schema{"00000000-0000-0000-0000-000000000000", {}, {}, std::make_shared<schema::Rule>(nullptr)}));
-    EXPECT_CALL(*mqtt_client, Publish(::testing::_, ::testing::_)).Times(2);
+    EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_)).Times(2);
 
 
     EXPECT_CALL(*callee_talent, HasSchema()).WillOnce(::testing::Return(false));
@@ -300,7 +316,7 @@ TEST(client, Client_HandleDiscover) {
     client.HandleDiscover(R"({"msgType":2,"version":"2.0.0","returnTopic":"123456/configManager/talent/discover"})");
 
     EXPECT_CALL(*callee_talent, HasSchema()).WillOnce(::testing::Return(true));
-    EXPECT_CALL(*mqtt_client, Publish(::testing::_, ::testing::_)).Times(3);
+    EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_)).Times(3);
 
     client.HandleDiscover(R"({"msgType":2,"version":"2.0.0","returnTopic":"123456/configManager/talent/discover"})");
 }
@@ -325,17 +341,16 @@ TEST(client, Client_HandlePlatformEvent) {
 
     class TestClient : public Client {
        public:
-        explicit TestClient(std::shared_ptr<MqttClient> mqtt_client)
-            : Client(mqtt_client,
+        explicit TestClient(std::shared_ptr<TestProtocolGateway> gateway)
+            : Client(gateway,
                     std::make_shared<CalleeTalent>(""),
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         using Client::HandlePlatformEvent;
     };
 
-    auto mqtt_client = std::make_shared<TestMqttClient>();
-    TestClient client{mqtt_client};
+    auto gateway = std::make_shared<TestProtocolGateway>();
+    TestClient client{gateway};
 
     auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
     client.RegisterFunctionTalent(function_talent);
@@ -369,17 +384,16 @@ TEST(client, Client_HandleError) {
 
     class TestClient : public Client {
        public:
-        explicit TestClient(std::shared_ptr<MqttClient> mqtt_client)
-            : Client(mqtt_client,
+        explicit TestClient(std::shared_ptr<TestProtocolGateway> gateway)
+            : Client(gateway,
                     std::make_shared<CalleeTalent>(""),
-                    std::make_shared<ReplyHandler>(),
-                    "iotea") {}
+                    std::make_shared<ReplyHandler>()) {}
 
         using Client::HandleError;
     };
 
-    auto mqtt_client = std::make_shared<TestMqttClient>();
-    TestClient client{mqtt_client};
+    auto gateway = std::make_shared<TestProtocolGateway>();
+    TestClient client{gateway};
 
     auto function_talent = std::make_shared<TestFunctionTalent>("function_talent");
     client.RegisterFunctionTalent(function_talent);

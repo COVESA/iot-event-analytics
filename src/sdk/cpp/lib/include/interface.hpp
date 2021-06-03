@@ -18,34 +18,18 @@ namespace iotea {
 namespace core {
 
 /**
- * @brief The Publisher interface describes the methods required to emit events
- * and make function calls.
- *
- * @param toipc The topic the message should be sent on
- * @param msg The message payload
- */
-class Publisher {
-   public:
-    virtual ~Publisher() = default;
-
-    virtual void Publish(const std::string& topic, const std::string& msg) = 0;
-};
-
-
-/**
  * @brief The Receiver interface describes methods required to receive
  * MQTT messages.
  *
  * @param topic The topic the message was sent on
  * @param msg The message payload
+ * @param adapter_id The adapter the message was received from
  */
 class Receiver {
    public:
     virtual ~Receiver() = default;
-    virtual void Receive(const std::string& topic, const std::string& msg) = 0;
+    virtual void Receive(const std::string& topic, const std::string& msg, const std::string& adapter_id) = 0;
 };
-
-using publisher_ptr = std::shared_ptr<Publisher>;
 
 }  // namespace core
 }  // namespace iotea

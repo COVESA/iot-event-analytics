@@ -9,17 +9,22 @@
  ****************************************************************************/
 
 #include <algorithm>
+#include <chrono>
+#include <regex>
 
 #include "event.hpp"
 #include "client.hpp"
 #include "logging.hpp"
+#include "util.hpp"
 
 namespace iotea {
 namespace core {
 
-static constexpr char INGESTION_EVENTS_TOPIC[] = "ingestion/events";
-static constexpr char PLATFORM_EVENTS_TOPIC[] = "platform/$events";
-static constexpr char TALENTS_DISCOVERY_TOPIC[] = "configManager/talents/discover";
+static constexpr char INGESTION_EVENTS_TOPIC[] = R"(ingestion/events)";
+static constexpr char PLATFORM_EVENTS_TOPIC[] = R"(platform/$events)";
+static constexpr char TALENTS_DISCOVERY_TOPIC[] = R"(configManager/talents/discover)";
+
+using namespace std::chrono_literals;
 
 //
 // Service
@@ -65,39 +70,37 @@ void CalleeTalent::AddCallees(const std::vector<Callee>& callees) {
 //
 static auto logger = NamedLogger("Client");
 
-Client::Client(const std::string& connection_string)
-    : mqtt_client_{new MqttClient(connection_string, GenerateUUID())}
+Client::Client(gateway_ptr gateway)
+    : gateway_{gateway}
     , callee_talent_(new CalleeTalent{GenerateUUID()})
-    , reply_handler_{std::make_shared<ReplyHandler>()}
-    , mqtt_topic_ns_{GetEnv(MQTT_TOPIC_NS, "iotea")} {
+    , reply_handler_{std::make_shared<ReplyHandler>()} {
+        ticker_is_running_.store(false);
+    }
 
-    mqtt_client_->OnMessage = [this](mqtt::const_message_ptr msg) {
-        Receive(msg->get_topic(), msg->get_payload());
-    };
-    mqtt_client_->OnTick = [this](int64_t ts) {
-        UpdateTime(ts);
-    };
+Client::Client(gateway_ptr gateway,
+        std::shared_ptr<CalleeTalent> callee_talent,
+        reply_handler_ptr reply_handler)
+    : gateway_{gateway}
+    , callee_talent_{callee_talent}
+    , reply_handler_{reply_handler} {
+        ticker_is_running_.store(false);
+    }
+
+Client::~Client() {
+    if (ticker_thread_.joinable()) {
+        ticker_thread_.join();
+    }
 }
 
-Client::Client(std::shared_ptr<MqttClient> mqtt_client,
-        std::shared_ptr<CalleeTalent> callee_talent,
-        reply_handler_ptr reply_handler,
-        const std::string& mqtt_topic_ns)
-    : mqtt_client_{mqtt_client}
-    , callee_talent_{callee_talent}
-    , reply_handler_{reply_handler}
-    , mqtt_topic_ns_{mqtt_topic_ns} {}
-
-
 void Client::Start() {
+    gateway_->Initialize();
     callee_talent_->Initialize(reply_handler_, nullptr, GenerateUUID);
     SubscribeInternal(callee_talent_);
 
     static auto context_creator = [this](const std::string& subject) {
-        auto ingenstion_events_topic = mqtt_topic_ns_ + "/" + INGESTION_EVENTS_TOPIC;
         return std::make_shared<EventContext>(callee_talent_->GetId(),
-            callee_talent_->GetChannelId(), subject, ingenstion_events_topic,
-            reply_handler_, mqtt_client_, GenerateUUID);
+            callee_talent_->GetChannelId(), subject, INGESTION_EVENTS_TOPIC,
+            reply_handler_, gateway_, GenerateUUID);
     };
 
     for (const auto& ft_pair : function_talents_) {
@@ -109,11 +112,33 @@ void Client::Start() {
         SubscribeInternal(st_pair.second);
     }
 
-    mqtt_client_->Run();
+    StartTicker();
+    gateway_->Start();
+}
+
+void Client::StartTicker() {
+    ticker_thread_ = std::thread{[this]{
+            ticker_is_running_.store(true);
+            while (ticker_is_running_.load()) {
+                auto ts = GetEpochTimeMs();
+                UpdateTime(ts);
+
+                std::this_thread::sleep_for(1s);
+            }
+        }
+    };
+}
+
+void Client::StopTicker() {
+    ticker_is_running_.store(false);
+    if (ticker_thread_.joinable()) {
+        ticker_thread_.join();
+    }
 }
 
 void Client::Stop() {
-    mqtt_client_->Stop();
+    StopTicker();
+    gateway_->Stop();
 }
 
 void Client::Register(const Service& service) {
@@ -132,13 +157,15 @@ void Client::RegisterTalent(std::shared_ptr<Talent> t) {
 void Client::SubscribeInternal(std::shared_ptr<Talent> t) {
     auto talent_id = t->GetId();
     auto channel_id = t->GetChannelId();
-    auto shared_prefix = GetSharedPrefix(talent_id);
 
-    mqtt_client_->Subscribe(shared_prefix + "/" + GetDiscoverTopic());
-    mqtt_client_->Subscribe(shared_prefix + "/" + GetPlatformEventsTopic());
+    auto on_msg = [this](const std::string& topic, const std::string& message, const std::string& adapter) {
+        Receive(topic, message, adapter);
+    };
+    gateway_->SubscribeShared(talent_id, TALENTS_DISCOVERY_TOPIC, on_msg);
+    gateway_->SubscribeShared(talent_id, PLATFORM_EVENTS_TOPIC, on_msg);
 
-    mqtt_client_->Subscribe(shared_prefix + "/" + mqtt_topic_ns_ + "/talent/" + talent_id + "/events");
-    mqtt_client_->Subscribe(mqtt_topic_ns_ + "/talent/" + talent_id + "/events/" + channel_id + "/+");
+    gateway_->SubscribeShared(talent_id, "talent/" + talent_id + "/events", on_msg);
+    gateway_->Subscribe("talent/" + talent_id + "/events/" + channel_id + "/+", on_msg);
 }
 
 Callee Client::CreateCallee(const std::string& talent_id, const std::string& func, const std::string& type) {
@@ -155,7 +182,7 @@ void Client::HandleDiscover(const std::string& msg) {
     logger.Debug() << "Received discovery message.";
     auto payload = json::parse(msg);
     auto dmsg = DiscoverMessage::FromJson(payload);
-    auto return_topic = mqtt_topic_ns_ + "/" + dmsg.GetReturnTopic();
+    auto return_topic = dmsg.GetReturnTopic();
 
     callee_talent_->ClearCallees();
 
@@ -164,7 +191,7 @@ void Client::HandleDiscover(const std::string& msg) {
         callee_talent_->AddCallees(callees);
 
         auto schema = talent.second->GetSchema().Json().dump();
-        mqtt_client_->Publish(return_topic, schema);
+        gateway_->Publish(return_topic, schema);
     }
 
     for (const auto& talent : subscription_talents_) {
@@ -172,12 +199,12 @@ void Client::HandleDiscover(const std::string& msg) {
         callee_talent_->AddCallees(callees);
 
         auto schema = talent.second->GetSchema().Json().dump();
-        mqtt_client_->Publish(return_topic, schema);
+        gateway_->Publish(return_topic, schema);
     }
 
     if (callee_talent_->HasSchema()) {
         auto schema = callee_talent_->GetSchema().Json().dump();
-        mqtt_client_->Publish(return_topic, schema);
+        gateway_->Publish(return_topic, schema);
     }
 }
 
@@ -230,7 +257,7 @@ bool Client::HandleAsCall(std::shared_ptr<FunctionTalent> t, const Event& event)
             t->GetOutputName(it->first),
             event,
             reply_handler_,
-            mqtt_client_,
+            gateway_,
             GenerateUUID);
     auto args = event.GetValue()["args"];
     it->second(args, ctx);
@@ -283,7 +310,7 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
                 event.GetSubject(),
                 event.GetReturnTopic(),
                 reply_handler_,
-                mqtt_client_,
+                gateway_,
                 GenerateUUID);
         ft_iter->second->OnEvent(event, ctx);
         return;
@@ -301,7 +328,7 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
                 event.GetSubject(),
                 event.GetReturnTopic(),
                 reply_handler_,
-                mqtt_client_,
+                gateway_,
                 GenerateUUID);
         t->OnEvent(event, ctx);
         return;
@@ -313,7 +340,7 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
                 event.GetSubject(),
                 event.GetReturnTopic(),
                 reply_handler_,
-                mqtt_client_,
+                gateway_,
                 GenerateUUID);
         callee_talent_->OnEvent(event, ctx);
         return;
@@ -348,41 +375,32 @@ void Client::HandleCallReply(const std::string& talent_id, const std::string&
     gatherer->ForwardReplies(replies);
 }
 
-std::string Client::GetDiscoverTopic() const { return mqtt_topic_ns_ + "/" + TALENTS_DISCOVERY_TOPIC; }
-
-std::string Client::GetSharedPrefix(const std::string& talent_id) const { return "$share/" + talent_id; }
-
-std::string Client::GetEventTopic(const std::string& talent_id) const {
-    return mqtt_topic_ns_ + "/talent/" + talent_id + "/events";
-}
-
-std::string Client::GetPlatformEventsTopic() const {
-    return mqtt_topic_ns_+ "/" + PLATFORM_EVENTS_TOPIC;
-}
-
-void Client::Receive(const std::string& topic, const std::string& msg) {
+void Client::Receive(const std::string& topic, const std::string& msg, const std::string& adapter_id) {
     logger.Debug() << "Message arrived.";
     logger.Debug() << "\ttopic: '" << topic << "'";
-    logger.Debug() << "\tpayload: '" << msg;
+    logger.Debug() << "\tpayload: " << msg;
+    logger.Debug() << "\tadapter: " << adapter_id;
 
     std::cmatch m;
+
+    // TODO make the lock more granular
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Forward event
     // Received events look like this {MQTT_TOPIC_NS}/talent/<talentId>/events
     // In the regex below we assume that both instance of <talentId> are the same
-    static const auto event_expr = std::regex{"^" + mqtt_topic_ns_ + R"(/talent/([^/]+)/events$)"};
+    static const auto event_expr = std::regex{R"(.*/talent/([^/]+)/events$)"};
     if (std::regex_match(topic.c_str(), m, event_expr)) {
         auto talent_id = m[1];
         HandleEvent(talent_id, msg);
         return;
     }
-
     // iotea/talent/event_consumer/events/channel/callid
     // Forward deferred call response
     // talent/<talentId>/events/<callChannelId>.<deferredCallId>
     // talent/<talentId>/events/<talentId>.<callChannelId>/<callId>
     static const auto call_expr =
-        std::regex{"^" + mqtt_topic_ns_ + R"(/talent/[^/]+/events/([^\.]+)\.([^/]+)/(.+)$)"};
+        std::regex{R"(.*/talent/[^/]+/events/([^\.]+)\.([^/]+)/(.+)$)"};
     if (std::regex_match(topic.c_str(), m, call_expr)) {
         std::string talent_id{m[1]};
         std::string channel_id{m[2]};
@@ -393,13 +411,12 @@ void Client::Receive(const std::string& topic, const std::string& msg) {
     }
 
     // Forward discovery request
-    if (topic == GetDiscoverTopic()) {
+    if (topic.find(TALENTS_DISCOVERY_TOPIC) != std::string::npos) {
         HandleDiscover(msg);
         return;
     }
 
-    // Forward platform request
-    if (topic == GetPlatformEventsTopic()) {
+    if (topic.find(PLATFORM_EVENTS_TOPIC) != std::string::npos) {
         HandlePlatformEvent(msg);
         return;
     }
@@ -408,6 +425,7 @@ void Client::Receive(const std::string& topic, const std::string& msg) {
 }
 
 void Client::UpdateTime(int64_t ts) {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto timed_out = reply_handler_->ExtractTimedOut(ts);
 
     std::for_each(timed_out.begin(), timed_out.end(), [](const auto& g) {
