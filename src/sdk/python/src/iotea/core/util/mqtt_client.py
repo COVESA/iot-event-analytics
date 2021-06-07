@@ -83,7 +83,6 @@ class MqttProtocolAdapter:
 
 
 
-
 from ..constants import ONE_SECOND_MS
 
 MAX_RECONNECT_RETRIES = 100000
@@ -153,7 +152,7 @@ class MqttClient:
         if options is None:
             options = {}
 
-        self.__validate_json(json_)
+        self.validate_json(json_)
 
         await self.publish(topics, json.dumps(json_, separators=(',', ':')), options, stash)
 
@@ -205,7 +204,9 @@ class MqttClient:
         client = await self.get_client_async()
         if not isinstance(topics, list):
             topics = [topics]
-        await client.unsubscribe(topics)
+        prefixed_topics = [self.__prefix_topic_ns(topic) for topic in topics]
+        await client.unsubscribe(prefixed_topics)
+
 
     @staticmethod
     def create_client_id(prefix):
@@ -273,15 +274,11 @@ class MqttClient:
         self.subscriptions.append(probe_subscription)
 
         self.logger.debug('Probe subscription is {}'.format(subscribe_to))
-
         await client.subscribe([
             (subscribe_to, QOS_0)
         ])
-
         self.logger.debug('Publishing probe to {}'.format(publish_to))
-
         await client.publish(publish_to, 'probe-{}'.format(probe_uuid).encode(MQTT_MESSAGE_ENCODING), qos=QOS_0)
-
         timeout_at_ms = time.time() * ONE_SECOND_MS + timeout_ms
 
         try:
@@ -301,9 +298,7 @@ class MqttClient:
         while True:
             try:
                 msg = await self.client.deliver_message()
-
                 i = len(self.subscriptions) - 1
-
                 while i >= 0:
                     subscription = self.subscriptions[i]
                     i -= 1
@@ -311,17 +306,16 @@ class MqttClient:
                         await self.client.unsubscribe([subscription.topic])
                         self.subscriptions.remove(subscription)
                         continue
-
                     subscription.messages.put_nowait(msg)
             # pylint: disable=broad-except
             except Exception as err:
                 self.logger.warning(err)
                 await asyncio.sleep(1)
 
-    def __validate_json(self, json_=None):
+    @staticmethod
+    def validate_json(json_=None):
         if json_ is not None and (isinstance(json_, dict) or isinstance(json_, list)):
             return
-
         raise Exception('Given JSON document is neither a dictionary nor a list')
 
 class NamedMqttClient(MqttClient):
@@ -362,19 +356,17 @@ class Subscription:
 
             if message is None:
                 continue
-
             if self.topic_regex.fullmatch(message.topic) is None:
                 continue
 
             decoded_message = message.publish_packet.payload.data.decode(MQTT_MESSAGE_ENCODING)
-
             if to_json:
                 try:
                     decoded_message = json.loads(decoded_message)
-                    self.__validate_json(decoded_message)
+                    MqttClient.validate_json(decoded_message)
                 # pylint: disable=broad-except
                 except Exception:
-                    # json.JSONDecodeError from json.loads or Exception from __validate_json
+                    # json.JSONDecodeError from json.loads or Exception from validate_json
                     # Skip that message, since it's not a valid JSON document
                     continue
 
@@ -383,11 +375,6 @@ class Subscription:
             else:
                 callback(decoded_message, message.topic)
 
-    def __validate_json(self, json_=None):
-        if json_ is not None and (isinstance(json_, dict) or isinstance(json_, list)):
-            return
-
-        raise Exception('Given JSON document is neither a dictionary nor a list')
 
 class ProbeSubscription(Subscription):
     def __init__(self, topic):
