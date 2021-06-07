@@ -18,8 +18,7 @@ IoT Event Analytics consists of:
 
 - [Platform Components](#Platform-Components)
 - [SDK Components](#SDK-Components)
-- [Utils](#Utils-Components)
-- [Plugin / Extensions](#Plugin-/-Extensions)
+- [Plugins / Extensions](##Plugins-/-Extensions)
 
 Please note that IoTEA uses several abstraction layers to provide flexibility in its deployment.
 For further details see [IoT Event Analytics - Communication](./iotea-communication.md).
@@ -38,11 +37,11 @@ These components can be deployed on the edge device itself which reduces traffic
 
 The ConfigManager manages and provides the platform configuration. This is done statically via a configuration file (_config.json_).
 
-The ConfigManager provides a periodic [_Talent_](#Talent) discovery and provides platform configuration (e.g. available _Types_ and _Features_) and dynamically via a periodic _Talent_ discovery. It holds the [_MetadataManager_](#MetadataManager) and [TalentConfigManager](#TalentConfigManager) master instances and synchronize all other instances of them in the system.
+The ConfigManager provides a periodic [_Talent_](#Talent) discovery and provides platform configuration (e.g. available _Types_ and _Features_) and dynamically via a periodic _Talent_ discovery. It holds the [_MetadataManager_](#MetadataManager) and [TalentConfigManager](#TalentConfigManager) master instances and synchronizes all other instances of them in the system.
 
 ## Ingestion
 
-This component is used to transform and validate incoming events and it's configurable as an ETL-pipeline and Multi-Channel supports an arbitrary amount of parallel ETL-pipelines and its completely configurable via configuration files (json) and scalable via multiple instances.
+This component is used to transform and validate incoming events and configurable as an ETL-pipeline and supports an arbitrary amount of parallel ETL-pipelines via multi-channel. It is completely configurable via configuration files (json) and scalable via multiple instances.
 
 It validates value types (boolean, string, number, object, any) and _Types_ against metadata (e.g. using [_MetadataManager_](#MetadataManager)).
 
@@ -56,7 +55,7 @@ This component routes the events to specific [_Talents_](#Talent) by evaluating 
 
 ## Sub Components
 
-This components are used by the other platform components and act like helper or has been extracted to make them re-usable.
+These components are used by the other platform components and act like helper or have been extracted to make them re-usable.
 
 ### MetadataManager
 
@@ -88,7 +87,9 @@ This component provides AND & OR rules using one of the following constraints:
 
 The ProtocolGateway abstracts the publish-subscribe protocol from a specific implementation of it. Therefore, a _ProtocolGatewayAdapter_ is used to integrate the underlying publish-subscribe communication (e.g. MQTT Broker).
 
-This abstraction is not limited for platform components. It is also the common way to abstract the clients ([_Talents_](#Talent)).
+This abstraction is not limited for platform components. It is also the common way to abstract the clients ([_Talents_](#Talent)) communication.
+
+For more information see [IoT Event Analytics - Communication](./iotea-communication.md).
 
 # SDK Components
 
@@ -103,7 +104,7 @@ SDKs are available for following languages:
 - C++
 - (Experimental) NodeRed
 
-**Note**: Not all SDKs shares the same component structure, names and additional features.
+**Note**: Not all SDKs share the same component structure, names and additional features.
 
 ## Talent
 
@@ -122,7 +123,19 @@ Features:
 
 ## Function Talent
 
-A _Function Talent_ is an extension of a [_Talent_](#Talent)) which can provide functions via request-response which can be 'called' by other [_Talents_](#Talent)).
+A _Function Talent_ is an extension of a [_Talent_](#Talent) which can provide functions via request-response which can be 'called' by other [_Talents_](#Talent)).
+
+## TalentIO
+
+TalentIO provides an easy access interfaces for received messages and to prepare messages which will be send via IoT Event Analytics.
+
+## TestSetTalent
+
+This is a specialization of a [_Talent_](#Talent) which provides an simply API to implement and register integration tests by abstraction the underlying needed communication and functionality.
+
+## Protocol Gateway
+
+See [Protocol Gatway (Platform)](###ProtocolGateway).
 
 ## Map Reduce
 
@@ -132,8 +145,10 @@ Following Extensions of [_Talents_](#Talent) are available in several SDKs:
 - Worker
 - Reducer
 
-# VSCode Extension
+# Plugins / Extensions
 
-The VSCode extension provides setup routines, auto-completion and other helpers to develop, test and run [_Talents_](#Talent)).
+## VSCode Extension
 
-Installation instructions and further information can be found [here](../../../src/sdk/vscode/README.md).
+The VSCode extension provides setup routines, auto-completion and other helpers to develop, test and run [_Talents_](#Talent).
+
+Installation instructions and further information can be found [here](../../src/sdk/vscode/README.md).

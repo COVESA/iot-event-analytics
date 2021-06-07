@@ -20,6 +20,7 @@
     component FunctionTalent
     component TestSetTalent
     component TalentIO
+    component ProtocolGateway
 
     package MapReduce {
         component Mapper
