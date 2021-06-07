@@ -1,0 +1,260 @@
+import asyncio
+import json
+import unittest
+from unittest import TestCase
+
+import pytest
+from src.iotea.core.util.mqtt_client import MqttProtocolAdapter
+from src.iotea.core.protocol_gateway import ProtocolGateway
+
+
+@pytest.fixture
+def test_case():
+    return TestCase()
+
+
+@pytest.fixture
+def protocol_gateway():
+    mqtt_def_config = MqttProtocolAdapter.create_default_configuration(is_platform_protocol=True)
+    protocol_gateway_config = ProtocolGateway.create_default_configuration([mqtt_def_config])
+    return ProtocolGateway(protocol_gateway_config, 'TestProtocolGateway')
+
+
+# pylint: disable=unused-argument
+async def mock_publish(topic, message, publish_options=None, force_wait=False):
+    pass
+
+
+callback_invoked = False
+
+
+@pytest.mark.parametrize("group", [None, 'sub_shared'])
+@pytest.mark.parametrize("test_message", ['{"json": "test message"}'])
+@pytest.mark.parametrize("force_wait", [True, False])
+@pytest.mark.asyncio
+# pylint: disable=redefined-outer-name
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+async def test_subscribe(test_case, mocker, protocol_gateway, group, test_message, force_wait):
+    default_broker_url = 'mqtt://localhost:1883'
+    test_topic = 'test'
+
+    # Because of this issue https: // bugs.python.org / issue26140
+    # present in <= python 3.7:  asyncio.iscoroutinefunction(Mock(async_func)) fails
+    # and as AsyncMock is not available in 3.7, we need to redefine the callback functions
+    async def async_callback(message, topic, adapter_id):
+        sync_callback(message, topic, adapter_id)
+
+    def sync_callback(message, topic, adapter_id):
+        # pylint: disable=global-statement
+        global callback_invoked
+
+        callback_invoked = True
+        if isinstance(message, str):
+            message = json.loads(message)
+        test_case.assertEqual(json.loads(test_message), message)
+        test_case.assertEqual(test_topic, topic)
+        test_case.assertEqual(default_broker_url, adapter_id)
+
+    # pylint: disable=unused-argument
+    async def mock_subscribe(topic, cb, subscribe_options=None):
+        if asyncio.iscoroutinefunction(cb):
+            await cb(test_message, topic)
+        else:
+            cb(test_message, topic)
+
+    # pylint: disable=unused-argument
+    async def mock_subscribe_shared(group, topic, cb, subscribe_options=None):
+        if asyncio.iscoroutinefunction(cb):
+            await cb(test_message, topic)
+        else:
+            cb(test_message, topic)
+
+    if group is None:
+        mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.subscribe', wraps=mock_subscribe)
+        pg_subscribe_methods = [protocol_gateway.subscribe, protocol_gateway.subscribe_json]
+    else:
+        mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.subscribe_shared',
+                     wraps=mock_subscribe_shared)
+        pg_subscribe_methods = [protocol_gateway.subscribe_shared, protocol_gateway.subscribe_json_shared]
+    # pylint: disable=global-statement
+    global callback_invoked
+    callbacks = [async_callback, sync_callback]
+
+    for pg_subscribe in pg_subscribe_methods:
+        for callback in callbacks:
+            subscribe_options = ProtocolGateway.create_subscribe_options()
+            if group is None:
+                await pg_subscribe(test_topic, callback, subscribe_options=subscribe_options, force_wait=force_wait)
+                protocol_gateway.adapters[0].instance.subscribe.assert_called_with(test_topic, unittest.mock.ANY,
+                                                                                   subscribe_options)
+            else:
+                await pg_subscribe(group, test_topic, callback, subscribe_options=subscribe_options,
+                                   force_wait=force_wait)
+                protocol_gateway.adapters[0].instance.subscribe_shared.assert_called_with(group, test_topic,
+                                                                                          unittest.mock.ANY,
+                                                                                          subscribe_options)
+
+            # the subscription is not awaited but sent to event loop, so wait to get the job done
+            if not force_wait:
+                await asyncio.sleep(0.1)
+            # as Mock(async_callback) does not pass the test iscoroutingfunction,
+            # we need this hack to manually check if the callback has been invoked
+            test_case.assertEqual(True, callback_invoked,
+                                  f'Subscribe callback {callback} was not invoked from {pg_subscribe}!')
+            callback_invoked = False
+
+
+# pylint: disable=redefined-outer-name
+def test_has_platform_adapter(test_case, protocol_gateway):
+    pg_config = ProtocolGateway.create_default_configuration([{'platform': True}])
+    test_case.assertEqual(True, protocol_gateway.has_platform_adapter(pg_config),
+                          'ProtocolGateway should have a platform adapter!')
+
+    pg_config = ProtocolGateway.create_default_configuration([{}])
+    test_case.assertEqual(False, protocol_gateway.has_platform_adapter(pg_config),
+                          'ProtocolGateway should not have a platform adapter!')
+
+
+@pytest.mark.parametrize('test_message', ['test message', {'json': 'test message'}])
+@pytest.mark.parametrize('force_wait', [True, False])
+@pytest.mark.asyncio
+async def test_publish(mocker, protocol_gateway, test_message, force_wait):
+    test_topic = 'test'
+
+    mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.publish', wraps=mock_publish)
+
+    publish_options = ProtocolGateway.create_publish_options()
+    if isinstance(test_message, str):
+        await protocol_gateway.publish(test_topic, test_message, publish_options, force_wait=force_wait)
+        assert protocol_gateway.adapters[0].instance.publish.call_count == 1
+        protocol_gateway.adapters[0].instance.publish.assert_called_once_with(test_topic, test_message, publish_options)
+    else:
+        await protocol_gateway.publish_json(test_topic, test_message, publish_options, force_wait=force_wait)
+        assert protocol_gateway.adapters[0].instance.publish.call_count == 1
+        protocol_gateway.adapters[0].instance.publish.assert_called_once_with(test_topic, json.dumps(test_message,
+                                                                                                     separators=(
+                                                                                                         ',', ':')),
+                                                                              publish_options)
+
+
+@pytest.mark.asyncio
+# pylint: disable=redefined-outer-name
+async def test_publish_options(mocker, protocol_gateway):
+    test_topic = 'test'
+    test_message = 'test message'
+    mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.publish', wraps=mock_publish)
+    # test publish with None pub options
+    await protocol_gateway.publish(test_topic, test_message, None)
+    assert protocol_gateway.adapters[0].instance.publish.call_count == 1
+    protocol_gateway.adapters[0].instance.publish.assert_called_once_with(test_topic, test_message, unittest.mock.ANY)
+    # pylint: disable=unused-variable
+    args, kwargs = protocol_gateway.adapters[0].instance.publish.call_args
+    # check that public options is not None
+    assert args[2] is not None
+
+    # test publish to platform adapter
+    publish_options = ProtocolGateway.create_publish_options(True, None)
+    await protocol_gateway.publish(test_topic, test_message, publish_options)
+    assert protocol_gateway.adapters[0].instance.publish.call_count == 2
+    protocol_gateway.adapters[0].instance.publish.assert_called_with(test_topic, test_message, publish_options)
+
+
+@pytest.mark.asyncio
+async def test_subscribe_options(mocker, protocol_gateway):
+    test_topic = 'test'
+
+    # pylint: disable=unused-argument
+    async def mock_subscribe(topic, cb, subscribe_options=None):
+        pass
+
+    mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.subscribe', wraps=mock_subscribe)
+    # test with None sub options
+    await protocol_gateway.subscribe(test_topic, lambda: {}, subscribe_options=None)
+    assert protocol_gateway.adapters[0].instance.subscribe.call_count == 1
+    protocol_gateway.adapters[0].instance.subscribe.assert_called_with(test_topic, unittest.mock.ANY, unittest.mock.ANY)
+    # pylint: disable=unused-variable
+    args, kwargs = protocol_gateway.adapters[0].instance.subscribe.call_args
+    subscribe_options = args[2]
+    assert subscribe_options is not None
+
+    # test with custom options: subscribe with platform protocol adapter
+    subscribe_options = ProtocolGateway.create_subscribe_options(True, None)
+    await protocol_gateway.subscribe(test_topic, lambda: {}, subscribe_options=subscribe_options)
+    assert protocol_gateway.adapters[0].instance.subscribe.call_count == 2
+    protocol_gateway.adapters[0].instance.subscribe.assert_called_with(test_topic, unittest.mock.ANY, subscribe_options)
+
+
+def test_validate_configuration():
+    with pytest.raises(Exception):
+        ProtocolGateway.validate_configuration('bad configuration')
+
+    # adapters expected in configuration
+    with pytest.raises(Exception):
+        ProtocolGateway.validate_configuration({'no-adapters': 'present'})
+
+    # adapters must be a list
+    with pytest.raises(Exception):
+        ProtocolGateway.validate_configuration({'adapters': 'is not a list'})
+
+    # more than one platform adapter not allowed
+    with pytest.raises(Exception):
+        ProtocolGateway.validate_configuration({'adapters': [{'platform': True}, {'platform': True}]})
+
+    # no platform adapter available, while required
+    with pytest.raises(Exception):
+        ProtocolGateway.validate_configuration({'adapters': [{'platform': False}, {'no-platform-tag': True}]},
+                                               use_platform_protocol_only=True)
+
+
+@pytest.mark.asyncio
+async def test_validate_platform_protocol_usage():
+    mqtt_def_config = MqttProtocolAdapter.create_default_configuration(is_platform_protocol=True)
+    protocol_gateway_config = ProtocolGateway.create_default_configuration([mqtt_def_config])
+    protocol_gateway = ProtocolGateway(protocol_gateway_config, 'TestProtocolGateway', use_platform_protocol_only=True)
+    publish_options = ProtocolGateway.create_publish_options(platform_protocol_only=False)
+    with pytest.raises(Exception):
+        await protocol_gateway.publish("test_topic", "test message", publish_options)
+
+
+def test_init_protocol_gateway():
+    # create a configuration with 2 adapters: 1 platform and 1 not, the PG (use_platform_protocol_only=True) should filter only 1 of them
+    mqtt_def_config_1 = MqttProtocolAdapter.create_default_configuration(is_platform_protocol=False)
+    mqtt_def_config_2 = MqttProtocolAdapter.create_default_configuration(is_platform_protocol=True)
+    protocol_gateway_config = ProtocolGateway.create_default_configuration([mqtt_def_config_1, mqtt_def_config_2])
+    protocol_gateway = ProtocolGateway(protocol_gateway_config, 'TestProtocolGateway', use_platform_protocol_only=True)
+
+    assert len(protocol_gateway.adapters) == 1
+
+
+@pytest.mark.parametrize('test_message', ['wrong json message'])
+@pytest.mark.asyncio
+async def test_subscribe_json_fail(mocker, protocol_gateway, test_message):
+    # pylint: disable=global-statement
+    global callback_invoked
+    callback_invoked = False
+
+    def sync_callback(message, topic):
+        # pylint: disable=global-statement
+        global callback_invoked
+        callback_invoked = True
+
+    async def async_callback(message, topic):
+        sync_callback(message, topic)
+
+    async def mock_subscribe(topic, cb, subscribe_options=None):
+        if asyncio.iscoroutinefunction(cb):
+            await cb(test_message, topic)
+        else:
+            cb(test_message, topic)
+
+    mocker.patch('src.iotea.core.util.mqtt_client.MqttProtocolAdapter.subscribe', wraps=mock_subscribe)
+
+    callbacks = [sync_callback, async_callback]
+    i = 1
+    for callback in callbacks:
+        await protocol_gateway.subscribe_json('test', callback, force_wait=True)
+        assert protocol_gateway.adapters[0].instance.subscribe.call_count == i
+        i += 1
+        assert callback_invoked is False, 'Callback should not be called, wrong json format!'
+        callback_invoked = False
