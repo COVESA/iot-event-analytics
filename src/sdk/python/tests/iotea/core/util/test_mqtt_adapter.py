@@ -75,7 +75,7 @@ async def test_subscribe_callback(test_case, mocker, mqtt_adapter):
 @pytest.mark.parametrize("name", [None, 'MqttAdapterDisplayName'])
 @pytest.mark.asyncio
 # pylint: disable=redefined-outer-name
-async def test_publish(mocker, mqtt_adapter):
+async def test_publish(test_case, mocker, mqtt_adapter):
     # pylint: disable=unused-argument
     async def mock_publish(topics, message, options=None, stash=True):
         pass
@@ -88,7 +88,7 @@ async def test_publish(mocker, mqtt_adapter):
     publish_options.stash = not publish_options.stash
 
     await mqtt_adapter.publish('test', message, publish_options)
-    assert mqtt_adapter.client.publish.call_count == 1
+    test_case.assertEqual(1, mqtt_adapter.client.publish.call_count)
 
     mqtt_adapter.client.publish.assert_called_once_with(['iotea/test'],
                                                         message,
@@ -96,7 +96,7 @@ async def test_publish(mocker, mqtt_adapter):
                                                         publish_options.stash)
 
     await mqtt_adapter.publish('test', message, None)
-    assert mqtt_adapter.client.publish.call_count == 2
+    test_case.assertEqual(2, mqtt_adapter.client.publish.call_count)
 
     mqtt_adapter.client.publish.assert_called_with(['iotea/test'],
                                                    message,
@@ -107,7 +107,7 @@ async def test_publish(mocker, mqtt_adapter):
 @pytest.mark.parametrize("name", [None, 'MqttAdapterDisplayName'])
 @pytest.mark.asyncio
 # pylint: disable=redefined-outer-name
-async def test_subscribe_shared(mocker, mqtt_adapter):
+async def test_subscribe_shared(test_case, mocker, mqtt_adapter):
     # pylint: disable=unused-argument
     async def mock_subscribe(topic, callback, to_json=False):
         pass
@@ -115,7 +115,7 @@ async def test_subscribe_shared(mocker, mqtt_adapter):
     mocker.patch('src.iotea.core.util.mqtt_client.MqttClient.subscribe', wraps=mock_subscribe)
 
     await mqtt_adapter.subscribe_shared('group', 'test', lambda: {}, None)
-    assert mqtt_adapter.client.subscribe.call_count == 1
+    test_case.assertEqual(1, mqtt_adapter.client.subscribe.call_count)
     # check if new topic is constructed correctly
     mqtt_adapter.client.subscribe.assert_called_once_with('$share/group/iotea/test', unittest.mock.ANY)
 
