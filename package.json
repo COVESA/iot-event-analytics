@@ -24,7 +24,7 @@
     "openapi-types": "7.0.1",
     "reconnecting-websocket": "4.4.0",
     "uuid": "^3.4.0",
-    "ws": "7.3.1",
+    "ws": "7.4.6",
     "yargs": "16.2.0"
   },
   "optionalDependencies": {
@@ -52,6 +52,8 @@
     "node": ">=12.13.0"
   },
   "resolutions": {
-    "jsdoc/underscore": "1.12.1"
+    "jsdoc/underscore": "1.12.1",
+    "mqtt/ws": "7.4.6",
+    "mqtt/help-me/glob-stream/glob-parent": "5.1.2"
   }
 }
