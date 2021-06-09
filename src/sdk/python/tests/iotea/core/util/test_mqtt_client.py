@@ -287,11 +287,11 @@ async def test_multiple_connects(test_case, mocker, topic_ns, topic, message):
 
         return f
 
-    def mock_connect_block(connected_event, blocking_event):
+    def mock_connect_block(connected_event_e, blocking_event_e):
         async def f(broker_url, cleansession=True):
-            connected_event.set()
+            connected_event_e.set()
             # slow down the connect method to be able to trigger parallel connect invocations from publish
-            await asyncio.wait_for(blocking_event.wait(), TIMEOUT)
+            await asyncio.wait_for(blocking_event_e.wait(), TIMEOUT)
 
         return f
 
@@ -305,26 +305,26 @@ async def test_multiple_connects(test_case, mocker, topic_ns, topic, message):
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
     # create first publish task, it will trigger the connect method
     asyncio.get_event_loop().create_task(mqtt_client.publish(topic, message))
-
     await asyncio.wait_for(connected_event.wait(), TIMEOUT)
     mqtt_client.client.connect.assert_called_once()
     test_case.assertEqual(0, mqtt_client.client.publish.call_count)
-    test_case.assertTrue(mqtt_client.connecting)
+    test_case.assertFalse(mqtt_client.client_initialized)
 
     # send another publish request, while still connecting
     asyncio.get_event_loop().create_task(mqtt_client.publish(topic, message))
 
     # unblock the connect method
     blocking_event.set()
-    # assert connect is called only once even though parallel publish methods lead to connect
-    mqtt_client.client.connect.assert_called_once()
 
     # wait for 2 publish invocations
     await asyncio.wait_for(publish_semaphore.acquire(), TIMEOUT)
     await asyncio.wait_for(publish_semaphore.acquire(), TIMEOUT)
 
     test_case.assertEqual(2, mqtt_client.client.publish.call_count)
-    test_case.assertFalse(mqtt_client.connecting)
+
+    # assert connect is called only once even though parallel publish methods lead to connect
+    mqtt_client.client.connect.assert_called_once()
+    test_case.assertTrue(mqtt_client.client_initialized)
 
 
 @pytest.mark.parametrize('topic_ns', ['namespace/', None])
