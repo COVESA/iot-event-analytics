@@ -1,6 +1,6 @@
 version: '3.2'
 services:
-  kuksa-val:
+  kuksa.val:
     image: ${KUKSA_VAL_IMG}
     environment:
       - KUKSAVAL_OPTARGS=--insecure
@@ -12,23 +12,21 @@ services:
       - type: bind
         source: ${KUKSA_VAL_CONFIG_DIR}
         target: "/config"
-  vss2iotea:
+  kuksa.val2iotea:
     build:
       context: ..
-      labels:
-        iotea.vss2iotea.version: 1.8.0
-      dockerfile: docker/vss2iotea/Dockerfile.amd64
+      dockerfile: docker/kuksa.val2iotea/Dockerfile.amd64
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
     networks:
       - iotea-platform-network
     depends_on:
-      - kuksa-val
+      - kuksa.val
     volumes:
       - type: bind
-        source: ${VSS2IOTEA_VAL_CONFIG_DIR}
-        target: "/app/docker/vss2iotea/config"
+        source: ${KUKSA_VAL2IOTEA_CONFIG_DIR}
+        target: "/app/docker/kuksa.val2iotea/config"
 networks:
   iotea-platform-network:
     name: iotea-platform-network

@@ -97,9 +97,9 @@ export class VssUtils {
             fs.mkdirSync(absCertificatePath);
 
             // Copy certificates
-            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'certificates', 'Server.key'), path.resolve(absCertificatePath, 'Server.key'));
-            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'certificates', 'Server.pem'), path.resolve(absCertificatePath, 'Server.pem'));
-            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'certificates', 'jwt', 'jwt.key.pub'), path.resolve(absCertificatePath, 'jwt.key.pub'));
+            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'kuksa_certificates', 'Server.key'), path.resolve(absCertificatePath, 'Server.key'));
+            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'kuksa_certificates', 'Server.pem'), path.resolve(absCertificatePath, 'Server.pem'));
+            fs.copyFileSync(path.resolve(absKuksaValRepositoryPath, 'kuksa_certificates', 'jwt', 'jwt.key.pub'), path.resolve(absCertificatePath, 'jwt.key.pub'));
 
             // Create a new JWT token
             const absKuksaValJwtPath = await this.createKuksaValJwt(absKuksaValRepositoryPath, kuksaValToken);
@@ -333,7 +333,7 @@ export class VssUtils {
 
         const t = new Terminal();
 
-        const absJwtPath = path.resolve(absKuksaValRepositoryPath, 'certificates', 'jwt');
+        const absJwtPath = path.resolve(absKuksaValRepositoryPath, 'kuksa_certificates', 'jwt');
 
         let jwtInputFile = 'super-admin.json';
 

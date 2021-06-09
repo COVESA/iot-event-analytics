@@ -11,9 +11,9 @@
 const uuid = require('uuid').v4;
 
 const {
-    VssAdapter,
+    KuksaValAdapter,
     VssPathTranslator
-} = require('../../src/adapter/vss/vss.adapter');
+} = require('../../src/adapter/kuksa.val/kuksa.val.adapter');
 const JsonModel = require('../../src/core/util/jsonModel');
 
 const Logger = require('../../src/core/util/logger');
@@ -22,12 +22,12 @@ const config = new JsonModel(require('./config/config.json'));
 
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.WARN);
 
-let vss2ioteaLogger = new Logger(`Vss2IoTEventAnalytics`);
+let kuksaVal2ioteaLogger = new Logger(`KuksaVal2IoTEventAnalytics`);
 
-const vssAdapter = new VssAdapter(
+const kuksaValAdapter = new KuksaValAdapter(
     config.get('protocolGateway'),
-    config.get('vss.ws'),
-    config.get('vss.jwt'),
+    config.get("'kuksa.val'.ws"),
+    config.get("'kuksa.val'.jwt"),
     config.get('segment'),
     uuid(),
     {
@@ -36,22 +36,22 @@ const vssAdapter = new VssAdapter(
     true
 );
 
-let vssPathConfig = config.get('vss.pathConfig', null);
+let vssPathConfig = config.get("'kuksa.val'.pathConfig", null);
 
 if (vssPathConfig !== null) {
-    vssAdapter.setVssPathTranslator(new VssPathTranslator(vssPathConfig));
+    kuksaValAdapter.setVssPathTranslator(new VssPathTranslator(vssPathConfig));
 }
 
-vss2ioteaLogger.info('Current VSS Adapter Configuration');
-vss2ioteaLogger.info(JSON.stringify(config));
+kuksaVal2ioteaLogger.info('Current Kuksa.val Adapter Configuration');
+kuksaVal2ioteaLogger.info(JSON.stringify(config));
 
 const instanceIdPath = config.get('paths.instanceId');
 const userIdPath = config.get('paths.userId');
 
-vssAdapter.start(instanceIdPath, userIdPath)
+kuksaValAdapter.start(instanceIdPath, userIdPath)
     .then(() => {
-        vss2ioteaLogger.info(`VSS Adapter started successfully`);
+        kuksaVal2ioteaLogger.info(`Kuksa.val Adapter started successfully`);
     })
     .catch(err => {
-        vss2ioteaLogger.error(err.message, null, err);
+        kuksaVal2ioteaLogger.error(err.message, null, err);
     });

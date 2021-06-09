@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-FROM arm64v8/node:12.13.0 as base
+FROM node:12.13.0 as base
 
 FROM base as build
 
@@ -17,12 +17,13 @@ ARG HTTPS_PROXY
 
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
+
 RUN mkdir /build
 
 # Create app directory
 WORKDIR /build
 
-COPY package.json ./
+COPY package.json yarn.lock ./
 
 RUN npm config set strict-ssl false -g
 RUN npm config set maxsockets 5 -g
@@ -39,7 +40,8 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 # Prune node-modules
 RUN node-prune
 
-FROM arm64v8/node:12.13.0-alpine as runtime
+# FROM node:10.16.1-alpine as runtime
+FROM mhart/alpine-node:slim-12.13.0 as runtime
 
 # Set root password
 # https://stackoverflow.com/questions/28721699/root-password-inside-a-docker-container
@@ -54,6 +56,6 @@ COPY --from=build /build .
 # Copy the application sources
 COPY src/ ./src
 COPY resources/ ./resources
-COPY docker/vss2iotea ./docker/vss2iotea
+COPY docker/kuksa.val2iotea ./docker/kuksa.val2iotea
 
-CMD ["node", "/app/docker/vss2iotea/index.js"]
+CMD ["node", "/app/docker/kuksa.val2iotea/index.js"]
