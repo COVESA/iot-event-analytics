@@ -8,14 +8,18 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef IOTEA_TALENT_TEST_HPP
-#define IOTEA_TALENT_TEST_HPP
-
-#include "iotea.hpp"
-#include "nlohmann/json.hpp"
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_TALENT_TEST_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_TALENT_TEST_HPP_
 
 #include <functional>
 #include <unordered_map>
+
+#include "nlohmann/json.hpp"
+
+#include "event.hpp"
+#include "call.hpp"
+#include "context.hpp"
+#include "talent.hpp"
 
 namespace iotea {
 namespace test {
@@ -104,4 +108,4 @@ class TestSetTalent : public core::FunctionTalent {
 } // namespace test
 } // namespace iotea
 
-#endif // IOTEA_TALENT_TEST_HPP
+#endif // SRC_SDK_CPP_LIB_INCLUDE_TALENT_TEST_HPP_

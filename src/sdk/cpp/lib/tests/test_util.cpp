@@ -21,7 +21,7 @@ using iotea::core::Uuid4;
  * @brief Verify that Uuid4 generates properly formatted string representations
  * of UUID4s.
  */
-TEST(iotea, Test_Uuid4) {
+TEST(util, Test_Uuid4) {
     Uuid4 id;
     std::string sid = id;
     std::string expr = R"([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})";

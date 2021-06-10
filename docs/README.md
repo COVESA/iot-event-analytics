@@ -226,7 +226,7 @@ The encoding implicitly takes places via the core talents, retrieving the config
 - __delta__ for continuously rising or falling numeric values e.g. time, total energy consumption
 - __categoric__ for categorical values given in a enumeration of e.g. string values, boolean values, complex object values
 
-Besides the encoding the __ingestion__ follows the Extract-Transform-Load (aka ETL) flow. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the VSS adapter](..\..\src\tools\vss).
+Besides the encoding the __ingestion__ follows the Extract-Transform-Load (aka ETL) flow. These ETL flows are called __channel__. An good example is given for the [Eclipse Ditto input format](..\..\src\sdk\javascript\examples\basic\config\channels). If the __channel__ are not sufficient, the given __adapter__ concept supports to write transformations which require specific processing capabilities, compare [the Kuksa.val adapter](..\..\src\adapter\kuksa.val).
 
 ## Data Selection
 
@@ -464,11 +464,12 @@ The following tools support the development and integration:
 - VSS tooling for converting VSS JSON files into IoT Event Analytics types and features: [here](..\src\tools\vss).
 - Adapter
   - DAPR integration for consuming data points and calling services: [here](..\src\adapter\dapr).
-  - VSS integration for bidirectional data passing with Eclipse KUKSA.VAL: [here](..\src\adapter\vss).
+  - Bidirectional data exchange with Eclipse Kuksa.val: [here](..\src\adapter\kuksa.val).
 
 # Additional Documentation
 
 Additional documentation can be found below the topics folder:
+
 - [Communication](./topics/iotea-communication.md)
 - [Components](./topics/iotea-components.md)
 - [Talents](./topics/iotea-talents.md)

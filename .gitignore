@@ -1,4 +1,5 @@
 __pycache__
+.pytest_cache
 node_modules/
 *.tar
 .vscode/extensions.json

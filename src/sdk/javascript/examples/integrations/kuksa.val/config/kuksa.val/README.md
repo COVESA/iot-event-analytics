@@ -20,4 +20,4 @@ L- Server.pem
 vss.json
 ```
 
-You can find out, where to get these files [here](../../../../../../../../docker/vss2iotea/README.md)
+You can find out, where to get these files [here](../../../../../../../../docker/kuksa.val2iotea/README.md)

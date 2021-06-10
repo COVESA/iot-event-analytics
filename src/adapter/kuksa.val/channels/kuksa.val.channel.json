@@ -1,0 +1,14 @@
+[
+    {
+        "type": "validate",
+        "path": "./kuksa.schema.json"
+    },
+    {
+        "type": "transform",
+        "path": "./kuksa.transform.jna"
+    },
+    {
+        "type": "validate",
+        "path": "./talent.schema.json"
+    }
+]

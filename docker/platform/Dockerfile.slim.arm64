@@ -79,7 +79,4 @@ COPY --from=minify-js /build/src-min ./
 COPY resources/ ./resources
 COPY package.json ./
 
-# Print modules over 1MB in size
-RUN du -sh ./node_modules/* | sort -nr | grep '\dM.*'
-
 CMD ["node", "/app/docker/platform/index.js"]

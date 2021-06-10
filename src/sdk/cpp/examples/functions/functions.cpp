@@ -9,13 +9,10 @@
  ****************************************************************************/
 
 #include <csignal>
-#include <iostream>
 #include <memory>
-#include <chrono>
-#include <thread>
 
 #include "nlohmann/json.hpp"
-#include "iotea.hpp"
+#include "client.hpp"
 #include "logging.hpp"
 #include "mqtt_client.hpp"
 

@@ -8,4 +8,4 @@ src/tools/
 docker/config/config
 docker/pipeline/config
 docker/platform/config
-docker/vss2iotea/config
+docker/kuksa.val2iotea/config

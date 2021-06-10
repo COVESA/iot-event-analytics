@@ -36,13 +36,17 @@ find_package(Threads REQUIRED)
 
 add_library(iotea_sdk_cpp
   SHARED
-    src/util.cpp
-    src/logging.cpp
-    src/iotea.cpp
-    src/schema.cpp
-    src/talent_test.cpp
-    src/mqtt_client.cpp
+    src/call.cpp
+    src/client.cpp
+    src/context.cpp
+    src/event.cpp
     src/jsonquery.cpp
+    src/logging.cpp
+    src/mqtt_client.cpp
+    src/schema.cpp
+    src/talent.cpp
+    src/talent_test.cpp
+    src/util.cpp
 )
 target_code_coverage(iotea_sdk_cpp)
 
@@ -73,23 +77,26 @@ target_compile_options(iotea_sdk_cpp PRIVATE -Wall -Wextra -pedantic -Werror)
 
 include(GoogleTest)
 if(BUILD_TESTING)
-    add_subdirectory(mocks)
-
     add_executable(testrunner
-        tests/test_iotea.cpp
+        tests/test_call.cpp
+        tests/test_client.cpp
+        tests/test_context.cpp
+        tests/test_event.cpp
+        tests/test_jsonquery.cpp
         tests/test_schema.cpp
+        tests/test_talent.cpp
         tests/test_util.cpp
     )
 
     target_link_libraries(testrunner PRIVATE
         iotea_sdk_cpp
-        iotea_sdk_cpp_mocks
         gtest
+        gmock
         gtest_main
         pthread
     )
 
-   target_code_coverage(testrunner EXCLUDE tests/*)
+    target_code_coverage(testrunner EXCLUDE tests/*)
 
     gtest_discover_tests(testrunner)
 endif()

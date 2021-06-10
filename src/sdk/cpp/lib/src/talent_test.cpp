@@ -13,9 +13,6 @@
 #include <functional>
 #include <chrono>
 
-#include "nlohmann/json.hpp"
-
-#include "iotea.hpp"
 #include "logging.hpp"
 #include "talent_test.hpp"
 
