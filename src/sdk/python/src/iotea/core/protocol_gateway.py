@@ -116,7 +116,7 @@ class ProtocolGateway:
                 try:
                     await callback(ProtocolGateway.__try_parse_json(stringified_json), _topic, adapter_id)
                 except JSONDecodeError as e:
-                    self.logger.debug(f'Could not parse json message {stringified_json}!', e)
+                    self.logger.debug(f'Could not parse json message {stringified_json}!', exc_info=e)
 
             cb = callback_wrapper
         else:
@@ -124,7 +124,7 @@ class ProtocolGateway:
                 try:
                     callback(ProtocolGateway.__try_parse_json(stringified_json), _topic, adapter_id)
                 except JSONDecodeError as e:
-                    self.logger.debug(f'Could not parse json message {stringified_json}!', e)
+                    self.logger.debug(f'Could not parse json message {stringified_json}!', exc_info=e)
 
             cb = callback_wrapper
         return cb
