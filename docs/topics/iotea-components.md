@@ -41,7 +41,7 @@ The ConfigManager provides a periodic [_Talent_](#Talent) discovery and provides
 
 ## Ingestion
 
-This component is used to transform and validate incoming events and configurable as an ETL-pipeline and supports an arbitrary amount of parallel ETL-pipelines via multi-channel. It is completely configurable via configuration files (json) and scalable via multiple instances.
+This component is used to transform and validate incoming events and configurable as an ETL-pipeline and supports an arbitrary amount of parallel ETL-pipelines via multi-channel. It is completely configurable via configuration files (json) and scalable by spawning multiple instances.
 
 It validates value types (boolean, string, number, object, any) and _Types_ against metadata (e.g. using [_MetadataManager_](#MetadataManager)).
 
@@ -77,17 +77,19 @@ It synchronizes its internal state via publish-subscribe with all other Instance
 
 ### Rules
 
-This component provides AND & OR rules using one of the following constraints:
+This component provides the following constraints:
 
 - isSet, change, greater than, less than, ...
 - time series constraints
 - Nelson constraints
 
+which can be hierarchically concatenated via AND / OR rules multiple times.
+
 ### ProtocolGateway
 
 The ProtocolGateway abstracts the publish-subscribe protocol from a specific implementation of it. Therefore, a _ProtocolGatewayAdapter_ is used to integrate the underlying publish-subscribe communication (e.g. MQTT Broker).
 
-This abstraction is not limited for platform components. It is also the common way to abstract the clients ([_Talents_](#Talent)) communication.
+This abstraction is not limited for platform components. It is the common way to abstract all communication between components of IoT Event Analytics.
 
 For more information see [IoT Event Analytics - Communication](./iotea-communication.md).
 
@@ -112,7 +114,7 @@ A _Talent_ is the implementation of a client application for Iot Event Analytics
 
 Features:
 
-- Subscribes to _Feature_ events via _Rules_
+- Subscribes to _Feature_ events via [_Rules_](###Rules)
 - Encapsulates business logic
 - Can provide _Feature_ events
 - Can call requests (provided by other Talents)
@@ -135,7 +137,7 @@ This is a specialization of a [_Talent_](#Talent) which provides an simply API t
 
 ## Protocol Gateway
 
-See [Protocol Gatway (Platform)](###ProtocolGateway).
+See [Protocol Gateway (Platform)](###ProtocolGateway).
 
 ## Map Reduce
 
