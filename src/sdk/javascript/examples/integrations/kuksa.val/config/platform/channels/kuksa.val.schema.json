@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/channels/kuksa.val.schema.json",
+    "type": "object",
+    "required": [
+        "subscriptionId",
+        "timestampMs",
+        "value",
+        "type",
+        "feature",
+        "instance",
+        "userId"
+    ],
+    "properties": {
+        "subscriptionId": {
+            "$id": "#/properties/subscriptionId",
+            "type": "string",
+            "pattern": "^[^\\.]+\\.[0-9]+"
+        },
+        "timestampMs": {
+            "$id": "#/properties/timestampMs",
+            "type": "number",
+            "minimum": 9999999999
+        },
+        "type": {
+            "$id": "#/properties/type",
+            "type": "string",
+            "minLength": 1
+        },
+        "feature": {
+            "$id": "#/properties/feature",
+            "type": "string",
+            "minLength": 1
+        },
+        "instance": {
+            "$id": "#/properties/instance",
+            "type": "string",
+            "minLength": 1
+        },
+        "userId": {
+            "$id": "#/properties/userId",
+            "type": "string",
+            "minLength": 1
+        },
+        "value": {}
+    }
+}

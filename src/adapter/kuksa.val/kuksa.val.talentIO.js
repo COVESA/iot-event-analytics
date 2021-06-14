@@ -14,9 +14,9 @@ const {
     TalentIO
 } = require('../../core/util/talentIO');
 
-class VssInputValue {}
+class KuksaValInputValue {}
 
-VssInputValue.validator = new Ajv().compile({
+KuksaValInputValue.validator = new Ajv().compile({
     type: 'object',
     required: [ 'sub' ],
     properties: {
@@ -27,13 +27,13 @@ VssInputValue.validator = new Ajv().compile({
     }
 });
 
-VssInputValue.getSubscription = function (value) {
-    return TalentIO.__ensureModel(value, VssInputValue.validator).get('sub');
+KuksaValInputValue.getSubscription = function (value) {
+    return TalentIO.__ensureModel(value, KuksaValInputValue.validator).get('sub');
 };
 
-class VssOutputValue {}
+class KuksaValOutputValue {}
 
-VssOutputValue.create = function (talent, subscription, value) {
+KuksaValOutputValue.create = function (talent, subscription, value) {
     return {
         value,
         $vpath: 'value',
@@ -43,6 +43,6 @@ VssOutputValue.create = function (talent, subscription, value) {
 };
 
 module.exports = {
-    VssInputValue,
-    VssOutputValue
+    KuksaValInputValue,
+    KuksaValOutputValue
 };

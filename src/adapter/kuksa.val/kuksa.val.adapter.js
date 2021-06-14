@@ -11,7 +11,7 @@
 const uuid = require('uuid').v4;
 
 const Ajv = require('ajv');
-const VssWebsocket = require('./vss.websocket');
+const KuksaValWebsocket = require('./kuksa.val.websocket');
 const MetadataManager = require('../../core/metadataManager');
 const Talent = require('../../core/talent');
 const JsonModel = require('../../core/util/jsonModel');
@@ -54,10 +54,10 @@ const {
     PLATFORM_EVENT_TYPE_UNSET_CONFIG
 } = require('../../core/constants');
 
-class VssAdapter extends Talent {
+class KuksaValAdapter extends Talent {
     // Handles multiple VssWebsocket Connections
     constructor(protocolGatewayConfig, wsAddress, wsToken, vssSegment, adapterId = uuid(), wsOptions = {}, enableLoopPrevention = false) {
-        super(`vss-adapter-${adapterId}`, protocolGatewayConfig);
+        super(`kuksa-val-adapter-${adapterId}`, protocolGatewayConfig);
 
         this.pg = new ProtocolGateway(protocolGatewayConfig, this.id);
         this.metadataManager = new MetadataManager(protocolGatewayConfig);
@@ -72,7 +72,7 @@ class VssAdapter extends Talent {
 
         this.vssSegment = vssSegment;
         this.vssTypes = [];
-        this.vssSocket = null;
+        this.kuksaValSocket = null;
 
         // Represents the actual IoT instance, which is backed by the VSS or the running Kuksa.VAL e.g. the VIN
         this.instanceId = null;
@@ -96,17 +96,17 @@ class VssAdapter extends Talent {
         // vssInstancePath
         // Path to node, which holds a unique ID for this VSS instance
         try {
-            this.vssSocket = new VssWebsocket(this.wsAddress, this.wsToken, this.wsOptions);
+            this.kuksaValSocket = new KuksaValWebsocket(this.wsAddress, this.wsToken, this.wsOptions);
 
             // Retrieve instanceId
-            return this.vssSocket.subscribe(vssInstanceIdPath, msg => {
+            return this.kuksaValSocket.subscribe(vssInstanceIdPath, msg => {
                 this.instanceId = msg.value;
             }, err => {
                 this.logger.error(err.message, null, err);
             }, true)
                 .then(() => {
                     // Retrieve userId
-                    return this.vssSocket.subscribe(vssUserIdPath, msg => {
+                    return this.kuksaValSocket.subscribe(vssUserIdPath, msg => {
                         this.userId = msg.value;
                     }, err => {
                         this.logger.error(err.message, null, err);
@@ -149,13 +149,13 @@ class VssAdapter extends Talent {
                 this.subscriptions[absKuksaVssPath].updateAtMs = Math.max(ev.timestamp, this.subscriptions[absKuksaVssPath].updateAtMs);
             }
 
-            this.logger.debug(`Publishing value ${rawValue} to Kuksa.Val at path ${absKuksaVssPath}...`, evtctx);
+            this.logger.debug(`Publishing value ${rawValue} to Kuksa.val at path ${absKuksaVssPath}...`, evtctx);
 
             // Publish raw value to VSS
-            await this.vssSocket.publish(absKuksaVssPath, rawValue);
+            await this.kuksaValSocket.publish(absKuksaVssPath, rawValue);
         }
         catch (err) {
-            this.logger.error(`Could not publish value ${rawValue} to Kuksa.Val at path ${absKuksaVssPath}`, evtctx, err);
+            this.logger.error(`Could not publish value ${rawValue} to Kuksa.val at path ${absKuksaVssPath}`, evtctx, err);
         }
     }
 
@@ -188,8 +188,8 @@ class VssAdapter extends Talent {
                     continue;
                 }
 
-                await this.vssSocket.subscribe(absVssPath, async msg => {
-                    this.logger.debug(`Received message from VSS ${JSON.stringify(msg)}`);
+                await this.kuksaValSocket.subscribe(absVssPath, async msg => {
+                    this.logger.debug(`Received message from Kuksa.val ${JSON.stringify(msg)}`);
 
                     // Add type and feature fields to message
                     Object.assign(msg, this.vssPathTranslator.kuksaVss2IoteaTypeAndFeature(msg.path));
@@ -290,7 +290,7 @@ class VssAdapter extends Talent {
 
         for (const vssPath of vssPaths) {
             // Resolve all paths unique to enforce single path subscriptions
-            for(const absPath of await this.vssSocket.resolvePaths(vssPath)) {
+            for(const absPath of await this.kuksaValSocket.resolvePaths(vssPath)) {
                 absPaths.add(absPath);
             }
         }
@@ -423,22 +423,6 @@ class VssPathTranslator {
 }
 
 module.exports = {
-    VssAdapter,
+    KuksaValAdapter,
     VssPathTranslator
 };
-
-// const legacyVssPathConfig = VSS_PATH_CONFIG;
-// const newVssPathConfig = {
-//     separator: '/',
-//     replacer: {
-//         '/': '$',
-//         '.': '_'
-//     }
-// };
-
-// const tLegacy = new VssPathTranslator(legacyVssPathConfig);
-// const tNew = new VssPathTranslator(newVssPathConfig);
-// console.log(tLegacy.ioteaTypeAndFeature2KuksaVssPath('Vehicle', 'ADAS$ObstacleDetection$IsActive'));
-// console.log(tLegacy.kuksaVss2IoteaTypeAndFeature('Vehicle.ADAS.ObstacleDetection.IsActive'));
-// console.log(tNew.ioteaTypeAndFeature2KuksaVssPath('Vehicle', 'ADAS$ObstacleDetection_Foo$IsActive'));
-// console.log(tNew.kuksaVss2IoteaTypeAndFeature('Vehicle/ADAS/ObstacleDetection.Foo/IsActive'));

@@ -98,26 +98,26 @@ const JsonModel = require('./core/util/jsonModel');
 const jsonQuery = require('./core/util/jsonQuery');
 
 const {
-    VssAdapter ,
+    KuksaValAdapter,
     VssPathTranslator
-} = require('./adapter/vss/vss.adapter');
+} = require('./adapter/kuksa.val/kuksa.val.adapter');
 
 const ProtocolGateway = require('./core/protocolGateway');
 
-const VssWebsocket = require('./adapter/vss/vss.websocket');
+const KuksaValWebsocket = require('./adapter/kuksa.val/kuksa.val.websocket');
 
 const {
-    VssInputValue,
-    VssOutputValue
-} = require('./adapter/vss/vss.talentIO');
+    KuksaValInputValue,
+    KuksaValOutputValue
+} = require('./adapter/kuksa.val/kuksa.val.talentIO');
 
 module.exports = {
     adapter: {
-        VssAdapter,
-        VssPathTranslator,
-        VssWebsocket,
-        VssInputValue,
-        VssOutputValue
+        KuksaValAdapter,
+        KuksaValWebsocket,
+        KuksaValInputValue,
+        KuksaValOutputValue,
+        VssPathTranslator
     },
     core: {
         MetadataManagerFactory: {

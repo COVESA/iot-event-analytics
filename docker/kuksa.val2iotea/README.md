@@ -8,7 +8,7 @@
   SPDX-License-Identifier: MPL-2.0
 -->
 
-# Vss2IoTEventAnalytics Adapter
+# Kuksa.val2IoTEventAnalytics Adapter
 
 ## Prerequisites
 
@@ -16,9 +16,9 @@
 
 - Make sure you have Docker 19.03 or above installed and experimental CLI features enable to be able to perform cross platform builds
 
-__IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip the following Install/Run KUKSA.VAL instructions.
+__IMPORTANT:__ If you have a running installation of __Kuksa.val__ you can skip the following Install/Run Kuksa.val instructions.
 
-### Install KUKSA.VAL
+### Install Kuksa.val
 
 - Open [https://kuksaval.northeurope.cloudapp.azure.com/job/kuksaval-upstream/job/master](https://kuksaval.northeurope.cloudapp.azure.com/job/kuksaval-upstream/job/master) in your browser
 
@@ -93,12 +93,12 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
   - __Make sure to have the latest certificates matching your installation. You might have to check the commit from the last built of the server.__
 
 - Make sure to copy the `<JSON-Web Token>` from [here](https://github.com/eclipse/kuksa.val/blob/master/certificates/jwt/super-admin.json.token)<br>
-  Make sure you update this token in your _vss2iotea configuration file_ and in any other configuration file, which needs to authenticate against the Kuksa.VAL server.
+  Make sure you update this token in your _kuksa.val2iotea configuration file_ and in any other configuration file, which needs to authenticate against the Kuksa.val server.
   - If you have to create a new token (e.g. because the old one expired), execute `python createToken.py super-admin.json` to create a newly signed token based on the configuration found in _super-admin.json_
 
-### Run KUKSA.VAL
+### Run Kuksa.val
 
-- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" --restart=unless-stopped -d=true --name=vss-<version> -v <some folder>:/config/ -e KUKSAVAL_OPTARGS=--insecure -e LOG_LEVEL=ALL <image tag>`<br>
+- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" --restart=unless-stopped -d=true --name=kuksa.val -v <some folder>:/config/ -e KUKSAVAL_OPTARGS=--insecure -e LOG_LEVEL=ALL <image tag>`<br>
   The insecure argument enables non-encrypted communication with the server over the websocket protocol
 
 ## Build
@@ -110,7 +110,7 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
 ### >> ARM64 target platform only <<
 
 - Build your Docker image and export the image as tar-archive<br>
-  `docker buildx build --platform linux/arm64 -t vss2iotea-adapter-arm64:<version> -o type=oci,dest=./vss2iotea-adapter-arm64.<version>.tar -f docker/vss2iotea/Dockerfile.arm64 .`
+  `docker buildx build --platform linux/arm64 -t kuksa.val2iotea-adapter-arm64:<version> -o type=oci,dest=./kuksa.val2iotea-adapter-arm64.<version>.tar -f docker/kuksa.val2iotea/Dockerfile.arm64 .`
 - Import this image
   - `sudo docker load --input iotea-platform-arm64.<version>.tar`
   - `sudo docker tag <SHA256-Hash> iotea-platform-arm64:<version>`
@@ -118,7 +118,7 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
 ### >> AMD64 target platform only <<
 
 - Build your Docker image using the local registry<br>
-  `docker build -t vss2iotea-adapter-amd64:<version> -f docker/vss2iotea/Dockerfile.amd64 .`
+  `docker build -t kuksa.val2iotea-adapter-amd64:<version> -f docker/kuksa.val2iotea/Dockerfile.amd64 .`
 
 ## Install
 
@@ -136,11 +136,11 @@ __IMPORTANT:__ If you have a running installation of __KUKSA.VAL__ you can skip 
 
 ### >> ARM64 target platform only <<
 
-- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" -d=true --restart=unless-stopped --name=vss2iotea-adapter-<version> -v <some folder>:/home/node/app/docker/vss2iotea/config  vss2iotea-adapter-arm64:<version>`
+- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" -d=true --restart=unless-stopped --name=kuksa.val2iotea-adapter-<version> -v <some folder>:/home/node/app/docker/kuksa.val2iotea/config  kuksa.val2iotea-adapter-arm64:<version>`
 
 ### >> AMD64 target platform only <<
 
-- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" -d=true --restart=unless-stopped --name=vss2iotea-adapter-<version> -v <some folder>:/app/docker/vss2iotea/config vss2iotea-adapter-amd64:<version>`
+- `docker run --log-opt max-size=1m --log-opt max-file=5 --network="host" -d=true --restart=unless-stopped --name=kuksa.val2iotea-adapter-<version> -v <some folder>:/app/docker/kuksa.val2iotea/config kuksa.val2iotea-adapter-amd64:<version>`
 
 ### >> Linux only <<
 
