@@ -44,8 +44,13 @@ There are more features which can be explored using various examples for the dif
   - `conda activate <name-of-choice>`
 - Install all necessary packages using `pip install -r requirements.dev.txt` in the project root
 
+### SDKs
+
+- Run `yarn sdk.get` to download the most recent SDK releases from GitHub
+
 ## tldr - get it running - asap
 
+- __IMPORTANT__ The steps in the prerequisites section above need to be done in order to quickly getting started
 - Install the latest IoT Event Analytics VSCode extension from _src/sdk/vscode/lib/*.vsix_
 - Use `Ctrl + Shift + P` to bring up the command palette and select _**Bosch IoT Event Analytics: Create new JavaScript Talent project**_ in an empty folder.
   - Follow the instructions to create a "ready to use" Talent project
