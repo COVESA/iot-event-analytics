@@ -11,7 +11,7 @@
 
     skinparam backgroundColor #FFFFF
 
-    right footer "IoT Event Analytics Version: 0.4"
+    right footer "IoT Event Analytics Version: 0.5"
 
     actor "Provider" as Provider
 

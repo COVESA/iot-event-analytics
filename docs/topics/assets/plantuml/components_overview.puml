@@ -1,0 +1,44 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node NodeJS {
+            node Platform as Platform_NodeJS #LightBlue
+            node SDK as SDK_NodeJS #LightGreen
+            node Util as Util_NodeJS #LightGray
+    }
+
+    node C++ {
+        node Util as Util_Cpp #LightGray
+        node SDK as SDK_Cpp #LightGreen
+    }
+
+    node Python {
+        node Util as Util_Python #LightGray
+        node SDK as SDK_Python #LightGreen
+    }
+
+    node NodeRed <<Experimental>> {
+        node SDK #LightGreen
+    }
+
+    node VSCode <<Extension>>{
+        node VSCodeExtension #LightCyan
+    }
+
+
+
+@enduml

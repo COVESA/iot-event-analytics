@@ -1,0 +1,51 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node Platform #LightBlue {
+        package Pipeline #Ivory {
+            component Ingestion
+            component Encoding
+            component Routing
+        }
+
+        note bottom of Pipeline
+            Multiple instances
+            possible (Scalability)
+        endnote
+
+        component ConfigManager
+        file "config.json" as ConfigJson #LightGray
+        ConfigManager .left.> ConfigJson: <<Dependency>>
+
+        note right of ConfigManager
+            Single instance
+            per platform
+        endnote
+
+        Pipeline .up.> ConfigManager: <<Dependency>>
+
+        package SubComponents #Ivory {
+            component InstanceManager
+            component MetaDataManager
+            component TalentConfigManager
+            component ProtocolGateway
+            component Rules
+            component Utils
+        }
+        Pipeline .left.> SubComponents: <<Dependency>>
+    }
+
+@enduml

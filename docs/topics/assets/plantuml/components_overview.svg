@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="261px" preserveAspectRatio="none" style="width:1105px;height:261px;" version="1.1" viewBox="0 0 1105 261" width="1105px" zoomAndPan="magnify"><defs><filter height="300%" id="f1gv0s50hwycm9" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[51ae4f31bc9b6dd1b52650aa5c1d3c66]
+cluster NodeJS--><polygon fill="#FFFFFF" filter="url(#f1gv0s50hwycm9)" points="16,34,26,24,243,24,243,227,233,237,16,237,16,34" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="233" x2="243" y1="34" y2="24"/><line style="stroke:#000000;stroke-width:1.5;" x1="16" x2="233" y1="34" y2="34"/><line style="stroke:#000000;stroke-width:1.5;" x1="233" x2="233" y1="34" y2="237"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="54" x="98.5" y="51.5332">NodeJS</text><!--MD5=[1760dae4601f78b883f516cd7e306599]
+cluster C++--><polygon fill="#FFFFFF" filter="url(#f1gv0s50hwycm9)" points="267,34,277,24,462,24,462,119,452,129,267,129,267,34" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="452" x2="462" y1="34" y2="24"/><line style="stroke:#000000;stroke-width:1.5;" x1="267" x2="452" y1="34" y2="34"/><line style="stroke:#000000;stroke-width:1.5;" x1="452" x2="452" y1="34" y2="129"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="26" x="347.5" y="51.5332">C++</text><!--MD5=[d4854912b7e46cb60cbc8593abcbe5fc]
+cluster Python--><polygon fill="#FFFFFF" filter="url(#f1gv0s50hwycm9)" points="486,34,496,24,681,24,681,119,671,129,486,129,486,34" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="671" x2="681" y1="34" y2="24"/><line style="stroke:#000000;stroke-width:1.5;" x1="486" x2="671" y1="34" y2="34"/><line style="stroke:#000000;stroke-width:1.5;" x1="671" x2="671" y1="34" y2="129"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="48" x="555.5" y="51.5332">Python</text><!--MD5=[af21df22050258354439d6d4568440bb]
+cluster NodeRed--><polygon fill="#FFFFFF" filter="url(#f1gv0s50hwycm9)" points="705,16,715,6,878,6,878,119,868,129,705,129,705,16" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="868" x2="878" y1="16" y2="6"/><line style="stroke:#000000;stroke-width:1.5;" x1="705" x2="868" y1="16" y2="16"/><line style="stroke:#000000;stroke-width:1.5;" x1="868" x2="868" y1="16" y2="129"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="97" x="739" y="33.5332">«Experimental»</text><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="65" x="755" y="51.1426">NodeRed</text><!--MD5=[ddfc4cfa55a49edd8a6821bfddb0134e]
+cluster VSCode--><polygon fill="#FFFFFF" filter="url(#f1gv0s50hwycm9)" points="902,16,912,6,1088,6,1088,119,1078,129,902,129,902,16" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="1078" x2="1088" y1="16" y2="6"/><line style="stroke:#000000;stroke-width:1.5;" x1="902" x2="1078" y1="16" y2="16"/><line style="stroke:#000000;stroke-width:1.5;" x1="1078" x2="1078" y1="16" y2="129"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="77" x="952.5" y="33.5332">«Extension»</text><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="55" x="963.5" y="51.1426">VSCode</text><!--MD5=[d89d8d1b02622eba84ef98764822f1ea]
+entity Platform_NodeJS--><polygon fill="#ADD8E6" filter="url(#f1gv0s50hwycm9)" points="32,75,42,65,124,65,124,102.6094,114,112.6094,32,112.6094,32,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="114" x2="124" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="32" x2="114" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="114" x2="114" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52" x="47" y="99.5332">Platform</text><!--MD5=[2eeaa4bad329ecd691dd2b699605d2c7]
+entity SDK_NodeJS--><polygon fill="#90EE90" filter="url(#f1gv0s50hwycm9)" points="159,75,169,65,227,65,227,102.6094,217,112.6094,159,112.6094,159,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="217" x2="227" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="159" x2="217" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="217" x2="217" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="28" x="174" y="99.5332">SDK</text><!--MD5=[67c89b0292ce786514e3e277507d34fd]
+entity Util_NodeJS--><polygon fill="#D3D3D3" filter="url(#f1gv0s50hwycm9)" points="48.5,183,58.5,173,107.5,173,107.5,210.6094,97.5,220.6094,48.5,220.6094,48.5,183" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="97.5" x2="107.5" y1="183" y2="173"/><line style="stroke:#000000;stroke-width:1.5;" x1="48.5" x2="97.5" y1="183" y2="183"/><line style="stroke:#000000;stroke-width:1.5;" x1="97.5" x2="97.5" y1="183" y2="220.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="19" x="63.5" y="207.5332">Util</text><!--MD5=[46e91ce5a251dd092158c7d9560c985b]
+entity Util_Cpp--><polygon fill="#D3D3D3" filter="url(#f1gv0s50hwycm9)" points="386.5,75,396.5,65,445.5,65,445.5,102.6094,435.5,112.6094,386.5,112.6094,386.5,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="435.5" x2="445.5" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="386.5" x2="435.5" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="435.5" x2="435.5" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="19" x="401.5" y="99.5332">Util</text><!--MD5=[1b7307cf75151973b2f73e4b0f9da170]
+entity SDK_Cpp--><polygon fill="#90EE90" filter="url(#f1gv0s50hwycm9)" points="283,75,293,65,351,65,351,102.6094,341,112.6094,283,112.6094,283,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="341" x2="351" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="283" x2="341" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="341" x2="341" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="28" x="298" y="99.5332">SDK</text><!--MD5=[d018e0e7d3c72104ea1051c8aca5567d]
+entity Util_Python--><polygon fill="#D3D3D3" filter="url(#f1gv0s50hwycm9)" points="605.5,75,615.5,65,664.5,65,664.5,102.6094,654.5,112.6094,605.5,112.6094,605.5,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="654.5" x2="664.5" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="605.5" x2="654.5" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="654.5" x2="654.5" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="19" x="620.5" y="99.5332">Util</text><!--MD5=[d60cbf9dda907f49b73a878fdd8c6e7d]
+entity SDK_Python--><polygon fill="#90EE90" filter="url(#f1gv0s50hwycm9)" points="502,75,512,65,570,65,570,102.6094,560,112.6094,502,112.6094,502,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="560" x2="570" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="502" x2="560" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="560" x2="560" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="28" x="517" y="99.5332">SDK</text><!--MD5=[97db3ed258f199931cb7ec9b00ff5adb]
+entity SDK--><polygon fill="#90EE90" filter="url(#f1gv0s50hwycm9)" points="757,75,767,65,825,65,825,102.6094,815,112.6094,757,112.6094,757,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="815" x2="825" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="757" x2="815" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="815" x2="815" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="28" x="772" y="99.5332">SDK</text><!--MD5=[d3eec6805b03aed576a5d6f770ff8876]
+entity VSCodeExtension--><polygon fill="#E0FFFF" filter="url(#f1gv0s50hwycm9)" points="918.5,75,928.5,65,1071.5,65,1071.5,102.6094,1061.5,112.6094,918.5,112.6094,918.5,75" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="1061.5" x2="1071.5" y1="75" y2="65"/><line style="stroke:#000000;stroke-width:1.5;" x1="918.5" x2="1061.5" y1="75" y2="75"/><line style="stroke:#000000;stroke-width:1.5;" x1="1061.5" x2="1061.5" y1="75" y2="112.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113" x="933.5" y="99.5332">VSCodeExtension</text><!--MD5=[82f0aa9d50f2229a547cd87d3838fa0f]
+link Platform_NodeJS to SDK_NodeJS--><!--MD5=[e704f73a704f1855e317f119012a7e06]
+link Platform_NodeJS to Util_NodeJS--><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="151" x="941" y="253.3809">IoT Event Analytics Version: 0.5</text><!--MD5=[1a1bc8b590d8224a28e5b413b041ac6d]
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node NodeJS {
+            node Platform as Platform_NodeJS #LightBlue
+            node SDK as SDK_NodeJS #LightGreen
+            node Util as Util_NodeJS #LightGray
+    }
+
+    node C++ {
+        node Util as Util_Cpp #LightGray
+        node SDK as SDK_Cpp #LightGreen
+    }
+
+    node Python {
+        node Util as Util_Python #LightGray
+        node SDK as SDK_Python #LightGreen
+    }
+
+    node NodeRed <<Experimental>> {
+        node SDK #LightGreen
+    }
+
+    node VSCode <<Extension>>{
+        node VSCodeExtension #LightCyan
+    }
+
+
+
+@enduml
+
+@startuml
+
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node NodeJS {
+            node Platform as Platform_NodeJS #LightBlue
+            node SDK as SDK_NodeJS #LightGreen
+            node Util as Util_NodeJS #LightGray
+    }
+
+    node C++ {
+        node Util as Util_Cpp #LightGray
+        node SDK as SDK_Cpp #LightGreen
+    }
+
+    node Python {
+        node Util as Util_Python #LightGray
+        node SDK as SDK_Python #LightGreen
+    }
+
+    node NodeRed <<Experimental>> {
+        node SDK #LightGreen
+    }
+
+    node VSCode <<Extension>>{
+        node VSCodeExtension #LightCyan
+    }
+
+
+
+@enduml
+
+PlantUML version 1.2021.00(Sun Jan 10 11:25:05 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: Cp1252
+Language: en
+Country: US
+--></g></svg>

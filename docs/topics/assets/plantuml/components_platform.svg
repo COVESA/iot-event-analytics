@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="448px" preserveAspectRatio="none" style="width:1207px;height:448px;" version="1.1" viewBox="0 0 1207 448" width="1207px" zoomAndPan="magnify"><defs><filter height="300%" id="f1xz95zz2jv3ap" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[46319df2d1c5fe27116f23a003a0a914]
+cluster Platform--><polygon fill="#ADD8E6" filter="url(#f1xz95zz2jv3ap)" points="16,16,26,6,1190,6,1190,414,1180,424,16,424,16,16" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="1180" x2="1190" y1="16" y2="6"/><line style="stroke:#000000;stroke-width:1.5;" x1="16" x2="1180" y1="16" y2="16"/><line style="stroke:#000000;stroke-width:1.5;" x1="1180" x2="1180" y1="16" y2="424"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="58" x="570" y="33.5332">Platform</text><!--MD5=[0875fb5665145b00eb44c01edeb96b42]
+cluster Pipeline--><polygon fill="#FFFFF0" filter="url(#f1xz95zz2jv3ap)" points="48,167,111,167,118,190.6094,347,190.6094,347,392,48,392,48,167" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="48" x2="118" y1="190.6094" y2="190.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="57" x="52" y="183.5332">Pipeline</text><!--MD5=[901d598170d46a66e5f7c4b771883ec3]
+cluster SubComponents--><polygon fill="#FFFFF0" filter="url(#f1xz95zz2jv3ap)" points="537,167,659,167,666,190.6094,1158,190.6094,1158,392,537,392,537,167" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="537" x2="666" y1="190.6094" y2="190.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="116" x="541" y="183.5332">SubComponents</text><path d="M371.5,322.5 L371.5,365.2031 L512.5,365.2031 L512.5,332.5 L502.5,322.5 L371.5,322.5 " fill="#FBFB77" filter="url(#f1xz95zz2jv3ap)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M502.5,322.5 L502.5,332.5 L512.5,332.5 L502.5,322.5 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105" x="377.5" y="340.9951">Multiple instances</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120" x="377.5" y="357.3467">possible (Scalability)</text><!--MD5=[90321d3428f34f81b6d3c135b020a40c]
+entity ConfigManager--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="137" x="270.5" y="47"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="387.5" y="52"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="385.5" y="54"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="385.5" y="58"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="97" x="285.5" y="81.5332">ConfigManager</text><!--MD5=[3add29ee3b93d3541d84ec28a26c75f4]
+entity ConfigJson--><polygon fill="#D3D3D3" filter="url(#f1xz95zz2jv3ap)" points="60,52,60,89.6094,148,89.6094,148,62,138,52,60,52" style="stroke:#000000;stroke-width:1.5;"/><path d="M138,52 L138,62 L148,62 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="68" x="70" y="76.5332">config.json</text><path d="M443,49.5 L443,67 L407.63,71 L443,75 L443,92.2031 A0,0 0 0 0 443,92.2031 L553,92.2031 A0,0 0 0 0 553,92.2031 L553,59.5 L543,49.5 L443,49.5 A0,0 0 0 0 443,49.5 " fill="#FBFB77" filter="url(#f1xz95zz2jv3ap)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M543,49.5 L543,59.5 L553,59.5 L543,49.5 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="89" x="449" y="67.9951">Single instance</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="68" x="449" y="84.3467">per platform</text><!--MD5=[ae7076b9f32c34d4ddc3e56ff44d3bce]
+entity Ingestion--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="97" x="72.5" y="211"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="149.5" y="216"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="147.5" y="218"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="147.5" y="222"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="87.5" y="245.5332">Ingestion</text><!--MD5=[9106ab025b91f2c44f6ae17f45bd9f69]
+entity Encoding--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="99" x="204.5" y="211"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="283.5" y="216"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="281.5" y="218"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="281.5" y="222"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59" x="219.5" y="245.5332">Encoding</text><!--MD5=[7a980fe5388f2c0b48dbfb0a8ec1f254]
+entity Routing--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="89" x="76.5" y="320"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="145.5" y="325"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143.5" y="327"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143.5" y="331"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="49" x="91.5" y="354.5332">Routing</text><!--MD5=[d37809cf0fe4f335e30149b5adb1fdc9]
+entity InstanceManager--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="149" x="580.5" y="211"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="709.5" y="216"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="707.5" y="218"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="707.5" y="222"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="595.5" y="245.5332">InstanceManager</text><!--MD5=[27e0ac20402fb638233faf53e2d928bb]
+entity MetaDataManager--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="157" x="764.5" y="211"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="901.5" y="216"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="899.5" y="218"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="899.5" y="222"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="779.5" y="245.5332">MetaDataManager</text><!--MD5=[cd3528ba14bffc72db3476de82180348]
+entity TalentConfigManager--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="177" x="956.5" y="211"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="1113.5" y="216"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="1111.5" y="218"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="1111.5" y="222"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="971.5" y="245.5332">TalentConfigManager</text><!--MD5=[847b0785427f3f8e8b98b7a6e57160f8]
+entity ProtocolGateway--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="147" x="581.5" y="320"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="708.5" y="325"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="706.5" y="327"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="706.5" y="331"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107" x="596.5" y="354.5332">ProtocolGateway</text><!--MD5=[fcbb921f173b1d58926693d3e10c6deb]
+entity Rules--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="76" x="764" y="320"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="820" y="325"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="818" y="327"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="818" y="331"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="36" x="779" y="354.5332">Rules</text><!--MD5=[4c3229e8240dfa29ecc305808e5086bb]
+entity Utils--><rect fill="#FEFECE" filter="url(#f1xz95zz2jv3ap)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="66" x="875" y="320"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="921" y="325"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="919" y="327"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="919" y="331"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26" x="890" y="354.5332">Utils</text><!--MD5=[39c5c1453eab48f2407db091165d7722]
+link Pipeline to GMN9--><path d="M347.1159,244.4353 C347.1966,244.5192 347.2779,244.6036 347.3597,244.6886 C347.5232,244.8584 347.6888,245.0304 347.8563,245.2045 C348.1915,245.5526 348.5346,245.9089 348.8853,246.2733 C354.4975,252.1028 362.0763,259.9756 370.5,268.7263 C387.3475,286.2275 407.575,307.24 422.21,322.44 " fill="none" id="Pipeline-GMN9" style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><!--MD5=[65948a60adefa3d4fb226f2385922240]
+reverse link ConfigJson to ConfigManager--><path d="M153.53,71 C187.38,71 232.68,71 270.05,71 " fill="none" id="ConfigJson-backto-ConfigManager" style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#A80036" points="148.2,71,157.2,75,153.2,71,157.2,67,148.2,71" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="166.25" y="64.4951">«Dependency»</text><!--MD5=[cdef8790bf68a2479b01f6953b9542c9]
+reverse link ConfigManager to Pipeline--><path d="M339,100.31 C339,111.73 339,125.6194 339,140.0727 C339,147.2993 339,154.6669 339,161.9373 C339,162.8461 339,163.7534 339,164.6587 C339,165.1114 339,165.5635 339,166.0151 C339,166.2409 339,166.4666 339,166.6921 " fill="none" id="ConfigManager-backto-Pipeline" style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#A80036" points="339,95.21,335,104.21,339,100.21,343,104.21,339,95.21" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="340" y="139.4951">«Dependency»</text><!--MD5=[9d638accae71338c40c5b2ff328f99fa]
+reverse link SubComponents to Pipeline--><path d="M536.563,235 C536.4012,235 536.2374,235 536.0715,235 C535.7398,235 535.3997,235 535.0515,235 C534.3552,235 533.6263,235 532.8662,235 C526.7853,235 518.7065,235 509.2948,235 C490.4716,235 466.3169,235 442.1513,235 C417.9856,235 393.8091,235 374.942,235 C365.5085,235 357.4024,235 351.2887,235 C349.7603,235 348.3564,235 347.0874,235 " fill="none" id="SubComponents-backto-Pipeline" style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#A80036" points="536.563,235,527.563,231,531.563,235,527.563,239,536.563,235" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="399" y="228.4951">«Dependency»</text><!--MD5=[2fc4a4e225c76a1d2e9860366b127caa]
+link Ingestion to Encoding--><!--MD5=[57bc324277f926d379157ffe5cff3d6a]
+link Ingestion to Routing--><!--MD5=[02def1faef7ae7746172e8fbed85e8c1]
+link InstanceManager to MetaDataManager--><!--MD5=[89a0b82f6e2bdd3356e08b1c7c42a85c]
+link MetaDataManager to TalentConfigManager--><!--MD5=[c749f62855cd66a519105188d5569035]
+link InstanceManager to ProtocolGateway--><!--MD5=[64ddd24a5492129a40d75cd2db1cb2da]
+link ProtocolGateway to Rules--><!--MD5=[91c9d6792b7206b701ef9e7c0d01fe51]
+link Rules to Utils--><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="151" x="1043" y="440.3809">IoT Event Analytics Version: 0.5</text><!--MD5=[74726ee6b24d00a61c3b0c858867a5cb]
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node Platform #LightBlue {
+        package Pipeline #Ivory {
+            component Ingestion
+            component Encoding
+            component Routing
+        }
+
+        note bottom of Pipeline
+            Multiple instances
+            possible (Scalability)
+        endnote
+
+        component ConfigManager
+        file "config.json" as ConfigJson #LightGray
+        ConfigManager .left.> ConfigJson: <<Dependency>>
+
+        note right of ConfigManager
+            Single instance
+            per platform
+        endnote
+
+        Pipeline .up.> ConfigManager: <<Dependency>>
+
+        package SubComponents #Ivory {
+            component InstanceManager
+            component MetaDataManager
+            component TalentConfigManager
+            component ProtocolGateway
+            component Rules
+            component Utils
+        }
+        Pipeline .left.> SubComponents: <<Dependency>>
+    }
+
+@enduml
+
+@startuml
+    skinparam backgroundColor #FFFFF
+
+    top to bottom direction
+
+    right footer "IoT Event Analytics Version: 0.5"
+
+    node Platform #LightBlue {
+        package Pipeline #Ivory {
+            component Ingestion
+            component Encoding
+            component Routing
+        }
+
+        note bottom of Pipeline
+            Multiple instances
+            possible (Scalability)
+        endnote
+
+        component ConfigManager
+        file "config.json" as ConfigJson #LightGray
+        ConfigManager .left.> ConfigJson: <<Dependency>>
+
+        note right of ConfigManager
+            Single instance
+            per platform
+        endnote
+
+        Pipeline .up.> ConfigManager: <<Dependency>>
+
+        package SubComponents #Ivory {
+            component InstanceManager
+            component MetaDataManager
+            component TalentConfigManager
+            component ProtocolGateway
+            component Rules
+            component Utils
+        }
+        Pipeline .left.> SubComponents: <<Dependency>>
+    }
+
+@enduml
+
+PlantUML version 1.2021.00(Sun Jan 10 11:25:05 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: Cp1252
+Language: en
+Country: US
+--></g></svg>
