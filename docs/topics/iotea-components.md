@@ -18,7 +18,7 @@ IoT Event Analytics consists of:
 
 - [Platform Components](#Platform-Components)
 - [SDK Components](#SDK-Components)
-- [Plugins / Extensions](##Plugins-/-Extensions)
+- [Plugins and Extensions](#Plugins-and-Extensions)
 
 Please note that IoTEA uses several abstraction layers to provide flexibility in its deployment.
 For further details see [IoT Event Analytics - Communication](./iotea-communication.md).
@@ -147,7 +147,7 @@ Following Extensions of [_Talents_](#Talent) are available in several SDKs:
 - Worker
 - Reducer
 
-# Plugins / Extensions
+# Plugins and Extensions
 
 ## VSCode Extension
 
