@@ -46,7 +46,22 @@ There are more features which can be explored using various examples for the dif
 
 ### SDKs
 
-- Run `yarn sdk.get` to download the most recent SDK releases from GitHub
+- Download or Build
+  - Run `yarn sdk.get` to download the most recent prebuilt SDK releases from GitHub __without__ needing to build them from scratch. You can continue with the installation. You will find the downloaded artifacts in their respective folder _./src/sdk/(javascript,python,vscode)/lib_
+  - JS SDK _(mandatory)_
+    - Run `yarn sdk.build` in the project root
+  - Python SDK _(optional)_
+    - See [README.md](./src/sdk/python/README.md)
+  - VSCode Extension _(optional, mandatory for tldr section)_
+    - Open _./src/sdk/vscode_ in your terminal
+    - Run `yarn package`
+- Manual Installation
+  - JS SDK
+    - Run `yarn add file:*.tgz`
+  - Python SDK
+    - See [README.md](./src/sdk/python/README.md)
+  - VSCode Extension
+    - Directly install the *.vsix file
 
 ## tldr - get it running - asap
 
