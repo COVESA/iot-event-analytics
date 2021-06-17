@@ -350,6 +350,7 @@ export class IoTeaUtils {
 
     private async chooseComposeEnvFile(): Promise<string> {
         const selectedEnvFile: vscode.Uri[] | undefined = await vscode.window.showOpenDialog({
+            canSelectFolders: false,
             canSelectFiles: true,
             canSelectMany: false,
             filters: {
