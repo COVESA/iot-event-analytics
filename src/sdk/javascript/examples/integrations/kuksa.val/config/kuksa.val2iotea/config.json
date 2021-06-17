@@ -1,5 +1,5 @@
 {
-    "loglevel": "DEBUG",
+    "loglevel": "INFO",
     "protocolGateway": {
         "adapters": [
             {
@@ -16,8 +16,8 @@
         ]
     },
     "kuksa.val": {
-        "ws": "ws://kuksa-val:8090",
-        "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJtb2RpZnlUcmVlIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTY0NDc2MjYwNywia3Vrc2EtdnNzIjp7IioiOiJydyJ9fQ.ytGlaP0t31o25TyF8A2mIUdeJI9Ls-NARb_Jvy3WsrqqFpJu-n7kW26J3AWCPD6tg3EB7uA1Kh064yPzJKYQqLvWFwNXWTxkcn10m4yya2EBW97NpeFoyaqUl6hxhVWeEJ5pRREE8dhLgi82i6vjQ5--RV1uEiSgZvFhsH8mPYMEbVqwCngPoBKO6F7aegmhKdAHWgE1xFnDvYjMIrHrtoOb1YYAy3sO5QoJ7xhBqNy30AgYZKgrwe4xE8aqI6VdwQdVKC7X-A3p6IGfQd54Cq5Ja3CB8DBeoD2v-hecKYtlOxrQgIvXOmOwfH4mAudaJaTt4ftMWK3MZ2iUgY2G3PX6aO2Sy-I5Uisbe_wtdO9z-vbjpcoPFMFYxhkLaBNUPxTFKm0z68_G-laeDkgdO-bXW7xGrXbXehS96AVX5sn8JCtlur3kMOmvGz0P_gmWouo1PNGZmryHbnFeU0RpS0iy5xSCm2AbKU5dg-Fkq9rOgi3wWNIOEhQ5FGzbYW3I5iV4a4R6ljWjEp9iFPQD-W83vTVVtWUBkAMZ8c8ZXTXw_IMuDo_BiP8ZuYU4WYC4qNF8NGeTbuESmrUVapwu6OSsdXwp3-zkxV_aryaJVyFIiqr_1HQDlSI3hOmRid_FHPeZqGWzrrAbNfkZQ7LOL6gHhUDGtUMxjfa64QbffeE",
+        "ws": "ws://kuksa.val:8090",
+        "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrdWtzYS52YWwiLCJpc3MiOiJFY2xpcHNlIEtVS1NBIERldiIsImFkbWluIjp0cnVlLCJtb2RpZnlUcmVlIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTY1NTUzNjcyOCwia3Vrc2EtdnNzIjp7IioiOiJydyJ9fQ.3p2wtpmnjX75harT8b1K4oWjaalmJNBG1giiYAIcmzFu9X5Jl_WyUp1bLIcMWk4mDQuWNd8aD4-MfXPsZ0IW0cRU1b1O-h9QzQiF1kDU3XggsezRdK4bKeK7UE3-URMkHlI3X7TKOd_QPNjw01TQAic-qDCtXQdJ3fsRei_NA0IDYVI6y2v5ONdbWODo1tmGXG_oi9YQmmGHeWRMTvnsNETiz__IDLWPlg_eMBIbEzQZ4d4W4vN3Fx7y_kPhExMaggfPuf-Bg5CiELsiXkxwqweRhgcBebJx3WShzo4Z5EQVXKLm_swxMtGo5QT1A0N3K2s172wsRUUG2y9I_RFpyHNOHdRE5XVpfBGKoy2Zur6ow5hBgER-ExtqgWkJfbMRDiYF9ouJSLPpQBctBc58cxAl5PHXjX5O-edharM4-Ol2OFuoHF9q29ITCwtOaaHNAGIQulv8jXwtfjav96lKciv6sTkE5d7BswVHav-cOZybT4gno14pb0Gu3d3WV22ExUdC6h0r5_rB4sNNem5A1FVvZobn_dWWHwf8rbI78bPux5BHuDZGAGFRpo6NAMxVeOWwZZjJTraamm963jh8ZPskud5X30ZZ4BYZcUquxR9WcuqquFNPh9LgGAKHK7gEv40hQg7RlnAf9pBZFuUcXBeKR1L_taGFW8bviUYf-v4",
         "pathConfig": {
             "separator": ".",
             "replacer": {

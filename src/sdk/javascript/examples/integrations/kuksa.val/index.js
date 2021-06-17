@@ -62,7 +62,7 @@ class VssWorker extends Talent {
 
         const to = new TalentOutput();
 
-        to.addFor(ev.subject, ev.type, ev.instance, 'Vehicle.Acceleration.Lateral', KuksaValOutputValue.create(this, KuksaValInputValue.getSubscription(rawValue), rawValue.value));
+        to.addFor(ev.subject, ev.type, ev.instance, 'Acceleration$Lateral', KuksaValOutputValue.create(this, KuksaValInputValue.getSubscription(rawValue), rawValue.value));
 
         return to.toJson();
     }

@@ -1,17 +1,16 @@
 (
-    $t := path.($match(/^([^\.]+)\.([^\$]+)$/));
-
     {
-        "type": $t.groups[0],
-        "feature": $replace($t.groups[1], ".", "$"),
-        "instance": "EABCIF888",
+        "type": type,
+        "feature": feature,
+        "instance": instance,
+        "cid": cid,
         "value": {
             "$vpath": "value",
             "source": source,
             "sub": subscriptionId,
             "value": value
         },
-        "subject": "llakie",
-        "whenMs": $millis()
+        "subject": userId,
+        "whenMs": timestampMs
     }
 )
