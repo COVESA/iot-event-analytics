@@ -60,7 +60,7 @@ public:
 
         std::transform(message.begin(), message.end(), message.begin(), ::toupper);
         context->Reply(message);
-        GetLogger().Info() << "Replying echo:      " << message;
+        GetLogger().Info() << "Replying echo: " << message;
 
         auto notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
         notifyContext->Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);

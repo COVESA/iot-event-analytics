@@ -68,7 +68,7 @@ json Test::Json() const {
 //
 // TestSetInfo
 //
-static auto test_set_info_logger = NamedLogger("TestSetInfo");
+static auto logger = NamedLogger("TestSetInfo");
 
 TestSetInfo::TestSetInfo(const std::string& name)
     : name_{name} {}
@@ -79,12 +79,12 @@ void TestSetInfo::AddTest(const std::string& name, const json& exepected_value, 
 }
 
 void TestSetInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
-    test_set_info_logger.Info() << "Run Test " << name;
+    logger.Info() << "Run Test " << name;
 
     auto test = tests_.find(name);
 
     if (test == tests_.end()) {
-        test_set_info_logger.Error() << "Test " << name << " has not been registered";
+        logger.Error() << "Test " << name << " has not been registered";
 
         ctx->Reply(TestResult{name, TEST_ERROR, -1}.Json());
         return;

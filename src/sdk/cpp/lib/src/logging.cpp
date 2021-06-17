@@ -141,27 +141,20 @@ NamedLogger::NamedLogger(const std::string& name)
     : name_{name} {}
 
 Logger NamedLogger::Debug() const {
-    auto l = logging::Debug();
-    l << name_ << " : ";
-    return l;
+    return logging::Debug() << name_ << " : ";
 }
 
 Logger NamedLogger::Info() const {
-    auto l = logging::Info();
-    l << name_ << " : ";
-    return l;
+    return logging::Info() << name_ << " : ";
 }
 
 Logger NamedLogger::Warn() const {
-    auto l = logging::Warn();
-    l << name_ << " : ";
-    return l;
+    return logging::Warn() << name_ << " : ";
 }
 
 Logger NamedLogger::Error() const {
-    auto l = logging::Error();
-    l << name_ << " : ";
-    return l;
+    return logging::Error() << name_ << " : ";
+
 }
 
 }  // namespace logging
