@@ -42,12 +42,19 @@ Additionally, all requirements will be checked on the first command invocation a
 
 ### Code
 
+_"Trigger suggest"_, _"Toggle Autocompletion"_ can be triggered using
+
+- Windows, Linux: `Strg + Space`
+- macOS:
+  - `⌘ + Esc` on Apple Keyboards
+  - `Alt + Esc` on Windows Keyboards
+
 #### getRules()
 
-- `iotea.rule.and` + `Strg + Space` > Create new And Rule
-- `iotea.rule.or` + `Strg + Space` > Create new Or Rule
-- `iotea.rule.op` + `Strg + Space` > Create a new Rule with an Operation Constraint
-- `iotea.rule.change` + `Strg + Space` > Create a new Rule with a Change Constraint
+- `iotea.rule.and` + _"Trigger suggest"_ > Create new And Rule
+- `iotea.rule.or` + _"Trigger suggest"_ > Create new Or Rule
+- `iotea.rule.op` + _"Trigger suggest"_ > Create a new Rule with an Operation Constraint
+- `iotea.rule.change` + _"Trigger suggest"_ > Create a new Rule with a Change Constraint
 
 ## Troubleshooting
 

@@ -31,7 +31,7 @@ RUN npm config set maxsockets 5 -g
 RUN yarn --production
 
 # Audit all packages for security vulnerabilities
-RUN yarn audit
+RUN yarn audit --groups dependencies --level critical
 
 # Shrink node_modules
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
