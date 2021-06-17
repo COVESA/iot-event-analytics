@@ -49,7 +49,7 @@ Talent examples are given for
 __Important to know:__
 
 - One central default talent is the so called `ConfigManager`. The `ConfigManager` supports the communication between talents and manages basic runtime topic including the __type-system__, __uom-system__ and inter talent __discovery__. Also compare the [IoT Event Analytics components README](./iotea-components.md).
-- Do not miss to set the MQTT_TOPIC_NS envionment variable e.g. in Python:
+- Do not miss to set the MQTT_TOPIC_NS environment variable e.g. in Python:
 
   ```code
   import os

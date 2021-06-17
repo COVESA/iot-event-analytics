@@ -21,8 +21,9 @@ PlantUML files in this folder can be visualized/generated using a PlantUML rende
 Visual Studio provides a PlantUML integration using the extension 'PlantUML'.
 
 Following configuration for this extension is recommended:
+
 1. **Plantuml: Renderer**</br>
-   Set Renderer here. For public information you could simply use the public plantuml renderer(https://www.plantuml.com/plantuml)
+   Set Renderer here. For public information you could simply use the public plantuml renderer [https://www.plantuml.com/plantuml](https://www.plantuml.com/plantuml)
 2. **Plantuml: Export Out Dir**</br>
    Set it to the current folder (./)
 3. **Plantuml: File Extensions***</br>
@@ -36,6 +37,6 @@ You can use _Ctrl+Shift+P_ and use commands provided for PlantUML to generate im
 
 ### Public plantuml-server
 
-You can use the public PlantUML-server to render the content of these files. 
+You can use the public PlantUML-server to render the content of these files.
 
 Open http://www.plantuml.com/plantuml/uml/ and paste in the content of the file you want to render and click on _submit_.

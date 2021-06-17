@@ -16,7 +16,7 @@ With a given matrix it is quite easy to determine the identity. Identity is one 
 
 ## Identity
 
-A common distance function like the Euclidian distance (and *learned* one) can be applied on a whole latent __subject__ space.
+A common distance function like the Euclidean distance (and *learned* one) can be applied on a whole latent __subject__ space.
 
 If specific areas of the latent __subject__ space are excluded or pre-processed by specific kernel e.g. like the convolution of convolutional neural networks aka CNN higher semantical meanings could be applied.
 

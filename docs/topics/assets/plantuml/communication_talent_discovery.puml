@@ -27,21 +27,26 @@
         ConfigManager ->> Middleware: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
 
         Middleware ->> TalentA: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
-        TalentA -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        activate TalentA
         group Create Talent Reply
             TalentA -> TalentA: AddRulesToReply()
             TalentA -> TalentA: AddOutputsToReply()
             TalentA -> TalentA: AddCalleesToReply()
         end
+        TalentA -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        deactivate TalentA
+
         Middleware -->> ConfigManager: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
 
         Middleware ->> TalentB: TalentsDiscoveryMsg \n [TALENTS_DISCOVERY_TOPIC]
+        activate TalentB
         group Create Talent Reply
             TalentB -> TalentB: AddRulesToReply()
             TalentB -> TalentB: AddOutputToReply()
             TalentB -> TalentB: AddCalleesToReply()
         end
         TalentB -->> Middleware: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
+        deactivate TalentB
         Middleware -->> ConfigManager: TalentsDiscoveryReplyMsg \n [TALENTS_DISCOVERY_RETURN_TOPIC]
 
         group Finalize Discovery [DiscoveryDurationTimerElapsed]

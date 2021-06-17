@@ -10,7 +10,7 @@
 
 # Writing a talent with only an MQTT client available
 
-## A few things to clarifiy
+## A few things to clarify
 
 - `<platformId>`: The unique platform identifier
 - `<talentId>`: The unique talent identifier

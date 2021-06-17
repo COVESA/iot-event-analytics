@@ -11,7 +11,7 @@
 # IoT Event Analytics internals
 
 IoT Event Analytics is a broker based complex event processing platform interacting through publish subscribe topics.
-To provide the maximum flexibility the work is distributed between the broker and the paricipating entities.
+To provide the maximum flexibility the work is distributed between the broker and the participating entities.
 
 Broker has to know the
 

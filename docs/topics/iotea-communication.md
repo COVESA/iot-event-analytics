@@ -30,6 +30,8 @@ The platform periodically runs a Talent Discovery to register new Talents with t
 
 In addition, Talents could subscribe to _PlatformEventMsgs_ and to the _TypesUpdateMsg_ to receive information about available _Talents_ and _Types_ (not shown in the diagram above).
 
+For message examples please have a look to [Subscription API](./iotea-writing-a-talent-with-just-mqtt.md#Subscription-API).
+
 ## Feature Ingestion
 
 ![./assets/plantuml/communication_feature_ingestion.svg](./assets/plantuml/communication_feature_ingestion.svg)
@@ -38,22 +40,28 @@ An Ingestion of a feature event can be triggered by any client which has access 
 
 The main task fo the platform is to check, encode and enrich the ingested event with meta data (e.g. history, statistical values,...) and route them to the Talents which subscribes them via rules (e.g. "if feature a has been updated").
 
+For message examples please have a look to [Publishing API](./iotea-writing-a-talent-with-just-mqtt.md#Publishing-API).
+
 ## Publish Subscribe Mechanism
 
 ![./assets/plantuml/communication_pub_sub.svg](./assets/plantuml/communication_pub_sub.svg)
 
 The view above is simplified by:
- - _Ingestion_, _Encoding_ & _Routing_ are combined into _Platform_ (for the complete ingestion process see [Feature Ingestion](##Feature-Ingestion))
+
+- _Ingestion_, _Encoding_ & _Routing_ are combined into _Platform_ (for the complete ingestion process see [Feature Ingestion](#Feature-Ingestion))
 
 Publish-Subscribe from 'external' clients or by Talents are using the same mechanism. Inter-talent-communication would happen via Feature events but both Talents (in this case TalentA and TalentB do not know each other).
+
+For message examples please have a look to [Subscription API](./iotea-writing-a-talent-with-just-mqtt.md#Subscription-API) and [Publishing API](./iotea-writing-a-talent-with-just-mqtt.md#Publishing-API).
 
 ## Request Response Mechanism
 
 ![./assets/plantuml/communication_req_resp.svg](./assets/plantuml/communication_req_resp.svg)
 
 The view above is simplified by:
- - _Ingestion_, _Encoding_ & _Routing_ are combined into _Platform_ (for the complete ingestion process see [Feature Ingestion](##Feature-Ingestion))
- - Talent Discovery has been break down to the registration of the request-response entities (for the complete discovery process see [Talent Discovery](##Talent-Discovery))
- - No recursive request-response shown
+
+- _Ingestion_, _Encoding_ & _Routing_ are combined into _Platform_ (for the complete ingestion process see [Feature Ingestion](#Feature-Ingestion))
+- Talent Discovery has been break down to the registration of the request-response entities (for the complete discovery process see [Talent Discovery](#Talent-Discovery))
+- No recursive request-response shown
 
 Depending on the use SDK the Talents hide the request-response handling behind a function call-facade. E.g. a return value of a call could be awaited in the caller (blocking) or fulfilled in a Future (non-blocking). The SDKs ensure that this request-response process is hidden for the _Talent_ developer.
