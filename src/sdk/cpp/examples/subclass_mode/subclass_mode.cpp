@@ -29,8 +29,6 @@ using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
 using iotea::core::schema::rule_ptr;
 
-namespace logging = iotea::core::log;
-
 constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 
 class MyService : public FunctionTalent {
@@ -45,7 +43,7 @@ class MyService : public FunctionTalent {
     }
 
     void OnError(const ErrorMessage& msg) override {
-        logging::Error() << "Something went a awry, " << msg.GetMessage(); 
+        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
     };
 };
 
@@ -54,7 +52,7 @@ class MyReporingTalent : public Talent {
      MyReporingTalent() : Talent("my_reporting_talent") { }
 
      void OnEvent(const Event&, event_ctx_ptr) override {
-        logging::Info() << "The temp is set!";
+        GetLogger().Info() << "The temp is set!";
      }
 
      rule_ptr OnGetRules() const override {
@@ -62,7 +60,7 @@ class MyReporingTalent : public Talent {
      }
 
     void OnError(const ErrorMessage& msg) override {
-        logging::Error() << "Something went a awry, " << msg.GetMessage(); 
+        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
     };
 };
 
@@ -76,16 +74,16 @@ class MyCallingTalent : public Talent {
      }
 
      void OnEvent(const Event& e, event_ctx_ptr ctx) override {
-        logging::Info() << "EventReceived in MyCallingTalent";
+        GetLogger().Info() << "EventReceived in MyCallingTalent";
         auto value = e.GetValue();
 
         auto token = ctx->Call(multiply, json{value, value}, 1000);
 
-        auto reply_handler = [](const std::vector<json>& reply) {
-            logging::Info() << "kuelschrank.temp=" << reply[0].get<int>(); 
+        auto reply_handler = [this](const std::vector<json>& reply) {
+            GetLogger().Info() << "kuelschrank.temp=" << reply[0].get<int>(); 
         };
-        auto timeout_handler = []{
-            logging::Info() << "timed out waiting for result";
+        auto timeout_handler = [this]{
+            GetLogger().Info() << "timed out waiting for result";
         };
 
         ctx->Gather(reply_handler, timeout_handler, token);
@@ -96,7 +94,7 @@ class MyCallingTalent : public Talent {
      }
 
     void OnError(const ErrorMessage& msg) override {
-        logging::Error() << "Something went a awry, " << msg.GetMessage(); 
+        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
     };
 };
 

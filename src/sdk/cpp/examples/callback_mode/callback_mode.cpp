@@ -27,8 +27,7 @@ using iotea::core::LessThan;
 using iotea::core::ErrorMessage;
 using iotea::core::Event;
 using iotea::core::schema::rule_ptr;
-
-namespace logging = iotea::core::log;
+using iotea::core::logging::NamedLogger;
 
 constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 
@@ -38,10 +37,14 @@ void signal_handler(int) {
     client.Stop();
 }
 
+static auto logger = NamedLogger{"CallbackMode"};
+
 int main(int, char**) {
+    logger.Error() << "Fired up";
+
     // Register a global error handler
     client.OnError = [](const ErrorMessage& msg) {
-        logging::Error() << "Something went a awry, " << msg.GetMessage(); 
+        logger.Error() << "Something went a awry, " << msg.GetMessage();
     };
 
 
@@ -68,7 +71,7 @@ int main(int, char**) {
 
     // Create a stand-alone subscription and bind matching events to a function
     client.Subscribe(IsSet("temp", "kuehlschrank"), [](const Event&, event_ctx_ptr) {
-        logging::Info() << "The temp is set!";
+        logger.Info() << "The temp is set!";
     });
 
 
@@ -81,10 +84,10 @@ int main(int, char**) {
         auto token = ctx->Call(multiply, json{value, value}, 1000);
 
         auto reply_handler = [](const std::vector<json>& reply) {
-            logging::Info() << "kuelschrank.temp=" << reply[0].get<int>(); 
+            logger.Info() << "kuelschrank.temp=" << reply[0].get<int>(); 
         };
         auto timeout_handler = []{
-            logging::Info() << "timed out waiting for result";
+            logger.Info() << "timed out waiting for result";
         };
 
         // Defer handling of the function reply until some later point in time.

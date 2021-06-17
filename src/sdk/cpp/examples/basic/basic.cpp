@@ -29,8 +29,6 @@ using iotea::core::ErrorMessage;
 using iotea::core::Event;
 using iotea::core::schema::rule_ptr;
 
-namespace logging = iotea::core::log;
-
 constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 
 class MyService : public Talent {
@@ -42,11 +40,11 @@ class MyService : public Talent {
     }
 
     void OnEvent(const Event& event, event_ctx_ptr) override {
-        logging::Info() << "Event: " << event.GetValue().dump(4);
+        GetLogger().Info() << "Event: " << event.GetValue().dump(4);
     }
 
     void OnError(const ErrorMessage& msg) override {
-        logging::Error() << "Something went a awry, " << msg.GetMessage(); 
+        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
     };
 };
 

@@ -14,7 +14,6 @@
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "logging.hpp"
 #include "mqtt_client.hpp"
 
 using namespace iotea::core;
@@ -54,17 +53,17 @@ class EchoConsumer : public Talent {
     void OnEvent(const Event& event, event_ctx_ptr context) override {
         if (event.GetType() == PROVIDED_FETAURE_TYPE) {
             auto message = event.GetValue().get<std::string>();
-            log::Info() << "Received message:  '" << message << "'";
+            GetLogger().Info() << "Received message:  '" << message << "'";
 
             auto t = context->Call(echo_provider.echo, message);
 
-            context->Gather([](std::vector<json> replies) {
-                    log::Info() << "Received echo:     '" << replies[0].dump(4) << "'";
+            context->Gather([this](std::vector<json> replies) {
+                    GetLogger().Info() << "Received echo:     '" << replies[0].dump(4) << "'";
                 }, nullptr, t);
 
-            log::Info() << "Forwarded message: '" << message << "'";
+            GetLogger().Info() << "Forwarded message: '" << message << "'";
         } else {
-            log::Warn() << "UNKNOWN EVENT RECEIVED";
+            GetLogger().Warn() << "UNKNOWN EVENT RECEIVED";
         }
     }
 };

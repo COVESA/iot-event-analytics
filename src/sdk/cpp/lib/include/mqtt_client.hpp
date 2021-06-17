@@ -27,7 +27,6 @@
 
 
 #include "interface.hpp"
-#include "logging.hpp"
 
 namespace iotea {
 namespace core {
@@ -73,7 +72,6 @@ class MqttClient : public Publisher {
 
     std::vector<std::pair<std::string, int>> topics_;
 
-   private:
     void ChangeState(State state);
 };
 

@@ -17,7 +17,6 @@
 #include "nlohmann/json.hpp"
 
 #include "jsonquery.hpp"
-#include "logging.hpp"
 
 using json = nlohmann::json;
 

@@ -14,7 +14,6 @@
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "logging.hpp"
 #include "mqtt_client.hpp"
 
 using namespace iotea::core;
@@ -54,14 +53,14 @@ public:
     schema::rule_ptr OnGetRules() const override { return nullptr; }
 
     void Echo(const json& args, call_ctx_ptr context) {
-        log::Info() << "Raw args: " << args.dump(4);
+        GetLogger().Info() << "Raw args: " << args.dump(4);
         auto message = args[0].get<std::string>();
-        log::Info() << "Received echo call: " << message;
+        GetLogger().Info() << "Received echo call: " << message;
         ++echoCount_;
 
         std::transform(message.begin(), message.end(), message.begin(), ::toupper);
         context->Reply(message);
-        log::Info() << "Replying echo:      " << message;
+        GetLogger().Info() << "Replying echo: " << message;
 
         auto notifyContext = NewEventContext(NOTIFICATION_CONTEXT);
         notifyContext->Emit(TALENT_NAME+"."+EVENT_ECHO_COUNT, echoCount_);
@@ -69,14 +68,14 @@ public:
     }
 
     void GetEchoCount(call_ctx_ptr context) {
-        log::Info() << "Received GetEchoCount call";
+        GetLogger().Info() << "Received GetEchoCount call";
         context->Reply(echoCount_);
-        log::Info() << "Replying echoCount: " << echoCount_;
+        GetLogger().Info() << "Replying echoCount: " << echoCount_;
     }
 
     void SetEchoCount(const json& args, call_ctx_ptr context) {
         auto newEchoCount = args[0].get<unsigned int>();
-        log::Info() << "Received setEchoCount call: " << newEchoCount;
+        GetLogger().Info() << "Received setEchoCount call: " << newEchoCount;
         if (newEchoCount != echoCount_) {
             echoCount_ = newEchoCount;
             auto notifyContext = NewEventContext(NOTIFICATION_CONTEXT);

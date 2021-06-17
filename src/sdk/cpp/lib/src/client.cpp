@@ -12,6 +12,7 @@
 
 #include "event.hpp"
 #include "client.hpp"
+#include "logging.hpp"
 
 namespace iotea {
 namespace core {
@@ -62,6 +63,8 @@ void CalleeTalent::AddCallees(const std::vector<Callee>& callees) {
 //
 // Client
 //
+static auto logger = NamedLogger("Client");
+
 Client::Client(const std::string& connection_string)
     : mqtt_client_{new MqttClient(connection_string, GenerateUUID())}
     , callee_talent_(new CalleeTalent{GenerateUUID()})
@@ -149,7 +152,7 @@ void Client::Subscribe(schema::rule_ptr rules, const OnEvent callback) {
 }
 
 void Client::HandleDiscover(const std::string& msg) {
-    log::Debug() << "Received discovery message.";
+    logger.Debug() << "Received discovery message.";
     auto payload = json::parse(msg);
     auto dmsg = DiscoverMessage::FromJson(payload);
     auto return_topic = mqtt_topic_ns_ + "/" + dmsg.GetReturnTopic();
@@ -179,7 +182,7 @@ void Client::HandleDiscover(const std::string& msg) {
 }
 
 void Client::HandlePlatformEvent(const std::string& msg) {
-    log::Debug() << "Received platform message.";
+    logger.Debug() << "Received platform message.";
     auto payload = json::parse(msg);
     auto event = PlatformEvent::FromJson(payload);
 
@@ -238,30 +241,30 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
     Event event;
 
     try {
-        log::Debug() << "Parse payload.";
+        logger.Debug() << "Parse payload.";
         auto payload = json::parse(raw);
 
         // First check if this is an error message
         auto msg = Message::FromJson(payload);
         if (msg.IsError()) {
-            log::Debug() << "Create error message from payload.";
+            logger.Debug() << "Create error message from payload.";
             auto err = ErrorMessage::FromJson(payload);
 
             HandleError(err);
             return;
         }
 
-        log::Debug() << "Create event from payload.";
+        logger.Debug() << "Create event from payload.";
         event = Event::FromJson(payload);
     } catch (const json::parse_error& e) {
-        log::Error() << "Failed to parse event message.";
+        logger.Error() << "Failed to parse event message.";
         return;
     } catch (const json::type_error& e) {
-        log::Error() << "Unexpected content in event message: " << e.what();
+        logger.Error() << "Unexpected content in event message: " << e.what();
         return;
     }
 
-    log::Debug() << "HandleEvent, talent_id=" << talent_id << ", feature=" << event.GetFeature();
+    logger.Debug() << "HandleEvent, talent_id=" << talent_id << ", feature=" << event.GetFeature();
 
     // Is it a function talent?
     auto ft_iter = std::find_if(function_talents_.begin(), function_talents_.end(), [talent_id](const auto& item) {
@@ -316,12 +319,12 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
         return;
     }
 
-    log::Info() << "Received event for unregistered talent";
+    logger.Info() << "Received event for unregistered talent";
 }
 
 void Client::HandleCallReply(const std::string& talent_id, const std::string&
         channel_id, const call_id_t& call_id, const std::string& msg) {
-    log::Debug() << "Received reply, talent_id: " << talent_id << ", channel_id=" << channel_id << " call_id=" << call_id;
+    logger.Debug() << "Received reply, talent_id: " << talent_id << ", channel_id=" << channel_id << " call_id=" << call_id;
 
     auto payload = json::parse(msg);
     auto event = Event::FromJson(payload);
@@ -329,7 +332,7 @@ void Client::HandleCallReply(const std::string& talent_id, const std::string&
 
     auto gatherer = reply_handler_->ExtractGatherer(call_id);
     if (!gatherer) {
-        log::Debug() << "Could not find gatherer of call id " << call_id;
+        logger.Debug() << "Could not find gatherer of call id " << call_id;
         return;
     }
 
@@ -358,9 +361,9 @@ std::string Client::GetPlatformEventsTopic() const {
 }
 
 void Client::Receive(const std::string& topic, const std::string& msg) {
-    log::Debug() << "Message arrived.";
-    log::Debug() << "\ttopic: '" << topic << "'";
-    log::Debug() << "\tpayload: '" << msg;
+    logger.Debug() << "Message arrived.";
+    logger.Debug() << "\ttopic: '" << topic << "'";
+    logger.Debug() << "\tpayload: '" << msg;
 
     std::cmatch m;
 
@@ -401,7 +404,7 @@ void Client::Receive(const std::string& topic, const std::string& msg) {
         return;
     }
 
-    log::Error() << "Unexpected topic: << " << topic;
+    logger.Error() << "Unexpected topic: << " << topic;
 }
 
 void Client::UpdateTime(int64_t ts) {

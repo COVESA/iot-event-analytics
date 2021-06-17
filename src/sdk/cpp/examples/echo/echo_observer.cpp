@@ -14,7 +14,6 @@
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "logging.hpp"
 #include "mqtt_client.hpp"
 #include "schema.hpp"
 
@@ -41,12 +40,12 @@ class EchoObserver : public Talent {
     void OnEvent(const Event& event, event_ctx_ptr) override {
         if (event.GetFeature() == SUBSCRIBED_ECHO_EVENT) {
             auto message = event.GetValue().get<std::string>();
-            log::Info() << "Received echo: '" << message << "'";
+            GetLogger().Info() << "Received echo: '" << message << "'";
         } else if (event.GetFeature() == SUBSCRIBED_COUNT_EVENT) {
             auto echoCount = event.GetValue().get<unsigned int>();
-            log::Info() << "Received echoCount: " << echoCount;
+            GetLogger().Info() << "Received echoCount: " << echoCount;
         } else {
-            log::Warn() << "UNKNOWN EVENT RECEIVED";
+            GetLogger().Warn() << "UNKNOWN EVENT RECEIVED";
         }
     }
 };
