@@ -139,7 +139,7 @@ void SinkGatherer::ForwardReplies(const std::vector<json>& replies) const {
 //
 PreparedFunctionReply::PreparedFunctionReply(const std::string& talent_id,
         const std::string& feature,
-        const Event& event,
+        event_ptr event,
         const std::string& return_topic,
         gateway_ptr gateway)
     : talent_id_{talent_id}
@@ -150,17 +150,17 @@ PreparedFunctionReply::PreparedFunctionReply(const std::string& talent_id,
 
 void PreparedFunctionReply::Reply(const json& value) const {
 
-    auto channel = event_.GetValue()["chnl"].get<std::string>();
-    auto call = event_.GetValue()["call"].get<std::string>();
+    auto channel = event_->GetValue()["chnl"].get<std::string>();
+    auto call = event_->GetValue()["call"].get<std::string>();
     auto result = json{
         {"$tsuffix", std::string("/") + channel + "/" + call},
         {"$vpath", "value"},
         {"value", value}
     };
 
-    auto subject = event_.GetSubject();
-    auto type = event_.GetType();
-    auto instance = event_.GetInstance();
+    auto subject = event_->GetSubject();
+    auto type = event_->GetType();
+    auto instance = event_->GetInstance();
     auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
     gateway_->Publish(return_topic_, event.Json().dump());

@@ -228,7 +228,7 @@ TEST(call, ReplyGatherer_Gather) {
 
     auto gather_func = [](std::vector<json>) { return json{nullptr}; };
     auto gateway = std::make_shared<TestProtocolGateway>();
-    auto event = Event{"subject", "feature", json{{"chnl", "chnl"}, {"call", "call"}}, "type", "instance", "return_topic"};
+    auto event = std::make_shared<Event>("subject", "feature", json{{"chnl", "chnl"}, {"call", "call"}}, "type", "instance", "return_topic");
     auto replier = PreparedFunctionReply{"talent_id", "feature", event, "return_topic", gateway};
     auto gatherer = ReplyGatherer{gather_func, nullptr, replier, tokens};
 

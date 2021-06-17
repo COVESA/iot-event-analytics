@@ -69,13 +69,13 @@ CallToken EventContext::CallInternal(const Callee& callee, const json& args, int
 // CallContext
 //
 CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                         const Event& event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen)
-    : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_handler, gateway, uuid_gen}
+                         event_ptr event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen)
+    : EventContext{talent_id, channel_id, event->GetSubject(), event->GetReturnTopic(), reply_handler, gateway, uuid_gen}
     , event_{event}
     , feature_{feature}
-    , channel_{event.GetValue()["chnl"].get<std::string>()}
-    , call_{event.GetValue()["call"].get<std::string>()}
-    , timeout_at_ms_{event.GetValue()["timeoutAtMs"].get<int64_t>()} {}
+    , channel_{event->GetValue()["chnl"].get<std::string>()}
+    , call_{event->GetValue()["call"].get<std::string>()}
+    , timeout_at_ms_{event->GetValue()["timeoutAtMs"].get<int64_t>()} {}
 
 
 CallToken CallContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
@@ -105,17 +105,17 @@ CallToken CallContext::Call(const Callee& callee, const json& args, int64_t time
 }
 
 void CallContext::Reply(const json& value) const {
-    auto channel = event_.GetValue()["chnl"].get<std::string>();
-    auto call = event_.GetValue()["call"].get<std::string>();
+    auto channel = event_->GetValue()["chnl"].get<std::string>();
+    auto call = event_->GetValue()["call"].get<std::string>();
     auto result = json{
         {"$tsuffix", std::string("/") + channel + "/" + call},
         {"$vpath", "value"},
         {"value", value}
     };
 
-    auto subject = event_.GetSubject();
-    auto type = event_.GetType();
-    auto instance = event_.GetInstance();
+    auto subject = event_->GetSubject();
+    auto type = event_->GetType();
+    auto instance = event_->GetInstance();
     auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
     gateway_->Publish(return_topic_, event.Json().dump());

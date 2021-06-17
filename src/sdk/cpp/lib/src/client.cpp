@@ -182,7 +182,7 @@ void Client::HandleDiscover(const std::string& msg) {
     logger.Debug() << "Received discovery message.";
     auto payload = json::parse(msg);
     auto dmsg = DiscoverMessage::FromJson(payload);
-    auto return_topic = dmsg.GetReturnTopic();
+    auto return_topic = dmsg->GetReturnTopic();
 
     callee_talent_->ClearCallees();
 
@@ -226,7 +226,7 @@ void Client::HandlePlatformEvent(const std::string& msg) {
     }
 }
 
-void Client::HandleError(const ErrorMessage& err) {
+void Client::HandleError(error_message_ptr err) {
     std::for_each(function_talents_.begin(), function_talents_.end(), [err](const auto& pair) {
         pair.second->OnError(err);
     });
@@ -239,11 +239,11 @@ void Client::HandleError(const ErrorMessage& err) {
     }
 }
 
-bool Client::HandleAsCall(std::shared_ptr<FunctionTalent> t, const Event& event) {
+bool Client::HandleAsCall(std::shared_ptr<FunctionTalent> t, event_ptr event) {
     // Find function matching the event feature name
     auto funcs = t->GetFunctions();
     auto it = std::find_if(funcs.begin(), funcs.end(), [t, event](const auto& p) {
-        return t->GetInputName(t->GetId(), p.first) == event.GetFeature();
+        return t->GetInputName(t->GetId(), p.first) == event->GetFeature();
     });
 
     if (it == funcs.end()) {
@@ -259,13 +259,13 @@ bool Client::HandleAsCall(std::shared_ptr<FunctionTalent> t, const Event& event)
             reply_handler_,
             gateway_,
             GenerateUUID);
-    auto args = event.GetValue()["args"];
+    auto args = event->GetValue()["args"];
     it->second(args, ctx);
     return true;
 }
 
 void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
-    Event event;
+    event_ptr event;
 
     try {
         logger.Debug() << "Parse payload.";
@@ -273,7 +273,7 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
 
         // First check if this is an error message
         auto msg = Message::FromJson(payload);
-        if (msg.IsError()) {
+        if (msg->IsError()) {
             logger.Debug() << "Create error message from payload.";
             auto err = ErrorMessage::FromJson(payload);
 
@@ -291,7 +291,7 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
         return;
     }
 
-    logger.Debug() << "HandleEvent, talent_id=" << talent_id << ", feature=" << event.GetFeature();
+    logger.Debug() << "HandleEvent, talent_id=" << talent_id << ", feature=" << event->GetFeature();
 
     // Is it a function talent?
     auto ft_iter = std::find_if(function_talents_.begin(), function_talents_.end(), [talent_id](const auto& item) {
@@ -307,8 +307,8 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
         // It wasn't a call, treat it as an event instead
         auto ctx = std::make_shared<EventContext>(callee_talent_->GetId(),
                 callee_talent_->GetChannelId(),
-                event.GetSubject(),
-                event.GetReturnTopic(),
+                event->GetSubject(),
+                event->GetReturnTopic(),
                 reply_handler_,
                 gateway_,
                 GenerateUUID);
@@ -325,8 +325,8 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
         auto t = st_iter->second;
         auto ctx = std::make_shared<EventContext>(callee_talent_->GetId(),
                 callee_talent_->GetChannelId(),
-                event.GetSubject(),
-                event.GetReturnTopic(),
+                event->GetSubject(),
+                event->GetReturnTopic(),
                 reply_handler_,
                 gateway_,
                 GenerateUUID);
@@ -337,8 +337,8 @@ void Client::HandleEvent(const std::string& talent_id, const std::string& raw) {
     if (callee_talent_->GetId() == talent_id) {
         auto ctx = std::make_shared<EventContext>(callee_talent_->GetId(),
                 callee_talent_->GetChannelId(),
-                event.GetSubject(),
-                event.GetReturnTopic(),
+                event->GetSubject(),
+                event->GetReturnTopic(),
                 reply_handler_,
                 gateway_,
                 GenerateUUID);
@@ -355,7 +355,7 @@ void Client::HandleCallReply(const std::string& talent_id, const std::string&
 
     auto payload = json::parse(msg);
     auto event = Event::FromJson(payload);
-    auto value = event.GetValue()["value"];
+    auto value = event->GetValue()["value"];
 
     auto gatherer = reply_handler_->ExtractGatherer(call_id);
     if (!gatherer) {

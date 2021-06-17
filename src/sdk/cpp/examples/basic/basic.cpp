@@ -25,13 +25,13 @@ using iotea::core::FunctionTalent;
 using iotea::core::Talent;
 using iotea::core::Client;
 using iotea::core::Callee;
+using iotea::core::error_message_ptr;
+using iotea::core::event_ptr;
 using iotea::core::event_ctx_ptr;
 using iotea::core::Change;
 using iotea::core::IsSet;
 using iotea::core::GreaterThan;
 using iotea::core::LessThan;
-using iotea::core::ErrorMessage;
-using iotea::core::Event;
 using iotea::core::schema::rule_ptr;
 
 
@@ -43,12 +43,12 @@ class MyService : public Talent {
         return Change("anyfeature", "anytype");
     }
 
-    void OnEvent(const Event& event, event_ctx_ptr) override {
-        GetLogger().Info() << "Event: " << event.GetValue().dump(4);
+    void OnEvent(event_ptr event, event_ctx_ptr) override {
+        GetLogger().Info() << "Event: " << event->GetValue().dump(4);
     }
 
-    void OnError(const ErrorMessage& msg) override {
-        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
+    void OnError(error_message_ptr msg) override {
+        GetLogger().Error() << "Something went a awry, " << msg->GetMessage();
     };
 };
 

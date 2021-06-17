@@ -324,7 +324,7 @@ class PreparedFunctionReply {
      */
     PreparedFunctionReply(const std::string& talent_id,
             const std::string& feature,
-            const Event& event,
+            event_ptr event,
             const std::string& return_topic,
             gateway_ptr gateway);
 
@@ -340,7 +340,7 @@ class PreparedFunctionReply {
    private:
     std::string talent_id_;
     std::string feature_;
-    Event event_;
+    event_ptr event_;
     std::string subject_;
     std::string channel_id_;
     std::string call_id_;

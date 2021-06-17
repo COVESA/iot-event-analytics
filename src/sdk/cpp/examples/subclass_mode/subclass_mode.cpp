@@ -29,8 +29,8 @@ using iotea::core::AndRules;
 using iotea::core::IsSet;
 using iotea::core::GreaterThan;
 using iotea::core::LessThan;
-using iotea::core::ErrorMessage;
-using iotea::core::Event;
+using iotea::core::error_message_ptr;
+using iotea::core::event_ptr;
 using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
 using iotea::core::schema::rule_ptr;
@@ -46,8 +46,8 @@ class MyService : public FunctionTalent {
         });
     }
 
-    void OnError(const ErrorMessage& msg) override {
-        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
+    void OnError(error_message_ptr msg) override {
+        GetLogger().Error() << "Something went a awry, " << msg->GetMessage();
     };
 };
 
@@ -55,7 +55,7 @@ class MyReporingTalent : public Talent {
     public:
      MyReporingTalent() : Talent("my_reporting_talent") { }
 
-     void OnEvent(const Event&, event_ctx_ptr) override {
+     void OnEvent(event_ptr, event_ctx_ptr) override {
         GetLogger().Info() << "The temp is set!";
      }
 
@@ -63,8 +63,8 @@ class MyReporingTalent : public Talent {
         return IsSet("temp", "kuehlschrank");
      }
 
-    void OnError(const ErrorMessage& msg) override {
-        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
+    void OnError(error_message_ptr msg) override {
+        GetLogger().Error() << "Something went a awry, " << msg->GetMessage();
     };
 };
 
@@ -77,9 +77,9 @@ class MyCallingTalent : public Talent {
         multiply = RegisterCallee("my_service", "multiply");
      }
 
-     void OnEvent(const Event& e, event_ctx_ptr ctx) override {
+     void OnEvent(event_ptr e, event_ctx_ptr ctx) override {
         GetLogger().Info() << "EventReceived in MyCallingTalent";
-        auto value = e.GetValue();
+        auto value = e->GetValue();
 
         auto token = ctx->Call(multiply, json{value, value}, 1000);
 
@@ -97,8 +97,8 @@ class MyCallingTalent : public Talent {
         return AndRules(GreaterThan("temp", 2, "kuehlschrank"), LessThan("temp", 10, "kuehlschrank"));
      }
 
-    void OnError(const ErrorMessage& msg) override {
-        GetLogger().Error() << "Something went a awry, " << msg.GetMessage(); 
+    void OnError(error_message_ptr msg) override {
+        GetLogger().Error() << "Something went a awry, " << msg->GetMessage();
     };
 };
 

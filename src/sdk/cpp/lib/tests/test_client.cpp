@@ -115,7 +115,7 @@ TEST(client, Client_HandleAsCall) {
         "call": "00000000-0000-0000-0000-000000000000",
         "timeoutAtMs": 1234
     })");
-    auto event = Event{"subject", "beta.function-in", value, json{}};
+    auto event = std::make_shared<Event>("subject", "beta.function-in", value, json{});
 
     ASSERT_FALSE(client.HandleAsCall(alpha, event));
 
@@ -130,7 +130,7 @@ TEST(client, Client_HandleEvent) {
         explicit TestTalent(const std::string& name)
             : Talent{name} {}
 
-        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+        MOCK_METHOD(void, OnEvent, (event_ptr, event_ctx_ptr), (override));
     };
 
     class TestFunctionTalent : public FunctionTalent {
@@ -138,7 +138,7 @@ TEST(client, Client_HandleEvent) {
         explicit TestFunctionTalent(const std::string& name)
             : FunctionTalent{name} {}
 
-        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+        MOCK_METHOD(void, OnEvent, (event_ptr, event_ctx_ptr), (override));
     };
 
     class TestCalleeTalent : public CalleeTalent {
@@ -146,7 +146,7 @@ TEST(client, Client_HandleEvent) {
         explicit TestCalleeTalent(const std::string& name)
             : CalleeTalent{name} {}
 
-        MOCK_METHOD(void, OnEvent, (const Event&, event_ctx_ptr), (override));
+        MOCK_METHOD(void, OnEvent, (event_ptr, event_ctx_ptr), (override));
     };
 
     class TestClient : public Client {
@@ -156,8 +156,8 @@ TEST(client, Client_HandleEvent) {
                     callee_talent,
                     std::make_shared<ReplyHandler>()) {}
 
-        MOCK_METHOD(void, HandleError, (const ErrorMessage&), (override));
-        MOCK_METHOD(bool, HandleAsCall, (std::shared_ptr<FunctionTalent>, const Event&), (override));
+        MOCK_METHOD(void, HandleError, (error_message_ptr), (override));
+        MOCK_METHOD(bool, HandleAsCall, (std::shared_ptr<FunctionTalent>, event_ptr), (override));
 
         using Client::HandleEvent;
     };
@@ -328,7 +328,7 @@ TEST(client, Client_HandlePlatformEvent) {
         explicit TestTalent(const std::string& name)
             : Talent{name} {}
 
-        MOCK_METHOD(void, OnPlatformEvent, (const PlatformEvent&), (override));
+        MOCK_METHOD(void, OnPlatformEvent, (platform_event_ptr), (override));
     };
 
     class TestFunctionTalent : public FunctionTalent {
@@ -336,7 +336,7 @@ TEST(client, Client_HandlePlatformEvent) {
         explicit TestFunctionTalent(const std::string& name)
             : FunctionTalent{name} {}
 
-        MOCK_METHOD(void, OnPlatformEvent, (const PlatformEvent&), (override));
+        MOCK_METHOD(void, OnPlatformEvent, (platform_event_ptr), (override));
     };
 
     class TestClient : public Client {
@@ -371,7 +371,7 @@ TEST(client, Client_HandleError) {
         explicit TestTalent(const std::string& name)
             : Talent{name} {}
 
-        MOCK_METHOD(void, OnError, (const ErrorMessage&), (override));
+        MOCK_METHOD(void, OnError, (error_message_ptr), (override));
     };
 
     class TestFunctionTalent : public FunctionTalent {
@@ -379,7 +379,7 @@ TEST(client, Client_HandleError) {
         explicit TestFunctionTalent(const std::string& name)
             : FunctionTalent{name} {}
 
-        MOCK_METHOD(void, OnError, (const ErrorMessage&), (override));
+        MOCK_METHOD(void, OnError, (error_message_ptr), (override));
     };
 
     class TestClient : public Client {

@@ -149,13 +149,13 @@ TEST(context, CallContext_Reply) {
 
     class TestCallContext : public CallContext {
        public:
-        explicit TestCallContext(const Event& event, gateway_ptr gateway)
+        explicit TestCallContext(event_ptr event, gateway_ptr gateway)
             : CallContext{"talent_id", "channel_id", "feature", event, std::make_shared<ReplyHandler>(), gateway, []{return "";}} {}
     };
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
     auto features = json{};
-    auto event = Event{"subject", "feature", call_value, features, "default", "default", "return_topic", 0};
+    auto event = std::make_shared<Event>("subject", "feature", call_value, features, "default", "default", "return_topic", 0);
     auto gateway = std::make_shared<TestProtocolGateway>();
 
     auto ctx = TestCallContext{event, gateway};

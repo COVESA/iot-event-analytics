@@ -23,14 +23,14 @@ using iotea::core::ProtocolGateway;
 using iotea::core::Service;
 using iotea::core::Client;
 using iotea::core::Callee;
-using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
+using iotea::core::error_message_ptr;
+using iotea::core::event_ptr;
+using iotea::core::event_ctx_ptr;
 using iotea::core::AndRules;
 using iotea::core::IsSet;
 using iotea::core::GreaterThan;
 using iotea::core::LessThan;
-using iotea::core::ErrorMessage;
-using iotea::core::Event;
 using iotea::core::schema::rule_ptr;
 using iotea::core::logging::NamedLogger;
 
@@ -54,8 +54,8 @@ int main(int, char** argv) {
     client = std::make_shared<Client>(gateway);
 
     // Register a global error handler
-    client->OnError = [](const ErrorMessage& msg) {
-        logger.Error() << "Something went a awry, " << msg.GetMessage(); 
+    client->OnError = [](error_message_ptr msg) {
+        logger.Error() << "Something went a awry, " << msg->GetMessage();
     };
 
 
@@ -81,15 +81,15 @@ int main(int, char** argv) {
 
 
     // Create a stand-alone subscription and bind matching events to a function
-    client->Subscribe(IsSet("anyfeature", "anytype"), [](const Event&, event_ctx_ptr) {
+    client->Subscribe(IsSet("anyfeature", "anytype"), [](event_ptr, event_ctx_ptr) {
         logger.Info() << "anyfeature is set!";
     });
 
 
     // Create another stand-alone subscription and issue a function call upon receving an event
     client->Subscribe(AndRules(GreaterThan("anyfeature", 2, "anytype"), LessThan("anyfeature", 10, "anytype")),
-            [multiply](const Event& e, event_ctx_ptr ctx) {
-        auto value = e.GetValue();
+            [multiply](event_ptr e, event_ctx_ptr ctx) {
+        auto value = e->GetValue();
 
         // Call the previously created callee.
         auto token = ctx->Call(multiply, json{value, value}, 1000);

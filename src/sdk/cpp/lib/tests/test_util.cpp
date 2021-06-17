@@ -92,6 +92,38 @@ TEST(util, TopicExprMatcher_Match) {
             "iotea/topic/with/plus/level1/level2",
             false,
         },
+        // Expressions containing '.'
+        {
+            "iotea/topic/with.period",
+            "iotea/topic/with.period",
+            true,
+        },
+        {
+            "iotea/topic.period/with.period",
+            "iotea/topic.period/with.period",
+            true,
+        },
+        // Expressions containing '$'
+        {
+            "iotea/topic/with/dollar/+$",
+            "iotea/topic/with/dollar/level$",
+            true,
+        },
+        {
+            "iotea/topic/with$dollar",
+            "iotea/topic/with$dollar",
+            true,
+        },
+        {
+            "iotea/topic$dollar/with$dollar",
+            "iotea/topic$dollar/with$dollar",
+            true,
+        },
+        {
+            "iotea/topic/with/dollar$",
+            "iotea/topic/with/dollar$",
+            true,
+        },
         // Expressions with both '#' and '+'
         {
             "iotea/topic/+/with/all/#",

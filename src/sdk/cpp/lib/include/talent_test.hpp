@@ -73,7 +73,7 @@ class TalentDependencies {
    public:
     void Add(const std::string& talent_id);
 
-    void Update(const core::PlatformEvent& event);
+    void Update(core::platform_event_ptr event);
 
     bool Check(const std::string& talent_id) const;
 
@@ -89,7 +89,7 @@ class TestSetTalent : public core::FunctionTalent {
    public:
     explicit TestSetTalent(const std::string& name);
 
-    void OnPlatformEvent(const core::PlatformEvent& event) override;
+    void OnPlatformEvent(core::platform_event_ptr event) override;
 
     void RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout);
 

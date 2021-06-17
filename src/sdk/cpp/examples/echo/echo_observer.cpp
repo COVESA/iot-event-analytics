@@ -39,12 +39,12 @@ class EchoObserver : public Talent {
         return OrRules(IsSet(SUBSCRIBED_ECHO_EVENT), IsSet(SUBSCRIBED_COUNT_EVENT));
     }
 
-    void OnEvent(const Event& event, event_ctx_ptr) override {
-        if (event.GetFeature() == SUBSCRIBED_ECHO_EVENT) {
-            auto message = event.GetValue().get<std::string>();
+    void OnEvent(event_ptr event, event_ctx_ptr) override {
+        if (event->GetFeature() == SUBSCRIBED_ECHO_EVENT) {
+            auto message = event->GetValue().get<std::string>();
             GetLogger().Info() << "Received echo: '" << message << "'";
-        } else if (event.GetFeature() == SUBSCRIBED_COUNT_EVENT) {
-            auto echoCount = event.GetValue().get<unsigned int>();
+        } else if (event->GetFeature() == SUBSCRIBED_COUNT_EVENT) {
+            auto echoCount = event->GetValue().get<unsigned int>();
             GetLogger().Info() << "Received echoCount: " << echoCount;
         } else {
             GetLogger().Warn() << "UNKNOWN EVENT RECEIVED";

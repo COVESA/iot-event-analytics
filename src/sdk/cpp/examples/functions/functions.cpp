@@ -24,10 +24,10 @@ using iotea::core::ProtocolGateway;
 using iotea::core::FunctionTalent;
 using iotea::core::Client;
 using iotea::core::Callee;
-using iotea::core::Event;
-using iotea::core::IsSet;
-using iotea::core::event_ctx_ptr;
 using iotea::core::call_ctx_ptr;
+using iotea::core::event_ptr;
+using iotea::core::event_ctx_ptr;
+using iotea::core::IsSet;
 using iotea::core::schema::rule_ptr;
 
 
@@ -102,8 +102,8 @@ class MathFunctions : public FunctionTalent {
         }, nullptr, t1, t2);
     }
 
-    void OnEvent(const Event& event, event_ctx_ptr ctx) override {
-        auto v = event.GetValue();
+    void OnEvent(event_ptr event, event_ctx_ptr ctx) override {
+        auto v = event->GetValue();
 
         auto tsum = ctx->Call(sum, v);
         ctx->Gather([this, v](const std::vector<json>& replies) {

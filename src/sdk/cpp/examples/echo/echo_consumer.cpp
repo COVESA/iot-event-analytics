@@ -52,9 +52,9 @@ class EchoConsumer : public Talent {
         return IsSet(TALENT_NAME+"."+PROVIDED_FEATURE_NAME);
     }
 
-    void OnEvent(const Event& event, event_ctx_ptr context) override {
-        if (event.GetType() == PROVIDED_FETAURE_TYPE) {
-            auto message = event.GetValue().get<std::string>();
+    void OnEvent(event_ptr event, event_ctx_ptr context) override {
+        if (event->GetType() == PROVIDED_FETAURE_TYPE) {
+            auto message = event->GetValue().get<std::string>();
             GetLogger().Info() << "Received message:  '" << message << "'";
 
             auto t = context->Call(echo_provider.echo, message);

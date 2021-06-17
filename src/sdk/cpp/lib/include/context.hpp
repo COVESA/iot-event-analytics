@@ -212,14 +212,14 @@ class CallContext : public EventContext {
      * @param talent_id The id of the Talent for which this context exists
      * @param channel_id The unique channel ID of the Talent
      * @param feature The name of the feature to emit a return value for (if any)
-     * @param event The event to base the context of off
+     * @param event A pointer to the Event to base the context off of
      * @param return_topic The name of the topic to reply to
      * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
      * @param gateway A gateway to send replies with
      * @param uuid_gen A function generating stringified UUID4s
      */
     CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                const Event& event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen);
+                event_ptr event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen);
 
     virtual CallToken Call(const Callee& callee, const json& args, int64_t timeout = 10000) const override;
 
@@ -290,12 +290,16 @@ class CallContext : public EventContext {
     }
 
    private:
-    Event event_;
+    event_ptr event_;
     std::string feature_;
     std::string channel_;
     std::string call_;
     int64_t timeout_at_ms_;
 };
+
+using event_ctx_ptr = std::shared_ptr<EventContext>;
+using call_ctx_ptr = std::shared_ptr<CallContext>;
+
 }  // namespace core
 }  // namespace iotea
 

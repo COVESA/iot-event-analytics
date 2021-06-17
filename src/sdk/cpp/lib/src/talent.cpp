@@ -109,19 +109,19 @@ schema::Schema Talent::GetSchema() const {
     return schema_.GetSchema(callee_rules);
 }
 
-void Talent::OnError(const ErrorMessage&) { }
+void Talent::OnError(error_message_ptr) { }
 
 schema::rule_ptr Talent::OnGetRules() const {
     return rules_;
 }
 
-void Talent::OnEvent(const Event& event, event_ctx_ptr context) {
+void Talent::OnEvent(event_ptr event, event_ctx_ptr context) {
     if (on_event_) {
         on_event_(event, context);
     }
 }
 
-void Talent::OnPlatformEvent(const PlatformEvent&) {}
+void Talent::OnPlatformEvent(platform_event_ptr) {}
 
 void Talent::SetExternalEventHandler(on_event_func_ptr on_event, schema::rule_ptr rules) {
     on_event_ = on_event;

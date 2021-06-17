@@ -131,18 +131,21 @@ void TopicExprMatcher::ReplaceAll(std::string& s, const std::string& what, const
 }
 
 TopicExprMatcher::TopicExprMatcher(std::string topic_expr) {
+    // '$' must be escaped
+    ReplaceAll(topic_expr, "$", R"(\$)");
+
+    // '.' must be escaped
+    ReplaceAll(topic_expr, ".", R"(\.)");
+
+    // '+' must be replaced with [^/]+
+    ReplaceAll(topic_expr, "+", R"([^/]+)");
+
     auto size = topic_expr.size();
 
     // '#' may only appear at the end of the expression
     if (topic_expr[size - 1] == '#') {
         topic_expr.replace(size - 1, 1, ".*");
     }
-
-    // '$' must be escaped
-    ReplaceAll(topic_expr, "$", R"(\$)");
-
-    // '+' must be replaced with [^/]+
-    ReplaceAll(topic_expr, "+", R"([^/]+)");
 
     expr_ = std::regex{topic_expr};
 }

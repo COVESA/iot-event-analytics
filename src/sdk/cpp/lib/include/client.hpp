@@ -28,9 +28,9 @@ namespace iotea {
 namespace core {
 
 
-using OnError = std::function<void(const ErrorMessage&)>;
-using OnEvent = std::function<void(const Event&, event_ctx_ptr)>;
-using OnPlatformEvent = std::function<void(const PlatformEvent&)>;
+using OnError = std::function<void(error_message_ptr)>;
+using OnEvent = std::function<void(event_ptr, event_ctx_ptr)>;
+using OnPlatformEvent = std::function<void(platform_event_ptr)>;
 
 
 /**
@@ -175,8 +175,8 @@ class Client : public Receiver {
       */
      virtual void Subscribe(schema::rule_ptr rules, const OnEvent callback);
 
-     std::function<void(const ErrorMessage& msg)> OnError;
-     std::function<void(const PlatformEvent& event)> OnPlatformEvent;
+     std::function<void(error_message_ptr)> OnError;
+     std::function<void(platform_event_ptr event)> OnPlatformEvent;
 
     protected:
 
@@ -201,9 +201,9 @@ class Client : public Receiver {
       * @brief Distribute an error message to all Talents that have registered
       * to receive error messages.
       *
-      * @param err The error message
+      * @param err A pointer to the error message
       */
-     virtual void HandleError(const ErrorMessage& err);
+     virtual void HandleError(error_message_ptr);
 
      /**
       * @brief Attempt to treat an event as a function call. A function call is
@@ -212,11 +212,11 @@ class Client : public Receiver {
       * forwarded to the corresponding function if a match is found.
       *
       * @param talent The FunctionTalent
-      * @param event An event
+      * @param event A pointer to an Event
       *
       * @return true if the event was function call
       */
-     virtual bool HandleAsCall(std::shared_ptr<FunctionTalent> talent, const Event& event);
+     virtual bool HandleAsCall(std::shared_ptr<FunctionTalent> talent, event_ptr event);
 
      /**
       * @brief Handle an event sent to a particular Talent.
