@@ -138,6 +138,7 @@ export class IoTeaUtils {
             canSelectMany: false,
             canSelectFolders: true,
             canSelectFiles: false,
+            openLabel: 'Select empty project folder',
             title: 'Choose an empty folder for your new IoT Event Analytics Talent project'
         })
         .then(async (uris: vscode.Uri[] | undefined) => {
@@ -353,14 +354,18 @@ export class IoTeaUtils {
             canSelectFolders: false,
             canSelectFiles: true,
             canSelectMany: false,
-            filters: {
-                'docker-compose environment file': ['env']
-            },
+            openLabel: 'Select *.env file',
+            // Filters for dot files for macOS do not work
             title: 'Select docker-compose .env file.'
         });
 
         if (selectedEnvFile === undefined) {
             return Promise.reject(new Error('No docker-compose environment file selected'));
+        }
+
+        if (!path.basename(selectedEnvFile[0].fsPath).endsWith('.env')) {
+            // Look if the give filename ends with .env
+            return Promise.reject(new Error('You need to select a valid *.env file'));
         }
 
         return selectedEnvFile[0].fsPath;

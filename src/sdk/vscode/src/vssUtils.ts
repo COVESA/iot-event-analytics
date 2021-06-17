@@ -146,6 +146,7 @@ export class VssUtils {
             canSelectFolders: true,
             canSelectFiles: false,
             canSelectMany: false,
+            openLabel: 'Select output directory',
             title: 'Select the output directory for the Kuksa.VAL configuration'
         })
             .then((kuksaConfigOutputFolders: vscode.Uri[] | undefined) => {
@@ -198,6 +199,7 @@ export class VssUtils {
                         canSelectFolders: false,
                         canSelectFiles: true,
                         canSelectMany: false,
+                        openLabel: 'Select types.json',
                         filters: {
                             'IoT Event Analytics types configuration': [ 'json' ]
                         },
@@ -216,6 +218,7 @@ export class VssUtils {
                     canSelectFolders: true,
                     canSelectFiles: false,
                     canSelectMany: false,
+                    openLabel: 'Select output directory for types.json',
                     title: 'Select the output directory for the IoT Event Analytics types configuration file',
                     defaultUri: absTypesJsonInputPath !== null ? vscode.Uri.file(path.dirname(absTypesJsonInputPath)) : undefined
                 })
@@ -289,6 +292,7 @@ export class VssUtils {
                             canSelectFolders: false,
                             canSelectFiles: true,
                             canSelectMany: false,
+                            openLabel: 'Select vss.json',
                             filters: {
                                 'Vehicle Signal Specification': [ 'json' ]
                             },

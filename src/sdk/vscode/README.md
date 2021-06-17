@@ -46,7 +46,7 @@ _"Trigger suggest"_, _"Toggle Autocompletion"_ can be triggered using
 
 - Windows, Linux: `Strg + Space`
 - macOS:
-  - `⌘ + Esc` on Apple Keyboards
+  - `⌥ + Esc` on Apple Keyboards
   - `Alt + Esc` on Windows Keyboards
 
 #### getRules()
