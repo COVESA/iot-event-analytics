@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.6 [2021-06-17]
+  - Fix version parsing of unknown docker-compose builds
+
 - 0.9.5 [2021-06-07]
   - Update certificate path within Kuksa.VAL repository
 
