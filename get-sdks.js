@@ -16,7 +16,7 @@ var HttpsProxyAgent = require('https-proxy-agent');
 
 (async () => {
     await Promise.all([
-        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.5/iotea-0.9.5.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
+        download('https://github.com/GENIVI/iot-event-analytics/releases/download/vscode-ext-0.9.6/iotea-0.9.6.vsix', path.resolve(__dirname, 'src', 'sdk', 'vscode', 'lib')),
         download('https://github.com/GENIVI/iot-event-analytics/releases/download/py-sdk-0.5.0/boschio_iotea-0.5.0-py3-none-any.whl', path.resolve(__dirname, 'src', 'sdk', 'python', 'lib')),
         download('https://github.com/GENIVI/iot-event-analytics/releases/download/js-sdk-0.5.0/boschio.iotea-0.5.0.tgz', path.resolve(__dirname, 'src', 'sdk', 'javascript', 'lib'))
     ])

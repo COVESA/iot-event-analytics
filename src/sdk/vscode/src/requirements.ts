@@ -54,13 +54,13 @@ export async function ensureDockerConfiguration(): Promise<void> {
 export async function ensureComposeVersion(range: semver.Range): Promise<semver.SemVer> {
     return ensureCliVersion(range, getDockerComposeCmd(), [ '--version' ], {}, __dirname, (cliVersion: string) => {
         // cliVersion >> docker-compose version 1.27.4, build <commit hash>
-        const composeVersionMatch = (/^.*([0-9]+\.[0-9]+\.[0-9]+).*(?:\s([0-9a-f]+))$/mgi).exec(cliVersion);
+        const composeVersionMatch = (/^.*([0-9]+\.[0-9]+\.[0-9]+).*(?:\s((?:[0-9a-f]+)|unknown))$/mgi).exec(cliVersion);
 
         if (composeVersionMatch === null) {
             throw new Error(`Cannot parse docker-compose version string "${cliVersion}"`);
         }
 
-        if (composeVersionMatch[2] === null) {
+        if (composeVersionMatch[2] === null || composeVersionMatch[2] === 'unknown') {
             return composeVersionMatch[1];
         }
 
