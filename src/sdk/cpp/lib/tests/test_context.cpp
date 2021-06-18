@@ -19,18 +19,37 @@ using json = nlohmann::json;
 
 using namespace iotea::core;
 
+const json test_config = {
+    {"adapters", {
+                     {
+                         {"platform", true},
+                         {"module", {
+                                 {"name", "mqtt_client"},
+                            }
+                         },
+                         {"config", {
+                                {"brokerUrl", "mqtt://localhost:1883"},
+                                {"topicNamespace", "iotea/"}
+                            }
+                         }
+                     }
+                 }
+    }};
+
 /**
  * @brief Verify that EventContext::Emit sends properly formatted event
  * messages.
  */
 TEST(context, EventContext_Emit) {
-    class TestPublisher : public Publisher {
+    class TestProtocolGateway : public ProtocolGateway {
        public:
-        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+        TestProtocolGateway() : ProtocolGateway{test_config} {}
+
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&, const PublishOptions&), (override));
     };
 
-    auto publisher = std::make_shared<TestPublisher>();
-    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, publisher, []{ return ""; }};
+    auto gateway = std::make_shared<TestProtocolGateway>();
+    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, gateway, []{ return ""; }};
 
     // We can't expect anything for sure with respect to the published data
     // since it's JSON and we can't know a priori which of the different but
@@ -38,7 +57,7 @@ TEST(context, EventContext_Emit) {
     // we have to store the output in a string, parse it as JSON and compare it
     // "semantically" to what we expect.
     std::string raw_published_event;
-    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
+    EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
 
     ctx.Emit<std::string>("my_feature", "hello world", "my_type", "my_instance");
     auto published_event = json::parse(raw_published_event);
@@ -66,14 +85,16 @@ TEST(context, EventContext_Emit) {
  * messages.
  */
 TEST(context, EventContext_Call) {
-    class TestPublisher : public Publisher {
+    class TestProtocolGateway : public ProtocolGateway {
        public:
-        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+        TestProtocolGateway() : ProtocolGateway{test_config} {}
+
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&, const PublishOptions&), (override));
     };
 
-    auto publisher = std::make_shared<TestPublisher>();
+    auto gateway = std::make_shared<TestProtocolGateway>();
     auto uuid_gen = []{ return "00000000-0000-0000-0000-000000000000"; };
-    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, publisher, uuid_gen};
+    auto ctx = EventContext{"my_talent_id", "my_channel_id", "my_subject", "my_return_topic", nullptr, gateway, uuid_gen};
     auto callee = Callee{"target_talent_id", "target_func", "target_type"};
 
     // We can't expect anything for sure with respect to the published data
@@ -82,7 +103,7 @@ TEST(context, EventContext_Call) {
     // we have to store the output in a string, parse it as JSON and compare it
     // "semantically" to what we expect.
     std::string raw_published_event;
-    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
+    EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_event));
 
     // If the argument isn't an array we expect the SDK to wrap the argument in an array
     auto token = ctx.Call(callee, 42);
@@ -119,22 +140,25 @@ TEST(context, EventContext_Call) {
  * @brief Test CallContext and verify that reply messages are correctly formatted.
  */
 TEST(context, CallContext_Reply) {
-    class PublisherMock : public Publisher {
+    class TestProtocolGateway : public ProtocolGateway {
        public:
-        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+        TestProtocolGateway() : ProtocolGateway{test_config} {}
+
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&, const PublishOptions&), (override));
     };
 
     class TestCallContext : public CallContext {
        public:
-        explicit TestCallContext(const Event& event, publisher_ptr publisher)
-            : CallContext{"talent_id", "channel_id", "feature", event, std::make_shared<ReplyHandler>(), publisher, []{return "";}} {}
+        explicit TestCallContext(event_ptr event, gateway_ptr gateway)
+            : CallContext{"talent_id", "channel_id", "feature", event, std::make_shared<ReplyHandler>(), gateway, []{return "";}} {}
     };
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
-    auto event = Event{"subject", "feature", call_value, "default", "default", "return_topic", 0};
-    auto publisher = std::make_shared<PublisherMock>();
+    auto features = json{};
+    auto event = std::make_shared<Event>("subject", "feature", call_value, features, "default", "default", "return_topic", 0);
+    auto gateway = std::make_shared<TestProtocolGateway>();
 
-    auto ctx = TestCallContext{event, publisher};
+    auto ctx = TestCallContext{event, gateway};
 
     auto expect_published_reply = json::parse(R"({
         "feature":"talent_id.feature",
@@ -153,7 +177,7 @@ TEST(context, CallContext_Reply) {
     // have to store what's sent, unmarshal it, tweak the timestamp and then
     // verify that the rest of the event lives up to expectations.
     std::string raw_published_reply;
-    EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_reply));
+    EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_)).Times(1).WillOnce(::testing::SaveArg<1>(&raw_published_reply));
     ctx.Reply(json{{"key", "value"}});
 
     auto published_reply = json::parse(raw_published_reply);

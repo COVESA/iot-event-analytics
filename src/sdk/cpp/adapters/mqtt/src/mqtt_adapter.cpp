@@ -14,27 +14,25 @@
 #include <string>
 #include <thread>
 
-#include "logging.hpp"
-#include "mqtt_client.hpp"
-#include "util.hpp"
-
-using iotea::core::logging::NamedLogger;
+#include "mqtt_adapter.hpp"
 
 namespace iotea {
 namespace core {
 
 using namespace std::chrono_literals;
 
-static auto logger = NamedLogger{"MqttClient"};
+static auto logger = iotea::core::logging::NamedLogger{"MqttProtocolAdapter"};
 
-MqttClient::MqttClient(const std::string& server_address, const std::string& client_id)
-    : client_{server_address, client_id} {
-    OnMessage = [](mqtt::const_message_ptr msg) {
-        (void)msg;
-    };
-    OnTick = [](int64_t ts){
-        (void)ts;
-    };
+/////////////////////////
+// MqttProtocolAdapter //
+/////////////////////////
+
+extern "C" {
+
+MqttProtocolAdapter::MqttProtocolAdapter(const std::string& name, bool is_platform_proto, const json& config)
+    : Adapter{name, is_platform_proto}
+    , client_{config["brokerUrl"].get<std::string>(), "" /* TODO set appropriate client_id */}
+    , topic_ns_{config["topicNamespace"].get<std::string>()} {
 
     state_ = State::kDisconnected;
     next_state_ = State::kDisconnected;
@@ -49,10 +47,28 @@ MqttClient::MqttClient(const std::string& server_address, const std::string& cli
     client_.start_consuming();
 }
 
-MqttClient::MqttClient()
-    : client_{"tcp://localhost", "id"} {}
+void MqttProtocolAdapter::ChangeState(State state) {
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    if (next_state_ != state) {
+        switch (state) {
+            case State::kDisconnected:
+                logger.Debug() << "Changing state to: [Disconnected].";
+                break;
+            case State::kConnecting:
+                logger.Debug() << "Changing state to: [Connecting].";
+                break;
+            case State::kConnected:
+                logger.Debug() << "Changing state to: [Connected].";
+                break;
+            case State::kStopping: {
+                logger.Debug() << "Changing state to: [Stopping].";
+            } break;
+        }
+        next_state_ = state;
+    }
+}
 
-void MqttClient::Run() {
+void MqttProtocolAdapter::Start() {
     mqtt::token_ptr connect_token;
     mqtt::token_ptr disconnect_token;
     bool running = true;
@@ -74,7 +90,7 @@ void MqttClient::Run() {
                     logger.Info() << "Connected";
                     connect_token = nullptr;
                     for (const auto& topic : topics_) {
-                        client_.subscribe(topic.first, topic.second);
+                        client_.subscribe(topic, 1 /* qos */);
                     }
                 } break;
                 case State::kDisconnected:
@@ -97,13 +113,13 @@ void MqttClient::Run() {
                 }
                 auto msg = client_.try_consume_message_for(100ms);
                 if (msg != nullptr) {
-                    OnMessage(msg);
-                }
+                    auto topic = msg->get_topic();
 
-                auto now = GetEpochTimeMs();
-                if (now - prev_tick_ >= 1000) {
-                    prev_tick_ = now;
-                    OnTick(now);
+                    for (const auto& m : matchers_) {
+                        if (m.first.Match(topic)) {
+                            m.second(topic, msg->get_payload_str(), "");
+                        }
+                    }
                 }
 
             } break;
@@ -142,41 +158,42 @@ void MqttClient::Run() {
     }
 }
 
-void MqttClient::Stop() { ChangeState(State::kStopping); }
-
-void MqttClient::Subscribe(const std::string& topic, const int qos) {
-    logger.Debug() << "Subscribing to " << topic << " qos=" << qos;
-    topics_.push_back(std::make_pair(topic, qos));
-    //client_.subscribe(topic, qos);
+void MqttProtocolAdapter::Stop() {
+    ChangeState(State::kStopping);
 }
 
-void MqttClient::ChangeState(State state) {
-    std::lock_guard<std::mutex> lock(state_mutex_);
-    if (next_state_ != state) {
-        switch (state) {
-            case State::kDisconnected:
-                logger.Debug() << "Changing state to: [Disconnected].";
-                break;
-            case State::kConnecting:
-                logger.Debug() << "Changing state to: [Connecting].";
-                break;
-            case State::kConnected:
-                logger.Debug() << "Changing state to: [Connected].";
-                break;
-            case State::kStopping: {
-                logger.Debug() << "Changing state to: [Stopping].";
-            } break;
-        }
-        next_state_ = state;
-    }
-}
+void MqttProtocolAdapter::Publish(const std::string& topic, const std::string& data, const PublishOptions&) {
+    auto full_topic = topic_ns_ + topic;
 
-void MqttClient::Publish(const std::string& topic, const std::string& data) {
     logger.Debug() << "Publishing message.";
-    logger.Debug() << "\ttopic: '" << topic << "'";
+    logger.Debug() << "\ttopic: '" << full_topic << "'";
     logger.Debug() << "\tpayload: '" << data << "'";
-    client_.publish(topic, data);
+
+    client_.publish(full_topic, data);
 }
+
+void MqttProtocolAdapter::Subscribe(const std::string& topic, on_msg_func_ptr on_msg, const SubscribeOptions&) {
+    auto topic_with_ns = topic_ns_ + topic;
+
+    logger.Debug() << "Subscribing to " << topic_with_ns;
+    topics_.push_back(topic_with_ns);
+    matchers_.push_back(std::make_pair(TopicExprMatcher{topic_with_ns}, on_msg));
+}
+
+void MqttProtocolAdapter::SubscribeShared(const std::string& group, const std::string& topic, on_msg_func_ptr on_msg, const SubscribeOptions&) {
+    auto topic_with_ns = topic_ns_ + topic;
+    auto shared_topic = std::string{"$share"} + "/" + group + "/" + topic_with_ns;
+
+    logger.Debug() << "Subscribing to " << shared_topic;
+    topics_.push_back(shared_topic);
+    matchers_.push_back(std::make_pair(TopicExprMatcher{topic_with_ns}, on_msg));
+}
+
+} // extern "C"
 
 }  // namespace core
 }  // namespace iotea
+
+extern "C" std::shared_ptr<iotea::core::Adapter> Load(const std::string& name, bool is_platform_proto, const json& config) {
+    return std::make_shared<iotea::core::MqttProtocolAdapter>(name, is_platform_proto, config);
+}

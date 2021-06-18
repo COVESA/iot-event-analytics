@@ -60,10 +60,10 @@ TEST(event, Message) {
     for (const auto& t : tests) {
         const auto m = Message::FromJson(t.raw);
 
-        ASSERT_EQ(t.is_event, m.IsEvent());
-        ASSERT_EQ(t.is_discover, m.IsDiscover());
-        ASSERT_EQ(t.is_error, m.IsError());
-        ASSERT_EQ(t.code, m.GetCode());
+        ASSERT_EQ(t.is_event, m->IsEvent());
+        ASSERT_EQ(t.is_discover, m->IsDiscover());
+        ASSERT_EQ(t.is_error, m->IsError());
+        ASSERT_EQ(t.code, m->GetCode());
     }
 }
 
@@ -94,8 +94,8 @@ TEST(event, DiscoverMessage) {
     for (const auto& t : tests) {
         const auto m = DiscoverMessage::FromJson(t.raw);
 
-        ASSERT_EQ(t.version, m.GetVersion());
-        ASSERT_EQ(t.return_topic, m.GetReturnTopic());
+        ASSERT_EQ(t.version, m->GetVersion());
+        ASSERT_EQ(t.return_topic, m->GetReturnTopic());
     }
 }
 
@@ -144,8 +144,8 @@ TEST(event, ErrorMessage) {
     for (const auto& t : tests) {
         const auto m = ErrorMessage::FromJson(t.raw);
 
-        ASSERT_EQ(t.code, m.GetCode());
-        ASSERT_EQ(t.message, m.GetMessage());
+        ASSERT_EQ(t.code, m->GetCode());
+        ASSERT_EQ(t.message, m->GetMessage());
     }
 }
 
@@ -186,9 +186,9 @@ TEST(event, PlatformEvent) {
     for (const auto& t : tests) {
         auto have = PlatformEvent::FromJson(t.raw);
 
-        ASSERT_EQ(have.GetType(), t.type);
-        ASSERT_EQ(have.GetData(), t.data);
-        ASSERT_EQ(have.GetTimestamp(), t.timestamp);
+        ASSERT_EQ(have->GetType(), t.type);
+        ASSERT_EQ(have->GetData(), t.data);
+        ASSERT_EQ(have->GetTimestamp(), t.timestamp);
     }
 }
 
@@ -199,27 +199,29 @@ TEST(event, Event) {
     auto subject = "test_subject";
     auto feature = "test_feature";
     auto value = json{{"test", "json"}};
+    auto features = json{{"hello", "world"}};
     auto type = "test_type";
     auto instance = "test_instance";
     auto return_topic = "test/return/topic";
     auto when = int64_t{1615209290000};
 
-    auto event = Event(subject, feature, value, type, instance, return_topic, when);
+    auto event = Event(subject, feature, value, features, type, instance, return_topic, when);
 
     // Test that the Json/FromJson methods are inverses operations
     auto alpha = event.Json();
     auto beta = Event::FromJson(alpha);
-    auto gamma = beta.Json();
+    auto gamma = beta->Json();
     ASSERT_EQ(alpha, gamma);
 
-    ASSERT_EQ(beta.GetSubject(), subject);
-    ASSERT_EQ(beta.GetFeature(), feature);
-    ASSERT_EQ(beta.GetValue(), value);
-    ASSERT_EQ(beta.GetType(), type);
-    ASSERT_EQ(beta.GetInstance(), instance);
+    ASSERT_EQ(beta->GetSubject(), subject);
+    ASSERT_EQ(beta->GetFeature(), feature);
+    ASSERT_EQ(beta->GetValue(), value);
+    ASSERT_EQ(beta->GetFeatures(), features);
+    ASSERT_EQ(beta->GetType(), type);
+    ASSERT_EQ(beta->GetInstance(), instance);
     // The return topic is dropped during marshalling because its
     // serialization occurs when events are sent as replies.
-    ASSERT_EQ(beta.GetWhen(), when);
+    ASSERT_EQ(beta->GetWhen(), when);
 }
 
 /**
@@ -229,6 +231,7 @@ TEST(event, Event_FromJson) {
     auto payload = json::parse(R"({
             "cid": "2294a18a-4179-491f-828c-7b615602f86f",
             "feature": "temp",
+            "$features": {"hello": "world"},
             "instance": "1",
             "msgType": 1,
             "now": 1618550741573,
@@ -242,7 +245,8 @@ TEST(event, Event_FromJson) {
 
     auto event = Event::FromJson(payload);
 
-    ASSERT_EQ(event.GetFeature(), "temp");
-    ASSERT_EQ(event.GetInstance(), "1");
-    ASSERT_EQ(event.GetReturnTopic(), "123456/ingestion/events");
+    ASSERT_EQ(event->GetFeature(), "temp");
+    ASSERT_EQ(event->GetFeatures(), (json{{"hello", "world"}}));
+    ASSERT_EQ(event->GetInstance(), "1");
+    ASSERT_EQ(event->GetReturnTopic(), "123456/ingestion/events");
 }

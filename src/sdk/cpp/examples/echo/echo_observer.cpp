@@ -9,18 +9,20 @@
  ****************************************************************************/
 
 #include <csignal>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <initializer_list>
 #include <memory>
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "mqtt_client.hpp"
+#include "protocol_gateway.hpp"
 #include "schema.hpp"
 
 using namespace iotea::core;
 using json = nlohmann::json;
 
-static const std::string SERVER_ADDRESS("tcp://localhost:1883");
 static const std::string TALENT_NAME("echo_observer");
 static const std::string PROVIDER_TALENT_NAME("echo_provider");
 static const std::string SUBSCRIBED_ECHO_EVENT(PROVIDER_TALENT_NAME+".echoResponseSent");
@@ -37,12 +39,12 @@ class EchoObserver : public Talent {
         return OrRules(IsSet(SUBSCRIBED_ECHO_EVENT), IsSet(SUBSCRIBED_COUNT_EVENT));
     }
 
-    void OnEvent(const Event& event, event_ctx_ptr) override {
-        if (event.GetFeature() == SUBSCRIBED_ECHO_EVENT) {
-            auto message = event.GetValue().get<std::string>();
+    void OnEvent(event_ptr event, event_ctx_ptr) override {
+        if (event->GetFeature() == SUBSCRIBED_ECHO_EVENT) {
+            auto message = event->GetValue().get<std::string>();
             GetLogger().Info() << "Received echo: '" << message << "'";
-        } else if (event.GetFeature() == SUBSCRIBED_COUNT_EVENT) {
-            auto echoCount = event.GetValue().get<unsigned int>();
+        } else if (event->GetFeature() == SUBSCRIBED_COUNT_EVENT) {
+            auto echoCount = event->GetValue().get<unsigned int>();
             GetLogger().Info() << "Received echoCount: " << echoCount;
         } else {
             GetLogger().Warn() << "UNKNOWN EVENT RECEIVED";
@@ -50,18 +52,25 @@ class EchoObserver : public Talent {
     }
 };
 
-static Client client = Client{SERVER_ADDRESS};
+std::shared_ptr<Client> client;
 
 void signal_handler(int) {
-    client.Stop();
+    if (client) {
+        client->Stop();
+    }
 }
 
-int main(int, char**) {
-    auto talent = std::make_shared<EchoObserver>();
-    client.RegisterTalent(talent);
+int main(int, char** argv) {
+    std::ifstream file{argv[1]};
+    std::string config{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+
+    auto gateway = std::make_shared<ProtocolGateway>(json::parse(config));
+    client = std::make_shared<Client>(gateway);
+
+    client->RegisterTalent(std::make_shared<EchoObserver>());
 
     std::signal(SIGINT, signal_handler);
-    client.Start();
+    client->Start();
 
     return 0;
 }

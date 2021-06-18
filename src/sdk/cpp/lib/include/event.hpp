@@ -30,18 +30,17 @@ using json = nlohmann::json;
 namespace iotea {
 namespace core {
 
-#if 0
 class Message;
-class Talent;
-class Event;
-class Publisher;
-class CallToken;
-class EventContext;
-class CallContext;
-class Callee;
-class ReplyHandler;
+class ErrorMessage;
 class DiscoverMessage;
-#endif
+class Event;
+class PlatformEvent;
+
+using message_ptr = std::shared_ptr<Message>;
+using error_message_ptr = std::shared_ptr<ErrorMessage>;
+using discover_message_ptr = std::shared_ptr<DiscoverMessage>;
+using event_ptr = std::shared_ptr<Event>;
+using platform_event_ptr = std::shared_ptr<PlatformEvent>;
 
 /**
  * @brief Arriving messages must be parsed in two steps beginning with
@@ -105,9 +104,9 @@ class Message {
      * @brief Create a Message from JSON.
      *
      * @param j The JSON prepresentation of a Message.
-     * @return Message
+     * @return a pointer to a Message
      */
-    static Message FromJson(const json& j);
+    static message_ptr FromJson(const json& j);
 
    protected:
     enum Type msg_type_ = Type::EVENT;
@@ -117,7 +116,7 @@ class Message {
 /**
  * @brief DiscoverMessage is periodically sent by the platform in order to
  * trigger Talents to reply with a rule set outlining Talent properties, what
- * it produces and what it consumes. When a DiscoveryMessage is received
+ * it produces and what it consumes. When a DiscoverMessage is received
  * Talent::OnGetRules() is called in order to fetch Talent specific rules.
  * Should not be created by external clients.
  *
@@ -150,9 +149,9 @@ class DiscoverMessage {
      * @brief Create a DiscoverMessage from JSON.
      *
      * @param j The JSON representation of a DiscoverMessage
-     * @return DiscoverMessage
+     * @return A pointer to a DiscoverMessage
      */
-    static DiscoverMessage FromJson(const json& j);
+    static discover_message_ptr FromJson(const json& j);
 
    private:
     const std::string version_;
@@ -204,7 +203,7 @@ class PlatformEvent {
      *
      * @return PlatformEvent
      */
-    static PlatformEvent FromJson(const json& j);
+    static platform_event_ptr FromJson(const json& j);
 
    private:
     Type type_;
@@ -244,9 +243,9 @@ class ErrorMessage {
      * @brief Create an ErrorMessage from JSON.
      *
      * @param j The JSON representation of an ErrorMessage
-     * @return ErrorMessage
+     * @return A pointer to an ErrorMessage
      */
-    static ErrorMessage FromJson(const json& j);
+    static error_message_ptr FromJson(const json& j);
 
    private:
     const int code_;
@@ -264,14 +263,16 @@ class Event {
      * @param subject The name of the subject as determined by the context from which the event originated.
      * @param feature The name of the feature represented by the event.
      * @param value The event payload value.
+     * @param features The feature object contained within the event.
      * @param type The name of the type associated with the event.
      * @param instance The name of the instance associated with the event.
      * @param return_topic The name of the topic to send replies on (if any).
      * @param when The point in time when the event was emitted.
      */
     Event(const std::string& subject, const std::string& feature, const json& value,
-          const std::string& type = "default", const std::string& instance = "default",
-          const std::string& return_topic = "", int64_t when = GetEpochTimeMs());
+          const json& features, const std::string& type = "default",
+          const std::string& instance = "default", const std::string& return_topic = "",
+          int64_t when = GetEpochTimeMs());
 
     Event() = default;
 
@@ -302,6 +303,13 @@ class Event {
      * @return json
      */
     virtual json GetValue() const;
+
+    /**
+     * @brief Get the features of the event.
+     *
+     * @return std::string
+     */
+    virtual json GetFeatures() const;
 
     /**
      * @brief Get the name of the instance.
@@ -336,9 +344,9 @@ class Event {
      * @brief Create an event from JSON.
      *
      * @param j The JSON representaion of an event.
-     * @return Event
+     * @return A pointer to an Event
      */
-    static Event FromJson(const json& j);
+    static event_ptr FromJson(const json& j);
 
     /**
      * @brief Compare this Event to another. Comparison ignores the "when_" member.
@@ -354,6 +362,7 @@ class Event {
     std::string subject_;
     std::string feature_;
     json value_;
+    json features_;
     std::string type_;
     std::string instance_;
     int64_t when_;
@@ -384,7 +393,7 @@ class OutgoingEvent {
         : subject_{subject}
         , talent_id_{talent_id}
         , feature_{feature}
-        , value_{value}
+        , value_(value)
         , type_{type}
         , instance_{instance}
         , when_{when} {}
@@ -413,7 +422,6 @@ class OutgoingEvent {
     std::string instance_;
     int64_t when_;
 };
-
 
 }  // namespace core
 }  // namespace iotea

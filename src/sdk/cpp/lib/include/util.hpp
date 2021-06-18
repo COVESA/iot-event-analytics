@@ -11,6 +11,7 @@
 #ifndef SRC_SDK_CPP_LIB_INCLUDE_UTIL_HPP_
 #define SRC_SDK_CPP_LIB_INCLUDE_UTIL_HPP_
 
+#include <regex>
 #include <string>
 
 namespace iotea {
@@ -34,6 +35,18 @@ class Uuid4 {
 
     uint8_t bits_[16];
     std::string str_;
+};
+
+class TopicExprMatcher {
+   public:
+    TopicExprMatcher(std::string topic_expr);
+
+    bool Match(const std::string& topic) const;
+
+   private:
+    void ReplaceAll(std::string& s, const std::string& what, const std::string& with);
+
+    std::regex expr_;
 };
 
 std::string GetEnv(const std::string& name, const std::string& defval = "");

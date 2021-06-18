@@ -12,6 +12,7 @@
 #include <vector>
 #include <utility>
 #include <tuple>
+#include <iostream>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -23,6 +24,22 @@ using json = nlohmann::json;
 
 using namespace iotea::core;
 
+const json test_config = {
+    {"adapters", {
+                     {
+                         {"platform", true},
+                         {"module", {
+                                 {"name", "mqtt_client"},
+                            }
+                         },
+                         {"config", {
+                                {"brokerUrl", "mqtt://localhost:1883"},
+                                {"topicNamespace", "iotea/"}
+                            }
+                         }
+                     }
+                 }
+    }};
 
 /**
  * @brief Test that Gatherer handles timeouts.
@@ -194,9 +211,11 @@ TEST(call, SinkGatherer_Gather) {
  * the call IDs have been gathered.
  */
 TEST(call, ReplyGatherer_Gather) {
-    class PublisherMock : public Publisher {
+    class TestProtocolGateway : public ProtocolGateway {
        public:
-        MOCK_METHOD(void, Publish, (const std::string&, const std::string&), (override));
+        TestProtocolGateway() : ProtocolGateway{test_config} {}
+
+        MOCK_METHOD(void, Publish, (const std::string&, const std::string&, const PublishOptions&), (override));
     };
 
     auto tokens = std::vector<CallToken>{CallToken{"a"}, CallToken{"b"}, CallToken{"c"}};
@@ -208,8 +227,9 @@ TEST(call, ReplyGatherer_Gather) {
     };
 
     auto gather_func = [](std::vector<json>) { return json{nullptr}; };
-    auto publisher = std::make_shared<PublisherMock>();
-    auto replier = PreparedFunctionReply{"talent_id", "feature", "subject", "channel_id", "call_id", "return_topic", publisher};
+    auto gateway = std::make_shared<TestProtocolGateway>();
+    auto event = std::make_shared<Event>("subject", "feature", json{{"chnl", "chnl"}, {"call", "call"}}, "type", "instance", "return_topic");
+    auto replier = PreparedFunctionReply{"talent_id", "feature", event, "return_topic", gateway};
     auto gatherer = ReplyGatherer{gather_func, nullptr, replier, tokens};
 
     for (const auto& tup : in_out_tuple) {
@@ -224,7 +244,7 @@ TEST(call, ReplyGatherer_Gather) {
         if (done_gathering) {
             auto replies = gatherer.GetReplies();
 
-            EXPECT_CALL(*publisher, Publish(::testing::_, ::testing::_));
+            EXPECT_CALL(*gateway, Publish(::testing::_, ::testing::_, ::testing::_));
             gatherer.ForwardReplies(replies);
         }
     }

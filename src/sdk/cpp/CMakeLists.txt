@@ -64,10 +64,12 @@ add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 ## enable testing
 include(CTest)
 
+## adapters
+add_subdirectory(adapters)
+
 ## examples
 add_subdirectory(examples)
 
 ## lib
 add_subdirectory(lib)
-
 

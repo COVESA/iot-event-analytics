@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#include "context.hpp"
 #include "call.hpp"
 #include "logging.hpp"
 
@@ -65,34 +64,6 @@ std::string CallToken::GetCallId() const {
 int64_t CallToken::GetTimeout() const {
     return timeout_;
 }
-
-
-CallToken EventContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
-    if (!callee.IsRegistered()) {
-        call_token_logger.Warn() << "Tried to call unregistered Callee";
-
-        // TODO how do we best report an error in this case? We would like to avoid using exceptions.
-        return CallToken{"", -1};
-    }
-
-    if (timeout <= 0) {
-        // Oops this call has already timed out.
-        throw std::logic_error("timeout must be larger that 0");
-    }
-
-    return CallInternal(callee, args, timeout);
-}
-
-CallToken EventContext::CallInternal(const Callee& callee, const json& args, int64_t timeout) const {
-    auto call_id = uuid_gen_();
-    auto j = args.is_array() ? args : json::array({args});
-    auto c = OutgoingCall{callee.GetTalentId(), GetChannelId(), call_id, callee.GetFunc(), j, GetSubject(), callee.GetType(), timeout};
-
-    publisher_->Publish(GetReturnTopic(), c.Json().dump());
-
-    return CallToken{call_id, timeout};
-}
-
 
 //
 // Gatherer
@@ -168,31 +139,31 @@ void SinkGatherer::ForwardReplies(const std::vector<json>& replies) const {
 //
 PreparedFunctionReply::PreparedFunctionReply(const std::string& talent_id,
         const std::string& feature,
-        const std::string& subject,
-        const std::string& channel_id,
-        const std::string& call_id,
+        event_ptr event,
         const std::string& return_topic,
-        publisher_ptr publisher)
+        gateway_ptr gateway)
     : talent_id_{talent_id}
     , feature_{feature}
-    , subject_{subject}
-    , channel_id_{channel_id}
-    , call_id_{call_id}
+    , event_{event}
     , return_topic_{return_topic}
-    , publisher_{publisher} {}
+    , gateway_{gateway} {}
 
 void PreparedFunctionReply::Reply(const json& value) const {
-    auto result = json{{"$tsuffix", std::string("/") + channel_id_ + "/" + call_id_}, {"$vpath", "value"}, {"value", value}};
 
-    auto event = Event{subject_, talent_id_ + "." + feature_, result};
+    auto channel = event_->GetValue()["chnl"].get<std::string>();
+    auto call = event_->GetValue()["call"].get<std::string>();
+    auto result = json{
+        {"$tsuffix", std::string("/") + channel + "/" + call},
+        {"$vpath", "value"},
+        {"value", value}
+    };
 
-    // Currently the return topic sent by the platform does not contain a
-    // namespace prefix so we have to add it or else the event doesn't get
-    // routed properly.
-    // TODO Figure out if this is a bug in the platform or not.
-    auto prefixed_return_topic_ = GetEnv(MQTT_TOPIC_NS, MQTT_TOPIC_NS) + "/" + return_topic_;
+    auto subject = event_->GetSubject();
+    auto type = event_->GetType();
+    auto instance = event_->GetInstance();
+    auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
-    publisher_->Publish(prefixed_return_topic_, event.Json().dump());
+    gateway_->Publish(return_topic_, event.Json().dump());
 }
 
 //

@@ -12,13 +12,15 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
-#include "talent_test.hpp"
 #include "client.hpp"
+#include "protocol_gateway.hpp"
+#include "talent_test.hpp"
 
 using json = nlohmann::json;
-using namespace iotea::core;
-using namespace iotea::test;
 
+using iotea::core::Client;
+using iotea::core::ProtocolGateway;
+using iotea::test::TestSetTalent;
 
 static constexpr char SERVER_ADDRESS[] = "tcp://localhost:1883";
 static constexpr char TALENT_NAME[] = "testSet-sdk-cpp";
@@ -44,9 +46,28 @@ class TestSetSDK : public TestSetTalent {
     }
 };
 
-static Client client(SERVER_ADDRESS);
+static auto mqtt_config = json{
+    {"platform", true},
+    {"module", {
+                   {"name", "./testset_sdk/cpp/build/iotea-sdk-cpp-lib/adapters/mqtt/libmqtt_protocol_adapter.so"}
+               }
+    },
+    {"config",
+        {
+            {"brokerUrl", "tcp://localhost:1883"},
+            {"topicNamespace", "iotea/"}
+        }
+    }
+};
+static auto gateway_config = ProtocolGateway::CreateConfig(json{mqtt_config});
+static auto gateway = std::make_shared<ProtocolGateway>(gateway_config);
+static Client client{gateway};
 
-void signal_handler(int) { client.Stop(); }
+void signal_handler(int) {
+    std::cout << "Stopping..." << std::endl;
+    client.Stop();
+}
+
 
 int main(int, char**) {
     auto talent = std::make_shared<TestSetSDK>();

@@ -14,8 +14,9 @@
 
 #include <string>
 
-#include "event.hpp"
 #include "call.hpp"
+#include "event.hpp"
+#include "protocol_gateway.hpp"
 
 namespace iotea {
 namespace core {
@@ -39,11 +40,11 @@ class EventContext {
      * @param subject The subject of the context
      * @param return_topic The name of the topic to reply to
      * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
-     * @param publisher A publisher to send replies with
+     * @param gateway A gateway to send replies with
      * @param uuid_gen A function generating stringified UUID4s
      */
     EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
-                 const std::string& return_topic, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
+                 const std::string& return_topic, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen);
 
     /**
      * @brief Get the ID of the Talent.
@@ -92,7 +93,7 @@ class EventContext {
     void Emit(const std::string& feature, const T& value, const std::string& type = DEFAULT_TYPE,
               const std::string& instance = DEFAULT_INSTANCE) const {
         auto e = OutgoingEvent<T>{subject_, talent_id_, feature, value, type, instance};
-        publisher_->Publish(return_topic_, e.Json().dump());
+        gateway_->Publish(return_topic_, e.Json().dump());
     }
 
     /**
@@ -122,8 +123,8 @@ class EventContext {
          Callee myCallee;
 
       public:
-         MyTalent(std::shared_ptr<Publisher> publisher)
-             : Talent(MY_TALENT_NAME, publisher) {
+         MyTalent(std::shared_ptr<Adapter> adapter)
+             : Talent(MY_TALENT_NAME, adapter) {
 
              callee0 = CreateCallee(TARGET_TALENT0_NAME, TARGET_FUNCTION0_NAME);
              callee1 = CreateCallee(TARGET_TALENT1_NAME, TARGET_FUNCTION1_NAME);
@@ -192,7 +193,7 @@ class EventContext {
     const std::string subject_;
     const std::string return_topic_;
     reply_handler_ptr reply_handler_;
-    publisher_ptr publisher_;
+    gateway_ptr gateway_;
     uuid_generator_func_ptr uuid_gen_;
 
 };
@@ -211,14 +212,14 @@ class CallContext : public EventContext {
      * @param talent_id The id of the Talent for which this context exists
      * @param channel_id The unique channel ID of the Talent
      * @param feature The name of the feature to emit a return value for (if any)
-     * @param event The event to base the context of off
+     * @param event A pointer to the Event to base the context off of
      * @param return_topic The name of the topic to reply to
      * @param reply_handler The ReplyHandler to use for collecting replies to outgoing calls
-     * @param publisher A publisher to send replies with
+     * @param gateway A gateway to send replies with
      * @param uuid_gen A function generating stringified UUID4s
      */
     CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen);
+                event_ptr event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen);
 
     virtual CallToken Call(const Callee& callee, const json& args, int64_t timeout = 10000) const override;
 
@@ -282,18 +283,23 @@ class CallContext : public EventContext {
     void GatherAndReply(gather_and_reply_func_ptr func, timeout_func_ptr timeout_func, Args... args) {
         auto now_ms = GetEpochTimeMs();
         auto tokens = std::vector<CallToken>{args...};
-        auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, subject_, channel_, call_, return_topic_, publisher_};
+        auto prepared_reply = PreparedFunctionReply{talent_id_, feature_, event_, return_topic_, gateway_};
         auto gatherer = std::make_shared<ReplyGatherer>(func, timeout_func, prepared_reply, tokens, now_ms);
 
         reply_handler_->AddGatherer(gatherer);
     }
 
    private:
+    event_ptr event_;
     std::string feature_;
     std::string channel_;
     std::string call_;
     int64_t timeout_at_ms_;
 };
+
+using event_ctx_ptr = std::shared_ptr<EventContext>;
+using call_ctx_ptr = std::shared_ptr<CallContext>;
+
 }  // namespace core
 }  // namespace iotea
 

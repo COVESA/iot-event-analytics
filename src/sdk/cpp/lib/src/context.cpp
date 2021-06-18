@@ -10,6 +10,7 @@
 
 #include "common.hpp"
 #include "context.hpp"
+#include "logging.hpp"
 
 namespace iotea {
 namespace core {
@@ -18,13 +19,13 @@ namespace core {
 // EventContext
 //
 EventContext::EventContext(const std::string& talent_id, const std::string& channel_id, const std::string& subject,
-                           const std::string& return_topic, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
+                           const std::string& return_topic, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen)
     : talent_id_{talent_id}
     , channel_id_{channel_id}
     , subject_{subject}
     , return_topic_{return_topic}
     , reply_handler_{reply_handler}
-    , publisher_{publisher}
+    , gateway_{gateway}
     , uuid_gen_{uuid_gen} {}
 
 std::string EventContext::GetChannelId() const { return channel_id_; }
@@ -32,25 +33,49 @@ std::string EventContext::GetChannelId() const { return channel_id_; }
 std::string EventContext::GetSubject() const { return subject_; }
 
 std::string EventContext::GetReturnTopic() const {
-    // Currently the return topic sent by the platform does not contain a
-    // namespace prefix so we have to add it or else the event doesn't get
-    // routed properly.
-    // TODO Figure out if this is a bug in the platform or not.
-    //return return_topic_;
-
-    return GetEnv("MQTT_TOPIC_NS", MQTT_TOPIC_NS) + "/" + return_topic_;
+    return return_topic_;
 }
+
+static auto call_token_logger = iotea::core::logging::NamedLogger("CallToken");
+
+CallToken EventContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
+    if (!callee.IsRegistered()) {
+        call_token_logger.Warn() << "Tried to call unregistered Callee";
+
+        // TODO how do we best report an error in this case? We would like to avoid using exceptions.
+        return CallToken{"", -1};
+    }
+
+    if (timeout <= 0) {
+        // Oops this call has already timed out.
+        throw std::logic_error("timeout must be larger that 0");
+    }
+
+    return CallInternal(callee, args, timeout);
+}
+
+CallToken EventContext::CallInternal(const Callee& callee, const json& args, int64_t timeout) const {
+    auto call_id = uuid_gen_();
+    auto j = args.is_array() ? args : json::array({args});
+    auto c = OutgoingCall{callee.GetTalentId(), GetChannelId(), call_id, callee.GetFunc(), j, GetSubject(), callee.GetType(), timeout};
+
+    gateway_->Publish(GetReturnTopic(), c.Json().dump());
+
+    return CallToken{call_id, timeout};
+}
+
 
 //
 // CallContext
 //
 CallContext::CallContext(const std::string& talent_id, const std::string& channel_id, const std::string& feature,
-                         const Event& event, reply_handler_ptr reply_handler, publisher_ptr publisher, uuid_generator_func_ptr uuid_gen)
-    : EventContext{talent_id, channel_id, event.GetSubject(), event.GetReturnTopic(), reply_handler, publisher, uuid_gen}
+                         event_ptr event, reply_handler_ptr reply_handler, gateway_ptr gateway, uuid_generator_func_ptr uuid_gen)
+    : EventContext{talent_id, channel_id, event->GetSubject(), event->GetReturnTopic(), reply_handler, gateway, uuid_gen}
+    , event_{event}
     , feature_{feature}
-    , channel_{event.GetValue()["chnl"].get<std::string>()}
-    , call_{event.GetValue()["call"].get<std::string>()}
-    , timeout_at_ms_{event.GetValue()["timeoutAtMs"].get<int64_t>()} {}
+    , channel_{event->GetValue()["chnl"].get<std::string>()}
+    , call_{event->GetValue()["call"].get<std::string>()}
+    , timeout_at_ms_{event->GetValue()["timeoutAtMs"].get<int64_t>()} {}
 
 
 CallToken CallContext::Call(const Callee& callee, const json& args, int64_t timeout) const {
@@ -63,7 +88,7 @@ CallToken CallContext::Call(const Callee& callee, const json& args, int64_t time
     // The timeout argument is in relative time and must be adjusted with
     // respect to the absolute timeout given in the original call so that it
     // doesn't expire after it. If the result of the subtraction in the second
-    // argument is negative we still create and the CallToken but don't issue
+    // argument is negative we still create the CallToken but don't issue
     // the actual call (taken care of in EventContext::Call). The token will
     // cause the gatherer to expire in the next
     // "check timeouts cycle".
@@ -80,17 +105,20 @@ CallToken CallContext::Call(const Callee& callee, const json& args, int64_t time
 }
 
 void CallContext::Reply(const json& value) const {
-    auto result = json{{"$tsuffix", std::string("/") + channel_ + "/" + call_}, {"$vpath", "value"}, {"value", value}};
+    auto channel = event_->GetValue()["chnl"].get<std::string>();
+    auto call = event_->GetValue()["call"].get<std::string>();
+    auto result = json{
+        {"$tsuffix", std::string("/") + channel + "/" + call},
+        {"$vpath", "value"},
+        {"value", value}
+    };
 
-    auto event = Event{subject_, talent_id_ + "." + feature_, result};
+    auto subject = event_->GetSubject();
+    auto type = event_->GetType();
+    auto instance = event_->GetInstance();
+    auto event = OutgoingEvent<json>{subject, talent_id_, talent_id_ + "." + feature_, result, type, instance};
 
-    // Currently the return topic sent by the platform does not contain a
-    // namespace prefix so we have to add it or else the event doesn't get
-    // routed properly.
-    // TODO Figure out if this is a bug in the platform or not.
-    auto prefixed_return_topic_ = GetEnv(MQTT_TOPIC_NS, MQTT_TOPIC_NS) + "/" + return_topic_;
-
-    publisher_->Publish(prefixed_return_topic_, event.Json().dump());
+    gateway_->Publish(return_topic_, event.Json().dump());
 }
 
 }  // namespace core

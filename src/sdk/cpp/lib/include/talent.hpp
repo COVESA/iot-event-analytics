@@ -11,6 +11,7 @@
 #ifndef SRC_SDK_CPP_LIB_INCLUDE_TALENT_HPP_
 #define SRC_SDK_CPP_LIB_INCLUDE_TALENT_HPP_
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -24,12 +25,9 @@ using iotea::core::logging::NamedLogger;
 namespace iotea {
 namespace core {
 
-using event_ctx_ptr = std::shared_ptr<EventContext>;
-using call_ctx_ptr = std::shared_ptr<CallContext>;
-
 using func_ptr = std::function<void(const json&, call_ctx_ptr)>;
 using context_generator_func_ptr = std::function<event_ctx_ptr(const std::string& subject)>;
-using on_event_func_ptr = std::function<void(const Event&, event_ctx_ptr)>;
+using on_event_func_ptr = std::function<void(event_ptr, event_ctx_ptr)>;
 
 using function_map = std::unordered_map<std::string, func_ptr>;
 
@@ -70,53 +68,53 @@ class Talent {
      * rule set. Override in order to receive events.
      *
      * @code
-       void OnEvent(const Event& event, event_ctx_ptr context) override {
-          log::Info() << "Received an event:\n" << event.GetValue().dump(4);
+       void OnEvent(event_ptr event, event_ctx_ptr context) override {
+          log::Info() << "Received an event:\n" << event->GetValue().dump(4);
        }
      * @endcode
      *
-     * @param event Event
+     * @param event A pointer to the event Event
      * @param context A pointer to the EventContext in which the event was emitted.
      */
-    virtual void OnEvent(const Event& event, event_ctx_ptr context);
+    virtual void OnEvent(event_ptr event, event_ctx_ptr context);
 
     /**
      * @brief Called upon reception of a platform event. Override in order to receive
      * plaform events.
      *
      * @code
-       void OnPlatformevent(const PlatformEvent& event) override {
-           auto type = event.GetType();
+       void OnPlatformevent(platform_event_ptr event) override {
+           auto type = event->GetType();
 
            switch (type) {
                default:
                return;
                case core::PlatformEvent::Type::TALENT_RULES_SET:
-                  log::Info() << "Talent " << event.GetData()["talent"].get<std::string>() << " came online";
+                  log::Info() << "Talent " << event->GetData()["talent"].get<std::string>() << " came online";
                   break;
                case core::PlatformEvent::Type::TALENT_RULES_UNSET:
-                  log::Info() << "Talent " << event.GetData()["talent"].get<std::string>() << " went offline";
+                  log::Info() << "Talent " << event->GetData()["talent"].get<std::string>() << " went offline";
                   break;
            }
       }
      * @endcode
-     * @param event PlatformEvent
+     * @param event A pointer to a PlatformEvent
      */
-    virtual void OnPlatformEvent(const PlatformEvent& event);
+    virtual void OnPlatformEvent(platform_event_ptr event);
 
     /**
      * @brief Called on reception of an error. Override in order to receive
      * error messages.
      *
      * @code
-       void OnError(const ErrorMessage& msg) {
-          log::Error() << "Something went wrong! Description: " << msg.GetMessage();
+       void OnError(error_message_ptr msg) {
+          log::Error() << "Something went wrong! Description: " << msg->GetMessage();
        }
      * @endcode
      *
      * @param msg Detailed error message
      */
-    virtual void OnError(const ErrorMessage& msg);
+    virtual void OnError(error_message_ptr msg);
 
     /**
      * @brief Register a function to call from the Talent.
@@ -126,7 +124,7 @@ class Talent {
 
        ...
 
-       void OnEvent(const Event& event, event_ctx_ptr context) {
+       void OnEvent(event_ptr, event_ctx_ptr context) {
           auto term1 = 1;
           auto term2 = 2;
 

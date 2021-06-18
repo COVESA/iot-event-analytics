@@ -9,8 +9,8 @@
  ****************************************************************************/
 
 #include <chrono>
-#include <random>
 #include <iomanip>
+#include <random>
 #include <sstream>
 
 #include "util.hpp"
@@ -118,6 +118,40 @@ void Uuid4::Stringify() {
 
 std::string GenerateUUID() {
     return Uuid4();
+}
+
+void TopicExprMatcher::ReplaceAll(std::string& s, const std::string& what, const std::string& with) {
+    auto lwhat = what.size();
+    auto lwith = with.size();
+
+    for (auto p = s.find(what); p != std::string::npos; p = s.find(what, p)) {
+        s.replace(p, lwhat, with);
+        p += lwith;
+    }
+}
+
+TopicExprMatcher::TopicExprMatcher(std::string topic_expr) {
+    // '$' must be escaped
+    ReplaceAll(topic_expr, "$", R"(\$)");
+
+    // '.' must be escaped
+    ReplaceAll(topic_expr, ".", R"(\.)");
+
+    // '+' must be replaced with [^/]+
+    ReplaceAll(topic_expr, "+", R"([^/]+)");
+
+    auto size = topic_expr.size();
+
+    // '#' may only appear at the end of the expression
+    if (topic_expr[size - 1] == '#') {
+        topic_expr.replace(size - 1, 1, ".*");
+    }
+
+    expr_ = std::regex{topic_expr};
+}
+
+bool TopicExprMatcher::Match(const std::string& topic) const {
+    return std::regex_match(topic.c_str(), expr_);
 }
 
 }  // namespace core

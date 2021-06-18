@@ -122,8 +122,8 @@ bool TalentDependencies::Check(const std::string& talent_id) const {
     return item == dependencies_.end() ? false : item->second;
 }
 
-void TalentDependencies::Update(const core::PlatformEvent& event) {
-    auto type = event.GetType();
+void TalentDependencies::Update(core::platform_event_ptr event) {
+    auto type = event->GetType();
     bool is_set = false;
 
     switch (type) {
@@ -138,7 +138,7 @@ void TalentDependencies::Update(const core::PlatformEvent& event) {
             break;
     }
 
-    auto talent = event.GetData()["talent"].get<std::string>();
+    auto talent = event->GetData()["talent"].get<std::string>();
     if (dependencies_.find(talent) == dependencies_.end()) {
         // This is not one of our dependencies
         return;
@@ -193,7 +193,7 @@ TestSetTalent::TestSetTalent(const std::string& name)
     });
 }
 
-void TestSetTalent::OnPlatformEvent(const core::PlatformEvent& event) {
+void TestSetTalent::OnPlatformEvent(core::platform_event_ptr event) {
     dependencies_.Update(event);
 }
 

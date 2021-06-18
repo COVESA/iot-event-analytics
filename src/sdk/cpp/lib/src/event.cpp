@@ -41,7 +41,7 @@ bool Message::IsError() const { return msg_type_ == Message::Type::ERROR; }
 
 int Message::GetCode() const { return code_; }
 
-Message Message::FromJson(const json& j) {
+message_ptr Message::FromJson(const json& j) {
     auto type = j["msgType"].get<Message::Type>();
 
     auto code = 0;
@@ -49,7 +49,7 @@ Message Message::FromJson(const json& j) {
         code = j["code"].get<int>();
     }
 
-    return Message(type, code);
+    return std::make_shared<Message>(type, code);
 }
 
 //
@@ -63,7 +63,7 @@ std::string DiscoverMessage::GetVersion() const { return version_; }
 
 std::string DiscoverMessage::GetReturnTopic() const { return return_topic_; }
 
-DiscoverMessage DiscoverMessage::FromJson(const json& j) {
+discover_message_ptr DiscoverMessage::FromJson(const json& j) {
     // TODO figure out how to handle unexected message type
     assert(j["msgType"].get<Message::Type>() == Message::Type::DISCOVER);
 
@@ -79,7 +79,7 @@ DiscoverMessage DiscoverMessage::FromJson(const json& j) {
 
     auto return_topic = j["returnTopic"].get<std::string>();
 
-    return DiscoverMessage{version, return_topic};
+    return std::make_shared<DiscoverMessage>(version, return_topic);
 }
 
 
@@ -97,7 +97,7 @@ int64_t PlatformEvent::GetTimestamp() const { return timestamp_; }
 
 PlatformEvent::Type PlatformEvent::GetType() const { return type_; }
 
-PlatformEvent PlatformEvent::FromJson(const json& j) {
+platform_event_ptr PlatformEvent::FromJson(const json& j) {
     static const char PLATFORM_EVENT_TYPE_SET_RULES[] = "platform.talent.config.set";
     static const char PLATFORM_EVENT_TYPE_UNSET_RULES[] = "platform.talent.config.unset";
 
@@ -113,7 +113,7 @@ PlatformEvent PlatformEvent::FromJson(const json& j) {
     auto data = j["data"];
     auto timestamp = j["timestamp"].get<int64_t>();
 
-    return PlatformEvent{type, data, timestamp};
+    return std::make_shared<PlatformEvent>(type, data, timestamp);
 }
 
 ErrorMessage::ErrorMessage(const int code)
@@ -136,20 +136,21 @@ std::string ErrorMessage::GetMessage() const {
 
 int ErrorMessage::GetCode() const { return code_; }
 
-ErrorMessage ErrorMessage::FromJson(const json& j) {
+error_message_ptr ErrorMessage::FromJson(const json& j) {
     auto code = j["code"].get<int>();
-    return ErrorMessage{code};
+    return std::make_shared<ErrorMessage>(code);
 }
 
 //
 // Event
 //
-Event::Event(const std::string& subject, const std::string& feature, const json& value, const std::string& type,
-             const std::string& instance, const std::string& return_topic, int64_t when)
+Event::Event(const std::string& subject, const std::string& feature, const json& value, const json& features,
+             const std::string& type, const std::string& instance, const std::string& return_topic, int64_t when)
     : return_topic_{return_topic}
     , subject_{subject}
     , feature_{feature}
     , value_(value)
+    , features_(features)
     , type_{type}
     , instance_{instance}
     , when_{when} {}
@@ -162,6 +163,8 @@ std::string Event::GetFeature() const { return feature_; }
 
 json Event::GetValue() const { return value_; }
 
+json Event::GetFeatures() const { return features_; }
+
 std::string Event::GetType() const { return type_; }
 
 std::string Event::GetInstance() const { return instance_; }
@@ -172,26 +175,35 @@ bool Event::operator==(const Event& other) const {
     return GetSubject() == other.GetSubject()
         && GetFeature() == other.GetFeature()
         && GetValue() == other.GetValue()
+        && GetFeatures() == other.GetFeatures()
         && GetType() == other.GetType()
         && GetInstance() == other.GetInstance()
         && GetReturnTopic() == other.GetReturnTopic();
 }
 
 json Event::Json() const {
-    return json{{"subject", subject_}, {"feature", feature_},   {"value", value_},
-                {"type", type_},       {"instance", instance_}, {"whenMs", when_}};
+    return json{
+        {"subject", subject_},
+        {"feature", feature_},
+        {"value", value_},
+        {"$features", features_},
+        {"type", type_},
+        {"instance", instance_},
+        {"whenMs", when_}
+    };
 }
 
-Event Event::FromJson(const json& j) {
+event_ptr Event::FromJson(const json& j) {
     auto subject = j["subject"].get<std::string>();
     auto feature = j["feature"].get<std::string>();
     auto value = j["value"];
+    auto features = j["$features"];
     auto type = j["type"].get<std::string>();
     auto instance = j["instance"].get<std::string>();
     auto return_topic = j.contains("returnTopic") ? j["returnTopic"].get<std::string>() : "";
     auto when_ms = j["whenMs"].get<int64_t>();
 
-    return Event{subject, feature, value, type, instance, return_topic, when_ms};
+    return std::make_shared<Event>(subject, feature, value, features, type, instance, return_topic, when_ms);
 }
 
 

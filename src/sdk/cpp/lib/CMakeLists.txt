@@ -34,6 +34,8 @@ endif()
 set (THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+find_library(LIBDL dl)
+
 add_library(iotea_sdk_cpp
   SHARED
     src/call.cpp
@@ -42,7 +44,7 @@ add_library(iotea_sdk_cpp
     src/event.cpp
     src/jsonquery.cpp
     src/logging.cpp
-    src/mqtt_client.cpp
+    src/protocol_gateway.cpp
     src/schema.cpp
     src/talent.cpp
     src/talent_test.cpp
@@ -64,12 +66,14 @@ if(IOTEA_SDK_STATIC_PAHO)
     PUBLIC
       paho-mqttpp3-static
       nlohmann_json::nlohmann_json
+      ${LIBDL}
   )
 else()
   target_link_libraries(iotea_sdk_cpp
     PUBLIC
       paho-mqttpp3
       nlohmann_json::nlohmann_json
+      ${LIBDL}
   )
 endif()
 
@@ -94,6 +98,7 @@ if(BUILD_TESTING)
         gmock
         gtest_main
         pthread
+        dl
     )
 
     target_code_coverage(testrunner EXCLUDE tests/*)

@@ -9,17 +9,19 @@
  ****************************************************************************/
 
 #include <csignal>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <memory>
 #include <string>
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
-#include "mqtt_client.hpp"
+#include "protocol_gateway.hpp"
 
 using namespace iotea::core;
 using json = nlohmann::json;
 
-static const std::string SERVER_ADDRESS("tcp://localhost:1883");
 static const std::string TALENT_NAME = "echo_provider";
 static const std::string FUNC_ECHO = "echo";
 static const std::string FUNC_GET_COUNT = "getEchoCount";
@@ -85,19 +87,26 @@ public:
     }
 };
 
-static Client client = Client{SERVER_ADDRESS};
+std::shared_ptr<Client> client;
 
 void signal_handler(int) {
-    client.Stop();
+    if (client) {
+        client->Stop();
+    }
 }
 
-int main(int, char**) {
-    auto talent = std::make_shared<EchoProvider>();
-    client.RegisterFunctionTalent(talent);
+int main(int, char** argv) {
+    std::ifstream file{argv[1]};
+    std::string config{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+
+    auto gateway = std::make_shared<ProtocolGateway>(json::parse(config));
+    client = std::make_shared<Client>(gateway);
+
+    client->RegisterFunctionTalent(std::make_shared<EchoProvider>());
 
     std::signal(SIGINT, signal_handler);
 
-    client.Start();
+    client->Start();
 
     return 0;
 }
