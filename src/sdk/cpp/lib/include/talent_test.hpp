@@ -13,6 +13,7 @@
 
 #include <functional>
 #include <unordered_map>
+#include <map>
 
 #include "nlohmann/json.hpp"
 
@@ -66,7 +67,7 @@ class TestSetInfo {
 
    private:
     const std::string name_;
-    std::unordered_map<std::string, Test> tests_;
+    std::map<std::string, Test> tests_;
 };
 
 class TalentDependencies {
@@ -78,8 +79,6 @@ class TalentDependencies {
     bool Check(const std::string& talent_id) const;
 
     bool CheckAll() const;
-
-    json Json() const;
 
    private:
     std::unordered_map<std::string, bool> dependencies_;
@@ -93,15 +92,19 @@ class TestSetTalent : public core::FunctionTalent {
 
     void RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout);
 
-   private:
-    TestSetInfo test_set_info_;
-    TalentDependencies dependencies_;
+    /////////////////////////////////////////
+    //////// Internal methods follow ////////
+    /////////////////////////////////////////
 
     void Prepare(const json& args, core::call_ctx_ptr ctx);
 
     void GetInfo(const json& args, core::call_ctx_ptr ctx);
 
     void Run(const json& args, core::call_ctx_ptr ctx);
+
+   private:
+    TestSetInfo test_set_info_;
+    TalentDependencies dependencies_;
 };
 
 

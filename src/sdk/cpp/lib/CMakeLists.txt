@@ -87,8 +87,10 @@ if(BUILD_TESTING)
         tests/test_context.cpp
         tests/test_event.cpp
         tests/test_jsonquery.cpp
+        tests/test_protocol_gateway.cpp
         tests/test_schema.cpp
         tests/test_talent.cpp
+        tests/test_talent_test.cpp
         tests/test_util.cpp
     )
 

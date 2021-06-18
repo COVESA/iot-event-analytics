@@ -73,8 +73,8 @@ static auto logger = NamedLogger("TestSetInfo");
 TestSetInfo::TestSetInfo(const std::string& name)
     : name_{name} {}
 
-void TestSetInfo::AddTest(const std::string& name, const json& exepected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout) {
-    auto test = Test{name, exepected_value, func, timeout};
+void TestSetInfo::AddTest(const std::string& name, const json& expected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout) {
+    auto test = Test{name, expected_value, func, timeout};
     tests_.insert({name, test});
 }
 
@@ -94,9 +94,8 @@ void TestSetInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
 }
 
 json TestSetInfo::Json() const {
-    json tests = json::array();
-
-    for (auto& test : tests_) {
+    std::vector<json> tests;
+    for (const auto& test : tests_) {
         tests.push_back(test.second.Json());
     }
 
@@ -156,22 +155,6 @@ bool TalentDependencies::CheckAll() const {
 
     return true;
 }
-
-json TalentDependencies::Json() const {
-    auto not_connected = json::array();
-
-    for (auto& item : dependencies_) {
-        if (!item.second) {
-            not_connected.push_back(item.first);
-        }
-    }
-
-    return json{
-        {"result", not_connected.size() != 0},
-        {"notConnected", not_connected}
-    };
-}
-
 
 //
 // TestSetTalent
