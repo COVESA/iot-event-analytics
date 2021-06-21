@@ -60,6 +60,7 @@ export async function chooseAndUpdateIoTeaProjectDir(): Promise<string> {
             canSelectMany: false,
             canSelectFolders: true,
             canSelectFiles: false,
+            openLabel: 'Select IoT Event Analytics project folder',
             title: 'Choose the IoT Event Analytics project folder'
         });
 

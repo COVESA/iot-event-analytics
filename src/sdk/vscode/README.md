@@ -46,7 +46,7 @@ _"Trigger suggest"_, _"Toggle Autocompletion"_ can be triggered using
 
 - Windows, Linux: `Strg + Space`
 - macOS:
-  - `⌘ + Esc` on Apple Keyboards
+  - `⌥ + Esc` on Apple Keyboards
   - `Alt + Esc` on Windows Keyboards
 
 #### getRules()
@@ -58,9 +58,11 @@ _"Trigger suggest"_, _"Toggle Autocompletion"_ can be triggered using
 
 ## Troubleshooting
 
-- _"Docker version check fails"_<br>
+- _"I cannot select an .env file on macOS file open dialog"_<br>
+  These files might be hidden from view. Just hit `⌘ + ⇧ + .` to show hidden files in the dialog.
+- _"The Docker version check fails"_<br>
   Make sure you have the latest Docker version installed. The docker version is retrieved using: `docker version --format={{.Client.Version}}`. Test in your console, if this command returns the version number for your current docker installation.
-- _"Python version check fails"_<br>
+- _"The Python version check fails"_<br>
   You can specify the Python interpreter and the pip module in the settings. It defaults to `python3` and `pip3` for standalone installations. If you are running a virtual environment setup based on Anaconda, you have to use `python` and `pip`. On Linux-Systems it can be different. Please check in a terminal, which command to use and update the settings accordingly.
-- _"Cannot publish MQTT messages"_<br>
+- _"I cannot publish MQTT messages"_<br>
   Make sure you executed `yarn` in the IoT Event Analytics project folder to install all needed dependencies
