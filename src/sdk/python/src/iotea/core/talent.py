@@ -193,7 +193,7 @@ class Talent(IOFeatures):
         with self.lock:
             for out_event in out_events:
                 if 'whenMs' not in out_event:
-                    out_event['whenMs'] = time_ms.time_ms()
+                    out_event['whenMs'] = time_ms()
 
                 await self.pg.publish_json(topic, out_event)
 
