@@ -186,7 +186,9 @@ void ProtocolGateway::Initialize() {
         }
 
         auto adapter = load(module_name, is_platform_proto, module_config);
-        Add(adapter);
+        if (!Add(adapter)) {
+            logger.Error() << "Failed to add adapter " << module_name;
+        }
 
         // Modules are never unloaded so we intentionally never call dlclose()
     }

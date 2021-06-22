@@ -342,15 +342,6 @@ class ProtocolGateway {
     virtual void Stop();
 
     /**
-     * @brief Add an adapter to the set of adapters.
-     *
-     * @param adatper The new Adapter.
-     *
-     * @return bool
-     */
-    virtual bool Add(std::shared_ptr<Adapter> adapter);
-
-    /**
      * @brief Validate a configuration file. Throws ProtocolGatewayException if the configuration is invalid.
      */
     static void ValidateConfig(const json& config, bool platform_proto_only);
@@ -367,6 +358,16 @@ class ProtocolGateway {
      * @brief A contructor for tests only.
      */
     ProtocolGateway(const std::string& display_name, bool platform_proto_only);
+
+    /**
+     * @brief Add an adapter to the set of adapters.
+     *
+     * @param adatper The new Adapter.
+     *
+     * @return bool
+     */
+    virtual bool Add(std::shared_ptr<Adapter> adapter);
+
 
    private:
     bool IsValidOperation(std::shared_ptr<Adapter> adapter, const PubSubOptions& opts) const;

@@ -93,6 +93,9 @@ TEST(protocol_gateway, Add) {
     class MockProtocolGateway : public ProtocolGateway {
        public:
         MockProtocolGateway(bool platform_proto_only) : ProtocolGateway("TestProtocolGateway", platform_proto_only) {}
+
+        // Make Add() public for this test
+        bool Add(std::shared_ptr<Adapter> adapter) { return ProtocolGateway::Add(adapter); }
     };
 
     auto proto_adapter = std::make_shared<MockAdapter>("proto_adatper", true);
@@ -119,6 +122,9 @@ TEST(protocol_gateway, StartStop) {
     class MockProtocolGateway : public ProtocolGateway {
        public:
         MockProtocolGateway(bool platform_proto_only) : ProtocolGateway("TestProtocolGateway", platform_proto_only) {}
+
+        // Make Add() public for this test
+        bool Add(std::shared_ptr<Adapter> adapter) { return ProtocolGateway::Add(adapter); }
     };
 
     auto a1 = std::make_shared<MockAdapter>("a1", true);
@@ -150,6 +156,9 @@ TEST(protocol_gateway, Publish) {
     class MockProtocolGateway : public ProtocolGateway {
        public:
         MockProtocolGateway(bool platform_proto_only) : ProtocolGateway("TestProtocolGateway", platform_proto_only) {}
+
+        // Make Add() public for this test
+        bool Add(std::shared_ptr<Adapter> adapter) { return ProtocolGateway::Add(adapter); }
     };
 
 
@@ -261,6 +270,9 @@ TEST(protocol_gateway, Subscribe) {
     class MockProtocolGateway : public ProtocolGateway {
        public:
         MockProtocolGateway(bool platform_proto_only) : ProtocolGateway("TestProtocolGateway", platform_proto_only) {}
+
+        // Make Add() public for this test
+        bool Add(std::shared_ptr<Adapter> adapter) { return ProtocolGateway::Add(adapter); }
     };
 
     on_msg_func_ptr cb = [](const std::string&, const std::string&, const std::string&){};
@@ -373,6 +385,9 @@ TEST(protocol_gateway, SubscribeShared) {
     class MockProtocolGateway : public ProtocolGateway {
        public:
         MockProtocolGateway(bool platform_proto_only) : ProtocolGateway("TestProtocolGateway", platform_proto_only) {}
+
+        // Make Add() public for this test
+        bool Add(std::shared_ptr<Adapter> adapter) { return ProtocolGateway::Add(adapter); }
     };
 
     on_msg_func_ptr cb = [](const std::string&, const std::string&, const std::string&){};
