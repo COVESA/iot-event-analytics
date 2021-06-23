@@ -47,7 +47,7 @@ add_library(iotea_sdk_cpp
     src/protocol_gateway.cpp
     src/schema.cpp
     src/talent.cpp
-    src/talent_test.cpp
+    src/testset_talent.cpp
     src/util.cpp
 )
 target_code_coverage(iotea_sdk_cpp)
@@ -90,7 +90,7 @@ if(BUILD_TESTING)
         tests/test_protocol_gateway.cpp
         tests/test_schema.cpp
         tests/test_talent.cpp
-        tests/test_talent_test.cpp
+        tests/test_testset_talent.cpp
         tests/test_util.cpp
     )
 
@@ -118,3 +118,5 @@ install(TARGETS ${INSTALL_TARGETS} EXPORT IoTeaSdkCpp
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
 )
+
+

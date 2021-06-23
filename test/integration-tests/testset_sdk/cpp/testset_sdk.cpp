@@ -14,7 +14,7 @@
 #include "nlohmann/json.hpp"
 #include "client.hpp"
 #include "protocol_gateway.hpp"
-#include "talent_test.hpp"
+#include "testset_talent.hpp"
 
 using json = nlohmann::json;
 

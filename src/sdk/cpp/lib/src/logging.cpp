@@ -8,8 +8,6 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#include "logging.hpp"
-
 #include <chrono>
 #include <iostream>
 #include <iomanip>
@@ -18,6 +16,7 @@
 #include <string>
 
 #include "util.hpp"
+#include "logging.hpp"
 
 namespace iotea {
 namespace core {
@@ -110,17 +109,22 @@ void SetLevel(const Level level) {
 Logger Log(const Level level) {
     auto now = std::chrono::system_clock::now();
     auto ts = std::chrono::system_clock::to_time_t(now);
+    auto duration = now.time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
     Logger p{InternalLogger::Get(), level};
 
     static const char* tags[]{
-        " DEBUG ",
-        "  INFO ",
-        "  WARN ",
-        " ERROR ",
+        "   DEBUG ",
+        "    INFO ",
+        "    WARN ",
+        "   ERROR ",
     };
 
+
     std::ostringstream ss;
-    ss << std::put_time(gmtime(&ts), "%FT%TZ");
+    ss << std::put_time(gmtime(&ts), "%FT%T");
+    ss << "." << std::setfill('0') << std::setw(3) << (millis % 1000) << "Z";
     p <<  ss.str() << tags[static_cast<int>(level)];
 
     return p;
@@ -141,20 +145,27 @@ NamedLogger::NamedLogger(const std::string& name)
     : name_{name} {}
 
 Logger NamedLogger::Debug() const {
-    return logging::Debug() << name_ << " : ";
+    auto l = logging::Debug();
+    l  << "[" << name_ << "] : ";
+    return l;
 }
 
 Logger NamedLogger::Info() const {
-    return logging::Info() << name_ << " : ";
+    auto l = logging::Info();
+    l << "[" << name_ << "] : ";
+    return l;
 }
 
 Logger NamedLogger::Warn() const {
-    return logging::Warn() << name_ << " : ";
+    auto l = logging::Warn();
+    l  << "[" << name_ << "] : ";
+    return l;
 }
 
 Logger NamedLogger::Error() const {
-    return logging::Error() << name_ << " : ";
-
+    auto l = logging::Error();
+    l  << "[" << name_ << "] : ";
+    return l;
 }
 
 }  // namespace logging

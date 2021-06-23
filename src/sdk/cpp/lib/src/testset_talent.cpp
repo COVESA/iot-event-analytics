@@ -14,7 +14,7 @@
 #include <chrono>
 
 #include "logging.hpp"
-#include "talent_test.hpp"
+#include "testset_talent.hpp"
 
 using iotea::core::logging::NamedLogger;
 

@@ -18,7 +18,7 @@
 #include "gmock/gmock.h"
 #include "nlohmann/json.hpp"
 
-#include "talent_test.hpp"
+#include "testset_talent.hpp"
 
 using json = nlohmann::json;
 
@@ -45,7 +45,7 @@ class MockCallContext : public iotea::core::CallContext {
 /**
  * @brief Verify that TestResult produces the expected output.
  */
-TEST(talent_test, TestResult_Json) {
+TEST(testset_talent, TestResult_Json) {
     // All results should be wrapped in arrays
     //
     // Make sure objects are wrapped in an array
@@ -82,7 +82,7 @@ TEST(talent_test, TestResult_Json) {
 /**
  * @brief Verify that Test::Json produces the expected output.
  */
-TEST(talent_test, Test_Json) {
+TEST(testset_talent, Test_Json) {
     auto func = [](iotea::core::call_ctx_ptr){};
 
     // Make sure objects are wrapped in an array
@@ -119,7 +119,7 @@ TEST(talent_test, Test_Json) {
 /**
  * @brief Verify that Test::Run calls the embedded function.
  */
-TEST(talent_test, Test_Run) {
+TEST(testset_talent, Test_Run) {
     auto called = false;
     auto func = [&called](iotea::core::call_ctx_ptr){ called = true; };
 
@@ -134,7 +134,7 @@ TEST(talent_test, Test_Run) {
  * @breif Verfiy that tests that are add show up when the TestSetInfo is
  * marshalled to JSON
  */
-TEST(talent_test, TestSetInfo_AddTest) {
+TEST(testset_talent, TestSetInfo_AddTest) {
     TestSetInfo info{"my_test"};
 
     auto func = [](iotea::core::call_ctx_ptr){};
@@ -167,7 +167,7 @@ TEST(talent_test, TestSetInfo_AddTest) {
     ASSERT_EQ(info.Json(), expect);
 }
 
-TEST(talent_test, TestSetInfo_RunTest) {
+TEST(testset_talent, TestSetInfo_RunTest) {
     TestSetInfo info{"my_test"};
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
@@ -201,7 +201,7 @@ TEST(talent_test, TestSetInfo_RunTest) {
  * @brief Verify that TalentDependencies updates its dependencies and reports
  * whether a single or all dependencies are met.
  */
-TEST(talent_test, TalentDependencies) {
+TEST(testset_talent, TalentDependencies) {
     using iotea::core::PlatformEvent;
 
     auto create_platform_event = [](const std::string& name, bool is_set) {
@@ -247,7 +247,7 @@ TEST(talent_test, TalentDependencies) {
     ASSERT_FALSE(dep.CheckAll());
 }
 
-TEST(talent_test, TestSetTalent_Schema) {
+TEST(testset_talent, TestSetTalent_Schema) {
     using iotea::core::Callee;
 
     TestSetTalent testset{"my_test_set"};
@@ -256,7 +256,7 @@ TEST(talent_test, TestSetTalent_Schema) {
     ASSERT_EQ(testset.GetSchema().Json(), expect_schema);
 }
 
-TEST(talent_test, TestSetTalent_Prepare) {
+TEST(testset_talent, TestSetTalent_Prepare) {
     using iotea::core::Callee;
 
     TestSetTalent testset{"my_test_set"};
@@ -271,7 +271,7 @@ TEST(talent_test, TestSetTalent_Prepare) {
     testset.Prepare(nullptr, ctx);
 }
 
-TEST(talent_test, TestSetTalent_GetInfo) {
+TEST(testset_talent, TestSetTalent_GetInfo) {
     using iotea::core::Callee;
 
     TestSetTalent testset{"my_test_set"};
