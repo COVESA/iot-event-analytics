@@ -79,8 +79,23 @@ endif()
 
 target_compile_options(iotea_sdk_cpp PRIVATE -Wall -Wextra -pedantic -Werror)
 
-include(GoogleTest)
 if(BUILD_TESTING)
+
+    # Google Test
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG        release-1.10.0
+    )
+
+    FetchContent_Populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+
+    # enable testing
+    include(CTest)
+    include(GoogleTest)
+
     add_executable(testrunner
         tests/test_call.cpp
         tests/test_client.cpp
@@ -118,5 +133,4 @@ install(TARGETS ${INSTALL_TARGETS} EXPORT IoTeaSdkCpp
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
 )
-
 

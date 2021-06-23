@@ -10,12 +10,6 @@ set(IOTEA_SDK_STATIC_PAHO TRUE CACHE BOOL "Statically link Paho libraries")
 
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.10.0
-)
-
-FetchContent_Declare(
   paho_mqtt_c
   GIT_REPOSITORY https://github.com/eclipse/paho.mqtt.c
   GIT_TAG        v1.3.8
@@ -56,13 +50,6 @@ add_subdirectory(${paho_mqtt_cpp_SOURCE_DIR} ${paho_mqtt_cpp_BINARY_DIR})
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 FetchContent_Populate(nlohmann_json)
 add_subdirectory(${nlohmann_json_SOURCE_DIR} ${nlohmann_json_BINARY_DIR} EXCLUDE_FROM_ALL)
-
-# Google Test
-FetchContent_Populate(googletest)
-add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-
-## enable testing
-include(CTest)
 
 ## adapters
 add_subdirectory(adapters)
