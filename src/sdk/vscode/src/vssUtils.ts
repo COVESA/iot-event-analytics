@@ -385,7 +385,7 @@ export class VssUtils {
             this.reportProgress(message);
         });
 
-        await t.executeCommand(getPythonCmd(), [ 'vspec2json.py', '-i', `Vehicle:vehicle.uuid`, '../spec/VehicleSignalSpecification.vspec', 'vss.json' ], absVssToolsPath, (message: string) => {
+        await t.executeCommand(getPythonCmd(), [ 'vspec2json.py', '-I', `Vehicle:vehicle.uuid`, '../spec/VehicleSignalSpecification.vspec', 'vss.json' ], absVssToolsPath, (message: string) => {
             this.reportProgress(message);
         });
 
