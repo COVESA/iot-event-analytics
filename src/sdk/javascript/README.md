@@ -16,7 +16,7 @@
 
 ## Build the Node.js SDK
 
-- Run `yarn build.sdk` from somewhere within the project directory
+- Run `yarn sdk.build` from somewhere within the project directory
 - The artifact will be saved at _src/sdk/javascript/lib/boschio.iotea-\<version\>.tgz_
 
 ## Install
