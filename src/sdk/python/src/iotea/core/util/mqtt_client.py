@@ -32,7 +32,7 @@ class MqttProtocolAdapter:
         self.broker_url = self.config.get('brokerUrl')
         try:
             self.topic_ns = self.config.get('topicNamespace')
-        except Exception as exc:
+        except Exception:
             self.topic_ns = None
             self.logger.warning('Could not get topicNamespace from configuration. Will use None instead!')
 
@@ -72,7 +72,7 @@ class MqttProtocolAdapter:
         return MqttClient.prefix_topic_ns(topic, self.topic_ns)
 
     def __strip_topic_namespace(self, topic):
-        if (self.topic_ns is None):
+        if self.topic_ns is None:
             return topic
         topic_ns_index = topic.find(self.topic_ns)
         if topic_ns_index != 0:
