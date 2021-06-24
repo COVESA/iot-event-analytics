@@ -204,7 +204,15 @@ class KuksaValAdapter extends Talent {
                     }
 
                     // If timestamp is passed as seconds, fix it by adding current milliseconds
-                    msg.timestampMs = this.__fixTimestampMs(msg.timestamp);
+                    // Also support parsing Time Zulu timestamps given by Kuksa.Val (2021-06-23T14:30:33.1624458633Z932)
+                    try {
+                        msg.timestampMs = this.__fixTimestampMs(msg.timestamp);
+                    }
+                    catch(err) {
+                        this.logger.warn(`Cannot parse given timestamp ${msg.timestamp}`, null, err);
+                        return;
+                    }
+
 
                     // Check if current vss message is newer than the most recent path change, otherwise, skip to prevent Pub/Sub Loops
                     if (this.enableLoopPrevention && this.subscriptions[msg.path] && msg.timestamp <= this.subscriptions[msg.path].updateAtMs) {
@@ -220,7 +228,12 @@ class KuksaValAdapter extends Talent {
 
                     this.logger.debug(`Forwarding event to IoT Event Analytics Platform: ${JSON.stringify(msg)}...`);
 
-                    await this.pg.publishJson(INGESTION_TOPIC, msg);
+                    try {
+                        await this.pg.publishJson(INGESTION_TOPIC, msg);
+                    }
+                    catch(err) {
+                        this.logger.warn(`Failed to forward event to IoT Event Analytics Platform: ${JSON.stringify(msg)}`, null, err);
+                    }
                 }, err => {
                     this.logger.error(`Error for subscription on VSS path ${absVssPath}`, null, err);
                 }, true)
@@ -335,6 +348,19 @@ class KuksaValAdapter extends Talent {
     }
 
     __fixTimestampMs(timestamp) {
+        // Check for Zulu Timestamp in the given format
+        // Grab everything including the Z
+        // 2021-06-23T14:30:33.1624458633Z932
+        const timeZuluResult = /([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[^Z]+Z)/.exec(timestamp);
+
+        if (timeZuluResult !== null) {
+            return Date.parse(timeZuluResult[1]);
+        }
+
+        if (isNaN(parseInt(timestamp, 10))) {
+            throw new Error(`The input is neither a UTC- nor a Unix-timestamp`);
+        }
+
         if (timestamp > 9999999999) {
             // Milliseconds are given
             return timestamp;
