@@ -26,10 +26,16 @@ from ..protocol_gateway import ProtocolGateway
 class MqttProtocolAdapter:
 
     def __init__(self, config, display_name=None):
+        self.logger = logging.getLogger('MqttProtocolAdapter')
         self.client = None
         self.config = JsonModel(config)
         self.broker_url = self.config.get('brokerUrl')
-        self.topic_ns = self.config.get('topicNamespace')
+        try:
+            self.topic_ns = self.config.get('topicNamespace')
+        except Exception:
+            self.topic_ns = None
+            self.logger.warning('Could not get topicNamespace from configuration. Will use None instead!')
+
         if display_name is None:
             self.client = MqttClient(self.broker_url, self.topic_ns)
         else:
@@ -66,6 +72,8 @@ class MqttProtocolAdapter:
         return MqttClient.prefix_topic_ns(topic, self.topic_ns)
 
     def __strip_topic_namespace(self, topic):
+        if self.topic_ns is None:
+            return topic
         topic_ns_index = topic.find(self.topic_ns)
         if topic_ns_index != 0:
             return topic
@@ -197,7 +205,6 @@ class MqttClient:
         subscription = Subscription(topic, callback, to_json, qos)
 
         self.subscriptions.append(subscription)
-
         await client.subscribe([(topic, qos)])
 
         self.logger.debug('Successfully subscribed to topic {}'.format(topic))
