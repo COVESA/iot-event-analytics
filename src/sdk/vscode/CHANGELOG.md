@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.7 [2021-06-17]
+  - Fix breaking change in vss-tools API for creating a vss file
+
 - 0.9.6 [2021-06-17]
   - Fix version parsing of unknown docker-compose builds
   - Add troubleshooting entry for making hidden files visible in the file open dialog for macOS

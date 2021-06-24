@@ -87,9 +87,9 @@ __IMPORTANT:__ If you have a running installation of __Kuksa.val__ you can skip 
       ```
 
   - The contents of the _certs_ folder can be downloaded from:
-    - [jwt.key.pub](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/jwt/jwt.key.pub)
-    - [Server.key](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/Server.key)
-    - [Server.pem](https://raw.githubusercontent.com/eclipse/kuksa.val/master/certificates/Server.pem)
+    - [jwt.key.pub](https://raw.githubusercontent.com/eclipse/kuksa.val/master/kuksa_certificates/jwt/jwt.key.pub)
+    - [Server.key](https://raw.githubusercontent.com/eclipse/kuksa.val/master/kuksa_certificates/Server.key)
+    - [Server.pem](https://raw.githubusercontent.com/eclipse/kuksa.val/master/kuksa_certificates/Server.pem)
   - __Make sure to have the latest certificates matching your installation. You might have to check the commit from the last built of the server.__
 
 - Make sure to copy the `<JSON-Web Token>` from [here](https://github.com/eclipse/kuksa.val/blob/master/certificates/jwt/super-admin.json.token)<br>
