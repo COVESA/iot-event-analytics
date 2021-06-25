@@ -320,7 +320,7 @@ class PreparedFunctionReply {
      * @param feature The name of the feature
      * @param event The event that triggered the call
      * @param return_topic The topic on which the reply should be posted
-     * @param gatewy A pointer to a GatewayProtocl
+     * @param gateway A pointer to a GatewayProtocl
      */
     PreparedFunctionReply(const std::string& talent_id,
             const std::string& feature,

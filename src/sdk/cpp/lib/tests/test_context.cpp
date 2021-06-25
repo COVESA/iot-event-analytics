@@ -19,7 +19,7 @@ using json = nlohmann::json;
 
 using namespace iotea::core;
 
-const json test_config = {
+static const json test_config = {
     {"adapters", {
                      {
                          {"platform", true},

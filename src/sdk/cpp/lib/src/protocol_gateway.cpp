@@ -36,6 +36,12 @@ std::string PubSubOptions::GetAdapterId() const {
     return adapter_id_;
 }
 
+
+bool PubSubOptions::operator==(const PubSubOptions& other) const {
+    return platform_proto_only_ == other.platform_proto_only_ &&
+        adapter_id_ == other.adapter_id_;
+}
+
 ////////////////////
 // PublishOptions //
 ////////////////////
@@ -52,11 +58,22 @@ bool PublishOptions::Stash() const {
     return stash_;
 }
 
+bool PublishOptions::operator==(const PublishOptions& other) const {
+    return this->PubSubOptions::operator==(other) &&
+        retain_ == other.retain_ &&
+        stash_ == other.stash_;
+}
+
+
 //////////////////////
 // SubscribeOptions //
 //////////////////////
 SubscribeOptions::SubscribeOptions(bool platform_proto_only, const std::string& adapter_id)
     : PubSubOptions{platform_proto_only, adapter_id} {}
+
+bool SubscribeOptions::operator==(const SubscribeOptions& other) const {
+    return this->PubSubOptions::operator==(other);
+}
 
 /////////////
 // Adapter //
@@ -137,10 +154,15 @@ json ProtocolGateway::CreateConfig(json adaptor_configs) {
 
 ProtocolGateway::ProtocolGateway(const json& config, const std::string& display_name, bool platform_proto_only)
     : config_(config)
+    , display_name_{display_name}
     , platform_proto_only_{platform_proto_only} {
     ValidateConfig(config, platform_proto_only);
-    (void)display_name;
 }
+
+ProtocolGateway::ProtocolGateway(const std::string& display_name, bool platform_proto_only)
+    : config_(json{})
+    , display_name_{display_name}
+    , platform_proto_only_{platform_proto_only} {}
 
 void ProtocolGateway::Initialize() {
     logger.Debug() << "Loading adapters";
@@ -164,10 +186,22 @@ void ProtocolGateway::Initialize() {
         }
 
         auto adapter = load(module_name, is_platform_proto, module_config);
-        adapters_.push_back(adapter);
+        if (!Add(adapter)) {
+            logger.Error() << "Failed to add adapter " << module_name;
+        }
 
         // Modules are never unloaded so we intentionally never call dlclose()
     }
+}
+
+bool ProtocolGateway::Add(std::shared_ptr<Adapter> adapter) {
+    if (platform_proto_only_ && !adapter->IsPlatformProto()) {
+        return false;
+    }
+
+    adapters_.push_back(adapter);
+
+    return true;
 }
 
 void ProtocolGateway::Start() {

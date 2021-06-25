@@ -47,7 +47,7 @@ add_library(iotea_sdk_cpp
     src/protocol_gateway.cpp
     src/schema.cpp
     src/talent.cpp
-    src/talent_test.cpp
+    src/testset_talent.cpp
     src/util.cpp
 )
 target_code_coverage(iotea_sdk_cpp)
@@ -79,16 +79,33 @@ endif()
 
 target_compile_options(iotea_sdk_cpp PRIVATE -Wall -Wextra -pedantic -Werror)
 
-include(GoogleTest)
 if(BUILD_TESTING)
+
+    # Google Test
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG        release-1.10.0
+    )
+
+    FetchContent_Populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+
+    # enable testing
+    include(CTest)
+    include(GoogleTest)
+
     add_executable(testrunner
         tests/test_call.cpp
         tests/test_client.cpp
         tests/test_context.cpp
         tests/test_event.cpp
         tests/test_jsonquery.cpp
+        tests/test_protocol_gateway.cpp
         tests/test_schema.cpp
         tests/test_talent.cpp
+        tests/test_testset_talent.cpp
         tests/test_util.cpp
     )
 
@@ -116,3 +133,4 @@ install(TARGETS ${INSTALL_TARGETS} EXPORT IoTeaSdkCpp
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
 )
+
