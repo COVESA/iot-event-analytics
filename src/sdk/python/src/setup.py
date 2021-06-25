@@ -26,8 +26,7 @@ setup(
         "iotea.core.util"
     ],
     install_requires=[
-        "websockets==8.1",
-        "hbmqtt==0.9.6"
+        "amqtt>=0.10.0a3"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
