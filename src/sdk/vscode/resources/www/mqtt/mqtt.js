@@ -1,8 +1,10 @@
+const vscode = acquireVsCodeApi();
+
 let ioteaValueSelectValues = {};
 let ioteaTypeFeatures = {};
 
 function setMessageType(type) {
-    for (let type_ of [ 'none', 'ioteaevent' ]) {
+    for (let type_ of ['none', 'ioteaevent']) {
         if (type_ === type) {
             show(`.${type_}`);
         } else {
@@ -10,7 +12,7 @@ function setMessageType(type) {
         }
     }
 
-    switch(type) {
+    switch (type) {
         case 'ioteaevent': {
             updateIoteaTypeFeatures();
             setValue('#topic', 'ingestion/events');
@@ -52,7 +54,7 @@ function getJsonMessage() {
     try {
         return JSON.parse(getMessage());
     }
-    catch(err) {
+    catch (err) {
         return undefined;
     }
 }
@@ -62,7 +64,7 @@ function updateTopicNs(topicNs) {
 }
 
 function createJsonMessage(type) {
-    switch(type) {
+    switch (type) {
         case 'none': {
             return {};
         }
@@ -84,7 +86,7 @@ function onIoTeaEventValueUpdate(value, tryJson = false) {
         try {
             value = JSON.parse(value);
         }
-        catch(err) {}
+        catch (err) { }
     }
 
     updateJsonMessage('value', value);
@@ -250,10 +252,32 @@ function submitMessage() {
         msg = getMessage();
     }
 
-    postMessage({
+    vscode.postMessage({
         broker: getValue('#mqttEndpoint'),
         topic: getValue('#topicNs').trim() + getValue('#topic').trim(),
         // Be aware, that you need to convert \" to \\\", because the escaped quotation marks need to stay intact
         message: msg.replace(/\x22/g, '\\\x22')
     });
 }
+
+window.addEventListener('message', ev => {
+    console.log(ev.data);
+
+    show('#result');
+
+    const data = ev.data;
+    const elem = document.querySelector('#result');
+
+    let vscodeColorClass = '--vscode-foreground';
+
+    if (data) {
+        elem.innerHTML = '&nbsp;Success';
+    } else {
+        elem.innerHTML = `&nbsp;${data.error}`;
+        vscodeColorClass = '--vscode-errorForeground';
+    }
+
+    setStyle('#result', 'color', `var(${vscodeColorClass})`);
+
+    setTimeout(() => { hide('#result'); }, 2500);
+});

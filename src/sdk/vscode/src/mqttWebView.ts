@@ -16,24 +16,25 @@ import { Terminal } from './terminal';
 
 export class MqttWebView {
     static instance: MqttWebView | null = null;
-    wwPanel: vscode.WebviewPanel;
+    wvPanel: vscode.WebviewPanel;
 
     constructor(private extensionPath: string, private ioteaProjectRootDir: string) {
-        this.wwPanel = vscode.window.createWebviewPanel(
+        this.wvPanel = vscode.window.createWebviewPanel(
             'iotea.www.mqtt',
             'MQTT Publisher',
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
+                retainContextWhenHidden: true,
                 localResourceRoots: [
                     vscode.Uri.file(path.join(extensionPath, 'resources/www'))
                 ]
             }
         );
 
-        this.wwPanel.webview.onDidReceiveMessage(async (msg) => {
+        this.wvPanel.webview.onDidReceiveMessage(async (msg) => {
             if (msg.broker === '' || msg.topic === '' || msg.message === '') {
-                this.wwPanel.webview.postMessage({ action: 'publish', success: false, error: 'Broker, topic and message have to be specified' });
+                await this.postMessageToUi({ action: 'publish', success: false, error: 'Broker, topic and message have to be specified' });
                 return;
             }
 
@@ -45,15 +46,15 @@ export class MqttWebView {
                     console.log(msg);
                 });
 
-                this.wwPanel.webview.postMessage({ action: 'publish', success: true });
+                await this.postMessageToUi({ action: 'publish', success: true });
             }
             catch(err) {
-                this.wwPanel.webview.postMessage({ action: 'publish', success: false, error: err.message });
+                await this.postMessageToUi({ action: 'publish', success: false, error: err.message });
             }
         });
 
         // Remove the instance on destroying the panel
-        this.wwPanel.onDidDispose(() => {
+        this.wvPanel.onDidDispose(() => {
             MqttWebView.instance = null;
         });
 
@@ -70,11 +71,15 @@ export class MqttWebView {
             const VSS_PATH_REPLACER = ${JSON.stringify(vscode.workspace.getConfiguration('iotea').get('vss.path.replacer'))};`);
 
         // Load HTML page
-        this.wwPanel.webview.html = html;
+        this.wvPanel.webview.html = html;
+    }
+
+    async postMessageToUi(msg: any) {
+        await this.wvPanel.webview.postMessage(msg);
     }
 
     getExtResourceUriString(resourcePath: string): string {
-        return this.wwPanel.webview.asWebviewUri(vscode.Uri.file(path.join(this.extensionPath, 'resources', ...resourcePath.split('/')))).toString();
+        return this.wvPanel.webview.asWebviewUri(vscode.Uri.file(path.join(this.extensionPath, 'resources', ...resourcePath.split('/')))).toString();
     }
 
     static loadOnce(extensionPath: string, ioteaProjectRootDir: string) {

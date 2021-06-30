@@ -86,7 +86,7 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
 
 (async argv => {
     // Do NOT use any topic namespace
-    const broker = new NamedMqttClient('CLI', argv.connectionString, null);
+    const client = new NamedMqttClient('CLI', argv.connectionString, null);
 
     try {
         let totalMessageCount = 0;
@@ -98,7 +98,7 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
         }
 
         if (argv.message) {
-            totalMessageCount += await sendMessageNTimes(broker, argv.topic, argv.message, argv.times, argv.delayMs, transformer);
+            totalMessageCount += await sendMessageNTimes(client, argv.topic, argv.message, argv.times, argv.delayMs, transformer);
             console.log(`Total number of messages sent ${totalMessageCount}`);
         }
 
@@ -128,19 +128,18 @@ if ((argv.message === null || argv.message === '') && argv.file === null) {
                 await waitMs(argv.delayMs);
             }
 
-            totalMessageCount += await sendMessageNTimes(broker, argv.topic, line, argv.times, argv.delayMs, transformer);
+            totalMessageCount += await sendMessageNTimes(client, argv.topic, line, argv.times, argv.delayMs, transformer);
 
             console.log(`Processed line ${lineCounter()}, total number of messages sent ${totalMessageCount}`);
         }
     }
     finally {
-        setTimeout(async () => {
-            await broker.disconnect();
-        }, 1000);
+        await waitMs(1000);
+        await client.disconnect(true);
     }
 })(argv);
 
-async function sendMessageNTimes(broker, topic, message, times, delayMs, transformer) {
+async function sendMessageNTimes(client, topic, message, times, delayMs, transformer) {
     let messageCount = 0;
 
     for (let i = 0; i < times; i++) {
@@ -150,7 +149,7 @@ async function sendMessageNTimes(broker, topic, message, times, delayMs, transfo
                 message = JSON.stringify(transformer.evaluate(JSON.parse(message)));
             }
 
-            await broker.publish(topic, message);
+            await client.publish(topic, message);
 
             if (i < times - 1) {
                 await waitMs(delayMs);
