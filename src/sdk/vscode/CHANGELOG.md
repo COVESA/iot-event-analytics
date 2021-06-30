@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.8 [2021-06-30]
+  - Stop MQTT Publisher spawning Node.js processes indefinitly
+
 - 0.9.7 [2021-06-17]
   - Fix breaking change in vss-tools API for creating a vss file
 
