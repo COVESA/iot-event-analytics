@@ -2,11 +2,11 @@
 asyncinit==0.2.4
 docopt==0.6.2
 hbmqtt==0.9.6
+amqtt>=0.10.0-alpha.3
 passlib==1.7.4
 PyYAML==5.4
 six==1.15.0
 transitions==0.8.6
-websockets==8.1
 pytest==6.2.3
 pytest-cov==2.11.1
 pytest-mock==3.6.0

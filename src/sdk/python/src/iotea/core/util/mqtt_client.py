@@ -17,8 +17,8 @@ import os
 import queue
 import time
 from uuid import uuid4
-from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_0
+from amqtt.client import MQTTClient
+from amqtt.mqtt.constants import QOS_0
 from .json_model import JsonModel
 from ..protocol_gateway import ProtocolGateway
 

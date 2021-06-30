@@ -6,8 +6,8 @@ from unittest.mock import ANY
 from unittest import TestCase
 
 import pytest
-from hbmqtt.session import IncomingApplicationMessage
-from hbmqtt.mqtt.constants import QOS_0
+from amqtt.session import IncomingApplicationMessage
+from amqtt.mqtt.constants import QOS_0
 
 from src.iotea.core.util.mqtt_client import MqttClient
 
