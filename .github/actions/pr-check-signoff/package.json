@@ -4,7 +4,7 @@
   "main": "index.js",
   "repository": "https://github.com/GENIVI/iot-event-analytics",
   "author": "Bosch.IO GmbH",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0"
