@@ -48,7 +48,6 @@ module.exports = class Ingestion {
             .then(() => this.pg.subscribeJsonShared('global-ingestion', INGESTION_TOPIC, this.__onEvent.bind(this)))
             // Subscribe for all events, which are sent from talents using the returnTopic
             .then(() => this.pg.subscribeJsonShared('platform-ingestion', `${this.platformId}/${INGESTION_TOPIC}`, this.__onEvent.bind(this)))
-	    .then(() => this.pg.start())
             .then(() => {
                 this.logger.info('Ingestion started successfully');
             });

@@ -13,6 +13,7 @@ services:
     hostname: configmanager
     ports:
       - '${API_PORT-8080}:${API_PORT-8080}'
+      - '9230:9230'
     networks:
       - iotea-platform-network
     volumes:
@@ -34,6 +35,8 @@ services:
       - type: bind
         source: "${PLATFORM_CONFIG_DIR-../docker/platform/config}"
         target: "/app/docker/pipeline/config"
+    ports:
+      - '9229:9229'
 networks:
   iotea-platform-network:
     name: iotea-platform-network

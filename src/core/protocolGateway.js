@@ -7,7 +7,6 @@ var dapr_grpc = dapr.dapr_grpc;
 var common_pb = dapr.common_pb;
 var grpc = dapr.grpc;
 
-console.log("DAPR_GRPC_ENDPOINT")
 var client = new dapr_grpc.DaprClient(
     `127.0.0.1:${process.env.DAPR_GRPC_PORT}`, grpc.credentials.createInsecure());
 
@@ -21,14 +20,19 @@ app.use(bodyParser.json({ type: 'application/*+json' }));
 
 const port = process.env.DAPR_APP_PORT;
 
-subscriptions = []
+subscriptions = {}
 
 app.get('/dapr/subscribe', (_req, res) => {
-    res.json(subscriptions);
-    console.log("Sending subscriptions:", subscriptions)
+    subs = []
+    for (let topic of Object.keys(subscriptions)) {
+        subs.push({
+            pubsubname: "pubsub",
+            topic: topic,
+            route: `/dapr/${topic}`,
+        })
+    }
+    res.json(subs);
 });
-
-//app.listen(port, () =>  console.log(`Node App listening on port ${port}!`))
 
 class ProtocolGateway {
     constructor(protocolGatewayConfig, displayName, usePlatformProtocolOnly = false) {
@@ -88,9 +92,7 @@ class ProtocolGateway {
                     client.publishEvent(event, (err, response) => {
                         if (err) {
                             console.log(`Error publishing! ${err}`);
-                        } else {
-                            console.log(`Published! topic: ${topic} payload: ${data}`);
-                        }
+                        } 
                     });
                 }
             }
@@ -102,9 +104,16 @@ class ProtocolGateway {
     }
 
     start() {
-        console.log("Sending subscriptions:", subscriptions)
+        for (let topic of Object.keys(subscriptions)) { 
+            app.post(`/dapr/${topic}`, (req, res) => {
+                subscriptions[topic].forEach(function (entry) {
+                    entry.cb(req.body.data, topic, entry.adapter);
+                });
+                res.sendStatus(200);
+            });
+        }
+        
         app.listen(port, () => console.log(`Node App listening on port ${port}!`));
-        //throw new Error("my error message");
     }
 
     // Callback needs to be (ev, topic) => {}
@@ -121,18 +130,12 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    app.post(`/dapr/${topic}`, (req, res) => {
-                        //console.log("Message received: ", req.body.data);
-                        callback(req.body.data, topic, adapter.id)
-                        res.sendStatus(200);
-                    });
-
-                    subscriptions.push(        {
-                        pubsubname: "pubsub",
-                        topic: topic,
-                        route: `/dapr/${topic}`
-                    })
-
+                    
+                    if (topic in subscriptions) {
+                        subscriptions[topic].push({name: topic, cb: callback, adapter: adapter.id});
+                    } else {
+                        subscriptions[topic] = [{name: topic, cb: callback, adapter: adapter.id}]; 
+                    }
                 }
             }
         }
@@ -164,35 +167,14 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    app.post(`/dapr/${topic}`, (req, res) => {
-                        console.log("Message received: ", req.body.data);
-                        callback(req.body.data, topic, adapter.id)
-                        res.sendStatus(200);
-                    });
-
-                    subscriptions.push(        {
-                        pubsubname: "pubsub",
-                        topic: topic,
-                        route: `/dapr/${topic}`
-                    })
-
+                    if (topic in subscriptions) {
+                        subscriptions[topic].push({name: topic, cb: callback, adapter: adapter.id});
+                    } else {
+                        subscriptions[topic] = [{name: topic, cb: callback, adapter: adapter.id}]; 
+                    }
                 }
             }
         }
-        /*
-        for (let adapter of this.adapters) {
-            if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
-                if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    const p = adapter.instance.subscribeShared(
-                        group,
-                        topic,
-                        ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
-                        subscribeOptions
-                    );
-                    forceWait && await p;
-                }
-            }
-        }*/
     }
 
     // Callback needs to be (ev, topic, adapterId) => {}

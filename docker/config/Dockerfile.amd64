@@ -45,7 +45,6 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 # FROM node:10.16.1-alpine as runtime
 FROM mhart/alpine-node:slim-12.13.0 as runtime
 
-ENV DAPR_GRPC_PORT=7777
 ENV DAPR_APP_PORT=3060
 ARG API_PORT=8080
 
@@ -75,4 +74,4 @@ RUN ln -s /app/docker/config/dapr_pubsub.yaml ~/.dapr/components/pubsub.yaml
 # For Metadata, Instance API
 EXPOSE ${API_PORT}
 
-CMD ["/usr/local/bin/dapr", "run", "--app-port", "3060", "--app-protocol", "http", "node", "/app/docker/config/index.js"]
+CMD ["/usr/local/bin/dapr", "run", "--app-port", "3060", "--", "node",  "/app/docker/config/index.js"]

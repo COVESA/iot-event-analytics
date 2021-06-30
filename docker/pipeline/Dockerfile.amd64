@@ -44,7 +44,6 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 # FROM node:10.16.1-alpine as runtime
 FROM mhart/alpine-node:slim-12.13.0 as runtime
 
-ENV DAPR_GRPC_PORT=7778
 ENV DAPR_APP_PORT=3001
 
 RUN apk update
@@ -69,4 +68,4 @@ COPY resources/ ./resources
 COPY docker/pipeline ./docker/pipeline
 RUN ln -s /app/docker/pipeline/dapr_pubsub.yaml ~/.dapr/components/pubsub.yaml
 
-CMD ["/usr/local/bin/dapr", "run", "--app-port", "3001", "--app-protocol", "http", "node", "/app/docker/pipeline/index.js"]
+CMD ["/usr/local/bin/dapr", "run", "--app-port", "3001", "--app-protocol", "http", "--", "node",  "/app/docker/pipeline/index.js"]
