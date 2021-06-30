@@ -1,5 +1,3 @@
-const vscode = acquireVsCodeApi();
-
 async function httpGetJson(url) {
     return fetch(url, { method: 'GET' }).then(response => response.json());
 }
@@ -134,10 +132,6 @@ function show(selector) {
 
 function hide(selector) {
     addClass(selector, 'hidden');
-}
-
-function postMessage(msg) {
-    vscode.postMessage(msg);
 }
 
 class VssPathTranslator {

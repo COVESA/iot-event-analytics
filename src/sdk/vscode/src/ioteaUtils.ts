@@ -36,7 +36,6 @@ export class IoTeaUtils {
 
     private static START_IOTEA_PLATFORM_COMMAND = 'iotea.startIoTeaPlatform';
     private static STOP_IOTEA_PLATFORM_COMMAND = 'iotea.stopIoTeaPlatform';
-    private static CREATE_IOTEA_JS_TALENT_CLASS_COMMAND = 'iotea.createJSTalentClass';
     private static CREATE_IOTEA_JS_TALENT_PROJECT_COMMAND = 'iotea.createJsTalentProject';
     private static IOTEA_PLATFORM_TERMINAL_NAME = 'IoT Event Analytics Platform';
 
