@@ -8,48 +8,43 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-from os import path
-import pytest
 import asyncio
-import uuid
+from os import path
 from unittest import TestCase
+
+import pytest
+
 from src.iotea.core.constants import DEFAULT_TYPE, DEFAULT_INSTANCE, MSG_TYPE_EVENT, MSG_TYPE_ERROR
-from src.iotea.core.util.talent_io import TalentOutput, TalentInput
+from src.iotea.core.protocol_gateway import ProtocolGateway
 from src.iotea.core.rules import AndRules, Rule, Constraint
-from tests.helpers.constraints import create_op_constraint, create_change_constraint
+from src.iotea.core.talent import Talent
+from src.iotea.core.util.mqtt_client import MqttProtocolAdapter
+from src.iotea.core.util.talent_io import TalentOutput, TalentInput
+from tests.helpers.constraints import create_change_constraint
 from tests.helpers.json_loader import load_json
+
 
 @pytest.fixture
 def test_case():
     return TestCase()
 
-@pytest.fixture
-def mock_uuid(mocker):
-    uuid_mock = mocker.patch.object(
-        uuid,
-        'uuid4',
-        autospec=True
-    )
 
-    uuid_mock.return_value = '00000000'
+def mock_uuid():
+    return '00000000'
 
-    return uuid_mock
 
 @pytest.fixture
-def talent(mock_uuid):
-    from src.iotea.core.talent import Talent
-    from src.iotea.core.protocol_gateway import ProtocolGateway
-    from src.iotea.core.util.mqtt_client import MqttProtocolAdapter
-
+def talent(mocker, callees):
     class MyTalent(Talent):
         def __init__(self):
+            mocker.patch('src.iotea.core.talent.uuid4', wraps=mock_uuid)
             mqtt_config = MqttProtocolAdapter.create_default_configuration()
             pg_config = ProtocolGateway.create_default_configuration([mqtt_config])
 
             super().__init__('test-talent', pg_config)
 
         def callees(self):
-            return [ 'math.sum' ]
+            return callees
 
         def get_rules(self):
             return AndRules([
@@ -61,25 +56,54 @@ def talent(mock_uuid):
 
     return MyTalent()
 
+
 class TestTalent:
-    def test_create_discovery_response(self, test_case, talent, mocker):
+    @pytest.mark.parametrize('callees', [['math.sum']])
+    # pylint: disable=redefined-outer-name
+    # callees are passed to talent fixture
+    # pylint: disable=unused-argument
+    def test_create_discovery_response(self, test_case, talent, callees, mocker):
+        '''
+        check the discovery response of a talent with trigger rules which calls other talent functions
+        '''
         mocker.patch(
             'src.iotea.core.rules.SchemaConstraint.create_schema_id',
             return_value='4711'
         )
 
         test_case.assertDictEqual(
-            talent._Talent__create_discovery_response(),
-            load_json(path.normpath(path.join(path.dirname(__file__), '../../resources/talent.discovery-response.json')))
+            talent._Talent__create_discovery_response(),  # pylint: disable=protected-access
+            load_json(
+                path.normpath(path.join(path.dirname(__file__), '../../resources/talent.discovery-response.json')))
         )
 
+    @pytest.mark.parametrize('callees', [[]])
+    # pylint: disable=redefined-outer-name
+    # pylint: disable=unused-argument
+    def test_create_discovery_response_no_callees(self, test_case, talent, callees, mocker):
+        mocker.patch(
+            'src.iotea.core.rules.SchemaConstraint.create_schema_id',
+            return_value='4711'
+        )
+        test_case.assertDictEqual(
+            talent._Talent__create_discovery_response(),# pylint: disable=protected-access
+            load_json(path.normpath(
+                path.join(path.dirname(__file__), '../../resources/talent.no-callees-discovery-response.json')))
+        )
+
+    @pytest.mark.parametrize('callees', [['math.sum']])
     @pytest.mark.asyncio
-    async def test_function_call(self, test_case, talent, mocker):
+    # pylint: disable=redefined-outer-name
+    # callees are used by talent fixture
+    # pylint: disable=unused-argument
+    async def test_function_call(self, test_case, talent, callees, mocker):
+        # pylint: disable=unused-argument
         def mock_publish_json(topic, json_o, publish_options=None):
             f = asyncio.Future()
             f.set_result(None)
             return f
 
+        mocker.patch('src.iotea.core.talent.uuid4', wraps=mock_uuid)
         mocker.patch(
             'src.iotea.core.protocol_gateway.ProtocolGateway.publish_json',
             wraps=mock_publish_json
@@ -101,13 +125,13 @@ class TestTalent:
         # Channels in ingestion add msgType automatically >> do it manually here
         function_response['msgType'] = MSG_TYPE_EVENT
 
-        asyncio.ensure_future(talent._Talent__on_common_event(
+        asyncio.ensure_future(talent._Talent__on_common_event(# pylint: disable=protected-access
             function_response,
             f'talent/{talent.id}/events{tsuffix}'
         ))
 
         # Wait for the result
-        response = await talent.call('math', 'sum', [ 1, 1 ], subject, 'ingestion/events', 10000, now_ms)
+        response = await talent.call('math', 'sum', [1, 1], subject, 'ingestion/events', 10000, now_ms)
 
         assert response == function_result_value
 
@@ -129,12 +153,12 @@ class TestTalent:
             'error': expected_error_message
         }
 
-        asyncio.ensure_future(talent._Talent__on_common_event(
+        asyncio.ensure_future(talent._Talent__on_common_event(# pylint: disable=protected-access
             function_response,
             f'talent/{talent.id}/events{tsuffix}'
         ))
 
         with pytest.raises(Exception) as exc_info:
-            await talent.call('math', 'sum', [ 1, 1 ], subject, 'ingestion/events', 10000, now_ms)
+            await talent.call('math', 'sum', [1, 1], subject, 'ingestion/events', 10000, now_ms)
 
         assert expected_error_message == str(exc_info.value)

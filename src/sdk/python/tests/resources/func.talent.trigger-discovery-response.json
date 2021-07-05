@@ -1,0 +1,116 @@
+{
+  "id": "test-func-talent",
+  "config": {
+    "scc": [
+      "default.math.sum-out",
+      "default.test-func-talent.math.plus-in"
+    ],
+    "outputs": {
+      "test-func-talent.math.plus-in": {
+        "description": "Argument(s) for function math.plus",
+        "ttl": 0,
+        "history": 0,
+        "encoding": {
+          "type": "object",
+          "encoder": null
+        },
+        "unit": "ONE"
+      },
+      "test-func-talent.math.plus-out": {
+        "description": "Result of function math.plus",
+        "ttl": 0,
+        "history": 0,
+        "encoding": {
+          "type": "any",
+          "encoder": null
+        },
+        "unit": "ONE"
+      }
+    },
+    "rules": {
+      "excludeOn": null,
+      "rules": [
+        {
+          "feature": "math.sum-out",
+          "path": "/$tsuffix",
+          "op": 0,
+          "value": {
+            "type": "string",
+            "pattern": "^\\/test-func-talent\\.[^\\/]+\\/.*",
+            "$id": "4712"
+          },
+          "valueType": 0,
+          "typeSelector": "default",
+          "instanceIdFilter": ".*",
+          "limitFeatureSelection": true
+        },
+        {
+          "excludeOn": [
+            "default.math.sum-out"
+          ],
+          "rules": [
+            {
+              "feature": "test-func-talent.math.plus-in",
+              "path": "",
+              "op": 0,
+              "value": {
+                "type": "object",
+                "required": [
+                  "func",
+                  "args",
+                  "chnl",
+                  "call",
+                  "timeoutAtMs"
+                ],
+                "properties": {
+                  "func": {
+                    "type": "string",
+                    "const": "math.plus"
+                  },
+                  "args": {
+                    "type": "array"
+                  },
+                  "chnl": {
+                    "type": "string"
+                  },
+                  "call": {
+                    "type": "string"
+                  },
+                  "timeoutAtMs": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "$id": "4712"
+              },
+              "valueType": 0,
+              "typeSelector": "default",
+              "instanceIdFilter": ".*",
+              "limitFeatureSelection": true
+            },
+            {
+              "excludeOn": [
+                "default.test-func-talent.math.plus-in"
+              ],
+              "rules": [
+                {
+                  "feature": "temp",
+                  "path": "",
+                  "op": 1,
+                  "value": null,
+                  "valueType": 0,
+                  "typeSelector": "kuehlschrank",
+                  "instanceIdFilter": ".*",
+                  "limitFeatureSelection": true
+                }
+              ],
+              "type": "and"
+            }
+          ],
+          "type": "or"
+        }
+      ],
+      "type": "or"
+    }
+  }
+}

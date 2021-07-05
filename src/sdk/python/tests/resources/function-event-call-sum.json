@@ -1,0 +1,62 @@
+{
+    "subject": "someuserid",
+    "type": "default",
+    "instance": "default",
+    "value": {
+        "func": "sum",
+        "args": [
+            3, 4
+        ],
+        "chnl": "test-func-talent.00000000",
+        "call": "00000000",
+        "timeoutAtMs": 1624868418296
+    },
+    "feature": "test-func-talent.sum-in",
+    "whenMs": 1624868358318,
+    "now": 1624868358319,
+    "msgType": 1,
+    "segment": "000000",
+    "cid": "e46a7ae0-0572-4c91-b729-e424e0aae0fa",
+    "returnTopic": "123456/ingestion/events",
+    "$features": {
+        "default": {
+            "test-func-talent.sum-in": {
+                "$metadata": {
+                    "description": "Argument(s) for function sum",
+                    "ttl": 0,
+                    "history": 0,
+                    "encoding": {
+                        "type": "object",
+                        "encoder": null
+                    },
+                    "unit": "ONE",
+                    "idx": 4,
+                    "$unit": {
+                        "fac": 1,
+                        "unit": "one",
+                        "desc": "Eins"
+                    }
+                },
+                "default": {
+                    "$feature": {
+                        "whenMs": 1624868358318,
+                        "exp": 1624868358318,
+                        "history": [],
+                        "raw": {
+                            "func": "sum",
+                            "args": [
+                                3, 4
+                            ],
+                            "chnl": "test-func-talent.00000000",
+                            "call": "00000000",
+                            "timeoutAtMs": 1624868418296
+                        },
+                        "enc": null,
+                        "stat": null
+                    },
+                    "matches": 1
+                }
+            }
+        }
+    }
+}
