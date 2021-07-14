@@ -101,11 +101,11 @@ async def test_check_mqtt5(test_case, mocker, topic_ns, topic, message):
 
     # uuid4 is imported in mqtt_client and can be found only as a function of mqtt_client.uuid4 and not as uuid.uuid4
     mocker.patch('src.iotea.core.util.mqtt_client.uuid4', wraps=mock_uuid)
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish_probe)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish_probe)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     test_topic = 'test_topic'
@@ -154,11 +154,11 @@ async def test_pub_sub(test_case, mocker, topic_ns, topic, message, to_json):
     async def async_callback(c_message, c_topic):
         sync_callback(c_message, c_topic)
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish_with_deliver)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish_with_deliver)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     callbacks = [sync_callback, async_callback]
@@ -208,8 +208,8 @@ async def test_pub_sub(test_case, mocker, topic_ns, topic, message, to_json):
 @pytest.mark.asyncio
 # pylint: disable=redefined-outer-name
 async def test_pub_no_stash(test_case, mocker, topic_ns, topic, message):
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
     mqtt_client.client.disconnected = True
@@ -227,10 +227,10 @@ async def test_pub_no_stash(test_case, mocker, topic_ns, topic, message):
 # check if the client functions after disconnect and reconnect
 # pylint: disable=redefined-outer-name
 async def test_reconnect(test_case, mocker, topic_ns, topic, message):
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
-    mocker.patch('hbmqtt.client.MQTTClient.reconnect', wraps=mock_reconnect)
-    mocker.patch('hbmqtt.client.MQTTClient.disconnect', wraps=mock_disconnect)
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.reconnect', wraps=mock_reconnect)
+    mocker.patch('amqtt.client.MQTTClient.disconnect', wraps=mock_disconnect)
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
 
@@ -299,8 +299,8 @@ async def test_multiple_connects(test_case, mocker, topic_ns, topic, message):
     blocking_event = asyncio.Event()
     connected_event = asyncio.Event()
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect_block(connected_event, blocking_event))
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish(publish_semaphore))
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect_block(connected_event, blocking_event))
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish(publish_semaphore))
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
     # create first publish task, it will trigger the connect method
@@ -353,11 +353,11 @@ async def test_delivered_bad_message(test_case, mocker, topic_ns, topic, message
         test_case.assertEqual(json.loads(message), c_message)
         test_case.assertEqual(f'{topic_ns}{topic}', c_topic)
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
