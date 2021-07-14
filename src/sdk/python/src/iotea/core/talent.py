@@ -26,6 +26,7 @@ from .util.logger import Logger
 from .util.json_query import json_query_first
 from .util.talent_io import TalentOutput
 from .util.time_ms import time_ms
+from .util.json_hash import json_hash
 
 class DeferredCall:
     def __init__(self, call_id, timeout_ms, loop):
@@ -122,11 +123,15 @@ class Talent(IOFeatures):
             self.skip_cycle_check_for(f'{DEFAULT_TYPE}.{callee}-out')
 
     async def start(self):
-        await self.pg.subscribe_json_shared(self.id, Talent.get_talent_topic(self.id), self.__on_event)
-        await self.pg.subscribe_json(f'{Talent.get_talent_topic(self.id)}/{self.chnl}/+', self.__on_common_event)
+        if self._get_rules() is None:
+            raise Exception('The talent must provide some event rules!')
+        rules_hash = json_hash(self._get_rules().save(remove_schema_id=True))
+        talent_topic = Talent.get_talent_topic(self.id, rules_hash)
+        await self.pg.subscribe_json_shared(self.id, talent_topic, self.__on_event)
+        await self.pg.subscribe_json(f'{talent_topic}/{self.chnl}/+', self.__on_common_event)
         await self.pg.subscribe_json_shared(self.id, TALENTS_DISCOVERY_TOPIC, self.__on_discover)
 
-        self.logger.info('Talent {} started successfully'.format(self.uid))
+        self.logger.info(f'Talent {self.uid} with event subscription topic {talent_topic} started successfully!')
 
         while True:
             await asyncio.sleep(1)
@@ -278,9 +283,8 @@ class Talent(IOFeatures):
 
             self.logger.info('  {}'.format(rule.constraint.to_string()))
 
-        self.logger.info('{} depends on the following feature(s):'.format(self.id))
+        self.logger.info(f'{self.id} depends on the following feature(s):')
         rules.for_each(__on_rule)
-
         return {
             'id': self.id,
             'config': {
@@ -336,6 +340,7 @@ class Talent(IOFeatures):
 
         return f'{prefix}-{unique_part}'
 
+
     @staticmethod
-    def get_talent_topic(talent_id, suffix=''):
-        return f'talent/{talent_id}/events{suffix}'
+    def get_talent_topic(talent_id, json_hash, suffix=''):
+        return f'talent/{talent_id}/{json_hash}/events{suffix}'

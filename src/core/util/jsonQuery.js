@@ -186,7 +186,7 @@ function __parseInt(value, defaultValue, radix = 10) {
 
     if (isNaN(p)) {
         if (defaultValue === undefined || !Number.isFinite(defaultValue)) {
-            throw new Error(`Neither parsed valuevalue ${value} nor default value are numbers`);
+            throw new Error(`Neither parsed value ${value} nor default value are numbers`);
         }
 
         return defaultValue;

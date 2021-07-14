@@ -96,6 +96,7 @@ const {
 
 const JsonModel = require('./core/util/jsonModel');
 const jsonQuery = require('./core/util/jsonQuery');
+const jsonHash = require('./core/util/jsonHash');
 
 const {
     KuksaValAdapter,
@@ -133,7 +134,8 @@ module.exports = {
         MqttProtocolAdapter,
         Logger,
         JsonModel,
-        jsonQuery
+        jsonQuery,
+        jsonHash
     },
     constants: {
         ALL_INSTANCE_IDS_FILTER,

@@ -7,7 +7,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
-
+import copy
 import uuid
 import re
 import logging
@@ -209,8 +209,8 @@ class Rule:
     def __init__(self, constraint=None):
         self.constraint = constraint
 
-    def save(self):
-        return {
+    def save(self, remove_unique_schema_id=False):
+        result = {
             'feature': self.constraint.feature,
             'path': self.constraint.path,
             'op': self.constraint.op,
@@ -220,6 +220,11 @@ class Rule:
             'instanceIdFilter': self.constraint.instance_id_filter,
             'limitFeatureSelection': self.constraint.limit_feature_selection
         }
+        if remove_unique_schema_id and result['value'] is not None:
+            result = copy.deepcopy(result)
+            del result['value']['$id']
+        return result
+
 
 Rule.logger = logging.getLogger('Rule')
 
@@ -265,11 +270,12 @@ class Rules(Rule):
 
         return self
 
-    def save(self):
+    def save(self, remove_schema_id=False):
         return {
             'excludeOn': self.exclude_on,
-            'rules': list(map(lambda rule: rule.save(), self.rules))
+            'rules': list(map(lambda rule: rule.save(remove_schema_id), self.rules))
         }
+
 
     def for_each(self, cb):
         for rule in self.rules:
@@ -292,17 +298,19 @@ class AndRules(Rules):
         super(AndRules, self).__init__(exclude_on)
         self.add(rules)
 
-    def save(self):
-        serialized_rule = super().save()
+    def save(self, remove_schema_id=False):
+        serialized_rule = super().save(remove_schema_id)
         serialized_rule['type'] = 'and'
         return serialized_rule
+
 
 class OrRules(Rules):
     def __init__(self, rules, exclude_on=None):
         super(OrRules, self).__init__(exclude_on)
         self.add(rules)
 
-    def save(self):
-        serialized_rule = super().save()
+    def save(self, remove_schema_id=False):
+        serialized_rule = super().save(remove_schema_id)
         serialized_rule['type'] = 'or'
         return serialized_rule
+

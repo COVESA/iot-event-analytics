@@ -89,12 +89,13 @@ module.exports = class Routing {
                 // Only if true, forward it to the talent --> Maybe make that configurable
                 // Currently a current event can evaluate to false, but the circumventing OrRule evaluates to true
                 // So the whole ruleset evaluates to true
-                this.logger.debug(`Sending event to talent with topic ${Talent.getTalentTopic(id, ev.value.$tsuffix)} to adapter ${config.$adapterId}`, evtctx);
+                const talentTopic = Talent.getTalentTopic(id, config.rulesHash, ev.value.$tsuffix)
+                this.logger.debug(`Sending event to talent with topic ${talentTopic} to adapter ${config.$adapterId}`, evtctx);
 
                 // Just send it to the adapter, the talent is attached to
                 const publishOptions = ProtocolGateway.createPublishOptions(false, config.$adapterId);
 
-                await this.pg.publishJson(Talent.getTalentTopic(id, ev.value.$tsuffix), Object.assign(
+                await this.pg.publishJson(talentTopic, Object.assign(
                     {},
                     ev,
                     {

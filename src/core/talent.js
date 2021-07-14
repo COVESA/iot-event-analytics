@@ -12,6 +12,8 @@ const uuid = require('uuid');
 const Logger = require('./util/logger');
 const jsonQuery = require('./util/jsonQuery');
 const clone = require('./util/clone');
+const jsonHash = require('./util/jsonHash')
+
 const {
     TalentOutput
 } = require('./util/talentIO');
@@ -118,12 +120,16 @@ class Talent extends IOFeatures {
     }
 
     start() {
+        if (this.__getRules() === null) {
+            throw new Error('The talent must provide some event rules!')
+        }
+        const talentTopic = Talent.getTalentTopic(this.id, jsonHash(this.__getRules().save(true)))
         // remote/ prefix do not have to be prepended for Remote talents subscriptions. Talents always receive their events, as if it runs locally
         // For more information see local mosquitto bridging configuration
         // Shared telemetry event subscription for all Talent instances sharing the same id
-        return this.pg.subscribeJsonShared(this.id, Talent.getTalentTopic(this.id), this.__onEvent.bind(this))
+        return this.pg.subscribeJsonShared(this.id, talentTopic, this.__onEvent.bind(this))
             // Subscription for Talent instance specific events
-            .then(() => this.pg.subscribeJson(`${Talent.getTalentTopic(this.id)}/${this.chnl}/+`, this.__onCommonEvent.bind(this)))
+            .then(() => this.pg.subscribeJson(`${talentTopic}/${this.chnl}/+`, this.__onCommonEvent.bind(this)))
             // Sufficient if one Talent instance gets it
             .then(() => this.pg.subscribeJsonShared(this.id, TALENTS_DISCOVERY_TOPIC, this.__onDiscover.bind(this)))
             .then(() => {
@@ -339,8 +345,8 @@ Talent.createUid = function createUid(prefix = null) {
     return [prefix, uniquePart].join('-');
 };
 
-Talent.getTalentTopic = (talentId, suffix = '') => {
-    return `talent/${talentId}/events${suffix}`;
+Talent.getTalentTopic = (talentId, jsonHash, suffix = '') => {
+    return `talent/${talentId}/${jsonHash}/events${suffix}`;
 };
 
 Talent.isValidTalentFeature = function isValidTalentFeature(talentFeature, talentId) {
