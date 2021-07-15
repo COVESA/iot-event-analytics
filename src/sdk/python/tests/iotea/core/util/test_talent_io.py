@@ -1,4 +1,13 @@
-import json
+##############################################################################
+# Copyright (c) 2021 Bosch.IO GmbH
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# SPDX-License-Identifier: MPL-2.0
+##############################################################################
+
 import time
 from os import path
 from unittest import TestCase
@@ -8,7 +17,7 @@ import pytest
 
 from src.iotea.core.constants import DEFAULT_TYPE, DEFAULT_INSTANCE
 from src.iotea.core.util.talent_io import TalentInput, FeatureMetadata, TalentOutput
-
+from tests.helpers import json_loader
 
 @pytest.fixture
 def test_case():
@@ -17,8 +26,7 @@ def test_case():
 
 @pytest.fixture
 def event():
-    with open(path.normpath(path.join(path.dirname(__file__), '../../../resources/talentIO.event.json')), 'r') as f:
-        return json.load(f)
+    return json_loader.load_json(path.normpath(path.join(path.dirname(__file__), '../../../resources/talentIO.event.json')))
 
 
 def test_get_raw_value(test_case, event):

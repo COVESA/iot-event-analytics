@@ -11,5 +11,5 @@
 import json
 
 def load_json(abs_json_path):
-    with open(abs_json_path) as fh:
+    with open(abs_json_path, encoding='utf-8') as fh:
         return json.load(fh)

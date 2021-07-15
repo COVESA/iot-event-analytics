@@ -7,6 +7,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
+
 import asyncio
 import unittest.mock
 from collections import Counter
@@ -57,10 +58,6 @@ def test_case():
     return TestCase()
 
 
-def mock_uuid():
-    return '00000000'
-
-
 @pytest.fixture
 def func_talent(callees, is_triggerable):
     class MyTalent(FunctionTalent):
@@ -109,7 +106,7 @@ def get_mock_publish_json(publish_json_called):
 
 
 class TestTalent:
-    # #check the discovery response of a talent with trigger rules which calls other talent functions
+    # check the discovery response of a talent with trigger rules which calls other talent functions
     @pytest.mark.parametrize('callees', [['math.sum']])
     @pytest.mark.parametrize('is_triggerable', [False])
     # pylint: disable=redefined-outer-name
@@ -200,10 +197,8 @@ class TestTalent:
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
     async def __test_func_exec(self, test_case, func_talent, callees, is_triggerable, function, mocker):
-        # callees and is_triggerable arguments are passed to func_talent fixture
         publish_json_called = asyncio.Event()
 
-        mocker.patch('src.iotea.core.talent.uuid4', wraps=mock_uuid)
         mocker.patch(
             'src.iotea.core.protocol_gateway.ProtocolGateway.publish_json',
             wraps=get_mock_publish_json(publish_json_called)
