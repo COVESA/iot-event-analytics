@@ -14,15 +14,15 @@ jobs:
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash
       # Build platform.
-      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env build --parallel
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env-test build --parallel
 
     - name: Build integration-tests suite's for all SDK's & runner
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash
       # All the SDK's integration tests are dockerized and build the
       # latest version of the platform each time. 
-      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml up --build -d
-
+      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+  
     - name: Start platform & ALL SDK test-suite's
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash 
