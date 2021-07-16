@@ -12,17 +12,15 @@
 const iotea = require('boschio.iotea');
 
 const {
-    TestSetTalent,
-    ProtocolGateway
+    TestSetTalent
 } = iotea;
 
 const {
     Logger,
-    MqttProtocolAdapter,
     JsonModel
 } = iotea.util;
 
-const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+const config = new JsonModel(require('./config/tests/javascript/config.json'));
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class TestSetSDK extends TestSetTalent {
@@ -203,9 +201,7 @@ class TestSetSDK extends TestSetTalent {
 }
 
 // TODO: make this local vs container setup configurable with ifdef
-pg_config = config.get('protocolGateway');
-const tss = new TestSetSDK(pg_config)
-
-//const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://localhost:1883") ]));
+const pgConfig = config.get('protocolGateway');
+const tss = new TestSetSDK(pgConfig)
 
 tss.start();

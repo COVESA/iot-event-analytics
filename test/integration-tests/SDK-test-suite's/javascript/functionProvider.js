@@ -12,21 +12,19 @@
 const iotea = require('boschio.iotea');
 
 const {
-    FunctionTalent,
-    ProtocolGateway
+    FunctionTalent
 } = iotea;
 
 const {
     Logger,
-    MqttProtocolAdapter,
     JsonModel
 } = iotea.util;
 
-const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+const config = new JsonModel(require('./config/tests/javascript/config.json'));
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class FunctionProvider extends FunctionTalent {
-    constructor(name, protocolGatewayConfig) {
+    constructor(protocolGatewayConfig) {
         super('function-provider-js', protocolGatewayConfig);
 
         // Register Functions
@@ -39,10 +37,7 @@ class FunctionProvider extends FunctionTalent {
     }
 }
 
-// TODO: make this local vs container setup configurable with ifdef
-pg_config = config.get('protocolGateway');
-const fp = new FunctionProvider(pg_config);
-
-//const runner = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://localhost:1883") ]));
+const pgConfig = config.get("protocolGateway")
+const fp = new FunctionProvider(pgConfig);
 
 fp.start();

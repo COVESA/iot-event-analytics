@@ -54,6 +54,7 @@ FROM mhart/alpine-node:slim-12.22 as runtime_stage
 # TODO can add in non-root setup here when needed 
 
 ARG INTEGRATION_TEST_PATH
+ARG CONFIG_PATH
 
 # Create & set app directory
 RUN mkdir -p /app
@@ -64,5 +65,6 @@ COPY --from=tidy-up_stage /build .
 
 # Copy in test script to run
 COPY ${INTEGRATION_TEST_PATH}/eventTester.js .
+COPY ${CONFIG_PATH} config
 
 CMD ["node", "eventTester.js"]

@@ -15,9 +15,6 @@ import logging
 # import os
 import json
 
-from iotea.core.protocol_gateway import ProtocolGateway
-from iotea.core.util.mqtt_client import MqttProtocolAdapter
-
 from iotea.core.talent_func import FunctionTalent
 from iotea.core.util.logger import Logger
 
@@ -42,7 +39,7 @@ def read_config(abs_path):
 
 async def main():
     # TODO: add dynamic path for directory
-    pg_config = read_config('../../config/tests/python/config.json')
+    pg_config = read_config('config/tests/python/config.json')
 
     function_provider = FunctionProvider(pg_config['protocolGateway'])
     await function_provider.start()

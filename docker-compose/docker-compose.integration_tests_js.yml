@@ -6,11 +6,12 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/javascript/test_set/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_set/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
 
@@ -19,11 +20,12 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/javascript/test_fnc/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_fnc/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
 
@@ -32,11 +34,12 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/javascript/test_events/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_events/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
 

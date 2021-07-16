@@ -4,7 +4,6 @@ const iotea = require('boschio.iotea');
 
 const {
     FunctionTalent,
-    ProtocolGateway,
     OrRules,
     Rule,
     OpConstraint
@@ -16,10 +15,11 @@ const {
 
 const {
     Logger,
-    MqttProtocolAdapter
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('./config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class EventTester extends FunctionTalent {
     constructor(name, protocolGatewayConfig) {
@@ -49,8 +49,11 @@ class EventTester extends FunctionTalent {
     }
 }
 
-const talent1 = new EventTester('event-tester-1-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
-const talent2 = new EventTester('event-tester-2-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration(false,"mqtt://mosquitto:1883") ]));
+const pgConfig = config.get("protocolGateway")
+
+
+const talent1 = new EventTester('event-tester-1-js', pgConfig);
+const talent2 = new EventTester('event-tester-2-js', pgConfig);
 
 talent1.start();
 talent2.start();

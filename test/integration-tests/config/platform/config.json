@@ -1,5 +1,5 @@
 {
-    "loglevel": "VERBOSE",
+    "loglevel": "INFO",
     "platformId": "integration-tests",
     "talentDiscoveryIntervalMs": 1000,
     "protocolGateway": {

@@ -33,10 +33,12 @@ RUN python -m pip install /src/sdk/python/src/ --force --no-cache-dir
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
 FROM build_stage as runtime_stage
 ARG INTEGRATION_TEST_PATH
+ARG CONFIG_PATH
 
 WORKDIR /build/app
 
 COPY ${INTEGRATION_TEST_PATH}/test_runner.py .
+COPY ${CONFIG_PATH} config
 
 ENTRYPOINT ["python", "./test_runner.py"]
 

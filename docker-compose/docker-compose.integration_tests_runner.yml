@@ -6,11 +6,12 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/javascript/test_runner/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_runner/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
         - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/runner/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
 
