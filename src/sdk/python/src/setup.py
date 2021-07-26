@@ -26,7 +26,8 @@ setup(
         "iotea.core.util"
     ],
     install_requires=[
-        "amqtt>=0.10.0a3"
+        "amqtt>=0.10.0a3",
+        "xxhash==2.0.2"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

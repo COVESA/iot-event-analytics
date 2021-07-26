@@ -19,12 +19,14 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "express": "^4.17.1",
+    "json-stringify-deterministic": "^1.0.1",
     "jsonata": "^1.8.3",
     "mqtt": "^4.2.1",
     "openapi-types": "7.0.1",
     "reconnecting-websocket": "4.4.0",
     "uuid": "^3.4.0",
     "ws": "7.4.6",
+    "xxhashjs": "^0.2.2",
     "yargs": "16.2.0"
   },
   "optionalDependencies": {

@@ -21,6 +21,7 @@ const Talent = require('./talent');
 const PlatformEvents = require('./platformEvents');
 const Logo = require('./logo');
 const ProtocolGateway = require('./protocolGateway');
+const jsonHash = require('./util/jsonHash')
 
 const ErrorMessageFormatter = require('./util/errorMessageFormatter');
 
@@ -197,6 +198,7 @@ module.exports = class ConfigManager {
                 const outputFeatures = Object.keys(outputs).map(feature => (outputs[feature].type || DEFAULT_TYPE) + '.' + feature);
 
                 const rules = RulesLoader.load(discovery.config.rules);
+
                 const typeFeatures = rules.getUniqueTypeFeatures();
 
                 const inputFeatures = [];
@@ -311,8 +313,9 @@ module.exports = class ConfigManager {
 
     async __publishTalentDiscoveryError(discovery, code) {
         try {
+            const rulesHash = jsonHash(discovery.config.rules)
             // Send event straight back to plugin
-            await this.pg.publishJson(Talent.getTalentTopic(discovery.id), {
+            await this.pg.publishJson(Talent.getTalentTopic(discovery.id, rulesHash), {
                 code,
                 msgType: MSG_TYPE_ERROR
             });

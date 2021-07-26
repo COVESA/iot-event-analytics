@@ -12,6 +12,7 @@ const uuid = require('uuid').v4;
 
 const PlatformEvents = require('./platformEvents');
 const Logger = require('./util/logger');
+const jsonHash = require('./util/jsonHash');
 const ProtocolGateway = require('./protocolGateway');
 
 const {
@@ -99,6 +100,8 @@ module.exports = class TalentConfigManager {
         // Load the given rules
         this.configurations[data.id].rules = RulesLoader.load(this.configurations[data.id].rules);
 
+        this.configurations[data.id].rulesHash = jsonHash(this.configurations[data.id].rules.save(true))
+        
         if (data.source === this.uid) {
             await this.__fireSetConfigFor(data.id, this.configurations[data.id]);
         }

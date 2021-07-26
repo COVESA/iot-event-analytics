@@ -12,6 +12,7 @@ const uuid = require('uuid');
 const Ajv = require('ajv');
 
 const equals = require('./util/equals');
+const clone = require('./util/clone');
 const Instance = require('./instance');
 
 const {
@@ -408,7 +409,7 @@ class Rule {
                 Rule.logger.verbose(`Evaluating feature ${JSON.stringify($feature)}...`);
 
                 if (this.constraint.evaluate($feature)) {
-                    Rule.logger.verbose(`Successfully evaluated feature ${JSON.stringify($feature)} agains constraint ${this.constraint}`);
+                    Rule.logger.verbose(`Successfully evaluated feature ${JSON.stringify($feature)} against constraint ${this.constraint}`);
                     featureMap.recordRuleMatchFor(instance.type, constraintFeature, instance.id);
                     totalMatchCount++;
                 }
@@ -448,14 +449,14 @@ class Rule {
         return totalMatchCount > 0;
     }
 
-    save() {
+    save(removeSchemaId = false) {
         let path = this.constraint.path;
 
         if (this.constraint.options.isAbsolutePath) {
             path = '/' + path;
         }
-
-        return {
+        
+        let result = {
             path,
             feature: this.constraint.feature,
             op: this.constraint.op,
@@ -465,7 +466,13 @@ class Rule {
             instanceIdFilter: this.constraint.instanceIdMatcher.source,
             limitFeatureSelection: this.constraint.limitFeatureSelection
         };
+        if (removeSchemaId && result.value !== null) {
+            result = clone(result);
+            delete result.value.$id;
+        }
+        return result;
     }
+
 
     getUniqueTypeFeatures(typeFeatures = []) {
         const typeFeature = this.constraint.getTypeFeature();
@@ -649,10 +656,10 @@ class Rules extends Rule {
         }
     }
 
-    save() {
+    save(removeSchemaId = false) {
         return {
             excludeOn: this.excludeOn,
-            rules: this.rules.map(rule => rule.save())
+            rules: this.rules.map(rule => rule.save(removeSchemaId))
         };
     }
 }
@@ -700,9 +707,9 @@ class AndRules extends Rules {
         return andFulfilled;
     }
 
-    save() {
+    save(removeSchemaId = false) {
         return Object.assign(
-            super.save(),
+            super.save(removeSchemaId),
             {
                 type: 'and'
             }
@@ -733,9 +740,9 @@ class OrRules extends Rules {
         return orFulfilled;
     }
 
-    save() {
+    save(removeSchemaId = false) {
         const result = Object.assign(
-            super.save(),
+            super.save(removeSchemaId),
             {
                 type: 'or'
             }
