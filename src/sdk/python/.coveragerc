@@ -3,3 +3,9 @@ directory = reports/coverage
 
 [xml]
 output = reports/coverage/cobertura-coverage.xml
+
+[run]
+omit =
+    */anomaly_detection.py
+    */talent_test.py
+

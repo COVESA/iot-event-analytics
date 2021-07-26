@@ -10,7 +10,7 @@
 
 import pytest
 from unittest import TestCase
-from src.iotea.core.rules import AndRules, OrRules, Rule, Constraint, ChangeConstraint, OpConstraint
+from src.iotea.core.rules import AndRules, OrRules, Rule, Constraint, OpConstraint
 from tests.helpers.constraints import create_op_constraint, create_change_constraint
 
 @pytest.fixture

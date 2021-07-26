@@ -1,7 +1,16 @@
+##############################################################################
+# Copyright (c) 2021 Bosch.IO GmbH
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# SPDX-License-Identifier: MPL-2.0
+##############################################################################
+
 import asyncio
 import contextlib
 import json
-import uuid
 from unittest.mock import ANY
 from unittest import TestCase
 
@@ -13,7 +22,9 @@ from src.iotea.core.util.mqtt_client import MqttClient
 
 # timeout for blocking operations on asyncio synchronization primitives
 TIMEOUT = 10
-MOCK_PROBE = '30303030'
+
+MOCK_PROBE = '00000000'
+
 
 @pytest.fixture
 def test_case():
@@ -46,7 +57,8 @@ async def mock_reconnect(cleansession=True):
 async def mock_disconnect(cleansession=True):
     pass
 
-#deliver_controls is a list [max_deliver_invocations, current_count_of_deliver_invocations]
+
+# deliver_controls is a list [max_deliver_invocations, current_count_of_deliver_invocations]
 def mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message):
     async def mock_deliver_message():
         if deliver_event.is_set():
@@ -56,7 +68,7 @@ def mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message):
         else:
             deliver_event.set()
         in_message = None
-        #the very first deliver_message invocation is only used for verification that __run_on_message is running,
+        # the very first deliver_message invocation is only used for verification that __run_on_message is running,
         # so in_message=None in this case
         if deliver_controls[1] < deliver_controls[0] and deliver_controls[0] > 0:
             message_topic = topic if topic_ns is None else f'{topic_ns}{topic}'
@@ -70,8 +82,7 @@ def mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message):
 
 
 def mock_uuid():
-    # resulting mock is 30303030
-    return uuid.UUID(bytes=b'0000000000000000', version=4)
+    return '00000000'
 
 
 # topic_ns, topic and message parameters are passed to mock_deliver
@@ -83,7 +94,7 @@ def mock_uuid():
 # pylint: disable=too-many-arguments
 async def test_check_mqtt5(test_case, mocker, topic_ns, topic, message):
     deliver_event = asyncio.Event()
-    #2 deliver_message calls are expected: one to get __run_on_message and one for the probe message
+    # 2 deliver_message calls are expected: one to get __run_on_message and one for the probe message
     deliver_controls = [2, 0]
 
     # pylint: disable=unused-argument
@@ -91,7 +102,8 @@ async def test_check_mqtt5(test_case, mocker, topic_ns, topic, message):
         # give time to mqtt_client.__run_on_message to startup
         # deliver_message is called by mqtt_client.__run_on_message, this is our indication that __run_on_message loop is running
         await asyncio.wait_for(deliver_event.wait(), TIMEOUT)
-        test_case.assertTrue(deliver_event.is_set(), 'deliver_message method not invoked! __run_on_message loop is not running!')
+        test_case.assertTrue(deliver_event.is_set(),
+                             'deliver_message method not invoked! __run_on_message loop is not running!')
         probe_tag = 'probe/'
         probe_tag_index = topic.find(probe_tag)
         if probe_tag_index > -1:
@@ -101,11 +113,11 @@ async def test_check_mqtt5(test_case, mocker, topic_ns, topic, message):
 
     # uuid4 is imported in mqtt_client and can be found only as a function of mqtt_client.uuid4 and not as uuid.uuid4
     mocker.patch('src.iotea.core.util.mqtt_client.uuid4', wraps=mock_uuid)
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish_probe)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish_probe)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     test_topic = 'test_topic'
@@ -139,7 +151,8 @@ async def test_pub_sub(test_case, mocker, topic_ns, topic, message, to_json):
         # give time to mqtt_client.__run_on_message to start
         # deliver_message is called by mqtt_client.__run_on_message and that will be indication that __run_on_message is running
         await asyncio.wait_for(deliver_event.wait(), TIMEOUT)
-        test_case.assertTrue(deliver_event.is_set(), 'deliver_message method not invoked! __run_on_message loop is not running!')
+        test_case.assertTrue(deliver_event.is_set(),
+                             'deliver_message method not invoked! __run_on_message loop is not running!')
         await mqtt_client.client.deliver_message()
 
     def sync_callback(c_message, c_topic):
@@ -154,11 +167,11 @@ async def test_pub_sub(test_case, mocker, topic_ns, topic, message, to_json):
     async def async_callback(c_message, c_topic):
         sync_callback(c_message, c_topic)
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish_with_deliver)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish_with_deliver)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     callbacks = [sync_callback, async_callback]
@@ -202,14 +215,15 @@ async def test_pub_sub(test_case, mocker, topic_ns, topic, message, to_json):
         mqtt_client.client.unsubscribe.assert_called_with([expected_topic])
         deliver_controls[1] = 0
 
+
 @pytest.mark.parametrize('topic_ns', ['namespace/'])
 @pytest.mark.parametrize('topic', ['test_topic'])
 @pytest.mark.parametrize('message', ['{"test": "message"}'])
 @pytest.mark.asyncio
 # pylint: disable=redefined-outer-name
 async def test_pub_no_stash(test_case, mocker, topic_ns, topic, message):
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
     mqtt_client.client.disconnected = True
@@ -227,10 +241,10 @@ async def test_pub_no_stash(test_case, mocker, topic_ns, topic, message):
 # check if the client functions after disconnect and reconnect
 # pylint: disable=redefined-outer-name
 async def test_reconnect(test_case, mocker, topic_ns, topic, message):
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
-    mocker.patch('hbmqtt.client.MQTTClient.reconnect', wraps=mock_reconnect)
-    mocker.patch('hbmqtt.client.MQTTClient.disconnect', wraps=mock_disconnect)
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.reconnect', wraps=mock_reconnect)
+    mocker.patch('amqtt.client.MQTTClient.disconnect', wraps=mock_disconnect)
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
 
@@ -262,7 +276,8 @@ def test_wrong_namespace(test_case):
     topic_ns = 'no_trailing_slash'
     with pytest.raises(Exception) as exc_info:
         MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
-    test_case.assertEqual(f'Given topic namespace {topic_ns} is invalid. It has to have a trailing slash', str(exc_info.value))
+    test_case.assertEqual(f'Given topic namespace {topic_ns} is invalid. It has to have a trailing slash',
+                          str(exc_info.value))
 
 
 @pytest.mark.parametrize('topic_ns', ['namespace/'])
@@ -299,8 +314,8 @@ async def test_multiple_connects(test_case, mocker, topic_ns, topic, message):
     blocking_event = asyncio.Event()
     connected_event = asyncio.Event()
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect_block(connected_event, blocking_event))
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish(publish_semaphore))
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect_block(connected_event, blocking_event))
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish(publish_semaphore))
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
     # create first publish task, it will trigger the connect method
@@ -336,7 +351,7 @@ async def test_delivered_bad_message(test_case, mocker, topic_ns, topic, message
     # pylint: disable=global-statement
     callback_invoked_event = asyncio.Event()
     deliver_event = asyncio.Event()
-    #deliver_controls: max_count, current_count
+    # deliver_controls: max_count, current_count
     # 2 deliver_message calls are expected: one to get __run_on_message and one for the probe message
     deliver_controls = [2, 0]
 
@@ -344,7 +359,8 @@ async def test_delivered_bad_message(test_case, mocker, topic_ns, topic, message
         # give time to mqtt_client.__run_on_message to start
         # deliver_message is the indication that __run_on_message task is running
         await asyncio.wait_for(deliver_event.wait(), TIMEOUT)
-        test_case.assertTrue(deliver_event.is_set(), 'deliver_message method not invoked! __run_on_message loop is not running!')
+        test_case.assertTrue(deliver_event.is_set(),
+                             'deliver_message method not invoked! __run_on_message loop is not running!')
         await mqtt_client.client.deliver_message()
 
     def sync_callback(c_message, c_topic):
@@ -353,11 +369,11 @@ async def test_delivered_bad_message(test_case, mocker, topic_ns, topic, message
         test_case.assertEqual(json.loads(message), c_message)
         test_case.assertEqual(f'{topic_ns}{topic}', c_topic)
 
-    mocker.patch('hbmqtt.client.MQTTClient.connect', wraps=mock_connect)
-    mocker.patch('hbmqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.publish', wraps=mock_publish)
-    mocker.patch('hbmqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
-    mocker.patch('hbmqtt.client.MQTTClient.deliver_message',
+    mocker.patch('amqtt.client.MQTTClient.connect', wraps=mock_connect)
+    mocker.patch('amqtt.client.MQTTClient.subscribe', wraps=mock_subscribe)
+    mocker.patch('amqtt.client.MQTTClient.publish', wraps=mock_publish)
+    mocker.patch('amqtt.client.MQTTClient.unsubscribe', wraps=mock_unsubscribe)
+    mocker.patch('amqtt.client.MQTTClient.deliver_message',
                  wraps=mock_deliver(deliver_event, deliver_controls, topic_ns, topic, message))
 
     mqtt_client = MqttClient('mqtt://localhost:1883', topic_ns, check_mqtt5_compatibility=False)
@@ -377,7 +393,8 @@ async def test_delivered_bad_message(test_case, mocker, topic_ns, topic, message
     with contextlib.suppress(asyncio.TimeoutError):
         await asyncio.wait_for(callback_invoked_event.wait(), 1)
 
-    test_case.assertFalse(callback_invoked_event.is_set(), "Subscribe callback was invoked while the message can not be validated!")
+    test_case.assertFalse(callback_invoked_event.is_set(),
+                          "Subscribe callback was invoked while the message can not be validated!")
 
     await mqtt_client.unsubscribe(topic)
     test_case.assertEqual(1, mqtt_client.client.unsubscribe.call_count)
