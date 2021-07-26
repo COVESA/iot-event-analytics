@@ -132,7 +132,7 @@ class TestTalent:
              'unit': 'ONE'}, func_talent.output_features[1].metadata)
 
         test_case.assertEqual(1, len(func_talent.function_input_features))
-        test_case.assertEqual(f"test-func-talent.math.plus-in", func_talent.function_input_features[0])
+        test_case.assertEqual('test-func-talent.math.plus-in', func_talent.function_input_features[0])
 
     # test non-triggerable FunctionalTalent which provides and consumes functions
     @pytest.mark.parametrize('callees', [['math.sum']])
@@ -167,7 +167,7 @@ class TestTalent:
             # that's why they are removed from the response first and compared separately
             expected_scc = expected_rsp['config'].pop('scc')
             actual_scc = actual_disc_rsp['config'].pop('scc')
-            test_case.assertEqual(Counter(expected_scc), Counter(actual_scc))
+            test_case.assertEqual(Counter(expected_scc), Counter(actual_scc))# pylint: disable=too-many-function-args
         test_case.assertDictEqual(expected_rsp, actual_disc_rsp)
 
     # test triggerable FunctionalTalent which provides and consumes functions

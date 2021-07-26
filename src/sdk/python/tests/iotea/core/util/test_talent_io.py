@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-import time
 from os import path
 from unittest import TestCase
 from unittest.mock import Mock
@@ -17,6 +16,7 @@ import pytest
 
 from src.iotea.core.constants import DEFAULT_TYPE, DEFAULT_INSTANCE
 from src.iotea.core.util.talent_io import TalentInput, FeatureMetadata, TalentOutput
+from src.iotea.core.util.time_ms import time_ms
 from tests.helpers import json_loader
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def test_get_raw_value(test_case, event):
         test_case.assertTrue('value' in raw_value and 'ts' in raw_value,
                              'Raw value expected to contain "value" and "ts" properties!')
 
-    test_case.assertEqual(0.6666666666666666, TalentInput.get_encoded_value(event),
+    test_case.assertAlmostEqual(0.6666666666666666, TalentInput.get_encoded_value(event),
                           'Does not match expected encoded value!')
 
     test_case.assertEqual(['4711'], TalentInput.get_instances_for(event), 'Does not match expected event instances!')
@@ -66,7 +66,7 @@ def test_feature_metadata(test_case, event):
 def test_talent_output_create(test_case, event):
     talent_mock = Mock()
     talent_mock.id = 'test'
-    now = time.time() * 1000
+    now = time_ms() * 1000
     output = TalentOutput.create(talent_mock, event, 'myfeature', 3, event['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE,
                                  now)
 
@@ -81,7 +81,7 @@ def test_talent_output_create(test_case, event):
 
 
 def test_talent_output_create_for(test_case, event):
-    now = time.time() * 1000
+    now = time_ms() * 1000
     output = TalentOutput.create_for(event['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE, 'anotherfeature', 22, now)
     test_case.assertEqual({'subject': 'someuserid',
                            'type': DEFAULT_TYPE,
@@ -92,14 +92,14 @@ def test_talent_output_create_for(test_case, event):
 
 
 def test_talent_output_create_multiple_outputs(test_case, event):
-    now = time.time() * 1000
+    now = time_ms() * 1000
     to = TalentOutput()
     talent_mock = Mock()
     talent_mock.id = 'test'
 
     to.add(talent_mock, event, 'myfeature2', 1337, event['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE, now)
-    to.add(talent_mock, event, 'myfeature3', 22, event['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE, now);
-    to.add_for('someuserid2', 'mytype', 'myinstance', 'myfeature4', 33, now);
+    to.add(talent_mock, event, 'myfeature3', 22, event['subject'], DEFAULT_TYPE, DEFAULT_INSTANCE, now)
+    to.add_for('someuserid2', 'mytype', 'myinstance', 'myfeature4', 33, now)
     test_case.assertEqual([
         {
             'subject': 'someuserid',
