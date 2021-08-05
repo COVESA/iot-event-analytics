@@ -10,9 +10,6 @@
 import asyncio
 import logging
 
-# Needed for protocol Gateway configuration file
-# TODO: add dynamic path for directory
-# import os
 import json
 
 from iotea.core.talent_test import TestRunnerTalent
@@ -23,23 +20,36 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 class TestRunner(TestRunnerTalent):
-    def __init__(self, protocol_gateway_config):
-        #super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py'], ['testSet-sdk-js'], ['testSet-sdk-cpp'], protocol_gateway_config)
-        super(TestRunner, self).__init__('testRunner-py', ['testSet-sdk-py'], ['testSet-sdk-js'],  protocol_gateway_config)
+    def __init__(self, config):
+        super(TestRunner, self).__init__('testRunner-py', config)
+
 
 def read_config(abs_path):
     with open(abs_path, mode='r', encoding='utf-8') as config_file:
         return json.loads(config_file.read())
 
-async def main():
-    # TODO: add dynamic path for directory
-    #pg_config = read_config(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json'))
-    
-    # TODO: make this local vs container setup configurable with ifdef
-    pg_config = read_config('config/tests/python/config.json')
 
-    test_runner = TestRunner(pg_config['protocolGateway'])
+async def main():
+    config = read_config('../../config/tests/python/runner/config.json')
+
+    log_level = logging.INFO
+    try:
+        log_level = Logger.resolve_log_level(config.get('loglevel', log_level))
+    finally:
+        logging.getLogger().setLevel(log_level)
+
+    test_runner = TestRunner(config)
     await test_runner.start()
+
+    for task in asyncio.all_tasks():
+        task.cancel()
+        try:
+            await task
+        except asyncio.exceptions.CancelledError:
+            #do nothing - clean up at exit
+            pass
+    asyncio.get_event_loop().stop()
+
 
 if __name__ == '__main__':
     LOOP = asyncio.get_event_loop()

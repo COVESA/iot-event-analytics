@@ -6,15 +6,18 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/javascript-test-suite/test_runner/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/python-test-suite/test_runner/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/runner/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/runner/python
         - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
-
+    volumes:
+      - type: bind
+        source: "${OUTPUT_TEST_DIR}"
+        target: "/app/test/python/report"
 networks:
   iotea-platform-network:
     name: iotea-platform-network

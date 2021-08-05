@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster as base_stage  
+FROM python:3.8-slim-buster as base_stage
 
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
@@ -6,39 +6,43 @@ ARG HTTPS_PROXY
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 
-# Ensures real-time logs and debugging
-
-#RUN python -m venv /opt/venv
-#ENV PATH="/opt/venv/bin:$PATH"
-
-
 # > > > > > > > > > > > > > > > > > > > > > STAGE 1: 
 FROM base_stage as build_stage
+
 # Copy in python SDK source
 COPY /src/sdk/python ./src/sdk/python
+# Copy requirements file
+COPY /docker/integration-tests/python-test-suite/requirements.txt .
+
 
 # Create build directory
 RUN mkdir /build
 WORKDIR /build
 
-RUN python -m pip install --upgrade pip --no-cache-dir
+# Install python SDK dependencies
+RUN python -m pip install -r ../requirements.txt --user
 
-# this is needed for building iotea python SDK 
-RUN python -m pip install wheel --no-cache-dir
-
-# Build the latest iotea python SDK - see setup.py for details
-RUN python -m pip install /src/sdk/python/src/ --force --no-cache-dir
+# Install the latest iotea python SDK from source - see setup.py for details
+RUN python -m pip install /src/sdk/python/src/ --user
 
 
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
 FROM build_stage as runtime_stage
+
 ARG INTEGRATION_TEST_PATH
 ARG CONFIG_PATH
 
-WORKDIR /build/app
+# Copy the installed requirements and iotea python SDK from build stage
+COPY --from=build_stage /root/.local/ /root/.local/
+ENV PATH=/root/.local:$PATH
 
-COPY ${INTEGRATION_TEST_PATH}/test_set_sdk.py .
+RUN mkdir /app
+WORKDIR /app
+
+RUN mkdir -p test/python
+COPY ${INTEGRATION_TEST_PATH}/test_set_sdk.py test/python
 COPY ${CONFIG_PATH} config
 
-ENTRYPOINT ["python", "./test_set_sdk.py"]
+WORKDIR test/python
+ENTRYPOINT ["python", "test_set_sdk.py"]
 

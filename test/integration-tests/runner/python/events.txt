@@ -1,8 +1,0 @@
-{ 
-"subject": "start-tests",
-"type": "default",
-"instance": "1234",
-"feature": "testRunner-py.run-tests",
-"value": true,
-"whenMs": 1626566400500 
-}

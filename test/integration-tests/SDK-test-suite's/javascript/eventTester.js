@@ -18,7 +18,7 @@ const {
     JsonModel
 } = iotea.util;
 
-const config = new JsonModel(require('./config/tests/javascript/config.json'));
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class EventTester extends FunctionTalent {

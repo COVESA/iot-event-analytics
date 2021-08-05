@@ -20,7 +20,7 @@ const {
     JsonModel
 } = iotea.util;
 
-const config = new JsonModel(require('./config/tests/javascript/config.json'));
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class TestSetSDK extends TestSetTalent {
@@ -194,7 +194,7 @@ class TestSetSDK extends TestSetTalent {
     }
 
     async prepare(ev, evctx) {
-        // Add additional preperation beside talent which have been already defined as dependency
+        // Add additional preparation beside talent which have been already defined as dependency
         // (see this.talentDependencies)
         return (true && await super.prepare(ev, evctx));
     }

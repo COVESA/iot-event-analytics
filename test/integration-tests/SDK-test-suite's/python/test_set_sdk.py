@@ -10,9 +10,6 @@
 import asyncio
 import logging
 
-# Needed for protocol Gateway configuration file
-# TODO: add dynamic path for directory
-# import os
 import json
 
 from iotea.core.talent_test import TestSetTalent
@@ -122,8 +119,7 @@ def read_config(abs_path):
         return json.loads(config_file.read())
 
 async def main():
-    # TODO: add dynamic path for directory
-    pg_config = read_config('config/tests/python/config.json')
+    pg_config = read_config('../../config/tests/python/config.json')
 
     test_set = TestSetSDK(pg_config['protocolGateway'])
     await test_set.start()

@@ -39,7 +39,7 @@ def read_config(abs_path):
 
 async def main():
     # TODO: add dynamic path for directory
-    pg_config = read_config('config/tests/python/config.json')
+    pg_config = read_config('../../config/tests/python/config.json')
 
     function_provider = FunctionProvider(pg_config['protocolGateway'])
     await function_provider.start()

@@ -1,5 +1,6 @@
 {
     "loglevel": "INFO",
+    "testSets": ["testSet-sdk-py", "testSet-sdk-js"],
     "platformId": "integration-tests",
     "protocolGateway": {
         "adapters": [
@@ -15,5 +16,7 @@
                 }
             }
         ]
-    }
+    },
+    "outputFile": "./report/junit-report.xml",
+    "discoverDependenciesTimeout": 60
 }

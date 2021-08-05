@@ -1,12 +1,13 @@
 {
     "loglevel": "INFO",
+    "testSets": ["testSet-sdk-py", "testSet-sdk-js"],
     "platformId": "integration-tests",
     "protocolGateway": {
         "adapters": [
             {
                 "platform": true,
                 "module": {
-                    "name": ".util.mqtt_client",
+                    "name": "./util/mqttClient",
                     "class": "MqttProtocolAdapter"
                 },
                 "config": {
@@ -15,5 +16,6 @@
                 }
             }
         ]
-    }
+    },
+    "discoverDependenciesTimeout": 60
 }

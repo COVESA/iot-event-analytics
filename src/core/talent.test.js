@@ -122,8 +122,8 @@ class TestSetInfo {
 }
 
 class TestRunnerTalent extends Talent {
-    constructor(name, testSetList, protocolAdapter) {
-        super(name, protocolAdapter);
+    constructor(name, config) {
+        super(name, config.get('protocolGateway'));
 
         // Define run-tests feature for this test runner automatically at runtime
         this.addOutput('run-tests', {
@@ -137,7 +137,9 @@ class TestRunnerTalent extends Talent {
         this.calleeArray = new Array();
         this.testSetArray = new Array();
         this.talentDependencies = new TalentDependencies();
-
+        
+        const testSetList = config.get('testSets')
+        
         testSetList.forEach(testSet => {
             let testSetTalentId = testSet;
             this.testSetArray.push(testSetTalentId);
@@ -155,9 +157,11 @@ class TestRunnerTalent extends Talent {
         this.talentDependencies.addTalent(name);
 
         this.skipCycleCheck(true);
+        
+        this.timeout = config.get('discoverDependenciesTimeout', 60)*1000
     }
 
-    start(timeoutMs=60000) {
+    start(timeoutMs=this.timeout) {
         return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
             .then(() => super.start())
             .then(() => this.talentDependencies.waitForDependencies(timeoutMs))

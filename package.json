@@ -54,6 +54,8 @@
   "resolutions": {
     "jsdoc/underscore": "1.12.1",
     "mqtt/ws": "7.4.6",
-    "mqtt/help-me/glob-stream/glob-parent": "5.1.2"
+    "mqtt/help-me/glob-stream/glob-parent": "5.1.2",
+    "xlsx-to-json-lc/xlsx": "0.17.0"
+
   }
 }
