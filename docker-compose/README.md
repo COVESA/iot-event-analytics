@@ -90,6 +90,21 @@ Mosquitto MQTT broker container can be run and built with this command: \
 
 ```docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file <YOUR CONFIG PATH>/.env up --build```
 
+## Build & Run Integration Tests
+
+Build and run sdk test suite containers with the command below. Depending on which test suites are needed (javascript, python, cpp), only the corresponding yml files can be selected: \
+```docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up --build``` 
+
+Build and run the test runner to start integration tests execution: \
+```docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up --build```
+
+### Integration Tests .env-test and .env-test-proxy
+
+The integration tests environments file .env-test differs from .env by:
+- PLATFORM_CONFIG_DIR=../test/integration-tests/config/platform - contains modified configuration of the platform  
+- INTEGRATION_TEST_DIR=/test/integration-tests - contains the sources of the test suites and the runner
+- OUTPUT_TEST_DIR=./ - output directory for junit xml report
+
 ## Debug
 
 - Install the Docker Extension for VSCode
