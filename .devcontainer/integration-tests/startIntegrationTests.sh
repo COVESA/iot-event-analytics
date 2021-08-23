@@ -36,3 +36,6 @@ docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.inte
 
 #Start integration-test runner
 docker-compose -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE up
+
+#Stop the containers after the runner finishes
+docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml down

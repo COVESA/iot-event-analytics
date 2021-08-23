@@ -65,8 +65,8 @@ COPY --from=tidy-up_stage /build .
 
 RUN mkdir -p test/javascript
 # Copy in test script to run
-COPY ${INTEGRATION_TEST_PATH}/testSetSDK.js test/javascript
+COPY ${INTEGRATION_TEST_PATH}/testSuiteSDK.js test/javascript
 COPY ${CONFIG_PATH} config
 
 WORKDIR test/javascript
-CMD ["node", "testSetSDK.js"]
+CMD ["node", "testSuiteSDK.js"]

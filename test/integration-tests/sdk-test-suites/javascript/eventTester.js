@@ -43,7 +43,7 @@ class EventTester extends FunctionTalent {
     getRules() {
         return new OrRules([
             new Rule(
-                new OpConstraint('testSet-sdk-js.receive_event_1', OpConstraint.OPS.ISSET, 0, 'default', VALUE_TYPE_RAW)
+                new OpConstraint('testSuite-sdk-js.receive_event_1', OpConstraint.OPS.ISSET, 0, 'default', VALUE_TYPE_RAW)
             )
         ]);
     }

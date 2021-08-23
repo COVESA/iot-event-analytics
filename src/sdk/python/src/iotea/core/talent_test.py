@@ -24,7 +24,7 @@ from .constants import (
     PLATFORM_EVENT_TYPE_SET_CONFIG,
     PLATFORM_EVENT_TYPE_UNSET_CONFIG,
     GET_TEST_INFO_METHOD_NAME,
-    PREPARE_TEST_SET_METHOD_NAME,
+    PREPARE_TEST_SUITE_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
     ENCODING_TYPE_BOOLEAN,
     TEST_ERROR,
@@ -95,7 +95,7 @@ class TalentDependencies:
         return [k for k, v in self.dependencies.items() if not v]
 
 
-class TestSetInfo:
+class TestSuiteInfo:
     def __init__(self, name):
         self.name = name
         self.test_map = {}
@@ -119,10 +119,10 @@ TIMEOUT = 60
 class TestRunnerTalent(Talent):
     def __init__(self, name, config):
 
-        test_sets = config['testSets']
-        methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SET_METHOD_NAME, RUN_TEST_METHOD_NAME]
+        test_suites = config['testSuites']
+        methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SUITE_METHOD_NAME, RUN_TEST_METHOD_NAME]
 
-        self.test_callees = [f'{test_set}.{m}' for m in methods for test_set in test_sets]
+        self.test_callees = [f'{test_suite}.{m}' for m in methods for test_suite in test_suites]
 
         super().__init__(name, config['protocolGateway'])
 
@@ -138,9 +138,9 @@ class TestRunnerTalent(Talent):
             }
         })
         self.platform_event = Event()
-        self.test_sets = test_sets[:]
+        self.test_suites = test_suites[:]
 
-        dep_names = test_sets[:]
+        dep_names = test_suites[:]
         dep_names.append(name)
 
         self.dependencies = TalentDependencies(dep_names, platform_event=self.platform_event)
@@ -168,46 +168,46 @@ class TestRunnerTalent(Talent):
         ])
 
     # pylint: disable=invalid-name
-    async def run_test_set(self, ev, test_set_name):
+    async def run_test_suite(self, ev, test_suite_name):
         result = True
-        test_set = None
+        test_suite = None
 
         try:
-            self.logger.info('Get Tests for %s', test_set_name)
-            test_set = await self.call(test_set_name, GET_TEST_INFO_METHOD_NAME,
+            self.logger.info('Get Tests for %s', test_suite_name)
+            test_suite = await self.call(test_suite_name, GET_TEST_INFO_METHOD_NAME,
                                        [], ev['subject'], ev['returnTopic'], 2000)
 
         # Pylint complains here but since call() raises a plain Exception we can't
         # be narrower in our except.
         # pylint: disable=broad-except
         except Exception as e:
-            self.logger.error('Could not get TestSetInfo from %s (%s)', test_set_name, e)
-            return False, TestSuite(test_set_name, [], None, f'Could not get TestSetInfo from {test_set_name} ({e})')
+            self.logger.error('Could not get TestSuiteInfo from %s (%s)', test_suite_name, e)
+            return False, TestSuite(test_suite_name, [], None, f'Could not get TestSuiteInfo from {test_suite_name} ({e})')
 
         try:
-            self.logger.info('Prepare %s', test_set_name)
-            prepared = await self.call(test_set_name, PREPARE_TEST_SET_METHOD_NAME,
+            self.logger.info('Prepare %s', test_suite_name)
+            prepared = await self.call(test_suite_name, PREPARE_TEST_SUITE_METHOD_NAME,
                                        [], ev['subject'], ev['returnTopic'], 2000)
 
             if not prepared:
                 self.logger.error('Could not prepare, %s.%s returned False',
-                                  test_set_name, PREPARE_TEST_SET_METHOD_NAME)
-                return False, TestSuite(test_set_name, [], None,
-                                        f'Could not prepare, {test_set_name}.{PREPARE_TEST_SET_METHOD_NAME} returned False')
+                                  test_suite_name, PREPARE_TEST_SUITE_METHOD_NAME)
+                return False, TestSuite(test_suite_name, [], None,
+                                        f'Could not prepare, {test_suite_name}.{PREPARE_TEST_SUITE_METHOD_NAME} returned False')
 
         # Pylint complains here but since call() raises a plain Exception we can't
         # be narrower in our except.
         # pylint: disable=broad-except
         except Exception as e:
-            self.logger.error('Could not prepare %s (%s)', test_set_name, e)
-            return False, TestSuite(test_set_name, [], None, f'Could not prepare, {test_set_name} ({e})')
+            self.logger.error('Could not prepare %s (%s)', test_suite_name, e)
+            return False, TestSuite(test_suite_name, [], None, f'Could not prepare, {test_suite_name} ({e})')
 
-        self.logger.info('Running %s', test_set_name)
+        self.logger.info('Running %s', test_suite_name)
 
-        num_tests = len(test_set['tests'])
+        num_tests = len(test_suite['tests'])
         test_cases = []
         for idx in range(num_tests):
-            test = test_set['tests'][idx]
+            test = test_suite['tests'][idx]
             expected = test['expectedValue']
 
             test_name = test['name']
@@ -215,17 +215,17 @@ class TestRunnerTalent(Talent):
             self.logger.debug(' - Expected: %s', expected)
 
             try:
-                test_result = await self.call(test_set_name, 'runTest', [test_name],
+                test_result = await self.call(test_suite_name, 'runTest', [test_name],
                                               ev['subject'], ev['returnTopic'], test['timeout'])
 
                 if test_result['actual'] == TEST_ERROR:
                     self.logger.info(' - Result: NOT OK ( % s.%s) returned TEST_ERROR',
-                                     test_set_name, RUN_TEST_METHOD_NAME)
+                                     test_suite_name, RUN_TEST_METHOD_NAME)
                     test_case = TestCase(test['name'], elapsed_sec=duration / 1000)
                     test_case.add_error_info(
-                        f'Result: NOT OK ({test_set_name}.{RUN_TEST_METHOD_NAME}) returned TEST_ERROR')
+                        f'Result: NOT OK ({test_suite_name}.{RUN_TEST_METHOD_NAME}) returned TEST_ERROR')
                     test_cases.append(test_case)
-                    return (False, TestSuite(test_set_name, test_cases))
+                    return (False, TestSuite(test_suite_name, test_cases))
 
                 actual = test_result['actual']
                 duration = test_result['duration']
@@ -253,7 +253,7 @@ class TestRunnerTalent(Talent):
 
                 result = False
 
-        return result, TestSuite(test_set_name, test_cases)
+        return result, TestSuite(test_suite_name, test_cases)
 
     def create_test_output(self, test_suites):
         self.logger.info(to_xml_report_string(test_suites))
@@ -262,16 +262,16 @@ class TestRunnerTalent(Talent):
             to_xml_report_file(f, test_suites)
             self.logger.info(f'Junit xml output stored to {f.name}')
 
-    async def run_test_sets(self, ev):
+    async def run_test_suites(self, ev):
         result = True
 
         test_suites = []
-        for test_set in self.test_sets:
-            test_set_result = await self.run_test_set(ev, test_set)
-            self.logger.info('Result of %s is %s', test_set, test_set_result[0])
-            test_suites.append(test_set_result[1])
+        for test_suite in self.test_suites:
+            test_suite_result = await self.run_test_suite(ev, test_suite)
+            self.logger.info('Result of %s is %s', test_suite, test_suite_result[0])
+            test_suites.append(test_suite_result[1])
 
-            if not test_set_result:
+            if not test_suite_result:
                 result = False
 
         self.create_test_output(test_suites)
@@ -286,11 +286,11 @@ class TestRunnerTalent(Talent):
 
         if unmet_dependencies:
             self.logger.error("Can't start tests because of not connected "
-                              'TestSetTalent(s): %s', unmet_dependencies)
+                              'TestSuiteTalent(s): %s', unmet_dependencies)
             test_suites = []
             for unmet_dep in unmet_dependencies:
                 test_suites.append(TestSuite(unmet_dep, [], stderr=f'Can not start tests because of not connected'
-                                                                   f' TestSetTalent(s): {unmet_dep}'))
+                                                                   f' TestSuiteTalent(s): {unmet_dep}'))
             self.create_test_output(test_suites)
             result = False
         else:
@@ -300,7 +300,7 @@ class TestRunnerTalent(Talent):
                 'subject': "integration_test"
             }
 
-            result = await self.run_test_sets(initial_event)
+            result = await self.run_test_suites(initial_event)
             self.logger.info('Overall test result is %s', result)
 
         if result:
@@ -310,17 +310,17 @@ class TestRunnerTalent(Talent):
             sys.exit(1)
 
 
-class TestSetTalent(FunctionTalent):
-    def __init__(self, testset_name, protocol_gateway_config):
-        super().__init__(testset_name, protocol_gateway_config)
+class TestSuiteTalent(FunctionTalent):
+    def __init__(self, testsuite_name, protocol_gateway_config):
+        super().__init__(testsuite_name, protocol_gateway_config)
 
         self.register_test_api_functions()
-        self.test_set_info = TestSetInfo(testset_name)
+        self.test_suite_info = TestSuiteInfo(testsuite_name)
         self.talent_dependencies = TalentDependencies()
 
     def register_test(self, test_name, expected_value, test_function, timeout=2000):
         test = Test(test_name, expected_value, test_function, timeout)
-        self.test_set_info.test_map[test_name] = test
+        self.test_suite_info.test_map[test_name] = test
 
     async def start(self):
         await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC,
@@ -328,15 +328,15 @@ class TestSetTalent(FunctionTalent):
         await super().start()
 
     def register_test_api_functions(self):
-        self.register_function('getTestSetInfo', self.get_test_set_info)
+        self.register_function('getTestSuiteInfo', self.get_test_suite_info)
         self.register_function('prepare', self.prepare)
         self.register_function('runTest', self.run_test)
 
     # pylint: disable=unused-argument,invalid-name
-    def get_test_set_info(self, ev, evtctx, timeout_at_ms):
+    def get_test_suite_info(self, ev, evtctx, timeout_at_ms):
         return {
-            'name': self.test_set_info.name,
-            'tests': self.test_set_info.get_test_list()
+            'name': self.test_suite_info.name,
+            'tests': self.test_suite_info.get_test_list()
         }
 
     async def run_test(self, test_name, ev, evtctx, timeout_at_ms):
@@ -344,7 +344,7 @@ class TestSetTalent(FunctionTalent):
 
         try:
             start = time.time()
-            actual = await self.test_set_info.test_map[test_name].func(ev, evtctx)
+            actual = await self.test_suite_info.test_map[test_name].func(ev, evtctx)
             duration = round((time.time() - start) * 1000)
         except KeyError:
             self.logger.error('Test %s has not been registered', test_name)
@@ -358,8 +358,8 @@ class TestSetTalent(FunctionTalent):
     async def prepare(self, ev, evtctx, timeout_at_ms):
         unmet_dependencies = self.talent_dependencies.check_all()
         if unmet_dependencies:
-            self.logger.error('Prepare test set failed because not connected '
-                              'TestSetTalent(s): %s', unmet_dependencies)
+            self.logger.error('Prepare test suite failed because not connected '
+                              'TestSuiteTalent(s): %s', unmet_dependencies)
             return False
 
         self.logger.debug('All talent dependencies resolved')

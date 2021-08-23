@@ -1,6 +1,6 @@
 # Integration Test Naming Conventions
 
-__Important: Due to a breaking change (0.2.x to 0.3.0), the TestRunner can only launch TestSets based on JavaScript. There will be fixes for Python and C++ available soon.__
+__Important: Due to a breaking change (0.2.x to 0.3.0), the TestRunner can only launch TestSuites based on JavaScript. There will be fixes for Python and C++ available soon.__
 
 ## Talents
 
@@ -12,10 +12,10 @@ e.g. `myTalentID`
 Shall be named like `testRunner[-\<SDK\>]`
 e.g. `testRunner-py`
 
-### TestSetTalent
+### TestSuiteTalent
 
-Shall be named like `testSet-\<scope\>[-\<SDK\>]`
-e.g. `testSet-sdk-js`
+Shall be named like `testSuite-\<scope\>[-\<SDK\>]`
+e.g. `testSuite-sdk-js`
 
 ## Functions
 

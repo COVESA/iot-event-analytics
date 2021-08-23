@@ -1,12 +1,12 @@
 version: '3.6'
 services:
   
-  test_set_py:
+  test_suite_py:
     build:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: docker/integration-tests/python-test-suite/test_set/Dockerfile.${ARCH}
+      dockerfile: docker/integration-tests/python-test-suite/test_suite/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}

@@ -40,9 +40,9 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN mkdir -p test/python
-COPY ${INTEGRATION_TEST_PATH}/test_set_sdk.py test/python
+COPY ${INTEGRATION_TEST_PATH}/test_suite_sdk.py test/python
 COPY ${CONFIG_PATH} config
 
 WORKDIR test/python
-ENTRYPOINT ["python", "test_set_sdk.py"]
+ENTRYPOINT ["python", "test_suite_sdk.py"]
 

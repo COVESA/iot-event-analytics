@@ -12,16 +12,16 @@ import logging
 
 import json
 
-from iotea.core.talent_test import TestSetTalent
+from iotea.core.talent_test import TestSuiteTalent
 from iotea.core.util.logger import Logger
  
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
 
-class TestSetSDK(TestSetTalent):
+class TestSuiteSDK(TestSuiteTalent):
     def __init__(self, protocol_gateway_config):
-        super(TestSetSDK, self).__init__('testSet-sdk-py', protocol_gateway_config)
+        super(TestSuiteSDK, self).__init__('testSuite-sdk-py', protocol_gateway_config)
 
         # Register Tests
 
@@ -121,7 +121,7 @@ def read_config(abs_path):
 async def main():
     pg_config = read_config('../../config/tests/python/config.json')
 
-    test_set = TestSetSDK(pg_config['protocolGateway'])
+    test_set = TestSuiteSDK(pg_config['protocolGateway'])
     await test_set.start()
 
 if __name__ == '__main__':

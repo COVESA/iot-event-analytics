@@ -1,6 +1,6 @@
 {
     "loglevel": "INFO",
-    "testSets": ["testSet-sdk-py", "testSet-sdk-js"],
+    "testSuites": ["testSuite-sdk-py", "testSuite-sdk-js"],
     "platformId": "integration-tests",
     "protocolGateway": {
         "adapters": [

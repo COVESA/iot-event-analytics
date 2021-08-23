@@ -12,7 +12,7 @@
 const iotea = require('boschio.iotea');
 
 const {
-    TestSetTalent
+    TestSuiteTalent
 } = iotea;
 
 const {
@@ -23,9 +23,9 @@ const {
 const config = new JsonModel(require('../../config/tests/javascript/config.json'));
 process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
-class TestSetSDK extends TestSetTalent {
+class TestSuiteSDK extends TestSuiteTalent {
     constructor(protocolGatewayConfig) {
-        super('testSet-sdk-js', protocolGatewayConfig);
+        super('testSuite-sdk-js', protocolGatewayConfig);
 
         // Register Tests
 
@@ -69,7 +69,7 @@ class TestSetSDK extends TestSetTalent {
     async test_receiveEvent1ByMultipleTalents(ev, evtctx) {
         this.logger.info('test_receiveEvent1')
         const type = 'default';
-        const feature = 'testSet-sdk-js.receive_event_1';
+        const feature = 'testSuite-sdk-js.receive_event_1';
         const value = 'this is a string';
 
         let outEvent = {
@@ -202,6 +202,6 @@ class TestSetSDK extends TestSetTalent {
 
 // TODO: make this local vs container setup configurable with ifdef
 const pgConfig = config.get('protocolGateway');
-const tss = new TestSetSDK(pgConfig)
+const tss = new TestSuiteSDK(pgConfig)
 
 tss.start();
