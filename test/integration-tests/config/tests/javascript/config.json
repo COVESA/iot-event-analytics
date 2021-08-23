@@ -1,5 +1,5 @@
 {
-    "loglevel": "DEBUG",
+    "loglevel": "INFO",
     "platformId": "integration-tests",
     "protocolGateway": {
         "adapters": [

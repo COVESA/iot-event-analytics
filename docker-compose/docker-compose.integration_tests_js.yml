@@ -10,7 +10,7 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
         - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
@@ -24,7 +24,7 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
         - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
@@ -38,7 +38,7 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/SDK-test-suite's/javascript
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
         - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
