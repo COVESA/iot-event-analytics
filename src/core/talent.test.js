@@ -223,24 +223,29 @@ class TestRunnerTalent extends Talent {
         for (var i = 0; i < numTests; i++) {
             var test = testSuite.tests[i];
             this.logger.info(`[${i+1}/${numTests}] Running Test: ${test.name}`);
-            this.logger.debug(` - Expected: ${test.expectedValue}`)
+
+            let testExpectedValue = JSON.stringify(test.expectedValue)
+            
+
+            this.logger.debug(` - Expected: ${testExpectedValue}`)
 
             try {
                 let testResult = await this.call(testSuiteName, 'runTest', [ test.name ], ev.subject, ev.returnTopic, test.timeout);
-
-                if (testResult.actual == TEST_ERROR) {
+                
+                let testActualValue = JSON.stringify(testResult.actual)
+                
+                if (testActualValue == TEST_ERROR) {
                     this.logger.info('- Result: NOT OK (TEST_ERROR returned)');
                     result = false;
                     continue;
                 }
 
-                this.logger.debug(`- Actual: ${JSON.stringify(testResult.actual)}`);
+                this.logger.debug(`- Actual: ${testActualValue}`);
 
-                // TODO can optimise the use of stringify by doing once
-                if (JSON.stringify(test.expectedValue) == JSON.stringify(testResult.actual)) {
+                if (testExpectedValue == testActualValue) {
                     this.logger.info(`- Result: OK (${testResult.duration}ms)`);
                 } else {
-                    this.logger.info(` - Result: NOT OK (${JSON.stringify(test.expectedValue)}!=${JSON.stringify(testResult.actual)})`);
+                    this.logger.info(` - Result: NOT OK (${testExpectedValue}!=${testActualValue})`);
                     result = false;
                 }
             } catch (e) {
@@ -356,6 +361,6 @@ class TestSuiteTalent extends FunctionTalent {
 }
 
 module.exports = {
-    TestSuiteTalent: TestSuiteTalent,
+    TestSuiteTalent,
     TestRunnerTalent
 }

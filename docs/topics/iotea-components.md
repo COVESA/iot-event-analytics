@@ -133,7 +133,7 @@ TalentIO provides an easy access interfaces for received messages and to prepare
 
 ## TestSuiteTalent
 
-This is a specialization of a [_Talent_](#Talent) which provides an simply API to implement and register integration tests by abstraction the underlying needed communication and functionality.
+This is a specialization of a [_Talent_](#Talent) which provides a simple API to implement and register integration tests by abstracting the underlying needed communication and functionality.
 
 ## Protocol Gateway
 

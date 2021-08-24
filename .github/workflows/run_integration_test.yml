@@ -50,7 +50,7 @@ jobs:
         report_paths: 'docker-compose/junit-report.xml'
         token:  ${{secrets.GITHUB_TOKEN}}
 
-    - name: Upload Test Report    
+    - name: Upload Test Report
       uses: actions/upload-artifact@v2
       with:
           name: junit-report

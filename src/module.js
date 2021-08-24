@@ -21,7 +21,7 @@ const Talent = require('./core/talent');
 const FunctionTalent = require('./core/talent.func');
 
 const {
-    TestSuiteTalent: TestSuiteTalent,
+    TestSuiteTalent,
     TestRunnerTalent
 } = require('./core/talent.test');
 
