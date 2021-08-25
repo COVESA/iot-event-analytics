@@ -13,7 +13,17 @@ const { getOctokit, context } = require('@actions/github');
 
 function checkSignatureFor(commit) {
   console.log(`Checking commit ${commit.sha}...`);
-  return commit.commit.message.indexOf(`Signed-off-by: ${commit.commit.committer.name} <${commit.commit.committer.email}>`) > -1;
+
+  result = commit.commit.message.indexOf(`Signed-off-by: ${commit.commit.committer.name} <${commit.commit.committer.email}>`) > -1 || 
+           commit.commit.message.indexOf(`Signed-off-by: ${commit.commit.author.name} <${commit.commit.author.email}>`) > -1;
+  if (!result) {
+    console.log(`"Signed-off by:" is missing or does not match neither commit author nor committer ${commit.sha}...`);
+    console.log(` Commit Author Name: ${commit.commit.author.name}...`);
+    console.log(` Commit Author Email: ${commit.commit.author.email}...`);
+    console.log(` Commit Committer Name : ${commit.commit.committer.name}...`);
+    console.log(` Commit Committer Email : ${commit.commit.committer.email}...`);
+  }
+  return result;
 }
 
 async function checkSignaturesInPullRequest(token, pullNumber = -1) {
@@ -35,7 +45,8 @@ async function checkSignaturesInPullRequest(token, pullNumber = -1) {
         return;
       }
 
-      throw new Error(`Missing signatures for commits [ ${invalidCommitHashes.join(', ')} ]`);
+      throw new Error(`Missing or mismatching signatures for commits [ ${invalidCommitHashes.join(', ')} ].` +
+                      `Signature must match either committer or author of the commit.`);
     });
 }
 
