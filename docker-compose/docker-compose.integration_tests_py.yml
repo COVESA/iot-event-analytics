@@ -1,0 +1,35 @@
+version: '3.6'
+services:
+  
+  test_suite_py:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: docker/integration-tests/python-test-suite/test_suite/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/python
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
+    networks:
+      - iotea-platform-network
+
+  test_fnc_py:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: docker/integration-tests/python-test-suite/test_fnc/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/python
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
+    networks:
+      - iotea-platform-network
+      
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

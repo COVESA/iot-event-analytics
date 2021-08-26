@@ -18,7 +18,7 @@
 
     component Talent
     component FunctionTalent
-    component TestSetTalent
+    component TestSuiteTalent
     component TalentIO
     component ProtocolGateway
 

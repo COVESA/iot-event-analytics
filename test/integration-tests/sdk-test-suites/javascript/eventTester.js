@@ -1,21 +1,25 @@
-const { DEFAULT_TYPE, VALUE_TYPE_RAW } = require('../../../../src/core/constants.js');
-const iotea = require('../../../../src/module.js');
-// const iotea = require('boschio.iotea');
+// local developer relative setup
+// const iotea = require('../../../../src/module.js');
+const iotea = require('boschio.iotea');
 
 const {
     FunctionTalent,
-    ProtocolGateway,
     OrRules,
     Rule,
     OpConstraint
 } = iotea;
 
 const {
+    VALUE_TYPE_RAW
+} = iotea.constants;
+
+const {
     Logger,
-    MqttProtocolAdapter
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
 class EventTester extends FunctionTalent {
     constructor(name, protocolGatewayConfig) {
@@ -39,14 +43,17 @@ class EventTester extends FunctionTalent {
     getRules() {
         return new OrRules([
             new Rule(
-                new OpConstraint('testSet-sdk-js.receive_event_1', OpConstraint.OPS.ISSET, 0, 'default', VALUE_TYPE_RAW)
+                new OpConstraint('testSuite-sdk-js.receive_event_1', OpConstraint.OPS.ISSET, 0, 'default', VALUE_TYPE_RAW)
             )
         ]);
     }
 }
 
-const talent1 = new EventTester('event-tester-1-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
-const talent2 = new EventTester('event-tester-2-js', ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+const pgConfig = config.get("protocolGateway")
+
+
+const talent1 = new EventTester('event-tester-1-js', pgConfig);
+const talent2 = new EventTester('event-tester-2-js', pgConfig);
 
 talent1.start();
 talent2.start();

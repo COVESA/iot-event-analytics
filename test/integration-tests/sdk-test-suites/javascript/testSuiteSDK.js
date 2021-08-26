@@ -1,23 +1,31 @@
-const { ENCODING_TYPE_STRING } = require('../../../../src/core/constants.js');
-const iotea = require('../../../../src/module.js');
-
-// const iotea = require('boschio.iotea');
+//##############################################################################
+// Copyright (c) 2021 Bosch.IO GmbH
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// SPDX-License-Identifier: MPL-2.0
+//##############################################################################
+// local developer relative setup
+// const iotea = require('../../../../src/module.js');
+const iotea = require('boschio.iotea');
 
 const {
-    TestSetTalent,
-    ProtocolGateway
+    TestSuiteTalent
 } = iotea;
 
 const {
     Logger,
-    MqttProtocolAdapter
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
-class TestSetSDK extends TestSetTalent {
+class TestSuiteSDK extends TestSuiteTalent {
     constructor(protocolGatewayConfig) {
-        super('testSet-sdk-js', protocolGatewayConfig);
+        super('testSuite-sdk-js', protocolGatewayConfig);
 
         // Register Tests
 
@@ -61,7 +69,7 @@ class TestSetSDK extends TestSetTalent {
     async test_receiveEvent1ByMultipleTalents(ev, evtctx) {
         this.logger.info('test_receiveEvent1')
         const type = 'default';
-        const feature = 'testSet-sdk-js.receive_event_1';
+        const feature = 'testSuite-sdk-js.receive_event_1';
         const value = 'this is a string';
 
         let outEvent = {
@@ -186,12 +194,14 @@ class TestSetSDK extends TestSetTalent {
     }
 
     async prepare(ev, evctx) {
-        // Add additional preperation beside talent which have been already defined as dependency
+        // Add additional preparation beside talent which have been already defined as dependency
         // (see this.talentDependencies)
         return (true && await super.prepare(ev, evctx));
     }
 }
 
-const tss = new TestSetSDK(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+// TODO: make this local vs container setup configurable with ifdef
+const pgConfig = config.get('protocolGateway');
+const tss = new TestSuiteSDK(pgConfig)
 
 tss.start();

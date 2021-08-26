@@ -5,7 +5,7 @@ services:
       context: ../docker/mosquitto
       labels:
         iotea.mosquitto.version: "1.6.12"
-      dockerfile: Dockerfile.amd64
+      dockerfile: Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}

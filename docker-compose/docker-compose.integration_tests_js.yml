@@ -1,0 +1,49 @@
+version: '3.6'
+services:
+  
+  test_suite_js:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_suite/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
+    networks:
+      - iotea-platform-network
+
+  test_fnc_js:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_fnc/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
+    networks:
+      - iotea-platform-network
+
+  test_events_js:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.5.0"
+      dockerfile: ./docker/integration-tests/javascript-test-suite/test_events/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/javascript
+        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
+    networks:
+      - iotea-platform-network
+
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

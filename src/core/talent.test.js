@@ -12,7 +12,7 @@ const {
     VALUE_TYPE_RAW,
     ENCODING_TYPE_BOOLEAN,
     GET_TEST_INFO_METHOD_NAME,
-    PREPARE_TEST_SET_METHOD_NAME,
+    PREPARE_TEST_SUITE_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
     TEST_ERROR,
     PLATFORM_EVENTS_TOPIC,
@@ -80,7 +80,7 @@ class TalentDependencies {
     }
 
     check(talentId) {
-        return this.talendDependencies.get(talentId);
+        return this.talentDependencies.get(talentId);
     }
 
     checkAll() {
@@ -107,7 +107,7 @@ class TalentDependencies {
     }
 }
 
-class TestSetInfo {
+class TestSuiteInfo {
     constructor(name) {
         this.name = name
         this.testMap = new Map();
@@ -122,8 +122,8 @@ class TestSetInfo {
 }
 
 class TestRunnerTalent extends Talent {
-    constructor(name, testSetList, protocolAdapter) {
-        super(name, protocolAdapter);
+    constructor(name, config) {
+        super(name, config.get('protocolGateway'));
 
         // Define run-tests feature for this test runner automatically at runtime
         this.addOutput('run-tests', {
@@ -135,29 +135,33 @@ class TestRunnerTalent extends Talent {
         });
 
         this.calleeArray = new Array();
-        this.testSetArray = new Array();
+        this.testSuiteArray = new Array();
         this.talentDependencies = new TalentDependencies();
-
-        testSetList.forEach(testSet => {
-            let testSetTalentId = testSet;
-            this.testSetArray.push(testSetTalentId);
+        
+        const testSuiteList = config.get('testSuites')
+        
+        testSuiteList.forEach(testSuite => {
+            let testSuiteTalentId = testSuite;
+            this.testSuiteArray.push(testSuiteTalentId);
 
             // Set Test Callees (Test API)
-            this.calleeArray.push(`${testSetTalentId}.${GET_TEST_INFO_METHOD_NAME}`);
-            this.calleeArray.push(`${testSetTalentId}.${PREPARE_TEST_SET_METHOD_NAME}`);
-            this.calleeArray.push(`${testSetTalentId}.${RUN_TEST_METHOD_NAME}`);
+            this.calleeArray.push(`${testSuiteTalentId}.${GET_TEST_INFO_METHOD_NAME}`);
+            this.calleeArray.push(`${testSuiteTalentId}.${PREPARE_TEST_SUITE_METHOD_NAME}`);
+            this.calleeArray.push(`${testSuiteTalentId}.${RUN_TEST_METHOD_NAME}`);
 
             // Add talent id to dependency
-            this.talentDependencies.addTalent(testSetTalentId);
+            this.talentDependencies.addTalent(testSuiteTalentId);
         });
 
         // Wait for our own registration as well
         this.talentDependencies.addTalent(name);
 
         this.skipCycleCheck(true);
+        
+        this.timeout = config.get('discoverDependenciesTimeout', 60)*1000
     }
 
-    start(timeoutMs=60000) {
+    start(timeoutMs=this.timeout) {
         return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
             .then(() => super.start())
             .then(() => this.talentDependencies.waitForDependencies(timeoutMs))
@@ -165,7 +169,7 @@ class TestRunnerTalent extends Talent {
                 this.logger.error(err);
                 process.exit(1);
             })
-            .then(() => this.triggerTestSets())
+            .then(() => this.triggerTestSuites())
             .catch(err => {
                 this.logger.info(`${err}`);
                 process.exit(1);
@@ -185,58 +189,63 @@ class TestRunnerTalent extends Talent {
         ]);
     }
 
-    async runTestSet(ev, testSetName) {
+    async runTestSuite(ev, testSuiteName) {
         var result = true;
-        var testSet = null;
+        var testSuite = null;
 
         try {
-            this.logger.info(`Get Tests for ${testSetName}`)
-            testSet = await this.call(testSetName, GET_TEST_INFO_METHOD_NAME, [], ev.subject, ev.returnTopic, 2000);
+            this.logger.info(`Get Tests for ${testSuiteName}`)
+            testSuite = await this.call(testSuiteName, GET_TEST_INFO_METHOD_NAME, [], ev.subject, ev.returnTopic, 2000);
 
         } catch (e) {
-            this.logger.error(`Could not get TestSetInfo from ${testSetName} (${e})`);
+            this.logger.error(`Could not get TestSuiteInfo from ${testSuiteName} (${e})`);
             return false;
         }
 
         try {
-            this.logger.info(`Prepare ${testSetName}`);
-            var prepared = await this.call(testSetName, PREPARE_TEST_SET_METHOD_NAME, [], ev.subject, ev.returnTopic, 2000);
+            this.logger.info(`Prepare ${testSuiteName}`);
+            var prepared = await this.call(testSuiteName, PREPARE_TEST_SUITE_METHOD_NAME, [], ev.subject, ev.returnTopic, 2000);
 
             if (!prepared) {
-                this.logger.error(`Could not prepare ${testSetName} (Result of prepare was false)`);
+                this.logger.error(`Could not prepare ${testSuiteName} (Result of prepare was false)`);
                 return false;
             }
 
         } catch (e) {
-            this.logger.error(`Could not prepare ${testSetName} (${e})`);
+            this.logger.error(`Could not prepare ${testSuiteName} (${e})`);
             return false;
         }
 
-        this.logger.info(`Running ${testSetName}`);
+        this.logger.info(`Running ${testSuiteName}`);
 
-        let numTests = testSet.tests.length
+        let numTests = testSuite.tests.length
 
         for (var i = 0; i < numTests; i++) {
-            var test = testSet.tests[i];
+            var test = testSuite.tests[i];
             this.logger.info(`[${i+1}/${numTests}] Running Test: ${test.name}`);
-            this.logger.debug(` - Expected: ${test.expectedValue}`)
+
+            let testExpectedValue = JSON.stringify(test.expectedValue)
+            
+
+            this.logger.debug(` - Expected: ${testExpectedValue}`)
 
             try {
-                let testResult = await this.call(testSetName, 'runTest', [ test.name ], ev.subject, ev.returnTopic, test.timeout);
-
-                if (testResult.actual == TEST_ERROR) {
+                let testResult = await this.call(testSuiteName, 'runTest', [ test.name ], ev.subject, ev.returnTopic, test.timeout);
+                
+                let testActualValue = JSON.stringify(testResult.actual)
+                
+                if (testActualValue == TEST_ERROR) {
                     this.logger.info('- Result: NOT OK (TEST_ERROR returned)');
                     result = false;
                     continue;
                 }
 
-                this.logger.debug(`- Actual: ${JSON.stringify(testResult.actual)}`);
+                this.logger.debug(`- Actual: ${testActualValue}`);
 
-                // TODO can optimise the use of stringify by doing once
-                if (JSON.stringify(test.expectedValue) == JSON.stringify(testResult.actual)) {
+                if (testExpectedValue == testActualValue) {
                     this.logger.info(`- Result: OK (${testResult.duration}ms)`);
                 } else {
-                    this.logger.info(` - Result: NOT OK (${JSON.stringify(test.expectedValue)}!=${JSON.stringify(testResult.actual)})`);
+                    this.logger.info(` - Result: NOT OK (${testExpectedValue}!=${testActualValue})`);
                     result = false;
                 }
             } catch (e) {
@@ -248,14 +257,14 @@ class TestRunnerTalent extends Talent {
         return result;
     }
 
-    async triggerTestSets() {
+    async triggerTestSuites() {
         this.logger.info('Start Integration Tests');
         let initial_ev = {
             returnTopic: INGESTION_TOPIC,
             subject: "integration_test"
         };
 
-        let result = await this.runTestSets(initial_ev);
+        let result = await this.runTestSuites(initial_ev);
         this.logger.info(`Overall test result is ${result}`);
 
         if (result === true) {
@@ -265,14 +274,14 @@ class TestRunnerTalent extends Talent {
         }
     }
 
-    async runTestSets(ev) {
+    async runTestSuites(ev) {
         var result = true;
 
-        for (const testSet of this.testSetArray) {
-            let testSetResult = await this.runTestSet(ev, testSet);
-            this.logger.info(`Result of ${testSet} is ${testSetResult}`);
+        for (const testSuite of this.testSuiteArray) {
+            let testSuiteResult = await this.runTestSuite(ev, testSuite);
+            this.logger.info(`Result of ${testSuite} is ${testSuiteResult}`);
 
-            if (!testSetResult) {
+            if (!testSuiteResult) {
                 result = false;
             }
         }
@@ -285,18 +294,18 @@ class TestRunnerTalent extends Talent {
     }
 }
 
-class TestSetTalent extends FunctionTalent {
-    constructor(testSetName, protocolAdapter) {
-        super(testSetName, protocolAdapter)
+class TestSuiteTalent extends FunctionTalent {
+    constructor(testSuiteName, protocolAdapter) {
+        super(testSuiteName, protocolAdapter)
 
         this.registerTestAPIFunctions();
-        this.testSetInfo = new TestSetInfo(testSetName);
+        this.testSuiteInfo = new TestSuiteInfo(testSuiteName);
         this.talentDependencies = new TalentDependencies();
     }
 
     registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
         let test = new Test(testName, expectedValue, testFunction, timeoutMs);
-        this.testSetInfo.testMap.set(testName, test);
+        this.testSuiteInfo.testMap.set(testName, test);
     }
 
     start() {
@@ -306,28 +315,28 @@ class TestSetTalent extends FunctionTalent {
 
 
     registerTestAPIFunctions() {
-        this.registerFunction(GET_TEST_INFO_METHOD_NAME, this.getTestSetInfo.bind(this));
-        this.registerFunction(PREPARE_TEST_SET_METHOD_NAME, this.prepare.bind(this));
+        this.registerFunction(GET_TEST_INFO_METHOD_NAME, this.getTestSuiteInfo.bind(this));
+        this.registerFunction(PREPARE_TEST_SUITE_METHOD_NAME, this.prepare.bind(this));
         this.registerFunction(RUN_TEST_METHOD_NAME, this.runTest.bind(this));
     }
 
-    getTestSetInfo(ev, evtctx, timeoutAtMs) {
+    getTestSuiteInfo(ev, evtctx, timeoutAtMs) {
         return {
-            'name' : this.testSetInfo.name,
-            'tests' : this.testSetInfo.getTestList()
+            'name' : this.testSuiteInfo.name,
+            'tests' : this.testSuiteInfo.getTestList()
         };
     }
 
     async runTest(testName, ev, evtctx, timeoutAtMs) {
         this.logger.info(`Run Test ${testName}`);
 
-        if (!this.testSetInfo.testMap.has(testName)) {
+        if (!this.testSuiteInfo.testMap.has(testName)) {
             this.logger.error(`Test ${testName} has not been registered`);
             return new TestResult(testName, TEST_ERROR, -1);
         }
 
         let start = Date.now();
-        let actual = await this.testSetInfo.testMap.get(testName).func(ev, evtctx);
+        let actual = await this.testSuiteInfo.testMap.get(testName).func(ev, evtctx);
         let duration = Date.now() - start;
 
         return new TestResult(testName, actual, duration);
@@ -342,7 +351,7 @@ class TestSetTalent extends FunctionTalent {
         let unmetDependencies = this.talentDependencies.checkAll();
 
         if (unmetDependencies.length > 0) {
-            this.logger.error(`Prepare test set failed because not connected TestSetTalent(s): ${unmetDependencies}`);
+            this.logger.error(`Prepare test suite failed because not connected TestSuiteTalent(s): ${unmetDependencies}`);
             return false;
         }
 
@@ -352,6 +361,6 @@ class TestSetTalent extends FunctionTalent {
 }
 
 module.exports = {
-    TestSetTalent,
+    TestSuiteTalent,
     TestRunnerTalent
 }

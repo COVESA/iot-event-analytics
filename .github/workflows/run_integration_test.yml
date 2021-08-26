@@ -5,60 +5,53 @@ on: [push, pull_request]
 jobs:
   integration_test:
     runs-on: ubuntu-latest
-    name: Run integration test
+    name: Run integration tests
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
 
-    - name: Setup & start platform
+    - name: Build only the platform!
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash
-      # Build & run platform.
+      # Build platform.
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env-test build --parallel
+
+    - name: Build integration-tests suites for all SDKs & runner
+      working-directory: ${{github.workspace}}/docker-compose
+      shell: bash
+      # All the SDK's integration tests are dockerized and build the
+      # latest version of the platform each time. 
+      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
+      #run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f
+      #docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+      
+  
+    - name: Start platform & ALL SDK test-suites
+      working-directory: ${{github.workspace}}/docker-compose
+      shell: bash 
       # It's run daemonized (docker-compose -d) since a running platform
-      # is needed later in the "Run integration tests" step
-      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml --env-file .env up --build -d
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml --env-file .env-test up -d
+      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
+      #run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
 
-    - name: Build Node.js SDK
-      working-directory: ${{github.workspace}}
+    - name: Start integration-test runner
+      working-directory: ${{github.workspace}}/docker-compose
       shell: bash
-      run: |
-        yarn --frozen-lockfile
+      # This is a test as this container must exit once all tests are completed! The test runner 
+      # container will exit with a basic 0:pass/1:fail code currently
+      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up
+      timeout-minutes: 2
 
-    - name: Build Python SDK
-      working-directory: ${{github.workspace}}/test/integration-tests
-      shell: bash
-      env:
-        IOTEA_PROJECT_ROOT: ${{github.workspace}}
-      run: |
-        python3 -m venv .venv
-        source .venv/bin/activate
-        python -m pip install wheel
-        python -m pip install $IOTEA_PROJECT_ROOT/src/sdk/python/src --force
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v2
+      if: always() # always run even if the previous step fails
+      with:
+        report_paths: 'docker-compose/junit-report.xml'
+        token:  ${{secrets.GITHUB_TOKEN}}
 
-    - name: Build C++ tests
-      working-directory: ${{github.workspace}}/test/integration-tests/testset_sdk/cpp
-      shell: bash
-      run: |
-        cmake -B build -S .
-        cmake --build build --parallel
-
-    - name: Run integration tests
-      working-directory: ${{github.workspace}}/test/integration-tests
-      shell: bash
-      # The required "test talents" are started manually as background
-      # jobs before finally invoking the test runner.
-      run: |
-        ./testset_sdk/cpp/build/function_provider_for_test 2>&1 >/dev/null &
-        ./testset_sdk/cpp/build/testset_sdk 2>&1 >/dev/null &
-        source .venv/bin/activate
-        python ./testset_sdk/python/test_set_sdk.py 2>&1 >/dev/null &
-        python ./testset_sdk/python/function_provider.py 2>&1 >/dev/null &
-        node ./testset_sdk/javascript/functionProvider.js 2>&1 >/dev/null &
-        node ./testset_sdk/javascript/eventTester.js 2>&1 >/dev/null &
-        node ./testset_sdk/javascript/testSetSDK.js 2>&1 >/dev/null &
-        node ./runner/javascript/test_runner.js
-      timeout-minutes: 1
-
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v2
+      with:
+          name: junit-report
+          path: 'docker-compose/junit-report.xml'

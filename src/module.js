@@ -21,7 +21,7 @@ const Talent = require('./core/talent');
 const FunctionTalent = require('./core/talent.func');
 
 const {
-    TestSetTalent,
+    TestSuiteTalent,
     TestRunnerTalent
 } = require('./core/talent.test');
 
@@ -70,7 +70,7 @@ const {
     PLATFORM_EVENT_TYPE_SET_CONFIG,
     PLATFORM_EVENT_TYPE_UNSET_CONFIG,
     GET_TEST_INFO_METHOD_NAME,
-    PREPARE_TEST_SET_METHOD_NAME,
+    PREPARE_TEST_SUITE_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
     TEST_ERROR
 } = require('./core/constants');
@@ -159,13 +159,13 @@ module.exports = {
         PLATFORM_EVENT_TYPE_SET_CONFIG,
         PLATFORM_EVENT_TYPE_UNSET_CONFIG,
         GET_TEST_INFO_METHOD_NAME,
-        PREPARE_TEST_SET_METHOD_NAME,
+        PREPARE_TEST_SUITE_METHOD_NAME,
         RUN_TEST_METHOD_NAME,
         TEST_ERROR
     },
     Talent,
     FunctionTalent,
-    TestSetTalent,
+    TestSuiteTalent,
     TestRunnerTalent,
     Mapper,
     Worker,

@@ -1,28 +1,28 @@
-const iotea = require('../../../../src/module.js');
-// const iotea = require('boschio.iotea');
+//##############################################################################
+// Copyright (c) 2021 Bosch.IO GmbH
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// SPDX-License-Identifier: MPL-2.0
+//##############################################################################
+// uncomment for local developer setup
+// const iotea = require('../../../../src/module.js');
+const iotea = require('boschio.iotea');
 
 const {
-    TestRunnerTalent,
-    ProtocolGateway
+    TestRunnerTalent
 } = iotea;
 
 const {
     Logger,
-    MqttProtocolAdapter
+    JsonModel
 } = iotea.util;
 
-process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
+const config = new JsonModel(require('../../config/tests/javascript/runner/config.json'));
+process.env.LOG_LEVEL = config.get('loglevel', Logger.ENV_LOG_LEVEL.INFO);
 
-class TestRunner extends TestRunnerTalent {
-    constructor(protocolGatewayConfig) {
-        // Define your testSetTalent list and set via super constructor
-        super('testRunner-js', ['testSet-sdk-js', 'testSet-sdk-py', 'testSet-sdk-cpp'], protocolGatewayConfig);
-
-        // you can run singular tests say for development also
-        //super('testRunner-js', ['testSet-sdk-js'], protocolGatewayConfig);
-    }
-}
-
-const runner = new TestRunner(ProtocolGateway.createDefaultConfiguration([ MqttProtocolAdapter.createDefaultConfiguration() ]));
+const runner = new TestRunnerTalent('testRunner-js', config);
 
 runner.start();

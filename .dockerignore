@@ -1,9 +1,12 @@
 .vscode/
 docs/
 node_modules/
-src/sdk/
+#src/sdk/
+postinstall.js
 src/tools/
-*.tar
+src/sdk/vscode/
+src/sdk/node-red/
+#*.tar
 .git/
 docker/config/config
 docker/pipeline/config

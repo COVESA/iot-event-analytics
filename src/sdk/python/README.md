@@ -32,9 +32,12 @@
 
 `python setup.py egg_info --egg-base ../lib bdist_wheel --dist-dir=../lib clean --all`
 
-## Install
+#### Install
 
-- Goto directory ./lib and pick a version you would like to install<br>
+- Remain in ./pkg and install latest distribution
+- `python -m pip install --find-links=file:../lib boschio.iotea --user --force`
+
+- Or Goto directory ./lib and pick a version you would like to install<br>
 - `python -m pip install --user boschio_iotea-<version>-py3-none-any.whl --force`
 
 ## Test

@@ -21,6 +21,7 @@ using iotea::core::FunctionTalent;
 using iotea::core::ProtocolGateway;
 using iotea::core::call_ctx_ptr;
 
+static const char SERVER_ADDRESS[] = "tcp://mosquitto:1883";
 static const char TALENT_ID[] = "functionProvider-cpp";
 static const char FUNC_ECHO[] = "echo";
 

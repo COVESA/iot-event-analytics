@@ -1,0 +1,19 @@
+{
+    "loglevel": "INFO",
+    "platformId": "integration-tests",
+    "protocolGateway": {
+        "adapters": [
+            {
+                "platform": true,
+                "module": {
+                    "name": "./util/mqttClient",
+                    "class": "MqttProtocolAdapter"
+                },
+                "config": {
+                    "topicNamespace": "iotea/",
+                    "brokerUrl": "mqtt://mosquitto:1883"
+                }
+            }
+        ]
+    }
+}
