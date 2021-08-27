@@ -17,6 +17,6 @@
             }
         ]
     },
-    "outputFile": "./report/junit-report.xml",
+    "outputFile": "./report/junit.xml",
     "discoverDependenciesTimeout": 60
 }

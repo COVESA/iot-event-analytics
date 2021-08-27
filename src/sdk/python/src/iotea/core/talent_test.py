@@ -306,7 +306,7 @@ class TestRunnerTalent(Talent):
         if result:
             sys.exit(0)
         else:
-            #signal that tests have failed
+            # signal that tests have failed
             sys.exit(1)
 
 

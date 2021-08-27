@@ -1,4 +1,4 @@
-name: Integration test
+name: Integration tests
 
 on: [push, pull_request]
 
@@ -42,11 +42,11 @@ jobs:
       uses: mikepenz/action-junit-report@v2
       if: always() # always run even if the previous step fails
       with:
-        report_paths: 'docker-compose/junit-report.xml'
+        report_paths: 'docker-compose/junit.xml'
         token:  ${{secrets.GITHUB_TOKEN}}
 
     - name: Upload Test Report
       uses: actions/upload-artifact@v2
       with:
           name: junit-report
-          path: 'docker-compose/junit-report.xml'
+          path: 'docker-compose/junit.xml'

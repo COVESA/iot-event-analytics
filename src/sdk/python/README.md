@@ -32,7 +32,7 @@
 
 `python setup.py egg_info --egg-base ../lib bdist_wheel --dist-dir=../lib clean --all`
 
-#### Install
+## Install
 
 - Remain in ./pkg and install latest distribution
 - `python -m pip install --find-links=file:../lib boschio.iotea --user --force`

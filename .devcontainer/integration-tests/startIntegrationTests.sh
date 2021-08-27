@@ -1,13 +1,15 @@
 #!/bin/bash
 
 ##############################################################################
-# Copyright (c) 2021 Robert Bosch GmbH
 #
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#  Copyright (c) 2021 Bosch.IO GmbH
 #
-# SPDX-License-Identifier: MPL-2.0
+#  This Source Code Form is subject to the terms of the Mozilla Public
+#  License, v. 2.0. If a copy of the MPL was not distributed with this
+#  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+#  SPDX-License-Identifier: MPL-2.0
+#
 ##############################################################################
 
 cd ../../docker-compose
@@ -29,13 +31,13 @@ fi
 
 
 #Build test suite and runner
-docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE build --parallel
+docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE build --parallel
 
 #Start platform & ALL SDK test-suites
-docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml --env-file $ENV_FILE up -d
+docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file $ENV_FILE up -d
 
 #Start integration-test runner
 docker-compose -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE up
 
 #Stop the containers after the runner finishes
-docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml down
+docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml down
