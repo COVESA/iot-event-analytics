@@ -6,11 +6,11 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/cpp/test_set/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/cpp-test-suite/test_suite/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/cpp
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/cpp
     networks:
       - iotea-platform-network
 
@@ -19,11 +19,11 @@ services:
       context: ..
       labels:
         iotea.iotea.version: "0.5.0"
-      dockerfile: ./docker/integration-tests/cpp/test_fnc/Dockerfile.${ARCH}
+      dockerfile: ./docker/integration-tests/cpp-test-suite/test_fnc/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/testset_sdk/cpp
+        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/sdk-test-suites/cpp
     networks:
       - iotea-platform-network
 

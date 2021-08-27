@@ -21,3 +21,14 @@ This will automatically fetch the required dependencies (i.e. the Paho MQTT clie
 ## Examples
 
 Example usage of the library can be found under /examples
+
+All paths are related to the root of your build folder. That means:
+
+1. You should execute your binaries from the root of your build folder
+2. You should reference related configuration files relative to root of the build folder.
+
+e.g.
+```
+cd <build-folder>
+./examples/basic/basic examples/basic/pgconfig.json
+```

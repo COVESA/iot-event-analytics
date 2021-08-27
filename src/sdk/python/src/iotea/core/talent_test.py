@@ -271,7 +271,7 @@ class TestRunnerTalent(Talent):
             self.logger.info('Result of %s is %s', test_suite, test_suite_result[0])
             test_suites.append(test_suite_result[1])
 
-            if not test_suite_result:
+            if not test_suite_result[0]:
                 result = False
 
         self.create_test_output(test_suites)

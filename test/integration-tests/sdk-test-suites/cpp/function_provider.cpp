@@ -1,11 +1,12 @@
-/********************************************************************
- * Copyright (c) Robert Bosch GmbH
- * All Rights Reserved.
+/*****************************************************************************
+ * Copyright (c) 2021 Bosch.IO GmbH
  *
- * This file may not be distributed without the file ’license.txt’.
- * This file is subject to the terms and conditions defined in file
- * ’license.txt’, which is part of this source code package.
- *********************************************************************/
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ ****************************************************************************/
 
 #include <csignal>
 #include <iostream>
@@ -21,7 +22,6 @@ using iotea::core::FunctionTalent;
 using iotea::core::ProtocolGateway;
 using iotea::core::call_ctx_ptr;
 
-static const char SERVER_ADDRESS[] = "tcp://mosquitto:1883";
 static const char TALENT_ID[] = "functionProvider-cpp";
 static const char FUNC_ECHO[] = "echo";
 
@@ -38,12 +38,12 @@ class FunctionProvider : public FunctionTalent {
 static auto mqtt_config = json{
     {"platform", true},
     {"module", {
-                   {"name", "./testset_sdk/cpp/build/iotea-sdk-cpp-lib/adapters/mqtt/libmqtt_protocol_adapter.so"}
+                   {"name", "./iotea-sdk-cpp-lib/adapters/mqtt/libmqtt_protocol_adapter.so"}
                }
     },
     {"config",
         {
-            {"brokerUrl", "tcp://localhost:1883"},
+            {"brokerUrl", "tcp://mosquitto:1883"},
             {"topicNamespace", "iotea/"}
         }
     }

@@ -21,19 +21,14 @@ jobs:
       shell: bash
       # All the SDK's integration tests are dockerized and build the
       # latest version of the platform each time. 
-      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
-      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
-      #run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f
-      #docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
       
   
     - name: Start platform & ALL SDK test-suites
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash 
       # It's run daemonized (docker-compose -d) since a running platform
-      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml --env-file .env-test up -d
-      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
-      #run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
 
     - name: Start integration-test runner
       working-directory: ${{github.workspace}}/docker-compose

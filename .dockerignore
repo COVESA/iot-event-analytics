@@ -1,13 +1,13 @@
+.git/
 .vscode/
 docs/
 node_modules/
-#src/sdk/
 postinstall.js
 src/tools/
+src/sdk/cpp/build
 src/sdk/vscode/
 src/sdk/node-red/
-#*.tar
-.git/
+test/integration-tests/sdk-test-suites/cpp/build/
 docker/config/config
 docker/pipeline/config
 docker/platform/config

@@ -21,7 +21,7 @@ using iotea::core::logging::NamedLogger;
 namespace iotea {
 namespace test {
 
-static const char GET_TEST_INFO_METHOD_NAME[] = "getTestSetInfo";
+static const char GET_TEST_INFO_METHOD_NAME[] = "getTestSuiteInfo";
 static const char PREPARE_TEST_SET_METHOD_NAME[] = "prepare";
 static const char RUN_TEST_METHOD_NAME[] = "runTest";
 static const char TEST_ERROR[] = "TEST_ERROR";
