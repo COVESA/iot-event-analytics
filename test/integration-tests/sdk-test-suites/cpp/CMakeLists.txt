@@ -20,6 +20,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(IOTEA_SDK_CPP_PATH "../../../../src/sdk/cpp")
 
+# Disable build of examples in iotea sdk
+set(WITH_EXAMPLES FALSE CACHE BOOL "Examples will be built")
+
 add_subdirectory(${IOTEA_SDK_CPP_PATH} ${CMAKE_BINARY_DIR}/iotea-sdk-cpp-lib)
 
 message(${CMAKE_SOURCE_DIR}/${IOTEA_SDK_CPP_PATH}/lib/include)

@@ -34,7 +34,7 @@ WORKDIR /app${INTEGRATION_TEST_PATH}
 
 # Compile/Build with cmake tools
 RUN cmake -B build -S .
-RUN cmake --build build --parallel
+RUN cmake --build build --parallel --target testsuite_sdk
 
 
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
