@@ -15,22 +15,22 @@
 #include "nlohmann/json.hpp"
 #include "client.hpp"
 #include "protocol_gateway.hpp"
-#include "testset_talent.hpp"
+#include "testsuite_talent.hpp"
 
 using json = nlohmann::json;
 
 using iotea::core::Client;
 using iotea::core::ProtocolGateway;
-using iotea::test::TestSetTalent;
+using iotea::test::TestSuiteTalent;
 
 static const char TALENT_NAME[] = "testSuite-sdk-cpp";
 static const char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
 static const char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
-class TestSetSDK : public TestSetTalent {
+class TestSuiteSDK : public TestSuiteTalent {
    public:
-    TestSetSDK()
-        : TestSetTalent(TALENT_NAME) {
+    TestSuiteSDK()
+        : TestSuiteTalent(TALENT_NAME) {
         auto callee = RegisterCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
 
         auto timeout = 500;
@@ -70,7 +70,7 @@ void signal_handler(int) {
 
 
 int main(int, char**) {
-    auto talent = std::make_shared<TestSetSDK>();
+    auto talent = std::make_shared<TestSuiteSDK>();
 
     client.RegisterFunctionTalent(talent);
 

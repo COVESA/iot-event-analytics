@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MPL-2.0
  ****************************************************************************/
 
-#ifndef SRC_SDK_CPP_LIB_INCLUDE_TESTSET_TALENT_HPP_
-#define SRC_SDK_CPP_LIB_INCLUDE_TESTSET_TALENT_HPP_
+#ifndef SRC_SDK_CPP_LIB_INCLUDE_TESTSUITE_TALENT_HPP_
+#define SRC_SDK_CPP_LIB_INCLUDE_TESTSUITE_TALENT_HPP_
 
 #include <functional>
 #include <unordered_map>
@@ -53,9 +53,9 @@ class Test {
 
 };
 
-class TestSetInfo {
+class TestSuiteInfo {
    public:
-    explicit TestSetInfo(const std::string& name);
+    explicit TestSuiteInfo(const std::string& name);
 
     void AddTest(const std::string& name, const json& exepected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout);
 
@@ -84,9 +84,9 @@ class TalentDependencies {
     std::unordered_map<std::string, bool> dependencies_;
 };
 
-class TestSetTalent : public core::FunctionTalent {
+class TestSuiteTalent : public core::FunctionTalent {
    public:
-    explicit TestSetTalent(const std::string& name);
+    explicit TestSuiteTalent(const std::string& name);
 
     void OnPlatformEvent(core::platform_event_ptr event) override;
 
@@ -103,7 +103,7 @@ class TestSetTalent : public core::FunctionTalent {
     void Run(const json& args, core::call_ctx_ptr ctx);
 
    private:
-    TestSetInfo test_set_info_;
+    TestSuiteInfo test_set_info_;
     TalentDependencies dependencies_;
 };
 
@@ -111,4 +111,4 @@ class TestSetTalent : public core::FunctionTalent {
 } // namespace test
 } // namespace iotea
 
-#endif // SRC_SDK_CPP_LIB_INCLUDE_TESTSET_TALENT_HPP
+#endif // SRC_SDK_CPP_LIB_INCLUDE_TESTSUITE_TALENT_HPP

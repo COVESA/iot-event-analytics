@@ -14,7 +14,7 @@
 #include <chrono>
 
 #include "logging.hpp"
-#include "testset_talent.hpp"
+#include "testsuite_talent.hpp"
 
 using iotea::core::logging::NamedLogger;
 
@@ -66,19 +66,19 @@ json Test::Json() const {
 
 
 //
-// TestSetInfo
+// TestSuiteInfo
 //
-static auto logger = NamedLogger("TestSetInfo");
+static auto logger = NamedLogger("TestSuiteInfo");
 
-TestSetInfo::TestSetInfo(const std::string& name)
+TestSuiteInfo::TestSuiteInfo(const std::string& name)
     : name_{name} {}
 
-void TestSetInfo::AddTest(const std::string& name, const json& expected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout) {
+void TestSuiteInfo::AddTest(const std::string& name, const json& expected_value, const std::function<void(core::call_ctx_ptr)>& func, uint32_t timeout) {
     auto test = Test{name, expected_value, func, timeout};
     tests_.insert({name, test});
 }
 
-void TestSetInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
+void TestSuiteInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
     logger.Info() << "Run Test " << name;
 
     auto test = tests_.find(name);
@@ -93,7 +93,7 @@ void TestSetInfo::RunTest(const std::string& name, core::call_ctx_ptr ctx) {
     test->second.Run(ctx);
 }
 
-json TestSetInfo::Json() const {
+json TestSuiteInfo::Json() const {
     std::vector<json> tests;
     for (const auto& test : tests_) {
         tests.push_back(test.second.Json());
@@ -157,9 +157,9 @@ bool TalentDependencies::CheckAll() const {
 }
 
 //
-// TestSetTalent
+// TestSuiteTalent
 //
-TestSetTalent::TestSetTalent(const std::string& name)
+TestSuiteTalent::TestSuiteTalent(const std::string& name)
     : core::FunctionTalent{name}
     , test_set_info_{name} {
 
@@ -176,11 +176,11 @@ TestSetTalent::TestSetTalent(const std::string& name)
     });
 }
 
-void TestSetTalent::OnPlatformEvent(core::platform_event_ptr event) {
+void TestSuiteTalent::OnPlatformEvent(core::platform_event_ptr event) {
     dependencies_.Update(event);
 }
 
-void TestSetTalent::RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout) {
+void TestSuiteTalent::RegisterTest(const std::string& name, const json& expect, const core::Callee& callee, const json& args, uint32_t timeout) {
     // This is the function that we will delegate to when the runner ask us to
     // run the test called "name"
     //
@@ -202,15 +202,15 @@ void TestSetTalent::RegisterTest(const std::string& name, const json& expect, co
     test_set_info_.AddTest(name, expect, func, timeout);
 }
 
-void TestSetTalent::Prepare(const json&, core::call_ctx_ptr ctx) {
+void TestSuiteTalent::Prepare(const json&, core::call_ctx_ptr ctx) {
     ctx->Reply(dependencies_.CheckAll());
 }
 
-void TestSetTalent::GetInfo(const json&, core::call_ctx_ptr ctx) {
+void TestSuiteTalent::GetInfo(const json&, core::call_ctx_ptr ctx) {
     ctx->Reply(test_set_info_.Json());
 }
 
-void TestSetTalent::Run(const json& args, core::call_ctx_ptr ctx) {
+void TestSuiteTalent::Run(const json& args, core::call_ctx_ptr ctx) {
     auto test_name = args[0].get<std::string>();
     test_set_info_.RunTest(test_name, ctx);
 }

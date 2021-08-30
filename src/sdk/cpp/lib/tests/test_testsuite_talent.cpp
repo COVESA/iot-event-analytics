@@ -18,14 +18,14 @@
 #include "gmock/gmock.h"
 #include "nlohmann/json.hpp"
 
-#include "testset_talent.hpp"
+#include "testsuite_talent.hpp"
 
 using json = nlohmann::json;
 
 using iotea::test::TalentDependencies;
 using iotea::test::TestResult;
-using iotea::test::TestSetInfo;
-using iotea::test::TestSetTalent;
+using iotea::test::TestSuiteInfo;
+using iotea::test::TestSuiteTalent;
 
 
 class MockProtocolGateway : public iotea::core::ProtocolGateway {
@@ -45,7 +45,7 @@ class MockCallContext : public iotea::core::CallContext {
 /**
  * @brief Verify that TestResult produces the expected output.
  */
-TEST(testset_talent, TestResult_Json) {
+TEST(testsuite_talent, TestResult_Json) {
     // All results should be wrapped in arrays
     //
     // Make sure objects are wrapped in an array
@@ -82,7 +82,7 @@ TEST(testset_talent, TestResult_Json) {
 /**
  * @brief Verify that Test::Json produces the expected output.
  */
-TEST(testset_talent, Test_Json) {
+TEST(testsuite_talent, Test_Json) {
     auto func = [](iotea::core::call_ctx_ptr){};
 
     // Make sure objects are wrapped in an array
@@ -119,7 +119,7 @@ TEST(testset_talent, Test_Json) {
 /**
  * @brief Verify that Test::Run calls the embedded function.
  */
-TEST(testset_talent, Test_Run) {
+TEST(testsuite_talent, Test_Run) {
     auto called = false;
     auto func = [&called](iotea::core::call_ctx_ptr){ called = true; };
 
@@ -131,11 +131,11 @@ TEST(testset_talent, Test_Run) {
 }
 
 /**
- * @breif Verfiy that tests that are add show up when the TestSetInfo is
+ * @breif Verfiy that tests that are add show up when the TestSuiteInfo is
  * marshalled to JSON
  */
-TEST(testset_talent, TestSetInfo_AddTest) {
-    TestSetInfo info{"my_test"};
+TEST(testsuite_talent, TestSuiteInfo_AddTest) {
+    TestSuiteInfo info{"my_test"};
 
     auto func = [](iotea::core::call_ctx_ptr){};
 
@@ -167,8 +167,8 @@ TEST(testset_talent, TestSetInfo_AddTest) {
     ASSERT_EQ(info.Json(), expect);
 }
 
-TEST(testset_talent, TestSetInfo_RunTest) {
-    TestSetInfo info{"my_test"};
+TEST(testsuite_talent, TestSuiteInfo_RunTest) {
+    TestSuiteInfo info{"my_test"};
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
     auto features = json{};
@@ -201,7 +201,7 @@ TEST(testset_talent, TestSetInfo_RunTest) {
  * @brief Verify that TalentDependencies updates its dependencies and reports
  * whether a single or all dependencies are met.
  */
-TEST(testset_talent, TalentDependencies) {
+TEST(testsuite_talent_talent, TalentDependencies) {
     using iotea::core::PlatformEvent;
 
     auto create_platform_event = [](const std::string& name, bool is_set) {
@@ -247,19 +247,19 @@ TEST(testset_talent, TalentDependencies) {
     ASSERT_FALSE(dep.CheckAll());
 }
 
-TEST(testset_talent, TestSetTalent_Schema) {
+TEST(testsuite_talent, TestSuiteTalent_Schema) {
     using iotea::core::Callee;
 
-    TestSetTalent testset{"my_test_set"};
+    TestSuiteTalent testsuite{"my_test_set"};
 
     auto expect_schema = json::parse(R"({"config":{"outputs":{"my_test_set.getTestSuiteInfo-in":{"description":"Argument(s) for function getTestSuiteInfo","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"my_test_set.getTestSuiteInfo-out":{"description":"Result of function getTestSuiteInfo","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"},"my_test_set.prepare-in":{"description":"Argument(s) for function prepare","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"my_test_set.prepare-out":{"description":"Result of function prepare","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"},"my_test_set.runTest-in":{"description":"Argument(s) for function runTest","encoding":{"encoder":null,"type":"object"},"history":0,"ttl":0,"unit":"ONE"},"my_test_set.runTest-out":{"description":"Result of function runTest","encoding":{"encoder":null,"type":"any"},"history":0,"ttl":0,"unit":"ONE"}},"rules":{"excludeOn":null,"rules":[{"feature":"my_test_set.runTest-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"runTest","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"my_test_set.getTestSuiteInfo-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"getTestSuiteInfo","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0},{"feature":"my_test_set.prepare-in","instanceIdFilter":".*","limitFeatureSelection":true,"op":0,"path":"","typeSelector":"default","value":{"additionalProperties":false,"properties":{"args":{"type":"array"},"call":{"type":"string"},"chnl":{"type":"string"},"func":{"const":"prepare","type":"string"},"timeoutAtMs":{"type":"integer"}},"required":["func","args","chnl","call","timeoutAtMs"],"type":"object"},"valueType":0}],"type":"or"},"scc":["default.my_test_set.prepare-in","default.my_test_set.getTestSuiteInfo-in","default.my_test_set.runTest-in"]},"id":"my_test_set"})");
-    ASSERT_EQ(testset.GetSchema().Json(), expect_schema);
+    ASSERT_EQ(testsuite.GetSchema().Json(), expect_schema);
 }
 
-TEST(testset_talent, TestSetTalent_Prepare) {
+TEST(testsuite_talent, TestSuiteTalent_Prepare) {
     using iotea::core::Callee;
 
-    TestSetTalent testset{"my_test_set"};
+    TestSuiteTalent testsuite{"my_test_set"};
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
     auto features = json{};
@@ -268,16 +268,16 @@ TEST(testset_talent, TestSetTalent_Prepare) {
     auto ctx = std::make_shared<MockCallContext>(event, gw);
 
     EXPECT_CALL(*ctx, Reply(::testing::_));
-    testset.Prepare(nullptr, ctx);
+    testsuite.Prepare(nullptr, ctx);
 }
 
-TEST(testset_talent, TestSetTalent_GetInfo) {
+TEST(testsuite_talent, TestSuiteTalent_GetInfo) {
     using iotea::core::Callee;
 
-    TestSetTalent testset{"my_test_set"};
+    TestSuiteTalent testsuite{"my_test_set"};
 
-    testset.RegisterTest("alpha", json{"alpha"}, Callee{"alpha_talent", "alpha_func", "alpha_type"}, json{"alpha_args"}, 0);
-    testset.RegisterTest("beta", json{"beta"}, Callee{"beta_talent", "beta_func", "beta_type"}, json{"beta_args"}, 0);
+    testsuite.RegisterTest("alpha", json{"alpha"}, Callee{"alpha_talent", "alpha_func", "alpha_type"}, json{"alpha_args"}, 0);
+    testsuite.RegisterTest("beta", json{"beta"}, Callee{"beta_talent", "beta_func", "beta_type"}, json{"beta_args"}, 0);
 
     auto call_value = json{{"chnl", "caller_channel_id"}, {"call", "caller_call_id"}, {"timeoutAtMs", 0}};
     auto features = json{};
@@ -309,5 +309,5 @@ TEST(testset_talent, TestSetTalent_GetInfo) {
           ]
         })");
     EXPECT_CALL(*ctx, Reply(expect));
-    testset.GetInfo(nullptr, ctx);
+    testsuite.GetInfo(nullptr, ctx);
 }

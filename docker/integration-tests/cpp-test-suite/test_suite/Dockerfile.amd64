@@ -53,4 +53,4 @@ COPY --from=build_stage /app${INTEGRATION_TEST_PATH}/build .${INTEGRATION_TEST_P
 
 WORKDIR /app${INTEGRATION_TEST_PATH}/build
 
-CMD ./testset_sdk
+CMD ./testsuite_sdk
