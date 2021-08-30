@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="717px" preserveAspectRatio="none" style="width:642px;height:717px;background:#FFFFFF;" version="1.1" viewBox="0 0 642 717" width="642px" zoomAndPan="magnify"><defs><filter height="300%" id="fa9kgjaab571y" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[df38be88ccee13e832d6fafd6288a4ca]
+class Test--><rect codeLine="11" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="99.2188" id="Test" style="stroke:#A80036;stroke-width:1.5;" width="94" x="299" y="604"/><ellipse cx="329.75" cy="620" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M332.7188,625.6406 Q332.1406,625.9375 331.5,626.0781 Q330.8594,626.2344 330.1563,626.2344 Q327.6563,626.2344 326.3281,624.5938 Q325.0156,622.9375 325.0156,619.8125 Q325.0156,616.6875 326.3281,615.0313 Q327.6563,613.375 330.1563,613.375 Q330.8594,613.375 331.5,613.5313 Q332.1563,613.6875 332.7188,613.9844 L332.7188,616.7031 Q332.0938,616.125 331.5,615.8594 Q330.9063,615.5781 330.2813,615.5781 Q328.9375,615.5781 328.25,616.6563 Q327.5625,617.7188 327.5625,619.8125 Q327.5625,621.9063 328.25,622.9844 Q328.9375,624.0469 330.2813,624.0469 Q330.9063,624.0469 331.5,623.7813 Q332.0938,623.5 332.7188,622.9219 L332.7188,625.6406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="27" x="347.25" y="624.1543">Test</text><line style="stroke:#A80036;stroke-width:1.5;" x1="300" x2="392" y1="636" y2="636"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="32" x="305" y="650.2104">name</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="82" x="305" y="663.0151">expectedValue</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="69" x="305" y="675.8198">testFunction</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="43" x="305" y="688.6245">timeout</text><line style="stroke:#A80036;stroke-width:1.5;" x1="300" x2="392" y1="695.2188" y2="695.2188"/><!--MD5=[e27cb01a39563223b22d42504ec96d07]
+class TestResult--><rect codeLine="18" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="86.4141" id="TestResult" style="stroke:#A80036;stroke-width:1.5;" width="98" x="166" y="610.5"/><ellipse cx="181" cy="626.5" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M183.9688,632.1406 Q183.3906,632.4375 182.75,632.5781 Q182.1094,632.7344 181.4063,632.7344 Q178.9063,632.7344 177.5781,631.0938 Q176.2656,629.4375 176.2656,626.3125 Q176.2656,623.1875 177.5781,621.5313 Q178.9063,619.875 181.4063,619.875 Q182.1094,619.875 182.75,620.0313 Q183.4063,620.1875 183.9688,620.4844 L183.9688,623.2031 Q183.3438,622.625 182.75,622.3594 Q182.1563,622.0781 181.5313,622.0781 Q180.1875,622.0781 179.5,623.1563 Q178.8125,624.2188 178.8125,626.3125 Q178.8125,628.4063 179.5,629.4844 Q180.1875,630.5469 181.5313,630.5469 Q182.1563,630.5469 182.75,630.2813 Q183.3438,630 183.9688,629.4219 L183.9688,632.1406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="66" x="195" y="630.6543">TestResult</text><line style="stroke:#A80036;stroke-width:1.5;" x1="167" x2="263" y1="642.5" y2="642.5"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="32" x="172" y="656.7104">name</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="65" x="172" y="669.5151">actualValue</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="47" x="172" y="682.3198">duration</text><line style="stroke:#A80036;stroke-width:1.5;" x1="167" x2="263" y1="688.9141" y2="688.9141"/><!--MD5=[e0bcdec0028777c24c7021dfaa14a27a]
+class TalentDependencies--><rect codeLine="24" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="99.2188" id="TalentDependencies" style="stroke:#A80036;stroke-width:1.5;" width="200" x="428" y="604"/><ellipse cx="460.55" cy="620" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M463.5188,625.6406 Q462.9406,625.9375 462.3,626.0781 Q461.6594,626.2344 460.9563,626.2344 Q458.4563,626.2344 457.1281,624.5938 Q455.8156,622.9375 455.8156,619.8125 Q455.8156,616.6875 457.1281,615.0313 Q458.4563,613.375 460.9563,613.375 Q461.6594,613.375 462.3,613.5313 Q462.9563,613.6875 463.5188,613.9844 L463.5188,616.7031 Q462.8938,616.125 462.3,615.8594 Q461.7063,615.5781 461.0813,615.5781 Q459.7375,615.5781 459.05,616.6563 Q458.3625,617.7188 458.3625,619.8125 Q458.3625,621.9063 459.05,622.9844 Q459.7375,624.0469 461.0813,624.0469 Q461.7063,624.0469 462.3,623.7813 Q462.8938,623.5 463.5188,622.9219 L463.5188,625.6406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="129" x="478.45" y="624.1543">TalentDependencies</text><line style="stroke:#A80036;stroke-width:1.5;" x1="429" x2="627" y1="636" y2="636"/><line style="stroke:#A80036;stroke-width:1.5;" x1="429" x2="627" y1="644" y2="644"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="106" x="434" y="658.2104">addTalent(talentId)</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="128" x="434" y="671.0151">removeTalent(talentId)</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="99" x="434" y="683.8198">String[] checkAll()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="188" x="434" y="696.6245">waitForDependencies(timeoutMs)</text><!--MD5=[b066856763bba1afc2b6bec830a51b4c]
+class TestSuiteInfo--><rect codeLine="31" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="73.6094" id="TestSuiteInfo" style="stroke:#A80036;stroke-width:1.5;" width="124" x="7" y="616.5"/><ellipse cx="26.5" cy="632.5" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M29.4688,638.1406 Q28.8906,638.4375 28.25,638.5781 Q27.6094,638.7344 26.9063,638.7344 Q24.4063,638.7344 23.0781,637.0938 Q21.7656,635.4375 21.7656,632.3125 Q21.7656,629.1875 23.0781,627.5313 Q24.4063,625.875 26.9063,625.875 Q27.6094,625.875 28.25,626.0313 Q28.9063,626.1875 29.4688,626.4844 L29.4688,629.2031 Q28.8438,628.625 28.25,628.3594 Q27.6563,628.0781 27.0313,628.0781 Q25.6875,628.0781 25,629.1563 Q24.3125,630.2188 24.3125,632.3125 Q24.3125,634.4063 25,635.4844 Q25.6875,636.5469 27.0313,636.5469 Q27.6563,636.5469 28.25,636.2813 Q28.8438,636 29.4688,635.4219 L29.4688,638.1406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="82" x="41.5" y="636.6543">TestSuiteInfo</text><line style="stroke:#A80036;stroke-width:1.5;" x1="8" x2="130" y1="648.5" y2="648.5"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="32" x="13" y="662.7104">name</text><line style="stroke:#A80036;stroke-width:1.5;" x1="8" x2="130" y1="669.3047" y2="669.3047"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="112" x="13" y="683.5151">Test[] getTestList ()</text><!--MD5=[115fcfe011001f57234f4b691d362872]
+class TestSuiteTalent--><rect codeLine="36" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="143.5703" id="TestSuiteTalent" style="stroke:#A80036;stroke-width:1.5;" width="427" x="47.5" y="399"/><ellipse cx="207.75" cy="417.9688" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M210.7188,423.6094 Q210.1406,423.9063 209.5,424.0469 Q208.8594,424.2031 208.1563,424.2031 Q205.6563,424.2031 204.3281,422.5625 Q203.0156,420.9063 203.0156,417.7813 Q203.0156,414.6563 204.3281,413 Q205.6563,411.3438 208.1563,411.3438 Q208.8594,411.3438 209.5,411.5 Q210.1563,411.6563 210.7188,411.9531 L210.7188,414.6719 Q210.0938,414.0938 209.5,413.8281 Q208.9063,413.5469 208.2813,413.5469 Q206.9375,413.5469 206.25,414.625 Q205.5625,415.6875 205.5625,417.7813 Q205.5625,419.875 206.25,420.9531 Q206.9375,422.0156 208.2813,422.0156 Q208.9063,422.0156 209.5,421.75 Q210.0938,421.4688 210.7188,420.8906 L210.7188,423.6094 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="72" x="241.25" y="415.1387">«TestSuite»</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="98" x="228.25" y="429.1074">TestSuiteTalent</text><line style="stroke:#A80036;stroke-width:1.5;" x1="48.5" x2="473.5" y1="436.9375" y2="436.9375"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="72" x="53.5" y="451.1479">testSuiteInfo</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="112" x="53.5" y="463.9526">talentDependencies</text><line style="stroke:#A80036;stroke-width:1.5;" x1="48.5" x2="473.5" y1="470.5469" y2="470.5469"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="415" x="53.5" y="484.7573">registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="35" x="53.5" y="497.562">start()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="180" x="53.5" y="510.3667">TestSuiteInfo getTestSuiteInfo()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="171" x="53.5" y="523.1714">TestResult runTest(testName)</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="102" x="53.5" y="535.9761">boolean prepare()</text><!--MD5=[526f72954a4a74488c3598dfc0a3d675]
+class FunctionTalent--><rect codeLine="51" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="48" id="FunctionTalent" style="stroke:#A80036;stroke-width:1.5;" width="125" x="198.5" y="176.5"/><ellipse cx="213.5" cy="192.5" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M216.4688,198.1406 Q215.8906,198.4375 215.25,198.5781 Q214.6094,198.7344 213.9063,198.7344 Q211.4063,198.7344 210.0781,197.0938 Q208.7656,195.4375 208.7656,192.3125 Q208.7656,189.1875 210.0781,187.5313 Q211.4063,185.875 213.9063,185.875 Q214.6094,185.875 215.25,186.0313 Q215.9063,186.1875 216.4688,186.4844 L216.4688,189.2031 Q215.8438,188.625 215.25,188.3594 Q214.6563,188.0781 214.0313,188.0781 Q212.6875,188.0781 212,189.1563 Q211.3125,190.2188 211.3125,192.3125 Q211.3125,194.4063 212,195.4844 Q212.6875,196.5469 214.0313,196.5469 Q214.6563,196.5469 215.25,196.2813 Q215.8438,196 216.4688,195.4219 L216.4688,198.1406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="93" x="227.5" y="196.6543">FunctionTalent</text><line style="stroke:#A80036;stroke-width:1.5;" x1="199.5" x2="322.5" y1="208.5" y2="208.5"/><line style="stroke:#A80036;stroke-width:1.5;" x1="199.5" x2="322.5" y1="216.5" y2="216.5"/><!--MD5=[bf08b20e084e54da5b7c660bfcf93200]
+class Talent--><rect fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="48" id="Talent" style="stroke:#A80036;stroke-width:1.5;" width="71" x="317.5" y="7"/><ellipse cx="332.5" cy="23" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M335.4688,28.6406 Q334.8906,28.9375 334.25,29.0781 Q333.6094,29.2344 332.9063,29.2344 Q330.4063,29.2344 329.0781,27.5938 Q327.7656,25.9375 327.7656,22.8125 Q327.7656,19.6875 329.0781,18.0313 Q330.4063,16.375 332.9063,16.375 Q333.6094,16.375 334.25,16.5313 Q334.9063,16.6875 335.4688,16.9844 L335.4688,19.7031 Q334.8438,19.125 334.25,18.8594 Q333.6563,18.5781 333.0313,18.5781 Q331.6875,18.5781 331,19.6563 Q330.3125,20.7188 330.3125,22.8125 Q330.3125,24.9063 331,25.9844 Q331.6875,27.0469 333.0313,27.0469 Q333.6563,27.0469 334.25,26.7813 Q334.8438,26.5 335.4688,25.9219 L335.4688,28.6406 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="39" x="346.5" y="27.1543">Talent</text><line style="stroke:#A80036;stroke-width:1.5;" x1="318.5" x2="387.5" y1="39" y2="39"/><line style="stroke:#A80036;stroke-width:1.5;" x1="318.5" x2="387.5" y1="47" y2="47"/><!--MD5=[ce49b876704c61fc95b36896a13541b2]
+class TestRunnerTalent--><rect codeLine="54" fill="#FEFECE" filter="url(#fa9kgjaab571y)" height="169.1797" id="TestRunnerTalent" style="stroke:#A80036;stroke-width:1.5;" width="177" x="358.5" y="116"/><ellipse cx="388.8" cy="134.9688" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M391.7688,140.6094 Q391.1906,140.9063 390.55,141.0469 Q389.9094,141.2031 389.2063,141.2031 Q386.7063,141.2031 385.3781,139.5625 Q384.0656,137.9063 384.0656,134.7813 Q384.0656,131.6563 385.3781,130 Q386.7063,128.3438 389.2063,128.3438 Q389.9094,128.3438 390.55,128.5 Q391.2063,128.6563 391.7688,128.9531 L391.7688,131.6719 Q391.1438,131.0938 390.55,130.8281 Q389.9563,130.5469 389.3313,130.5469 Q387.9875,130.5469 387.3,131.625 Q386.6125,132.6875 386.6125,134.7813 Q386.6125,136.875 387.3,137.9531 Q387.9875,139.0156 389.3313,139.0156 Q389.9563,139.0156 390.55,138.75 Q391.1438,138.4688 391.7688,137.8906 L391.7688,140.6094 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacing" textLength="85" x="419.2" y="132.1387">«TestRunner»</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="111" x="406.2" y="146.1074">TestRunnerTalent</text><line style="stroke:#A80036;stroke-width:1.5;" x1="359.5" x2="534.5" y1="153.9375" y2="153.9375"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="32" x="364.5" y="168.1479">name</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="34" x="364.5" y="180.9526">config</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="149" x="364.5" y="193.7573">String[] testSuiteTalentIds</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="112" x="364.5" y="206.562">talentDependencies</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="43" x="364.5" y="219.3667">timeout</text><line style="stroke:#A80036;stroke-width:1.5;" x1="359.5" x2="534.5" y1="225.9609" y2="225.9609"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="94" x="364.5" y="240.1714">start(timeoutMs)</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="165" x="364.5" y="252.9761">runTestSuite(testSuiteName)</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="88" x="364.5" y="265.7808">runTestSuites()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="114" x="364.5" y="278.5854">create_test_output()</text><!--MD5=[d4875e5f8cd0ee57efd3a666a57a0c2a]
+reverse link FunctionTalent to TestSuiteTalent--><path d="M261,244.7136 C261,286.4629 261,349.8133 261,398.876 " fill="none" id="FunctionTalent-backto-TestSuiteTalent" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="none" points="254.0001,244.5051,261,224.5051,268.0001,244.505,254.0001,244.5051" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[e13710d7b1ab7c8fddf725999d24ed55]
+link TestSuiteTalent to TestSuiteInfo--><path codeLine="46" d="M185.1165,543.1288 C160.1467,566.8632 133.2758,592.4046 111.6782,612.9335 " fill="none" id="TestSuiteTalent-to-TestSuiteInfo" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="107.9842,616.4447,117.2633,613.1436,111.6083,613,111.7519,607.345,107.9842,616.4447" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[b07ae63d7309d431f3e2d35861ce77fb]
+link TestSuiteTalent to Test--><path codeLine="47" d="M294.5943,543.1288 C303.2472,561.7072 312.4158,581.3928 320.5768,598.9148 " fill="none" id="TestSuiteTalent-to-Test" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="322.8506,603.7968,322.6769,593.9495,320.7396,599.2643,315.4248,597.327,322.8506,603.7968" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[c2424fce06119789e94ee82910f87681]
+link TestSuiteTalent to TestResult--><path codeLine="48" d="M242.8196,543.1288 C237.5859,563.8929 232.0036,586.04 227.2237,605.0039 " fill="none" id="TestSuiteTalent-to-TestResult" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="225.8977,610.2645,231.9762,602.5152,227.1198,605.4162,224.2188,600.5598,225.8977,610.2645" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[2dd888a82efa9f949096391f4dc67439]
+link TestSuiteTalent to TalentDependencies--><path codeLine="49" d="M366.5255,543.1288 C394.7513,562.4217 424.7239,582.9087 451.0847,600.9268 " fill="none" id="TestSuiteTalent-to-TalentDependencies" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="455.2836,603.7968,450.1106,595.4159,451.1557,600.9754,445.5962,602.0205,455.2836,603.7968" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[4e9646824cb7c1afe575956f4d461d33]
+reverse link Talent to FunctionTalent--><path d="M330.261,72.8942 C312.6132,105.4082 288.7665,149.3433 274.1569,176.2598 " fill="none" id="Talent-backto-FunctionTalent" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="none" points="324.1257,69.5237,339.8186,55.2852,336.4301,76.2022,324.1257,69.5237" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[0aaea49c9291512371e69a9410d86076]
+reverse link Talent to TestRunnerTalent--><path d="M376.2334,72.8942 C383.4796,85.9606 391.7488,100.8715 400.0172,115.781 " fill="none" id="Talent-backto-TestRunnerTalent" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="none" points="370.046,76.1706,366.4679,55.2852,382.2893,69.3808,370.046,76.1706" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[72fd38067eb4990fb21d7bee1f717297]
+link TestRunnerTalent to TestSuiteTalent--><path codeLine="67" d="M370.4368,285.2477 C362.5711,295.0571 354.9331,305.0977 348,315 C330.5983,339.8541 313.7902,368.4968 299.6638,394.4019 " fill="none" id="TestRunnerTalent-to-TestSuiteTalent" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="297.2394,398.869,305.048,392.8668,299.6244,394.4745,298.0167,389.0509,297.2394,398.869" style="stroke:#A80036;stroke-width:1.0;"/><path d="M353,320 L353,360 L493,360 L493,330 L483,320 L353,320 " fill="#FBFB77" filter="url(#fa9kgjaab571y)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M483,320 L483,330 L493,330 L483,320 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115" x="359" y="337.0669">used via IoT Event</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115" x="359" y="352.1997">Analytics Platform</text><!--MD5=[553ba07a39ca2d7cf3569c9f7f6d3e27]
+link TestRunnerTalent to TalentDependencies--><path codeLine="73" d="M495.4237,285.226 C499.5878,295.0395 503.2527,305.087 506,315 C532.9402,412.2096 533.6785,530.876 531.2172,598.7668 " fill="none" id="TestRunnerTalent-to-TalentDependencies" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="531.0187,603.9682,535.3591,595.1273,531.2094,598.9718,527.3649,594.8222,531.0187,603.9682" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[d9b84683dfb1631778bff83898f2b5b5]
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+class Test {
+    name
+    expectedValue
+    testFunction
+    timeout
+}
+
+class TestResult {
+    name
+    actualValue
+    duration
+ }
+
+ class TalentDependencies {
+    addTalent(talentId)
+    removeTalent(talentId)
+    String[] checkAll()
+    waitForDependencies(timeoutMs)
+}
+
+class TestSuiteInfo {
+    name
+    Test[] getTestList ()
+}
+
+class TestSuiteTalent<<TestSuite>> extends FunctionTalent {
+    testSuiteInfo
+    talentDependencies
+    registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
+    start()
+    TestSuiteInfo getTestSuiteInfo()
+    TestResult runTest(testName)
+    boolean prepare() 
+}
+
+TestSuiteTalent - -> TestSuiteInfo 
+TestSuiteTalent - -> Test
+TestSuiteTalent - -> TestResult
+TestSuiteTalent - -> TalentDependencies
+
+class FunctionTalent extends Talent {
+}
+
+class TestRunnerTalent<<TestRunner>> extends Talent {
+    name
+    config
+    String[] testSuiteTalentIds
+    talentDependencies
+    timeout
+    
+    start(timeoutMs)
+    runTestSuite(testSuiteName)
+    runTestSuites()
+    create_test_output()
+}
+
+TestRunnerTalent - -> TestSuiteTalent
+note top on link
+    used via IoT Event 
+    Analytics Platform
+end note
+
+TestRunnerTalent - -> TalentDependencies
+
+@enduml
+
+@startuml
+
+class Test {
+    name
+    expectedValue
+    testFunction
+    timeout
+}
+
+class TestResult {
+    name
+    actualValue
+    duration
+ }
+
+ class TalentDependencies {
+    addTalent(talentId)
+    removeTalent(talentId)
+    String[] checkAll()
+    waitForDependencies(timeoutMs)
+}
+
+class TestSuiteInfo {
+    name
+    Test[] getTestList ()
+}
+
+class TestSuiteTalent<<TestSuite>> extends FunctionTalent {
+    testSuiteInfo
+    talentDependencies
+    registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
+    start()
+    TestSuiteInfo getTestSuiteInfo()
+    TestResult runTest(testName)
+    boolean prepare() 
+}
+
+TestSuiteTalent - -> TestSuiteInfo 
+TestSuiteTalent - -> Test
+TestSuiteTalent - -> TestResult
+TestSuiteTalent - -> TalentDependencies
+
+class FunctionTalent extends Talent {
+}
+
+class TestRunnerTalent<<TestRunner>> extends Talent {
+    name
+    config
+    String[] testSuiteTalentIds
+    talentDependencies
+    timeout
+    
+    start(timeoutMs)
+    runTestSuite(testSuiteName)
+    runTestSuites()
+    create_test_output()
+}
+
+TestRunnerTalent - -> TestSuiteTalent
+note top on link
+    used via IoT Event 
+    Analytics Platform
+end note
+
+TestRunnerTalent - -> TalentDependencies
+
+@enduml
+
+PlantUML version 1.2021.7(Sun May 23 15:40:07 EEST 2021)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

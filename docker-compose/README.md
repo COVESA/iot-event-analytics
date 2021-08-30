@@ -98,12 +98,24 @@ Build and run sdk test suite containers with the command below. Depending on whi
 Build and run the test runner to start integration tests execution: \
 ```docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up --build```
 
+There are utility scripts in .devcontainer/integration-tests:
+* startPlatform.sh: builds and starts the mqtt broker and the platform
+* startIntegrationTests.sh: builds and run the test suites and the test runner. When the test runner is done executing
+  the test cases, cleanup of the test containers is done.
+
 ### Integration Tests .env-test and .env-test-proxy
 
 The integration tests environments file .env-test differs from .env by:
 - PLATFORM_CONFIG_DIR=../test/integration-tests/config/platform - contains modified configuration of the platform  
 - INTEGRATION_TEST_DIR=/test/integration-tests - contains the sources of the test suites and the runner
 - OUTPUT_TEST_DIR=./ - output directory for junit xml report
+
+### Configuration
+The configuration files of the integration tests are located in
+[../test/integration-tests/config/](../test/integration-tests/config/):
+* platform - contains the configuration for the IoT Event Analytics Platform used during the tests
+* javascript/runner/config.json and python/runner/config.json contain the configurations of the corresponding
+  TestRunners. The description of the properties can be found in [Integration Test Framework doc](../docs/topics/iotea-integration-test-framework.md#Configuration).
 
 ## Debug
 

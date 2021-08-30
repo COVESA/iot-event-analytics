@@ -1,0 +1,48 @@
+@startuml
+actor TestAutomation as Actor1
+actor TestAutomation as Actor2
+Actor1 -> TestRunner: init()
+note right
+    read configurations: which testSuites to be run, timeouts, report location
+end note
+
+Actor1 -> TestRunner: start()
+activate TestRunner
+
+Actor2 -> TestSuite: init()
+activate TestSuite
+group register all test cases
+TestSuite -> TestSuite: registerTest
+TestSuite -> TestSuite: addTalentDependencies
+end
+deactivate TestSuite
+
+
+activate TestSuite
+Actor2 -> TestSuite: start()
+TestSuite -> TestSuite: waitForDependencies
+deactivate TestSuite
+
+
+TestRunner -> TestRunner: waitForTestSuitesDiscovery
+loop for each testSuite in testSuites
+TestRunner -> TestSuite: getTestSuiteInfo
+TestRunner <-- TestSuite: {'name': testSuiteName, 'tests': [*{name, expectedValue, testFunction, timeout }]}
+TestRunner -> TestSuite: prepare
+
+loop for each test in tests
+    TestRunner -> TestSuite: runTest(test.name)
+    activate TestSuite
+    TestSuite  -> TestSuite: testFunction (e.g. test_echo_string)
+    TestRunner <-- TestSuite: {'name': testName, 'actual': actualValue, 'duration':duration}
+    deactivate TestSuite
+    alt if test.expectedValue == actualValue
+        TestRunner -> TestRunner: testReport.add(testcase, OK)
+    else Failure
+        TestRunner -> TestRunner: testReport.add(testcase, Failure)
+    end
+end
+end
+TestRunner -> TestRunner: create_test_output: junit-report.xml
+deactivate TestRunner
+@enduml
