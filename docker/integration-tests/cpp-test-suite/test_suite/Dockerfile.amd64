@@ -18,6 +18,7 @@ ca-certificates
 # > > > > > > > > > > > > > > > > > > > > > STAGE 1: 
 FROM base_stage as build_stage
 ARG INTEGRATION_TEST_PATH
+ARG CONFIG_PATH
 
 # Create app directory
 RUN mkdir -p /app
@@ -28,6 +29,7 @@ COPY /src/sdk/cpp ./src/sdk/cpp
 
 # Copy C++ integration-Test sources
 COPY ${INTEGRATION_TEST_PATH} .${INTEGRATION_TEST_PATH}
+COPY ${CONFIG_PATH} config
 
 # set the directory for building the cpp app's
 WORKDIR /app${INTEGRATION_TEST_PATH}

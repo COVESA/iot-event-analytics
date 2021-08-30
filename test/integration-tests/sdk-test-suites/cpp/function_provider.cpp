@@ -9,6 +9,7 @@
  ****************************************************************************/
 
 #include <csignal>
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -35,31 +36,26 @@ class FunctionProvider : public FunctionTalent {
     }
 };
 
-static auto mqtt_config = json{
-    {"platform", true},
-    {"module", {
-                   {"name", "./iotea-sdk-cpp-lib/adapters/mqtt/libmqtt_protocol_adapter.so"}
-               }
-    },
-    {"config",
-        {
-            {"brokerUrl", "tcp://mosquitto:1883"},
-            {"topicNamespace", "iotea/"}
-        }
-    }
-};
-static auto gateway_config = ProtocolGateway::CreateConfig(json{mqtt_config});
-static auto gateway = std::make_shared<ProtocolGateway>(gateway_config);
-static Client client{gateway};
+std::shared_ptr<Client> client;
 
-void signal_handler(int) { client.Stop(); }
+void signal_handler(int) {
+    if (client) {
+        client->Stop();
+    }
+}
 
 int main(int, char**) {
+    std::ifstream file{"../../../config/tests/cpp/config.json"};
+    std::string config{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+
+    auto gateway = std::make_shared<ProtocolGateway>(json::parse(config));
+    client = std::make_shared<Client>(gateway);
+
     auto talent = std::make_shared<FunctionProvider>();
-    client.RegisterFunctionTalent(talent);
+    client->RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);
-    client.Start();
+    client->Start();
 
     return 0;
 }
