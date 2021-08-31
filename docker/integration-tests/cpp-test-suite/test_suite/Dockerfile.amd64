@@ -29,7 +29,7 @@ COPY /src/sdk/cpp ./src/sdk/cpp
 
 # Copy C++ integration-Test sources
 COPY ${INTEGRATION_TEST_PATH} .${INTEGRATION_TEST_PATH}
-COPY ${CONFIG_PATH} config
+COPY ${CONFIG_PATH} .${CONFIG_PATH}
 
 # set the directory for building the cpp app's
 WORKDIR /app${INTEGRATION_TEST_PATH}
@@ -50,8 +50,9 @@ WORKDIR /app
 # we only want the bare minimum libraries for it to work in runtime
 RUN apk add --no-cache libstdc++ libgcc
 
-# Copy in pre-built cpp exe from build stage
+# Copy in pre-built cpp exe and config from build stage
 COPY --from=build_stage /app${INTEGRATION_TEST_PATH}/build .${INTEGRATION_TEST_PATH}/build
+COPY --from=build_stage /app${CONFIG_PATH} .${CONFIG_PATH}
 
 WORKDIR /app${INTEGRATION_TEST_PATH}/build
 

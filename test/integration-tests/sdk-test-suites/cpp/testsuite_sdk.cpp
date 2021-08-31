@@ -63,7 +63,7 @@ int main(int, char**) {
     client = std::make_shared<Client>(gateway);
 
     auto talent = std::make_shared<TestSuiteSDK>();
-    client->RegisterTalent(talent);
+    client->RegisterFunctionTalent(talent);
 
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);

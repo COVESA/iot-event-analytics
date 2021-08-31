@@ -25,16 +25,20 @@ set(WITH_EXAMPLES FALSE CACHE BOOL "Examples will be built")
 
 add_subdirectory(${IOTEA_SDK_CPP_PATH} ${CMAKE_BINARY_DIR}/iotea-sdk-cpp-lib)
 
-message(${CMAKE_SOURCE_DIR}/${IOTEA_SDK_CPP_PATH}/lib/include)
-
+# Target function_provider_for_test
 add_executable(function_provider_for_test
     function_provider.cpp
 )
 
 target_include_directories(function_provider_for_test PRIVATE ${CMAKE_SOURCE_DIR}/${IOTEA_SDK_CPP_PATH}/lib/include)
-target_link_libraries(function_provider_for_test PUBLIC iotea_sdk_cpp)
+target_link_libraries(function_provider_for_test
+    PUBLIC
+    iotea_sdk_cpp
+    mqtt_protocol_adapter
+    nlohmann_json::nlohmann_json
+)
 
-    
+# Target testuite_sdk
 add_executable(testsuite_sdk
     testsuite_sdk.cpp
 )
