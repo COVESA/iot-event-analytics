@@ -1,0 +1,79 @@
+@startuml
+/'
+  Copyright (c) 2021 Bosch.IO GmbH
+
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+  SPDX-License-Identifier: MPL-2.0
+'/
+
+class Test {
+    name
+    expectedValue
+    testFunction
+    timeout
+}
+
+class TestResult {
+    name
+    actualValue
+    duration
+ }
+
+ class TalentDependencies {
+    addTalent(talentId)
+    removeTalent(talentId)
+    String[] checkAll()
+    waitForDependencies(timeoutMs)
+}
+
+class TestSuiteInfo {
+    name
+    Test[] getTestList ()
+}
+
+class TestSuiteTalent<<TestSuite>> extends FunctionTalent {
+    testSuiteInfo
+    talentDependencies
+    registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
+    start()
+    TestSuiteInfo getTestSuiteInfo()
+    TestResult runTest(testName)
+    boolean prepare() 
+}
+
+TestSuiteTalent --> TestSuiteInfo 
+TestSuiteTalent --> Test
+TestSuiteTalent --> TestResult
+TestSuiteTalent --> TalentDependencies
+
+class FunctionTalent extends Talent {
+}
+
+class TestRunnerTalent<<TestRunner>> extends Talent {
+    name
+    config
+    String[] testSuiteTalentIds
+    talentDependencies
+    timeout
+    
+    start(timeoutMs)
+    runTestSuite(testSuiteName)
+    runTestSuites()
+    create_test_output()
+}
+
+TestRunnerTalent --> TestSuiteTalent
+note top on link
+    used via IoT Event 
+    Analytics Platform
+end note
+
+TestRunnerTalent --> TalentDependencies
+' TestRunnerTalent --> TestSuiteInfo
+' TestRunnerTalent --> TestResult
+' TestRunnerTalent --> TestResult
+
+@enduml
