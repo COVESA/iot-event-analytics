@@ -15,24 +15,35 @@
 
 #include "nlohmann/json.hpp"
 #include "client.hpp"
+#include "protocol_gateway.hpp"
+#include "testsuite_talent.hpp"
 
 using json = nlohmann::json;
 
 using iotea::core::Client;
-using iotea::core::FunctionTalent;
 using iotea::core::ProtocolGateway;
-using iotea::core::call_ctx_ptr;
+using iotea::test::TestSuiteTalent;
 
-static const char TALENT_ID[] = "functionProvider-cpp";
-static const char FUNC_ECHO[] = "echo";
+static const char TALENT_NAME[] = "testSuite-sdk-cpp";
+static const char FEATURE_TESTABLE_TALENT[] = "functionProvider-cpp";
+static const char FUNC_TESTABLE_TALENT_ECHO[] = "echo";
 
-class FunctionProvider : public FunctionTalent {
+class TestSuiteSDK : public TestSuiteTalent {
    public:
-    FunctionProvider()
-        : FunctionTalent(TALENT_ID) {
-        RegisterFunction(FUNC_ECHO, [](const json& args, call_ctx_ptr context) {
-            context->Reply(args[0]);
-        });
+    TestSuiteSDK()
+        : TestSuiteTalent(TALENT_NAME) {
+        auto callee = RegisterCallee(FEATURE_TESTABLE_TALENT, FUNC_TESTABLE_TALENT_ECHO);
+
+        auto timeout = 500;
+
+        RegisterTest("echoString", "Hello World", callee, {"Hello World"}, timeout);
+        RegisterTest("echoBoolean", true, callee, {true}, timeout);
+        RegisterTest("echoInteger", 123, callee, {123}, timeout);
+        RegisterTest("echoDouble", 123.456, callee, {123.456}, timeout);
+        RegisterTest("echoEmptyList", json::array(), callee, json::array({json::array()}), timeout);
+        RegisterTest("echoIntegerList", {1, 2, 3}, callee, {{1, 2, 3}}, timeout);
+        RegisterTest("echoMixedList", {1, "Hello World", 3.21}, callee, {{1, "Hello World", 3.21}}, timeout);
+        RegisterTest("echoDeepList", {1, {2, {3, {4, {5}}}}}, callee, {{1, {2, {3, {4, {5}}}}}}, timeout);
     }
 };
 
@@ -51,7 +62,7 @@ int main(int, char**) {
     auto gateway = std::make_shared<ProtocolGateway>(json::parse(config));
     client = std::make_shared<Client>(gateway);
 
-    auto talent = std::make_shared<FunctionProvider>();
+    auto talent = std::make_shared<TestSuiteSDK>();
     client->RegisterFunctionTalent(talent);
 
     std::signal(SIGINT, signal_handler);

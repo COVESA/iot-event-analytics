@@ -46,7 +46,7 @@ async def main():
         try:
             await task
         except asyncio.exceptions.CancelledError:
-            #do nothing - clean up at exit
+            # do nothing - clean up at exit
             pass
     asyncio.get_event_loop().stop()
 

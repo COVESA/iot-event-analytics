@@ -50,8 +50,6 @@ class EventTester extends FunctionTalent {
 }
 
 const pgConfig = config.get("protocolGateway")
-
-
 const talent1 = new EventTester('event-tester-1-js', pgConfig);
 const talent2 = new EventTester('event-tester-2-js', pgConfig);
 

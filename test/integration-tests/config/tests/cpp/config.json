@@ -3,10 +3,10 @@
         {
             "platform": true,
             "module": {
-                "name": "adapters/mqtt/libmqtt_protocol_adapter.so"
+                "name": "./iotea-sdk-cpp-lib/adapters/mqtt/libmqtt_protocol_adapter.so"
             },
             "config": {
-                "brokerUrl": "tcp://localhost:1883",
+                "brokerUrl": "tcp://mosquitto:1883",
                 "topicNamespace": "iotea/"
             }
         }

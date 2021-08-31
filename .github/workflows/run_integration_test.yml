@@ -1,4 +1,4 @@
-name: Integration test
+name: Integration tests
 
 on: [push, pull_request]
 
@@ -21,37 +21,33 @@ jobs:
       shell: bash
       # All the SDK's integration tests are dockerized and build the
       # latest version of the platform each time. 
-      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
-      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
-      #run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f
-      #docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
       
   
     - name: Start platform & ALL SDK test-suites
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash 
       # It's run daemonized (docker-compose -d) since a running platform
-      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml --env-file .env-test up -d
-      # TODO docker-compose.integration_tests_cpp temporarily removed from flow
-      #run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
+      run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
 
-    - name: Start integration-test runner
+    - id: run_tests 
+      name: Start integration-test runner
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash
       # This is a test as this container must exit once all tests are completed! The test runner 
       # container will exit with a basic 0:pass/1:fail code currently
-      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up
+      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up --exit-code-from test_runner_all
       timeout-minutes: 2
 
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       if: always() # always run even if the previous step fails
       with:
-        report_paths: 'docker-compose/junit-report.xml'
+        report_paths: 'docker-compose/junit.xml'
         token:  ${{secrets.GITHUB_TOKEN}}
 
     - name: Upload Test Report
       uses: actions/upload-artifact@v2
       with:
           name: junit-report
-          path: 'docker-compose/junit-report.xml'
+          path: 'docker-compose/junit.xml'

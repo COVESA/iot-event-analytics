@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE CACHE BOOL "PIC")
 
 set(IOTEA_SDK_STATIC_PAHO TRUE CACHE BOOL "Statically link Paho libraries")
+set(WITH_EXAMPLES TRUE CACHE BOOL "Examples will be built")
 
 include(FetchContent)
 FetchContent_Declare(
@@ -55,7 +56,9 @@ add_subdirectory(${nlohmann_json_SOURCE_DIR} ${nlohmann_json_BINARY_DIR} EXCLUDE
 add_subdirectory(adapters)
 
 ## examples
-add_subdirectory(examples)
+if(WITH_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ## lib
 add_subdirectory(lib)

@@ -1,6 +1,6 @@
 {
     "loglevel": "INFO",
-    "testSuites": ["testSuite-sdk-py", "testSuite-sdk-js"],
+    "testSuites": ["testSuite-sdk-py", "testSuite-sdk-js", "testSuite-sdk-cpp"],
     "platformId": "integration-tests",
     "protocolGateway": {
         "adapters": [
@@ -17,6 +17,6 @@
             }
         ]
     },
-    "outputFile": "./report/junit-report.xml",
+    "outputFile": "./report/junit.xml",
     "discoverDependenciesTimeout": 60
 }
