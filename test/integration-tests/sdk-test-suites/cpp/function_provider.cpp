@@ -55,6 +55,8 @@ int main(int, char**) {
     client->RegisterTalent(talent);
 
     std::signal(SIGINT, signal_handler);
+    std::signal(SIGTERM, signal_handler);
+
     client->Start();
 
     return 0;
