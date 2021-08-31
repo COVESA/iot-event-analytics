@@ -30,12 +30,13 @@ jobs:
       # It's run daemonized (docker-compose -d) since a running platform
       run: docker-compose -f docker-compose.mosquitto.yml -f docker-compose.platform.yml -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file .env-test up -d
 
-    - name: Start integration-test runner
+    - id: run_tests 
+      name: Start integration-test runner
       working-directory: ${{github.workspace}}/docker-compose
       shell: bash
       # This is a test as this container must exit once all tests are completed! The test runner 
       # container will exit with a basic 0:pass/1:fail code currently
-      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up
+      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up --exit-code-from test_runner_all
       timeout-minutes: 2
 
     - name: Publish Test Report
