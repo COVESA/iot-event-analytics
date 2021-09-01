@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.5.0"
+        iotea.iotea.version: "0.6.0"
       dockerfile: ./docker/integration-tests/cpp-test-suite/test_suite/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
@@ -18,7 +18,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.5.0"
+        iotea.iotea.version: "0.6.0"
       dockerfile: ./docker/integration-tests/cpp-test-suite/test_fnc/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
