@@ -179,7 +179,7 @@
                 "iotea.terminal.pip": {
                     "scope": "machine-overridable",
                     "type": "string",
-                    "default": "pip3",
+                    "default": "pip",
                     "description": "Pip module"
                 },
                 "iotea.autocomplete.typeFeatures.refresh-interval-ms": {

@@ -63,6 +63,6 @@ _"Trigger suggest"_, _"Toggle Autocompletion"_ can be triggered using
 - _"The Docker version check fails"_<br>
   Make sure you have the latest Docker version installed. The docker version is retrieved using: `docker version --format={{.Client.Version}}`. Test in your console, if this command returns the version number for your current docker installation.
 - _"The Python version check fails"_<br>
-  You can specify the Python interpreter and the pip module in the settings. It defaults to `python3` and `pip3` for standalone installations. If you are running a virtual environment setup based on Anaconda, you have to use `python` and `pip`. On Linux-Systems it can be different. Please check in a terminal, which command to use and update the settings accordingly.
+  You can specify the Python interpreter and the pip module in the settings. It defaults to `python3` and `pip` for standalone installations. If you are running a virtual environment setup based on Anaconda, you have to use `python` and `pip`. On Linux-Systems it can be different. Please check in a terminal, which command to use and update the settings accordingly.
 - _"I cannot publish MQTT messages"_<br>
   Make sure you executed `yarn` in the IoT Event Analytics project folder to install all needed dependencies
