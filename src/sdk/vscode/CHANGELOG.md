@@ -12,8 +12,12 @@
 
 ## [Unreleased]
 
+- 0.9.9 [2021-09-13]
+  - pip module name changed from "pip3" to "pip" in vscode settings.
+  - VSCode extension artefact is now generated under two names: iotea-\<version\>.vsix and iotea.vsix. iotea-\<version\>.vsix will be deprecated, use iotea.vsix.
+
 - 0.9.8 [2021-06-30]
-  - Stop MQTT Publisher spawning Node.js processes indefinitly
+  - Stop MQTT Publisher spawning Node.js processes indefinitely
 
 - 0.9.7 [2021-06-17]
   - Fix breaking change in vss-tools API for creating a vss file
@@ -21,7 +25,7 @@
 - 0.9.6 [2021-06-17]
   - Fix version parsing of unknown docker-compose builds
   - Add troubleshooting entry for making hidden files visible in the file open dialog for macOS
-  - Add button captions of file dialogs to compensate for hidden dialog titel on macOS
+  - Add button captions of file dialogs to compensate for hidden dialog title on macOS
 
 - 0.9.5 [2021-06-07]
   - Update certificate path within Kuksa.VAL repository

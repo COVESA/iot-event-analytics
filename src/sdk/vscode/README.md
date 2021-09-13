@@ -26,7 +26,7 @@ Additionally, all requirements will be checked on the first command invocation a
 ## Installation
 
 - Go to _View_ > _Extensions_ > _..._ > _Install from VSIX_
-- Select the desired version from _lib/iotea-\<version\>.vsix_
+- Select _lib/iotea.vsix_
 - Restart Visual Studio Code
 
 ## Settings
