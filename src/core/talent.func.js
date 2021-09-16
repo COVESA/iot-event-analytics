@@ -113,7 +113,7 @@ module.exports = class FunctionTalent extends Talent {
             result = TalentOutput.create(this, ev, `${rawValue.func}-out`, {
                 $tsuffix,
                 $vpath: 'error',
-                error: err.message
+                error: (typeof err.message !== 'undefined') ? err.message: err
             });
 
             result.msgType = MSG_TYPE_ERROR;
