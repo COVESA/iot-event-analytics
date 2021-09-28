@@ -1,0 +1,40 @@
+{
+  "name": "@genivi/iotea-cli",
+  "version": "0.0.1",
+  "description": "Command-line utility for IoT Event Analytics",
+  "main": "cli.js",
+  "bin": {
+    "iotea": "cli.js"
+  },
+  "scripts": {
+    "prepublish": "copyfiles --verbose --error --up 3 \"../../../docker/**\" \"../../../docker-compose/**\" ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GENIVI/iot-event-analytics.git"
+  },
+  "keywords": [
+    "iot",
+    "event",
+    "analytics"
+  ],
+  "author": "Bosch.IO GmbH",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/GENIVI/iot-event-analytics/issues"
+  },
+  "homepage": "https://github.com/GENIVI/iot-event-analytics#readme",
+  "dependencies": {
+    "yargs": "17.1.1",
+    "docker-compose": "0.23.13",
+    "pino": "6.13.2",
+    "pino-pretty": "6.0.0",
+    "json-query": "2.2.2",
+    "jest": "27.1.1",
+    "jest-cli": "27.1.1",
+    "github-api": "3.4.0",
+    "node-rest-client": "3.1.0",
+    "urllib": "2.37.4",
+    "copyfiles": "2.4.1"
+  }
+}
