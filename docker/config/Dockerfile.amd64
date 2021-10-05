@@ -32,14 +32,13 @@ RUN npm config set maxsockets 5 -g
 RUN yarn --production
 
 # Audit all packages for security vulnerabilities
-# RUN yarn audit --verbose --groups dependencies --level critical   2>&1 > ./yarn_audit.log || echo "Check the yarn.log"
 RUN yarn audit --groups dependencies --level critical; \
- yarncode=$?; \
- if [ "$yarncode" -lt 16 ]; then \
- exit 0; \
- else \
- exit $yarncode; \
- fi
+    yarncode=$?; \
+    if [ "$yarncode" -lt 16 ]; then \
+        exit 0; \
+    else \
+        exit $yarncode; \
+    fi
 
 # Shrink node_modules
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh

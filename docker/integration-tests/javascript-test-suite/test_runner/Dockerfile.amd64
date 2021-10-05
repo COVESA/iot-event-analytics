@@ -24,7 +24,13 @@ RUN npm config set strict-ssl false -g
 RUN npm config set maxsockets 5 -g
 
 # Audit all packages for security vulnerabilities - exit early
-RUN yarn audit
+RUN yarn audit --level critical; \
+    yarncode=$?; \
+    if [ "$yarncode" -lt 16 ]; then \
+        exit 0; \
+    else \
+        exit $yarncode; \
+    fi
 
 
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
