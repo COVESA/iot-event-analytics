@@ -5,7 +5,7 @@
     "categories": [
         "Snippets"
     ],
-    "version": "0.9.9",
+    "version": "0.9.10",
     "license": "MPL-2.0",
     "private": "true",
     "author": "Bosch.IO GmbH",
@@ -49,16 +49,6 @@
                 "command": "iotea.publishMqttMessage",
                 "title": "Publish an MQTT message",
                 "category": "Bosch IoT Event Analytics"
-            },
-            {
-                "command": "iotea.vss.createIoTeaTypesFromVssJson",
-                "title": "Convert VSS configuration to IoT Event Analytics types configuration",
-                "category": "Vehicle Signal Specification"
-            },
-            {
-                "command": "iotea.vss.createKuksaValConfiguration",
-                "title": "Create configuration for Kuksa.VAL (including VSS configuration)",
-                "category": "Vehicle Signal Specification"
             }
         ],
         "snippets": [

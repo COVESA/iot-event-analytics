@@ -12,6 +12,9 @@
 
 ## [Unreleased]
 
+- 0.9.10 [2021-10-06]
+  - removed VSCode functions to build types.json from vss.json 
+  
 - 0.9.9 [2021-09-13]
   - pip module name changed from "pip3" to "pip" in vscode settings.
   - VSCode extension artefact is now generated under two names: iotea-\<version\>.vsix and iotea.vsix. iotea-\<version\>.vsix will be deprecated, use iotea.vsix.
