@@ -12,7 +12,7 @@
 
 ## [Unreleased]
 
-- 0.9.91 [2021-10-06]
+- 0.9.10 [2021-10-06]
   - removed VSCode functions to build types.json from vss.json 
   
 - 0.9.9 [2021-09-13]
