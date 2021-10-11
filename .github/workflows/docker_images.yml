@@ -34,8 +34,8 @@ jobs:
           context: .
           platforms: linux/amd64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/configmanager-amd64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/configmanager-amd64:latest
+            ${{ IMAGE_NAME }}/configmanager-amd64:latest
+            ghcr.io/${{ IMAGE_NAME }}/configmanager-amd64:latest
           file: docker/config/Dockerfile.amd64
       - name: Build IoTEA-Configmanager (linux/arm64)
         uses: docker/build-push-action@v2
@@ -43,8 +43,8 @@ jobs:
           context: .
           platforms: linux/arm64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/configmanager-arm64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/configmanager-arm64:latest
+            ${{ IMAGE_NAME }}/configmanager-arm64:latest
+            ghcr.io/${{ IMAGE_NAME }}/configmanager-arm64:latest
           file: docker/config/Dockerfile.arm64
       - name: Build IoTEA-Pipeline (linux/amd64)
         uses: docker/build-push-action@v2
@@ -52,8 +52,8 @@ jobs:
           context: .
           platforms: linux/amd64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/pipeline-amd64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/pipeline-amd64:latest
+            ${{ IMAGE_NAME }}/pipeline-amd64:latest
+            ghcr.io/${{ IMAGE_NAME }}/pipeline-amd64:latest
           file: docker/pipeline/Dockerfile.amd64
       - name: Build IoTEA-Pipeline (linux/arm64)
         uses: docker/build-push-action@v2
@@ -61,8 +61,8 @@ jobs:
           context: .
           platforms: linux/arm64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/pipeline-arm64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/pipeline-arm64:latest
+            ${{ IMAGE_NAME }}/pipeline-arm64:latest
+            ghcr.io/${{ IMAGE_NAME }}/pipeline-arm64:latest
           file: docker/pipeline/Dockerfile.arm64
       - name: Build IoTEA-Platform Slim (linux/amd64)
         uses: docker/build-push-action@v2
@@ -70,8 +70,8 @@ jobs:
           context: .
           platforms: linux/amd64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/platform-amd64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/platform-amd64:latest
+            ${{ IMAGE_NAME }}/platform-amd64:latest
+            ghcr.io/${{ IMAGE_NAME }}/platform-amd64:latest
           file: docker/platform/Dockerfile.slim.amd64
       - name: Build IoTEA-Platform Slim (linux/arm64)
         uses: docker/build-push-action@v2
@@ -79,6 +79,6 @@ jobs:
           context: .
           platforms: linux/arm64
           tags: | 
-            ${{ env.GITHUB_REPOSITORY }}/platform-arm64:latest
-            ghcr.io/${{ env.GITHUB_REPOSITORY }}/platform-arm64:latest
+            ${{ IMAGE_NAME }}/platform-arm64:latest
+            ghcr.io/${{ IMAGE_NAME }}/platform-arm64:latest
           file: docker/platform/Dockerfile.slim.arm64
