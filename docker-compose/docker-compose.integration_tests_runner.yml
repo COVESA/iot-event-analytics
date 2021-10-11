@@ -1,6 +1,5 @@
 version: '3.6'
 services:
-  
   test_runner_all:
     build:
       context: ..
@@ -10,8 +9,6 @@ services:
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
         - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
-        - INTEGRATION_TEST_PATH=${INTEGRATION_TEST_DIR}/runner/python
-        - CONFIG_PATH=${INTEGRATION_TEST_DIR}/config
     networks:
       - iotea-platform-network
     volumes:

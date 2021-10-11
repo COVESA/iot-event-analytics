@@ -21,7 +21,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 class TestRunner(TestRunnerTalent):
     def __init__(self, config):
-        super(TestRunner, self).__init__('testRunner-py', config)
+        super(TestRunner, self).__init__('testRunner', config)
 
 
 def read_config(abs_path):

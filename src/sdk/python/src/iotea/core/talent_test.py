@@ -8,8 +8,8 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 import asyncio
-import sys
 import time
+import os
 from asyncio import Event
 
 from junit_xml import TestSuite, TestCase, to_xml_report_string, to_xml_report_file
@@ -18,6 +18,7 @@ from junit_xml import TestSuite, TestCase, to_xml_report_string, to_xml_report_f
 from .talent import Talent
 from .talent_func import FunctionTalent
 from .rules import Rule, OrRules, OpConstraint
+from .util.talent_io import TalentInput
 
 from .constants import (
     PLATFORM_EVENTS_TOPIC,
@@ -26,13 +27,12 @@ from .constants import (
     GET_TEST_INFO_METHOD_NAME,
     PREPARE_TEST_SUITE_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
-    ENCODING_TYPE_BOOLEAN,
+    ENCODING_TYPE_OBJECT,
     TEST_ERROR,
     VALUE_TYPE_RAW,
     DEFAULT_TYPE,
     INGESTION_TOPIC
 )
-
 
 # pylint: disable=too-few-public-methods
 class Test:
@@ -56,7 +56,6 @@ class TestResult:
             'duration': self.duration
         }
 
-
 class TalentDependencies:
     def __init__(self, talent_ids=None, platform_event=None):
         self.dependencies = {}
@@ -74,7 +73,6 @@ class TalentDependencies:
     # pylint: disable=unused-argument,invalid-name
     async def on_platform_event(self, ev, topic, adapter_id=None):
         talent_id = ev['data']['talent']
-
         if ev['type'] == PLATFORM_EVENT_TYPE_SET_CONFIG:
             if talent_id in self.dependencies:
                 self.dependencies[talent_id] = True
@@ -85,15 +83,16 @@ class TalentDependencies:
         for dep_met in self.dependencies.values():
             if not dep_met:
                 return
-        if self.platform_event is not None: self.platform_event.set()
+        if self.platform_event is not None:
+            self.platform_event.set()
 
     def check(self, talent_id):
-        return self.dependencies[talent_id]  # TODO Check needed or return None?
+        # TODO Check needed or return None?
+        return self.dependencies[talent_id]
 
     def check_all(self):
         # Collect the names of all unmet dependencies
         return [k for k, v in self.dependencies.items() if not v]
-
 
 class TestSuiteInfo:
     def __init__(self, name):
@@ -114,26 +113,29 @@ class TestRunnerException(Exception):
 
 # Default Timeout for the TestRunner to wait for all dependencies get discovered
 TIMEOUT = 60
-
-
-class TestRunnerTalent(Talent):
+TEST_SUITE_METHODS = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SUITE_METHOD_NAME, RUN_TEST_METHOD_NAME]
+INTEGRATION_TEST_SUBJECT = 'integration_test_subject'
+INTEGRATION_TEST_INSTANCE = 'integration_test_instance'
+class TestRunnerTalent(FunctionTalent):
     def __init__(self, name, config):
+        self.config_json = config
 
-        test_suites = config['testSuites']
-        methods = [GET_TEST_INFO_METHOD_NAME, PREPARE_TEST_SUITE_METHOD_NAME, RUN_TEST_METHOD_NAME]
-
-        self.test_callees = [f'{test_suite}.{m}' for m in methods for test_suite in test_suites]
+        test_suites = config.get('testSuites', [])
+        self.test_callees = [
+            f'{test_suite}.{m}' for m in TEST_SUITE_METHODS for test_suite in test_suites]
 
         super().__init__(name, config['protocolGateway'])
 
-        self.output_file = config['outputFile']
-        self.discover_dependencies_timeout = config.get('discoverDependenciesTimeout', TIMEOUT)
+        self.register_function('registerTestSuite', self.register_test_suite)
 
-        # TODO run-tests should be made into constant
+        self.output_file = config['outputFile']
+        self.discover_dependencies_timeout = config.get(
+            'discoverDependenciesTimeout', TIMEOUT)
+
         self.add_output('run-tests', {
             'description': 'Event to start the integration tests',
             'encoding': {
-                'type': ENCODING_TYPE_BOOLEAN,
+                'type': ENCODING_TYPE_OBJECT,
                 'encoder': None
             }
         })
@@ -143,20 +145,36 @@ class TestRunnerTalent(Talent):
         dep_names = test_suites[:]
         dep_names.append(name)
 
-        self.dependencies = TalentDependencies(dep_names, platform_event=self.platform_event)
+        self.dependencies = TalentDependencies(
+            dep_names, platform_event=self.platform_event)
 
         self.skip_cycle_check(True)
+
+
+    async def register_test_suite(self, test_suite_name, ev, evtctx, timeout_at_ms):
+        if self.config_json.get('testSuites', []):
+            raise Exception('There are preconfigured testSuites for execution! Dynamic and static registration should not be mixed!')
+        
+        if test_suite_name not in self.test_suites:
+            self.test_suites.append(test_suite_name)
+            self.test_callees.extend([f'{test_suite_name}.{m}' for m in TEST_SUITE_METHODS])
+            self.logger.info('A new test suite: %s was registered!', test_suite_name)
+            return True
+        return False
 
     async def start(self):
         await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC, self.dependencies.on_platform_event)
         loop = asyncio.get_event_loop()
         loop.create_task(super().start())
-        try:
-            await asyncio.wait_for(self.platform_event.wait(), self.discover_dependencies_timeout)
-        except asyncio.exceptions.TimeoutError as e:
-            self.logger.error('Timeout to gather dependencies expired. There are unmet dependencies.')
-
-        await self.trigger_test_run()
+        self.logger.info('Test Runner started ....')
+        
+        # For backward compatibility and to easily handle multiple test suites run: if there's a 
+        # list of predefined testSuites in config.json, run the tests at startup
+        if self.config_json.get('testSuites', []):
+            await self.trigger_test_run()
+            
+        while True:
+            await asyncio.sleep(1)
 
     def callees(self):
         return self.test_callees
@@ -225,7 +243,7 @@ class TestRunnerTalent(Talent):
                     test_case.add_error_info(
                         f'Result: NOT OK ({test_suite_name}.{RUN_TEST_METHOD_NAME}) returned TEST_ERROR')
                     test_cases.append(test_case)
-                    return (False, TestSuite(test_suite_name, test_cases))
+                    return False, TestSuite(test_suite_name, test_cases)
 
                 actual = test_result['actual']
                 duration = test_result['duration']
@@ -260,7 +278,7 @@ class TestRunnerTalent(Talent):
 
         with open(self.output_file, 'w', encoding='utf-8') as f:
             to_xml_report_file(f, test_suites)
-            self.logger.info(f'Junit xml output stored to {f.name}')
+            self.logger.info('Junit xml output stored to %s', f.name)
 
     async def run_test_suites(self, ev):
         result = True
@@ -277,11 +295,19 @@ class TestRunnerTalent(Talent):
         self.create_test_output(test_suites)
         return result
 
-    async def on_event(self, ev, evtctx):
-        # not used
-        pass
 
-    async def trigger_test_run(self):
+    async def on_event(self, ev, evtctx):
+        self.logger.debug('Test Runner Received an event %s', ev)
+        if ev['feature'] == f'{self.id}.run-tests':
+            await self.trigger_test_run(ev)
+
+
+    async def trigger_test_run(self, ev=None):
+        try:
+            await asyncio.wait_for(self.platform_event.wait(), self.discover_dependencies_timeout)
+        except asyncio.exceptions.TimeoutError as e:
+            self.logger.error('Timeout to gather dependencies expired. There are unmet dependencies.')
+        
         unmet_dependencies = self.dependencies.check_all()
 
         if unmet_dependencies:
@@ -297,35 +323,94 @@ class TestRunnerTalent(Talent):
             self.logger.info('Start Integration Tests')
             initial_event = {
                 'returnTopic': INGESTION_TOPIC,
-                'subject': "integration_test"
+                'subject': INTEGRATION_TEST_SUBJECT
             }
-
+            #TODO Eventhough we're waiting for the platoform events of TestSuites to be discovered before sending method
+            #invocations, there's a timeout calling the function getTestSuiteInfo
+            #the problem happens only if TestRunner.registerTestSuite is invoked ???. If the suite is in config.json -
+            #there's no such issue.
+            if not self.config_json.get('testSuites', []):
+                await asyncio.sleep(15)
             result = await self.run_test_suites(initial_event)
             self.logger.info('Overall test result is %s', result)
-
-        if result:
-            sys.exit(0)
-        else:
-            # signal that tests have failed
-            sys.exit(1)
-
-
+        
+        result_event = {
+            'subject': ev.get('subject') if ev is not None else INTEGRATION_TEST_SUBJECT,
+            'type': ev.get('type') if ev is not None else 'default',
+            'instance': ev.get('instance') if ev is not None else INTEGRATION_TEST_INSTANCE,
+            'feature': 'testResultsHandler.test-result',
+            'value': {'id': ev['value']['id'] if ev is not None else 1, 'result': result},
+            'whenMs': round(time.time()*1000)
+        }
+        
+        await self.pg.publish_json(INGESTION_TOPIC, result_event)
+                
+        if ev is None or ev['value']['exit']:
+            if result:
+                os._exit(0)
+            else:
+                # signal that tests have failed
+                os._exit(1)
+        
 class TestSuiteTalent(FunctionTalent):
     def __init__(self, testsuite_name, protocol_gateway_config):
         super().__init__(testsuite_name, protocol_gateway_config)
 
         self.register_test_api_functions()
         self.test_suite_info = TestSuiteInfo(testsuite_name)
-        self.talent_dependencies = TalentDependencies()
+        self.platform_event = Event()
+        self.talent_dependencies = TalentDependencies(['testRunner', testsuite_name], platform_event=self.platform_event)
+     
+    def callees(self):
+        return ['testRunner.registerTestSuite']
 
-    def register_test(self, test_name, expected_value, test_function, timeout=2000):
+    def register_test(self, test_name, expected_value, test_function, timeout=000):
         test = Test(test_name, expected_value, test_function, timeout)
         self.test_suite_info.test_map[test_name] = test
+    
+    # A helper method triggering the execution of the registered test suites in the TestRunner.
+    async def trigger_test_run(self, id=1, exit=True):
+        run_event = {
+            "subject": INTEGRATION_TEST_SUBJECT,
+            "type": "default",
+            "instance": INTEGRATION_TEST_INSTANCE,
+            "feature": "testRunner.run-tests",
+            "value": {
+                "id": id,
+                "exit": exit
+            },
+            'whenMs': round(time.time()*1000)
+        }
+        await self.pg.publish_json(INGESTION_TOPIC, run_event)
+
+    # Registers the test suite with the TestRunner.        
+    async def register(self):
+        try:
+            # wait for the runner and dependencies to be discovered
+            await asyncio.wait_for(self.talent_dependencies.platform_event.wait(), TIMEOUT)
+        except asyncio.exceptions.TimeoutError as e:
+            self.logger.error('Timeout to gather dependencies expired. There are unmet dependencies.')
+        result = await self.call('testRunner', 'registerTestSuite',
+                        [self.id],
+                        INTEGRATION_TEST_SUBJECT,
+                        INGESTION_TOPIC,
+                        2000)
+        return result
+
 
     async def start(self):
-        await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC,
-                                     self.talent_dependencies.on_platform_event)
-        await super().start()
+        await self.pg.subscribe_json(PLATFORM_EVENTS_TOPIC, self.talent_dependencies.on_platform_event)
+        loop = asyncio.get_event_loop()
+        loop.create_task(super().start())
+        self.logger.info('Test Suite started ....')
+        try:
+            # wait for the runner and dependencies to be discovered
+            await asyncio.wait_for(self.talent_dependencies.platform_event.wait(), TIMEOUT)
+        except asyncio.exceptions.TimeoutError as e:
+            self.logger.error('Timeout to gather dependencies expired. There are unmet dependencies.')
+        while True:
+            await asyncio.sleep(1)
+
 
     def register_test_api_functions(self):
         self.register_function('getTestSuiteInfo', self.get_test_suite_info)
@@ -365,3 +450,31 @@ class TestSuiteTalent(FunctionTalent):
         self.logger.debug('All talent dependencies resolved')
         return True
 
+
+class TestResultsHandler(Talent):
+    def __init__(self, config):
+        super().__init__('testResultsHandler', config['protocolGateway'])
+        self.add_output('test-result', {
+            'description': 'Event which carries the results from integration test execution',
+            'encoding': {
+                'type': ENCODING_TYPE_OBJECT,
+                'encoder': None
+            }
+        })
+        self.skip_cycle_check(True)
+
+    def get_rules(self):
+        return OrRules([
+            Rule(OpConstraint(f"{self.id}.test-result", OpConstraint.OPS['ISSET'],
+                              None, DEFAULT_TYPE, VALUE_TYPE_RAW))])
+
+    async def on_event(self, ev, evtctx):
+        self.logger.info('TestResultsHandler received test result %s', TalentInput.get_raw_value(ev))
+
+
+    async def start(self):
+        loop = asyncio.get_event_loop()
+        loop.create_task(super().start())
+        self.logger.info('Test Results Handler started ....')
+        while True:
+            await asyncio.sleep(1)

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.3
 FROM python:3.8-slim-buster as base_stage
 
 ARG HTTP_PROXY
@@ -28,8 +29,6 @@ RUN python -m pip install /src/sdk/python/src/ --user
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
 FROM build_stage as runtime_stage
 
-ARG INTEGRATION_TEST_PATH
-ARG CONFIG_PATH
 
 # Copy the installed requirements and iotea python SDK from build stage
 COPY --from=build_stage /root/.local/ /root/.local/
@@ -39,8 +38,10 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN mkdir -p test/python
-COPY ${INTEGRATION_TEST_PATH}/test_runner.py test/python
-COPY ${CONFIG_PATH} config
+COPY /test/integration-tests/runner/python/test_runner.py test/python
+
+RUN mkdir -p config/tests/python/runner/
+COPY /test/integration-tests/config/tests/python/runner/ config/tests/python/runner
 
 WORKDIR test/python
 ENTRYPOINT ["python", "test_runner.py"]

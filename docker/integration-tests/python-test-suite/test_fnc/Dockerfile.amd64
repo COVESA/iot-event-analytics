@@ -39,8 +39,11 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN mkdir -p test/python
-COPY ${INTEGRATION_TEST_PATH}/function_provider.py test/python
-COPY ${CONFIG_PATH} config
+COPY /test/integration-tests/sdk-test-suites/python/function_provider.py test/python
+
+RUN mkdir -p config/tests/python
+COPY /test/integration-tests/config/tests/python config/tests/python
+
 
 WORKDIR test/python
 ENTRYPOINT ["python", "function_provider.py"]

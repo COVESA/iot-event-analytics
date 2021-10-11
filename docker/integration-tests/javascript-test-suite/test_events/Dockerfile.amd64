@@ -58,9 +58,6 @@ RUN node-prune
 FROM mhart/alpine-node:slim-12.22 as runtime_stage
 # TODO can add in non-root setup here when needed 
 
-ARG INTEGRATION_TEST_PATH
-ARG CONFIG_PATH
-
 # Create & set app directory
 RUN mkdir -p /app
 WORKDIR /app
@@ -71,8 +68,11 @@ COPY --from=tidy-up_stage /build .
 
 RUN mkdir -p test/javascript
 # Copy in test script to run
-COPY ${INTEGRATION_TEST_PATH}/eventTester.js test/javascript
-COPY ${CONFIG_PATH} config
+COPY /test/integration-tests/sdk-test-suites/javascript/eventTester.js test/javascript
+
+RUN mkdir -p config/tests/javascript
+COPY /test/integration-tests/config/tests/javascript/ config/tests/javascript
+
 
 WORKDIR test/javascript
 CMD ["node", "eventTester.js"]
