@@ -1,7 +1,7 @@
 {
     "name": "iotea",
     "displayName": "IoT Event Analytics",
-    "description": "Provides scaffolding, code completion for developing Talents for IoT Event Analytcis",
+    "description": "Provides scaffolding and code completion for developing Talents for IoT Event Analytics",
     "categories": [
         "Snippets"
     ],
@@ -23,32 +23,32 @@
             {
                 "command": "iotea.createJsTalentProject",
                 "title": "Create new JavaScript Talent project",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.startIoTeaPlatform",
                 "title": "Start platform using docker-compose",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.stopIoTeaPlatform",
                 "title": "Stop platform using docker-compose",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.startMosquittoBroker",
                 "title": "Start mosquitto MQTT Broker using docker-compose",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.stopMosquittoBroker",
                 "title": "Stop mosquitto MQTT Broker using docker-compose",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.publishMqttMessage",
                 "title": "Publish an MQTT message",
-                "category": "Bosch IoT Event Analytics"
+                "category": "IoT Event Analytics"
             },
             {
                 "command": "iotea.vss.createIoTeaTypesFromVssJson",
