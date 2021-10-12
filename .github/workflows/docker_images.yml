@@ -19,12 +19,20 @@ jobs:
       contents: read
       packages: write
     steps:
+      - name: Declare build variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
       - run: |
           echo "Building Docker Images..."
           echo "Pusing to registry: ${{ github.event.inputs.doPerformPush }}"
           echo "GitHub Actor: ${{ github.actor }}"
           echo "Registry: ${{ env.REGISTRY }}"
           echo "Prefix for Image Names: ${{ env.IMAGE_NAME }}"
+          echo "Branch: ${{ steps.vars.outputs.branch }}"
+          echo "Sha: ${{ steps.vars.outputs.sha }}"
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Set up QEMU
@@ -45,9 +53,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/configmanager-amd64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/configmanager-amd64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-configmanager-amd64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-configmanager-amd64:${{ steps.vars.outputs.sha }}
           file: docker/config/Dockerfile.amd64
       - name: Build IoTEA-Configmanager (linux/arm64)
         uses: docker/build-push-action@v2
@@ -55,9 +63,9 @@ jobs:
           context: .
           platforms: linux/arm64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/configmanager-arm64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/configmanager-arm64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-configmanager-arm64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-configmanager-arm64:${{ steps.vars.outputs.sha }}
           file: docker/config/Dockerfile.arm64
       - name: Build IoTEA-Pipeline (linux/amd64)
         uses: docker/build-push-action@v2
@@ -65,9 +73,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/pipeline-amd64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/pipeline-amd64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-pipeline-amd64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-pipeline-amd64:${{ steps.vars.outputs.sha }}
           file: docker/pipeline/Dockerfile.amd64
       - name: Build IoTEA-Pipeline (linux/arm64)
         uses: docker/build-push-action@v2
@@ -75,9 +83,9 @@ jobs:
           context: .
           platforms: linux/arm64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/pipeline-arm64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/pipeline-arm64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-pipeline-arm64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-pipeline-arm64:${{ steps.vars.outputs.sha }}
           file: docker/pipeline/Dockerfile.arm64
       - name: Build IoTEA-Platform Slim (linux/amd64)
         uses: docker/build-push-action@v2
@@ -85,9 +93,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/platform-amd64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/platform-amd64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-platform-amd64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-platform-amd64:${{ steps.vars.outputs.sha }}
           file: docker/platform/Dockerfile.slim.amd64
       - name: Build IoTEA-Platform Slim (linux/arm64)
         uses: docker/build-push-action@v2
@@ -95,7 +103,7 @@ jobs:
           context: .
           platforms: linux/arm64
           push: ${{ github.event.inputs.doPerformPush }}
-          tags: | 
-            ${{ env.IMAGE_NAME }}/platform-arm64:latest
-            ghcr.io/${{ env.IMAGE_NAME }}/platform-arm64:latest
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}-platform-arm64:latest
+            ghcr.io/${{ env.IMAGE_NAME }}-platform-arm64:${{ steps.vars.outputs.sha }}
           file: docker/platform/Dockerfile.slim.arm64
