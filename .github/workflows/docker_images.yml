@@ -19,6 +19,12 @@ jobs:
       contents: read
       packages: write
     steps:
+      - run: |
+          echo "Building Docker Images..."
+          echo "Pusing to registry: ${{ github.event.inputs.doPerformPush }}"
+          echo "GitHub Actor: ${{ github.actor }}"
+          echo "Registry: ${{ env.REGISTRY }}"
+          echo "Prefix for Image Names: ${{ env.IMAGE_NAME }}"
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Set up QEMU
@@ -38,7 +44,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/configmanager-amd64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/configmanager-amd64:latest
@@ -48,7 +54,7 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/configmanager-arm64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/configmanager-arm64:latest
@@ -58,7 +64,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/pipeline-amd64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/pipeline-amd64:latest
@@ -68,7 +74,7 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/pipeline-arm64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/pipeline-arm64:latest
@@ -78,7 +84,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/platform-amd64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/platform-amd64:latest
@@ -88,7 +94,7 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
-          push: ${{ env.INPUT_DOPERFORMPUSH }}
+          push: ${{ github.event.inputs.doPerformPush }}
           tags: | 
             ${{ env.IMAGE_NAME }}/platform-arm64:latest
             ghcr.io/${{ env.IMAGE_NAME }}/platform-arm64:latest
