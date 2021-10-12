@@ -28,7 +28,7 @@ RUN python -m pip install /src/sdk/python/src/ --user
 # > > > > > > > > > > > > > > > > > > > > > STAGE 2: 
 FROM build_stage as runtime_stage
 
-ARG INTEGRATION_TEST_PATH
+ARG INTEGRATION_TESTS
 ARG CONFIG_PATH
 
 # Copy the installed requirements and iotea python SDK from build stage
@@ -38,12 +38,14 @@ ENV PATH=/root/.local:$PATH
 RUN mkdir /app
 WORKDIR /app
 
+ARG INTEGRATION_TESTS=/test/integration-tests
+
 RUN mkdir -p test/python
-COPY /test/integration-tests/sdk-test-suites/python/function_provider.py test/python
+COPY ${INTEGRATION_TESTS}/sdk-test-suites/python/function_provider.py test/python
 
 RUN mkdir -p config/tests/python
-COPY /test/integration-tests/config/tests/python config/tests/python
+COPY ${INTEGRATION_TESTS}/config/tests/python config/tests/python
 
 
-WORKDIR test/python
+WORKDIR /app/test/python
 ENTRYPOINT ["python", "function_provider.py"]

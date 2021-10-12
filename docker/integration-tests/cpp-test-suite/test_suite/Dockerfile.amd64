@@ -25,12 +25,14 @@ WORKDIR /app
 # Copy C++ SDK sources
 COPY /src/sdk/cpp ./src/sdk/cpp
 
+ARG INTEGRATION_TESTS=/test/integration-tests
+
 # Copy C++ integration-Test sources
-COPY /test/integration-tests/sdk-test-suites/cpp/ ./test/integration-tests/sdk-test-suites/cpp/
-COPY /test/integration-tests/config/tests/cpp/ ./test/integration-tests/config/tests/cpp/
+COPY ${INTEGRATION_TESTS}/sdk-test-suites/cpp/ .${INTEGRATION_TESTS}/sdk-test-suites/cpp/
+COPY ${INTEGRATION_TESTS}/config/tests/cpp/ .${INTEGRATION_TESTS}/config/tests/cpp/
 
 # set the directory for building the cpp app's
-WORKDIR /app/test/integration-tests/sdk-test-suites/cpp
+WORKDIR /app${INTEGRATION_TESTS}/sdk-test-suites/cpp
 
 # Compile/Build with cmake tools
 RUN cmake -B build -S .
@@ -47,10 +49,12 @@ WORKDIR /app
 # we only want the bare minimum libraries for it to work in runtime
 RUN apk add --no-cache libstdc++ libgcc
 
-# Copy in pre-built cpp exe and config from build stage
-COPY --from=build_stage /app/test/integration-tests/sdk-test-suites/cpp/build ./test/integration-tests/sdk-test-suites/cpp/build
-COPY --from=build_stage /app/test/integration-tests/config/tests/cpp/ ./test/integration-tests/config/tests/cpp/
+ARG INTEGRATION_TESTS=/test/integration-tests
 
-WORKDIR /app/test/integration-tests/sdk-test-suites/cpp/build
+# Copy in pre-built cpp exe and config from build stage
+COPY --from=build_stage /app${INTEGRATION_TESTS}/sdk-test-suites/cpp/build .${INTEGRATION_TESTS}/sdk-test-suites/cpp/build
+COPY --from=build_stage /app${INTEGRATION_TESTS}/config/tests/cpp/ .${INTEGRATION_TESTS}/config/tests/cpp/
+
+WORKDIR /app${INTEGRATION_TESTS}/sdk-test-suites/cpp/build
 
 CMD ./testsuite_sdk

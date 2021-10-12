@@ -37,11 +37,13 @@ ENV PATH=/root/.local:$PATH
 RUN mkdir /app
 WORKDIR /app
 
+ARG INTEGRATION_TESTS=/test/integration-tests
+
 RUN mkdir -p test/python
-COPY /test/integration-tests/runner/python/test_runner.py test/python
+COPY ${INTEGRATION_TESTS}/runner/python/test_runner.py test/python
 
 RUN mkdir -p config/tests/python/runner/
-COPY /test/integration-tests/config/tests/python/runner/ config/tests/python/runner
+COPY ${INTEGRATION_TESTS}/config/tests/python/runner/ config/tests/python/runner
 
-WORKDIR test/python
+WORKDIR /app/test/python
 ENTRYPOINT ["python", "test_runner.py"]

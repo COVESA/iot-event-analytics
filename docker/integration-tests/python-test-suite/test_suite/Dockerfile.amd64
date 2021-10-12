@@ -36,12 +36,14 @@ ENV PATH=/root/.local:$PATH
 RUN mkdir /app
 WORKDIR /app
 
+ARG INTEGRATION_TESTS=/test/integration-tests
+
 RUN mkdir -p test/python
-COPY /test/integration-tests/sdk-test-suites/python/test_suite_sdk.py test/python
+COPY ${INTEGRATION_TESTS}/sdk-test-suites/python/test_suite_sdk.py test/python
 
 RUN mkdir -p config/tests/python
-COPY /test/integration-tests/config/tests/python config/tests/python
+COPY ${INTEGRATION_TESTS}/config/tests/python config/tests/python
 
-WORKDIR test/python
+WORKDIR /app/test/python
 ENTRYPOINT ["python", "test_suite_sdk.py"]
 

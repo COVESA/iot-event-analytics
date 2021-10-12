@@ -65,14 +65,15 @@ WORKDIR /app
 # Copy in pre-built node modules from base stage
 COPY --from=tidy-up_stage /build .
 
+ARG INTEGRATION_TESTS=/test/integration-tests
 
 RUN mkdir -p test/javascript
 # Copy in test script to run
-COPY /test/integration-tests/sdk-test-suites/javascript/eventTester.js test/javascript
+COPY ${INTEGRATION_TESTS}/sdk-test-suites/javascript/eventTester.js test/javascript
 
 RUN mkdir -p config/tests/javascript
-COPY /test/integration-tests/config/tests/javascript/ config/tests/javascript
+COPY ${INTEGRATION_TESTS}/config/tests/javascript/ config/tests/javascript
 
 
-WORKDIR test/javascript
+WORKDIR /app/test/javascript
 CMD ["node", "eventTester.js"]
