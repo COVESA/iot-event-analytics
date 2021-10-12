@@ -7,7 +7,7 @@
             {
                 "platform": true,
                 "module": {
-                    "name": "./util/mqttClient",
+                    "name": ".util.mqtt_client",
                     "class": "MqttProtocolAdapter"
                 },
                 "config": {
@@ -17,5 +17,6 @@
             }
         ]
     },
+    "outputFile": "./report/junit.xml",
     "discoverDependenciesTimeout": 100
 }

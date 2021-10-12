@@ -1,0 +1,24 @@
+version: '3.6'
+services:
+  test_runner_all:
+    build:
+      context: ..
+      labels:
+        iotea.iotea.version: "0.6.0"
+      dockerfile: ./docker/integration-tests/python-test-suite/test_runner/Dockerfile.${ARCH}
+      args:
+        - HTTP_PROXY=${DOCKER_HTTP_PROXY}
+        - HTTPS_PROXY=${DOCKER_HTTPS_PROXY}
+    networks:
+      - iotea-platform-network
+    volumes:
+      - type: bind
+        source: "../test/integration-tests/config/tests/python/runner-sdks"
+        target: "/app/config/tests/python/runner"
+      - type: bind
+        source: "${OUTPUT_TEST_DIR}"
+        target: "/app/test/python/report"        
+networks:
+  iotea-platform-network:
+    name: iotea-platform-network
+    driver: bridge

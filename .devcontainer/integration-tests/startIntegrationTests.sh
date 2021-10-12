@@ -31,13 +31,14 @@ fi
 
 
 #Build test suite and runner
-docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE build --parallel
+docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner_sdk_tests.yml --env-file $ENV_FILE build --parallel
 
 #Start platform & ALL SDK test-suites
 docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml --env-file $ENV_FILE up -d
 
 #Start integration-test runner
-docker-compose -f docker-compose.integration_tests_runner.yml --env-file $ENV_FILE up --exit-code-from test_runner_all
+docker-compose -f docker-compose.integration_tests_runner_sdk_tests.yml --env-file $ENV_FILE up --exit-code-from test_runner_all
 
 #Stop the containers after the runner finishes
 docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml down
+
