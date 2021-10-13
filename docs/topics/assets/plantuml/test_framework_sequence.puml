@@ -1,6 +1,7 @@
 @startuml
 actor TestAutomation as Actor1
 actor TestAutomation as Actor2
+actor IotEventAnalytics
 Actor1 -> TestRunner: init()
 note right
     read configurations: which testSuites to be run, timeouts, report location
@@ -20,11 +21,23 @@ deactivate TestSuite
 
 activate TestSuite
 Actor2 -> TestSuite: start()
-TestSuite -> TestSuite: waitForDependencies
 deactivate TestSuite
 
+alt Static TestSuites Registration in config.json
+TestRunner -> TestRunner: triggerTestSuites
+else Dynamic TestSuite Registration
+Actor2 -> TestRunner: registerTestSuite
+Actor2 -> TestRunner: triggerTestSuites
+note right
+    via testRunner.run-tests event
+end note
+TestRunner -> TestRunner: triggerTestSuites
+end
+
+group triggerTestSuites
 
 TestRunner -> TestRunner: waitForTestSuitesDiscovery
+
 loop for each testSuite in testSuites
 TestRunner -> TestSuite: getTestSuiteInfo
 TestRunner <-- TestSuite: {'name': testSuiteName, 'tests': [*{name, expectedValue, testFunction, timeout }]}
@@ -44,5 +57,8 @@ loop for each test in tests
 end
 end
 TestRunner -> TestRunner: create_test_output: junit-report.xml
+TestRunner -> IotEventAnalytics: postEvent with feature testResultsHandler.test-result
+
+end
 deactivate TestRunner
 @enduml
