@@ -34,14 +34,30 @@ class TestSuiteInfo {
     Test[] getTestList ()
 }
 
+class TestRunnerTalent<<TestRunner>> extends FunctionTalent {
+    name
+    config
+    String[] testSuiteTalentIds
+    talentDependencies
+    timeout
+    
+    registerTestSuite(testSuiteName)
+    start(timeoutMs)
+    runTestSuite(testSuiteName)
+    runTestSuites()
+    create_test_output()    
+}
+
 class TestSuiteTalent<<TestSuite>> extends FunctionTalent {
     testSuiteInfo
     talentDependencies
-    registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
+    registerTest(testName, expectedValue, testFunction, timeoutMs=2000)
     start()
     TestSuiteInfo getTestSuiteInfo()
     TestResult runTest(testName)
     boolean prepare() 
+    boolean registerTestSuite()
+    triggerTestRun(id, exit)
 }
 
 TestSuiteTalent --> TestSuiteInfo 
@@ -52,18 +68,7 @@ TestSuiteTalent --> TalentDependencies
 class FunctionTalent extends Talent {
 }
 
-class TestRunnerTalent<<TestRunner>> extends Talent {
-    name
-    config
-    String[] testSuiteTalentIds
-    talentDependencies
-    timeout
-    
-    start(timeoutMs)
-    runTestSuite(testSuiteName)
-    runTestSuites()
-    create_test_output()
-}
+
 
 TestRunnerTalent --> TestSuiteTalent
 note top on link

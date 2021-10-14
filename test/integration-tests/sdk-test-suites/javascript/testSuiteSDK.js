@@ -59,11 +59,12 @@ class TestSuiteSDK extends TestSuiteTalent {
     }
 
     callees() {
-        return [
+        let calleeArray = super.callees();
+        calleeArray.push(
             'function-provider-js.echo',
             'event-tester-1-js.get_received_events',
-            'event-tester-2-js.get_received_events',
-        ];
+            'event-tester-2-js.get_received_events')
+        return calleeArray;
     }
 
     async test_receiveEvent1ByMultipleTalents(ev, evtctx) {
@@ -200,8 +201,7 @@ class TestSuiteSDK extends TestSuiteTalent {
     }
 }
 
-// TODO: make this local vs container setup configurable with ifdef
 const pgConfig = config.get('protocolGateway');
-const tss = new TestSuiteSDK(pgConfig)
+const tss = new TestSuiteSDK(pgConfig);
 
 tss.start();

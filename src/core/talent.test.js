@@ -11,6 +11,7 @@ const {
     DEFAULT_TYPE,
     VALUE_TYPE_RAW,
     ENCODING_TYPE_BOOLEAN,
+    ENCODING_TYPE_OBJECT,
     GET_TEST_INFO_METHOD_NAME,
     PREPARE_TEST_SUITE_METHOD_NAME,
     RUN_TEST_METHOD_NAME,
@@ -22,10 +23,13 @@ const {
 } = require('./constants');
 
 const Logger = require('./util/logger');
+const TalentInput = require('./util/talentIO')
 
-process.env.MQTT_TOPIC_NS = 'iotea/';
 process.env.LOG_LEVEL = Logger.ENV_LOG_LEVEL.INFO;
 
+const INTEGRATION_TEST_SUBJECT = 'integration_test_subject';
+const INTEGRATION_TEST_INSTANCE = 'integration_test_instance';
+const TIMEOUT_MS = 60000;
 class Test {
     constructor(name, expectedValue, func, timeout = 2000) {
         this.name = name;
@@ -121,7 +125,7 @@ class TestSuiteInfo {
     }
 }
 
-class TestRunnerTalent extends Talent {
+class TestRunnerTalent extends FunctionTalent {
     constructor(name, config) {
         super(name, config.get('protocolGateway'));
 
@@ -134,31 +138,55 @@ class TestRunnerTalent extends Talent {
             },
         });
 
+        this.config_json = config
         this.calleeArray = new Array();
         this.testSuiteArray = new Array();
         this.talentDependencies = new TalentDependencies();
         
-        const testSuiteList = config.get('testSuites')
+        const testSuiteList = config.get('testSuites');
         
         testSuiteList.forEach(testSuite => {
             let testSuiteTalentId = testSuite;
             this.testSuiteArray.push(testSuiteTalentId);
 
             // Set Test Callees (Test API)
-            this.calleeArray.push(`${testSuiteTalentId}.${GET_TEST_INFO_METHOD_NAME}`);
-            this.calleeArray.push(`${testSuiteTalentId}.${PREPARE_TEST_SUITE_METHOD_NAME}`);
-            this.calleeArray.push(`${testSuiteTalentId}.${RUN_TEST_METHOD_NAME}`);
+            this.addCalleeMethods(testSuiteTalentId)
 
             // Add talent id to dependency
             this.talentDependencies.addTalent(testSuiteTalentId);
         });
+
+        this.logger.info(`Creating Test Runner ... `);
+        this.registerFunction('registerTestSuite', this.registerTestSuite.bind(this));
 
         // Wait for our own registration as well
         this.talentDependencies.addTalent(name);
 
         this.skipCycleCheck(true);
         
-        this.timeout = config.get('discoverDependenciesTimeout', 60)*1000
+        this.timeout = config.get('discoverDependenciesTimeout', 60)*1000;
+    }
+
+    // Set Test Callees (Test API)
+    addCalleeMethods(testSuiteName) {
+        this.calleeArray.push(`${testSuiteName}.${GET_TEST_INFO_METHOD_NAME}`);
+        this.calleeArray.push(`${testSuiteName}.${PREPARE_TEST_SUITE_METHOD_NAME}`);
+        this.calleeArray.push(`${testSuiteName}.${RUN_TEST_METHOD_NAME}`);
+    }
+
+    async registerTestSuite(testSuiteName, ev, evtctx, timeoutAtMs) {
+        let preconfTestSuites = this.config_json.get('testSuites', [])
+        if (Array.isArray(preconfTestSuites) && preconfTestSuites.length !== 0) {
+            throw new Error('There are preconfigured testSuites for execution! Dynamic and static registration should not be mixed!')
+        }
+        
+        if (!this.testSuiteArray.includes(testSuiteName)) {
+            this.testSuiteArray.push(testSuiteName)
+            this.addCalleeMethods(testSuiteName)
+            this.logger.info(`A new test suite: ${testSuiteName} was registered!`)
+            return true;
+        }
+        return false;
     }
 
     start(timeoutMs=this.timeout) {
@@ -169,7 +197,12 @@ class TestRunnerTalent extends Talent {
                 this.logger.error(err);
                 process.exit(1);
             })
-            .then(() => this.triggerTestSuites())
+            .then(() => {
+                let preconfTestSuites = this.config_json.get('testSuites', [])
+                if (Array.isArray(preconfTestSuites) && preconfTestSuites.length !== 0) {
+                    this.triggerTestSuites()
+                }
+            })
             .catch(err => {
                 this.logger.info(`${err}`);
                 process.exit(1);
@@ -257,20 +290,44 @@ class TestRunnerTalent extends Talent {
         return result;
     }
 
-    async triggerTestSuites() {
+    async triggerTestSuites(ev) {
         this.logger.info('Start Integration Tests');
         let initial_ev = {
             returnTopic: INGESTION_TOPIC,
             subject: "integration_test"
         };
+    
+        // TODO Even though we're waiting for the platform events of TestSuites to be discovered before sending method
+        // invocations, there's a timeout calling the function getTestSuiteInfo. Happens only when
+        // TestRunner.registerTestSuite is called.
+        let preconfTestSuites = this.config_json.get('testSuites', [])
+        if (Array.isArray(preconfTestSuites) && preconfTestSuites.length === 0) {
+            await new Promise(resolve => setTimeout(resolve, 15000));
+        }
 
         let result = await this.runTestSuites(initial_ev);
         this.logger.info(`Overall test result is ${result}`);
+    
+        let resultEvent = {
+            'subject': typeof ev !== undefined? ev.get('subject'): INTEGRATION_TEST_SUBJECT,
+            'type': typeof ev !== undefined? ev.get('type'): 'default',
+            'instance': typeof ev !== undefined? ev.get('instance'): INTEGRATION_TEST_INSTANCE,
+            'feature': 'testResultsHandler.test-result',
+            'value': {'id': typeof ev !== undefined? ev['value']['id']: 1, 'result': result},
+            'whenMs': Date.now()
+        };
+    
+        await this.pg.publishJson(INGESTION_TOPIC, resultEvent);
 
-        if (result === true) {
-            process.exit(0);
-        } else {
-            process.exit(1);
+        if (typeof ev === undefined || ev['value']['exit']) {
+            //give time for the results to be published before exiting
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            if (result === true) {
+                process.exit(0);
+            } else {
+                //signal that tests have failed
+                process.exit(1);
+            }
         }
     }
 
@@ -285,12 +342,14 @@ class TestRunnerTalent extends Talent {
                 result = false;
             }
         }
-
         return result;
     }
 
     async onEvent(ev) {
-        // Not used
+        this.logger.debug(`Test Runner Received an event ${ev}`);
+        if (ev.feature === `${this.id}.run-tests`) {
+            await this.triggerTestSuites(ev);
+        }
     }
 }
 
@@ -301,18 +360,58 @@ class TestSuiteTalent extends FunctionTalent {
         this.registerTestAPIFunctions();
         this.testSuiteInfo = new TestSuiteInfo(testSuiteName);
         this.talentDependencies = new TalentDependencies();
+        this.talentDependencies.addTalent('testRunner')
+        this.talentDependencies.addTalent(testSuiteName)
     }
+
+    callees() {
+        return ['testRunner.registerTestSuite'];
+    }
+
 
     registerTest(testName, expectedValue, testFunction, timeoutMs=2000) {
         let test = new Test(testName, expectedValue, testFunction, timeoutMs);
         this.testSuiteInfo.testMap.set(testName, test);
     }
 
+
     start() {
         return this.pg.subscribeJson(PLATFORM_EVENTS_TOPIC, this.talentDependencies.__onPlatformEvent.bind(this.talentDependencies))
-            .then(() => super.start());
+            .then(() => super.start())
+            .then(() => this.talentDependencies.waitForDependencies(TIMEOUT_MS))
+            .catch(err => {
+                this.logger.error(err);
+                process.exit(1);
+            })
+            .catch(err => {
+                this.logger.info(`${err}`);
+                process.exit(1);
+            }); 
     }
 
+    async register() {
+        await this.talentDependencies.waitForDependencies(TIMEOUT_MS)
+        .catch(err => {
+            this.logger.error(err);
+            process.exit(1);
+        });
+        return await this.call('testRunner', 'registerTestSuite', [this.id], INTEGRATION_TEST_SUBJECT, INGESTION_TOPIC, 2000);
+    }
+
+    async triggerTestRun(idTestRun=1, exitFlag=true) {
+        let runEvent = {
+            subject: INTEGRATION_TEST_SUBJECT,
+            type: "default",
+            instance: INTEGRATION_TEST_INSTANCE,
+            feature: "testRunner.run-tests",
+            value: {
+                id: idTestRun,
+                exit: exitFlag
+            },
+            whenMs: Date.now()
+        }
+        await this.pg.publishJson(INGESTION_TOPIC, runEvent)
+    }
 
     registerTestAPIFunctions() {
         this.registerFunction(GET_TEST_INFO_METHOD_NAME, this.getTestSuiteInfo.bind(this));
@@ -360,7 +459,39 @@ class TestSuiteTalent extends FunctionTalent {
     }
 }
 
+class TestResultsHandler extends Talent {
+    constructor(config) {
+        super('testResultsHandler', config.get('protocolGateway'));
+        this.addOutput('test-result', {
+            description: 'Event which carries the results from integration test execution',
+            encoding: {
+                type: ENCODING_TYPE_OBJECT,
+                encoder: null
+            },
+        });        
+        this.skip_cycle_check(true);
+    }
+
+    getRules() {
+        return new OrRules([
+            new Rule(
+                new OpConstraint(`${this.id}.test-result`, OpConstraint.OPS.ISSET, null, DEFAULT_TYPE, VALUE_TYPE_RAW)
+            ),
+        ]);
+    }
+
+    async onEvent(ev) {
+        this.logger.info(`TestResultsHandler received test result ${TalentInput.getRawValue(ev)}`);
+        if (ev.feature === `${this.id}.run-tests`) {
+            await this.triggerTestSuites(ev);
+        }
+    }
+
+}
+
+
 module.exports = {
     TestSuiteTalent,
-    TestRunnerTalent
+    TestRunnerTalent,
+    TestResultsHandler
 }

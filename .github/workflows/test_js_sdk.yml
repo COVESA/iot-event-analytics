@@ -35,8 +35,11 @@ jobs:
       run: yarn --frozen-lockfile
 
     - name: Auditing dependencies
-      run: yarn audit
-
+      shell: bash
+      run: |
+        chmod +x .github/scripts/yarn-audit.sh
+        .github/scripts/yarn-audit.sh
+  
     - name: Run unit tests
       run: yarn test
 

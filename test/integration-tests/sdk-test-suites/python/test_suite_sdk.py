@@ -14,15 +14,14 @@ import json
 
 from iotea.core.talent_test import TestSuiteTalent
 from iotea.core.util.logger import Logger
- 
+    
 logging.setLoggerClass(Logger)
 logging.getLogger().setLevel(logging.INFO)
 
-
 class TestSuiteSDK(TestSuiteTalent):
-    def __init__(self, protocol_gateway_config):
-        super(TestSuiteSDK, self).__init__('testSuite-sdk-py', protocol_gateway_config)
-
+    def __init__(self, config):
+        super(TestSuiteSDK, self).__init__('testSuite-sdk-py', config['protocolGateway'])
+        
         # Register Tests
 
         # Test primitives via echo
@@ -40,7 +39,9 @@ class TestSuiteSDK(TestSuiteTalent):
         self.talent_dependencies.add_talent('function-provider-py')
         
     def callees(self):
-        return ['function-provider-py.echo']
+        callees = super().callees()
+        callees.extend(['function-provider-py.echo'])
+        return callees
 
     # pylint: disable=invalid-name,unused-argument
     async def test_echo_string(self, ev, evtctx):
@@ -114,16 +115,17 @@ class TestSuiteSDK(TestSuiteTalent):
                                  500)
         return result
 
+
 def read_config(abs_path):
     with open(abs_path, mode='r', encoding='utf-8') as config_file:
         return json.loads(config_file.read())
 
 async def main():
-    pg_config = read_config('../../config/tests/python/config.json')
-
-    test_set = TestSuiteSDK(pg_config['protocolGateway'])
-    await test_set.start()
-
+    config = read_config('../../config/tests/python/config.json')
+    test_suite = TestSuiteSDK(config)
+    await test_suite.start()
+    
+    
 if __name__ == '__main__':
     LOOP = asyncio.get_event_loop()
     LOOP.run_until_complete(main())

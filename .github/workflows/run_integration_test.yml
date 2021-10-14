@@ -21,7 +21,7 @@ jobs:
       shell: bash
       # All the SDK's integration tests are dockerized and build the
       # latest version of the platform each time. 
-      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner.yml --env-file .env-test build --parallel
+      run: docker-compose -f docker-compose.integration_tests_js.yml -f docker-compose.integration_tests_py.yml -f docker-compose.integration_tests_cpp.yml -f docker-compose.integration_tests_runner_sdk_tests.yml --env-file .env-test build --parallel
       
   
     - name: Start platform & ALL SDK test-suites
@@ -36,7 +36,7 @@ jobs:
       shell: bash
       # This is a test as this container must exit once all tests are completed! The test runner 
       # container will exit with a basic 0:pass/1:fail code currently
-      run: docker-compose -f docker-compose.integration_tests_runner.yml --env-file .env-test up --exit-code-from test_runner_all
+      run: docker-compose -f docker-compose.integration_tests_runner_sdk_tests.yml --env-file .env-test up --exit-code-from test_runner_all
       timeout-minutes: 2
 
     - name: Publish Test Report
