@@ -297,7 +297,7 @@ class TestRunnerTalent extends FunctionTalent {
             subject: "integration_test"
         };
     
-        // TODO Eventhough we're waiting for the platform events of TestSuites to be discovered before sending method
+        // TODO Even though we're waiting for the platform events of TestSuites to be discovered before sending method
         // invocations, there's a timeout calling the function getTestSuiteInfo. Happens only when
         // TestRunner.registerTestSuite is called.
         let preconfTestSuites = this.config_json.get('testSuites', [])
@@ -319,7 +319,9 @@ class TestRunnerTalent extends FunctionTalent {
     
         await this.pg.publishJson(INGESTION_TOPIC, resultEvent);
 
-        if (typeof ev === undefined || ev['value']['exit']){
+        if (typeof ev === undefined || ev['value']['exit']) {
+            //give time for the results to be published before exiting
+            await new Promise(resolve => setTimeout(resolve, 5000));
             if (result === true) {
                 process.exit(0);
             } else {
@@ -396,15 +398,15 @@ class TestSuiteTalent extends FunctionTalent {
         return await this.call('testRunner', 'registerTestSuite', [this.id], INTEGRATION_TEST_SUBJECT, INGESTION_TOPIC, 2000);
     }
 
-    async triggerTestRun(id=1, exit=true) {
+    async triggerTestRun(idTestRun=1, exitFlag=true) {
         let runEvent = {
             subject: INTEGRATION_TEST_SUBJECT,
             type: "default",
             instance: INTEGRATION_TEST_INSTANCE,
             feature: "testRunner.run-tests",
             value: {
-                id: id,
-                exit: exit
+                id: idTestRun,
+                exit: exitFlag
             },
             whenMs: Date.now()
         }

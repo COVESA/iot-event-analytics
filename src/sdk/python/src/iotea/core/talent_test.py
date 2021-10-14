@@ -325,7 +325,7 @@ class TestRunnerTalent(FunctionTalent):
                 'returnTopic': INGESTION_TOPIC,
                 'subject': INTEGRATION_TEST_SUBJECT
             }
-            #TODO Eventhough we're waiting for the platoform events of TestSuites to be discovered before sending method
+            #TODO Even though we're waiting for the platoform events of TestSuites to be discovered before sending method
             #invocations, there's a timeout calling the function getTestSuiteInfo
             #the problem happens only if TestRunner.registerTestSuite is invoked ???. If the suite is in config.json -
             #there's no such issue.
@@ -342,10 +342,11 @@ class TestRunnerTalent(FunctionTalent):
             'value': {'id': ev['value']['id'] if ev is not None else 1, 'result': result},
             'whenMs': round(time.time()*1000)
         }
-        
         await self.pg.publish_json(INGESTION_TOPIC, result_event)
-                
+
         if ev is None or ev['value']['exit']:
+            # give time to publish the result before exiting
+            await asyncio.sleep(5)
             if result:
                 os._exit(0)
             else:
@@ -364,20 +365,20 @@ class TestSuiteTalent(FunctionTalent):
     def callees(self):
         return ['testRunner.registerTestSuite']
 
-    def register_test(self, test_name, expected_value, test_function, timeout=000):
+    def register_test(self, test_name, expected_value, test_function, timeout=2000):
         test = Test(test_name, expected_value, test_function, timeout)
         self.test_suite_info.test_map[test_name] = test
     
     # A helper method triggering the execution of the registered test suites in the TestRunner.
-    async def trigger_test_run(self, id=1, exit=True):
+    async def trigger_test_run(self, test_run_id=1, exit_flag=True):
         run_event = {
             "subject": INTEGRATION_TEST_SUBJECT,
             "type": "default",
             "instance": INTEGRATION_TEST_INSTANCE,
             "feature": "testRunner.run-tests",
             "value": {
-                "id": id,
-                "exit": exit
+                "id": test_run_id,
+                "exit": exit_flag
             },
             'whenMs': round(time.time()*1000)
         }
