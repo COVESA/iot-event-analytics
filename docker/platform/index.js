@@ -108,3 +108,9 @@ configManager.start(config.get('talentDiscoveryIntervalMs', TALENT_DISCOVERY_INT
     .catch(err => {
         platformLogger.error(err.message, null, err);
     });
+
+const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'];
+signals.forEach(signal => process.on(signal, () => {
+    console.log(`Received signal: ${signal}`)
+    process.exit(1);
+}));
