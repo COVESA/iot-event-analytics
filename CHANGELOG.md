@@ -12,6 +12,14 @@
 
 ## [Unreleased]
 
+- 0.7.0, js-sdk-0.7.0, py-sdk-0.7.0 [2021-10-15]
+
+  - IoT Event Analytics platform now uses types.json based on VSS Release 2.2.
+  src/tools/vss provides types.json for VSS Release 2.1 and 2.2.
+  - The container image of the TestRunner is now self contained. This is achieved by providing dynamic registration of TestSuites in the TestRunner. TestRunner is backward compatible: static feed of test suites from the config.json is still allowed. Added new methods in the TestSuite: register() and triggerTestRun().
+  - Bugfix in FunctionTalent in handling errors thrown during Talent function execution.
+  - Bugfix in IoT Event Analytics platform: add signal handler for smooth stop.
+
 - 0.6.0, js-sdk-0.6.0, py-sdk-0.6.0 [2021-09-01]
   - Containerization of the integration tests
   - Scripts and documentation for Integration Test Framework

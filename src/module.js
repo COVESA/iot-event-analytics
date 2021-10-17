@@ -22,7 +22,8 @@ const FunctionTalent = require('./core/talent.func');
 
 const {
     TestSuiteTalent,
-    TestRunnerTalent
+    TestRunnerTalent,
+    TestResultsHandler
 } = require('./core/talent.test');
 
 
@@ -167,6 +168,7 @@ module.exports = {
     FunctionTalent,
     TestSuiteTalent,
     TestRunnerTalent,
+    TestResultsHandler,
     Mapper,
     Worker,
     Reducer,

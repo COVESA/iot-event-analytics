@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       labels:
-        iotea.iotea.version: "0.6.0"
+        iotea.iotea.version: "0.7.0"
       dockerfile: ./docker/integration-tests/python-test-suite/test_runner/Dockerfile.${ARCH}
       args:
         - HTTP_PROXY=${DOCKER_HTTP_PROXY}
