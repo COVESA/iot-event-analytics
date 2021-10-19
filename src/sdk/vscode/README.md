@@ -56,7 +56,9 @@ Additionally, all requirements will be checked on the first command invocation a
 ## Manual Installation
 
 When you build from sources by following the build steps in the main readme, install the VSCode extensions with the following steps:
-- In IoTEA root project folder: `yarn sdk.build`
+- In <iot-event-analytics>/src/sdk/vscode folder: 
+  - `yarn
+  - 'yarn package`
 - Go to _View_ > _Extensions_ > _..._ > _Install from VSIX_
 - Select _lib/iotea.vsix_
 - Restart Visual Studio Code

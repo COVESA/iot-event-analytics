@@ -32,6 +32,8 @@ The following is a set of guidelines for contributing to IoT Event Analytics and
 - [Python Styleguide](#python-styleguide)
 - [Documentation Styleguide](#documentation-styleguide)
 
+[How to Release](#how-to-release)
+
 ## How can I contribute?
 
 ### Reporting Bugs
@@ -99,3 +101,41 @@ We won't implement anything which tailors IoT Event Analytics to be an exact sol
 - We are linting our files using markdownlint as VS Code Extension. The configuration can be found in the file _.markdownlintrc_ and must remain unchanged
   - To have a better understanding about the different rules, see [here](https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md) for further information
 - For javascript code documentation we use jsdoc with enabled markdown styles
+
+## How to Release
+
+To release a new version of iotea-sdk-js or iotea-sdk-py, the following steps have to be done:
+
+- search and replace <old_version> with <new_version> in all project files:
+  - package.json
+  - setup.py
+  - docker compose files
+  - get-sdk.js
+- Write notes in CHANGELOG.md
+  - use git log js-sdk-<old-version>..HEAD to obtain the commit messages since the previous release
+  - vscode CHANGELOG.md is located in src/sdk/vscode
+- Merge changes into GENIVI/iot-event-analytics
+- Create a release from git hub: 
+  - draft a new release
+  - 'Choose a Tag' gives an option to actually create a tag. The tags used are: js-sdk-<version>, py-sdk-<version> and vscode-ext-<version>
+  - the binaries are built and attached manually
+      - for iotea-sdk-js: https://github.com/GENIVI/iot-event-analytics/tree/develop/src/sdk/javascript
+      - for iotea-sdk-py: https://github.com/GENIVI/iot-event-analytics/tree/develop/src/sdk/python
+      - for vscode ext: https://github.com/GENIVI/iot-event-analytics/tree/develop/src/sdk/vscode
+  - the source zips will be automatically attached upon 'Publish release'.
+  - Publish release
+- Publish iotea-js-sdk in NPM: 
+  - to be able to do this, one has to have an account in https://npmjs.com/ and it must be a member of the Genivi
+    organization
+  - edit the package.json: 
+    - private:false and name=@genivi/iotea-js-sdk
+    - remove:
+        "sdk.build": "node src/sdk/javascript/pack.js",
+        "sdk.get": "node get-sdks.js",
+        "test": "nyc --report-dir=reports/coverage --reporter=cobertura --reporter=html --reporter=text-summary jasmine --config=test/jasmine.json",
+        "test.no-coverage": "jasmine --config=test/jasmine.json"
+    - read the rules of npm publish and unpublish first. 
+    - npm login (npm user name and email are required)
+    - npm --dry-run publish  - review what will be published
+    - npm publish - publish to npmjs
+
