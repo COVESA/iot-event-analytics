@@ -482,11 +482,7 @@ class TestResultsHandler extends Talent {
 
     async onEvent(ev) {
         this.logger.info(`TestResultsHandler received test result ${TalentInput.getRawValue(ev)}`);
-        if (ev.feature === `${this.id}.run-tests`) {
-            await this.triggerTestSuites(ev);
-        }
     }
-
 }
 
 
