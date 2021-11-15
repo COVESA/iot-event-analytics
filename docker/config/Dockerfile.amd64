@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-FROM node:12.13.0 as base
+FROM mhart/alpine-node:12.13.0 as base
 
 FROM base as build
 
@@ -27,6 +27,7 @@ COPY package.json yarn.lock ./
 
 RUN npm config set strict-ssl false -g
 RUN npm config set maxsockets 5 -g
+RUN npm rebuild
 
 # Install all dependencies
 RUN yarn --production
@@ -40,6 +41,10 @@ RUN yarn audit --groups dependencies --level critical; \
         exit $yarncode; \
     fi
 
+RUN apk update
+RUN apk upgrade
+RUN apk add bash curl
+
 # Shrink node_modules
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 
@@ -49,7 +54,15 @@ RUN node-prune
 # FROM node:10.16.1-alpine as runtime
 FROM mhart/alpine-node:slim-12.13.0 as runtime
 
+ENV DAPR_APP_PORT=3060
 ARG API_PORT=8080
+
+# Dapr install
+RUN apk update
+RUN apk upgrade
+RUN apk add bash curl
+RUN curl -sf https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | /bin/bash -x
+RUN /usr/local/bin/dapr init --slim
 
 # Set root password
 # https://stackoverflow.com/questions/28721699/root-password-inside-a-docker-container
@@ -65,8 +78,9 @@ COPY --from=build /build .
 COPY src/ ./src
 COPY resources/ ./resources
 COPY docker/config ./docker/config
+RUN ln -s /app/docker/config/dapr_pubsub.yaml ~/.dapr/components/pubsub.yaml
 
 # For Metadata, Instance API
 EXPOSE ${API_PORT}
 
-CMD ["node", "/app/docker/config/index.js"]
+CMD ["/usr/local/bin/dapr", "run", "--app-id", "platform.config", "--app-port", "3060", "--", "node",  "/app/docker/config/index.js"]

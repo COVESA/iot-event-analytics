@@ -1,5 +1,39 @@
 const JsonModel = require('./util/jsonModel');
 
+var dapr = require('dapr-client');
+
+var dapr_pb = dapr.dapr_pb;
+var dapr_grpc = dapr.dapr_grpc;
+var common_pb = dapr.common_pb;
+var grpc = dapr.grpc;
+
+var client = new dapr_grpc.DaprClient(
+    `127.0.0.1:${process.env.DAPR_GRPC_PORT}`, grpc.credentials.createInsecure());
+
+
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+// Dapr publishes messages with the application/cloudevents+json content-type
+app.use(bodyParser.json({ type: 'application/*+json' }));
+
+const port = process.env.DAPR_APP_PORT;
+
+subscriptions = {}
+
+app.get('/dapr/subscribe', (_req, res) => {
+    subs = []
+    for (let topic of Object.keys(subscriptions)) {
+        subs.push({
+            pubsubname: "pubsub",
+            topic: topic,
+            route: `/dapr/${topic}`,
+        })
+    }
+    res.json(subs);
+});
+
 class ProtocolGateway {
     constructor(protocolGatewayConfig, displayName, usePlatformProtocolOnly = false) {
         ProtocolGateway.validateConfiguration(protocolGatewayConfig, usePlatformProtocolOnly);
@@ -47,8 +81,19 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (publishToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (publishOptions.adapterId === null || publishOptions.adapterId === adapter.id) {
-                    const p = adapter.instance.publish(topic, message, publishOptions);
-                    forceWait && await p;
+                    //adapter.instance.publish(topic, message, publishOptions);
+                    var event = new dapr_pb.PublishEventRequest();
+                    event.setTopic(topic);
+                    event.setPubsubName('pubsub');
+                    const data = Buffer.from(message)
+
+                    event.setData(data);
+
+                    client.publishEvent(event, (err, response) => {
+                        if (err) {
+                            console.log(`Error publishing! ${err}`);
+                        } 
+                    });
                 }
             }
         }
@@ -58,7 +103,20 @@ class ProtocolGateway {
         return this.publish(topic, JSON.stringify(json), publishOptions, forceWait);
     }
 
-    // Callback needs to be (ev, topic, adapterId) => {}
+    start() {
+        for (let topic of Object.keys(subscriptions)) { 
+            app.post(`/dapr/${topic}`, (req, res) => {
+                subscriptions[topic].forEach(function (entry) {
+                    entry.cb(req.body.data, topic, entry.adapter);
+                });
+                res.sendStatus(200);
+            });
+        }
+        
+        app.listen(port, () => console.log(`Node App listening on port ${port}!`));
+    }
+
+    // Callback needs to be (ev, topic) => {}
     async subscribe(topic, callback, subscribeOptions = ProtocolGateway.createSubscribeOptions(), forceWait = false) {
         let subscribeToPlatformProtocolOnly = subscribeOptions.platformProtocolOnly;
 
@@ -72,12 +130,12 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    const p = adapter.instance.subscribe(
-                        topic,
-                        ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
-                        subscribeOptions
-                    );
-                    forceWait && await p;
+                    
+                    if (topic in subscriptions) {
+                        subscriptions[topic].push({name: topic, cb: callback, adapter: adapter.id});
+                    } else {
+                        subscriptions[topic] = [{name: topic, cb: callback, adapter: adapter.id}]; 
+                    }
                 }
             }
         }
@@ -109,13 +167,11 @@ class ProtocolGateway {
         for (let adapter of this.adapters) {
             if (subscribeToPlatformProtocolOnly === false || adapter.isPlatformProtocol) {
                 if (subscribeOptions.adapterId === null || subscribeOptions.adapterId === adapter.id) {
-                    const p = adapter.instance.subscribeShared(
-                        group,
-                        topic,
-                        ((adapter) => (ev, topic) => callback(ev, topic, adapter.id))(adapter), // Save adapter in IIFE
-                        subscribeOptions
-                    );
-                    forceWait && await p;
+                    if (topic in subscriptions) {
+                        subscriptions[topic].push({name: topic, cb: callback, adapter: adapter.id});
+                    } else {
+                        subscriptions[topic] = [{name: topic, cb: callback, adapter: adapter.id}]; 
+                    }
                 }
             }
         }

@@ -76,7 +76,9 @@ module.exports = class ConfigManager {
             .then(() => {
                 this.logger.info('ConfigManager started');
             })
-            .then(() => this.__startDiscovery(discoveryIntervalMs));
+            .then(() => this.__startDiscovery(discoveryIntervalMs))
+            .then(() => this.pg.start());
+
     }
 
     getMetadataManager() {

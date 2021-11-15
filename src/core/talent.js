@@ -128,7 +128,9 @@ class Talent extends IOFeatures {
             .then(() => this.pg.subscribeJsonShared(this.id, TALENTS_DISCOVERY_TOPIC, this.__onDiscover.bind(this)))
             .then(() => {
                 this.logger.info(`Talent ${this.uid} started successfully`);
-            });
+            })
+            .then(() => this.pg.start());
+
     }
 
     callees() {

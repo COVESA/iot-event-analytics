@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MPL-2.0
 ##############################################################################
 
-FROM node:12.13.0 as base
+FROM mhart/alpine-node:12.13.0 as base
 
 FROM base as build
 
@@ -27,6 +27,7 @@ COPY package.json yarn.lock ./
 
 RUN npm config set strict-ssl false -g
 RUN npm config set maxsockets 5 -g
+RUN npm rebuild
 
 # Install all dependencies
 RUN yarn --production
@@ -41,13 +42,24 @@ RUN yarn audit --groups dependencies --level critical; \
     fi
 
 # Shrink node_modules
+RUN apk update
+RUN apk upgrade
+RUN apk add bash curl
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 
 # Prune node-modules
-RUN node-prune
+#RUN node-prune
 
 # FROM node:10.16.1-alpine as runtime
 FROM mhart/alpine-node:slim-12.13.0 as runtime
+
+ENV DAPR_APP_PORT=3001
+
+RUN apk update
+RUN apk upgrade
+RUN apk add bash curl
+RUN curl -sf https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | /bin/bash -x
+RUN /usr/local/bin/dapr init --slim
 
 # Set root password
 # https://stackoverflow.com/questions/28721699/root-password-inside-a-docker-container
@@ -63,5 +75,6 @@ COPY --from=build /build .
 COPY src/ ./src
 COPY resources/ ./resources
 COPY docker/pipeline ./docker/pipeline
+RUN ln -s /app/docker/pipeline/dapr_pubsub.yaml ~/.dapr/components/pubsub.yaml
 
-CMD ["node", "/app/docker/pipeline/index.js"]
+CMD ["/usr/local/bin/dapr", "run", "--app-id", "platform.pipeline", "--app-port", "3001", "--app-protocol", "http", "--", "node",  "/app/docker/pipeline/index.js"]

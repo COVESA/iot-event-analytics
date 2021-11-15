@@ -17,6 +17,7 @@
   "dependencies": {
     "ajv": "^6.12.3",
     "cors": "^2.8.5",
+    "dapr-client": "^0.12.0",
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "jsonata": "^1.8.3",

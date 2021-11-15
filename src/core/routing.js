@@ -42,7 +42,7 @@ module.exports = class Routing {
             .then(() => this.pg.subscribeJsonShared('routing', ROUTING_TOPIC, this.__onEvent.bind(this), ProtocolGateway.createSubscribeOptions(true)))
             .then(() => {
                 this.logger.info('Routing started successfully');
-            });
+            }).then(() => this.pg.start());
     }
 
     async __onEvent(ev) {
